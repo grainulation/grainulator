@@ -82,7 +82,6 @@
 }
 
 html {
-  scroll-snap-type: y proximity;
   scroll-behavior: smooth;
   scroll-padding-top: 72px;
   overflow-y: scroll;
@@ -213,7 +212,6 @@ code, pre { font-family: var(--mono); }
   padding: 60px 32px 100px;
   position: relative;
   overflow: hidden;
-  scroll-snap-align: start;
 }
 .hero-badge {
   display: inline-flex;
@@ -345,7 +343,6 @@ code, pre { font-family: var(--mono); }
   min-height: 100vh;
   padding: 100px 32px;
   position: relative;
-  scroll-snap-align: start;
   display: flex;
   align-items: center;
 }
@@ -418,7 +415,6 @@ code, pre { font-family: var(--mono); }
   padding: 160px 32px;
   text-align: center;
   position: relative;
-  scroll-snap-align: start;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -464,7 +460,6 @@ code, pre { font-family: var(--mono); }
   min-height: 100vh;
   padding: 100px 32px;
   position: relative;
-  scroll-snap-align: start;
 }
 .sprint-layout {
   display: grid;
@@ -667,7 +662,6 @@ code, pre { font-family: var(--mono); }
   min-height: 100vh;
   padding: 100px 32px;
   position: relative;
-  scroll-snap-align: start;
 }
 .brief-layout {
   max-width: 900px;
@@ -833,7 +827,6 @@ code, pre { font-family: var(--mono); }
   display: flex;
   align-items: center;
   justify-content: center;
-  scroll-snap-align: start;
 }
 .sarah-container {
   max-width: 420px;
@@ -891,7 +884,6 @@ code, pre { font-family: var(--mono); }
   justify-content: center;
   position: relative;
   padding: 80px 32px 160px;
-  scroll-snap-align: start;
 }
 .s-close::before {
   content: '';
@@ -1043,18 +1035,20 @@ code, pre { font-family: var(--mono); }
   min-height: 44px;
   min-width: 44px;
   font-family: var(--mono);
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.04em;
   color: var(--text-dim);
   background: var(--bg-elevated);
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--border);
   cursor: pointer;
-  transition: color 0.2s, border-color 0.2s;
+  opacity: 0.5;
+  transition: color 0.2s, border-color 0.2s, opacity 0.2s;
 }
 .terminal-skip-btn:hover,
 .terminal-skip-btn:focus-visible {
   color: var(--lime);
   border-color: var(--lime);
+  opacity: 1;
 }
 .terminal-skip-btn[hidden] { display: none; }
 
