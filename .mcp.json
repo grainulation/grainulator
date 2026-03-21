@@ -5,7 +5,7 @@
       "command": "npx",
       "args": ["-y", "@grainulator/wheat-mcp"],
       "env": {
-        "WHEAT_ROOT": "${CWD}/.wheat"
+        "WHEAT_ROOT": ".wheat"
       }
     },
     "mill": {

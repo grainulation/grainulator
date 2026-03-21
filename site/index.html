@@ -44,8 +44,10 @@
   --purple-dim: rgba(167,139,250,0.1);
   --amber: #fbbf24;
   --amber-dim: rgba(251,191,36,0.12);
-  --text: #e8ecf1;
-  --text-2: #9ba5b7;
+  /* Text colors aligned with grainulation-tokens.css (--fg/#e2e8f0, --fg2/#94a3b8, --fg3/#64748b).
+     Using slightly lighter values for marketing page readability on large text. */
+  --text: #e2e8f0;
+  --text-2: #94a3b8;
   --text-3: #8b95a5;
   --mono: 'SF Mono','Fira Code','Cascadia Code','Consolas',monospace;
   --sans: -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
@@ -159,6 +161,7 @@ nav .container{display:flex;align-items:center;justify-content:space-between}
 .surface-icon{font-size:1.5rem;margin-bottom:8px}
 .surface-card h3{font-size:.875rem;font-weight:700;margin-bottom:2px}
 .surface-card p{font-size:.75rem;color:var(--text-3)}
+.coming-soon{font-size:.625rem;padding:2px 6px;border-radius:4px;background:var(--amber-dim);color:var(--amber);font-weight:600;text-transform:uppercase;letter-spacing:.04em;vertical-align:middle;margin-left:4px}
 
 /* ===== VOCABULARY ===== */
 .vocab{padding:80px 0;scroll-snap-align:start}
@@ -262,7 +265,7 @@ footer .footer-links{display:flex;align-items:center;justify-content:center;gap:
 .skip-link:focus{position:fixed;top:8px;left:8px;width:auto;height:auto;padding:12px 24px;background:var(--accent);color:#000;font-weight:700;font-size:.875rem;border-radius:8px;text-decoration:none;z-index:10000}
 </style>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Grainulator","description":"Research sprint orchestrator for Claude Code. Type a question, get a compiled brief in 5 minutes.","applicationCategory":"DeveloperApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Organization","name":"Grainulation","url":"https://grainulation.com"},"license":"https://opensource.org/licenses/MIT"}
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Grainulator","description":"Research sprint orchestrator for Claude Code. Type a question, get a compiled brief in 5 minutes.","applicationCategory":"DeveloperApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD","description":"Plugin is free and open source (MIT). Sprints consume your own Claude API key ($6-12 per sprint in API costs, paid to Anthropic)."},"author":{"@type":"Organization","name":"Grainulation","url":"https://grainulation.com"},"license":"https://opensource.org/licenses/MIT"}
 </script>
 </head>
 <body>
@@ -303,45 +306,45 @@ footer .footer-links{display:flex;align-items:center;justify-content:center;gap:
       </div>
     </div>
 
-    <div class="hero-flow hf hf5">
+    <div class="hero-flow hf hf5" role="img" aria-label="Research sprint flow: Ask, Research, Challenge, Compile, Brief">
       <div class="hero-flow-step">
-        <div class="hero-flow-icon" style="background:var(--accent-dim);color:var(--accent)">
+        <div class="hero-flow-icon" style="background:var(--accent-dim);color:var(--accent)" aria-hidden="true">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         </div>
         <div class="hero-flow-label">Ask</div>
       </div>
-      <div class="hero-flow-arrow">
+      <div class="hero-flow-arrow" aria-hidden="true">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
       <div class="hero-flow-step">
-        <div class="hero-flow-icon" style="background:var(--blue-dim);color:var(--blue)">
+        <div class="hero-flow-icon" style="background:var(--blue-dim);color:var(--blue)" aria-hidden="true">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </div>
         <div class="hero-flow-label">Research</div>
       </div>
-      <div class="hero-flow-arrow">
+      <div class="hero-flow-arrow" aria-hidden="true">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
       <div class="hero-flow-step">
-        <div class="hero-flow-icon" style="background:var(--red-dim);color:var(--red)">
+        <div class="hero-flow-icon" style="background:var(--red-dim);color:var(--red)" aria-hidden="true">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
         </div>
         <div class="hero-flow-label">Challenge</div>
       </div>
-      <div class="hero-flow-arrow">
+      <div class="hero-flow-arrow" aria-hidden="true">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
       <div class="hero-flow-step">
-        <div class="hero-flow-icon" style="background:var(--purple-dim);color:var(--purple)">
+        <div class="hero-flow-icon" style="background:var(--purple-dim);color:var(--purple)" aria-hidden="true">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
         </div>
         <div class="hero-flow-label">Compile</div>
       </div>
-      <div class="hero-flow-arrow">
+      <div class="hero-flow-arrow" aria-hidden="true">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
       <div class="hero-flow-step">
-        <div class="hero-flow-icon" style="background:var(--green-dim);color:var(--green)">
+        <div class="hero-flow-icon" style="background:var(--green-dim);color:var(--green)" aria-hidden="true">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         </div>
         <div class="hero-flow-label">Brief</div>
@@ -449,28 +452,28 @@ footer .footer-links{display:flex;align-items:center;justify-content:center;gap:
         <div class="surface-icon">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
         </div>
-        <h3>Mobile</h3>
+        <h3>Mobile <span class="coming-soon">Coming soon</span></h3>
         <p>Approve on your phone.</p>
       </div>
       <div class="surface-card">
         <div class="surface-icon">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
         </div>
-        <h3>Web</h3>
+        <h3>Web <span class="coming-soon">Coming soon</span></h3>
         <p>Share briefs publicly.</p>
       </div>
       <div class="surface-card">
         <div class="surface-icon">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         </div>
-        <h3>Cursor</h3>
+        <h3>Cursor <span class="coming-soon">Planned</span></h3>
         <p>MCP adapter.</p>
       </div>
       <div class="surface-card">
         <div class="surface-icon">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 17l6-6-6-6"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
         </div>
-        <h3>CLI</h3>
+        <h3>CLI <span class="coming-soon">Planned</span></h3>
         <p>CI/CD pipelines.</p>
       </div>
     </div>
@@ -557,11 +560,11 @@ footer .footer-links{display:flex;align-items:center;justify-content:center;gap:
     <div class="oss-box rv">
       <div class="section-label">Open source</div>
       <h2>Built on Grainulation</h2>
-      <p>The entire engine is open source. Wheat, Farmer, Mill, Silo, Harvest, Orchard, Barn -- 8 zero-dependency packages under MIT. Audit the entire codebase in 5 minutes.</p>
+      <p>The entire engine is open source. Wheat, Farmer, Mill, Silo, Harvest, Orchard, Barn -- 7 packages plus the Grainulation CLI, all zero-dependency and MIT-licensed. Audit the entire codebase in 5 minutes.</p>
       <div class="oss-stats">
         <div class="oss-stat">
-          <div class="num">8</div>
-          <div class="label">Packages</div>
+          <div class="num">7+1</div>
+          <div class="label">Packages + CLI</div>
         </div>
         <div class="oss-stat">
           <div class="num">0</div>
@@ -653,11 +656,28 @@ var obs = new IntersectionObserver(function(entries) {
 }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 document.querySelectorAll('.rv').forEach(function(el) { obs.observe(el); });
 
-/* Copy helpers */
+/* Copy helpers with fallback for non-HTTPS contexts */
+function copyToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard.writeText(text);
+  }
+  /* Fallback: hidden textarea + execCommand */
+  return new Promise(function(resolve, reject) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); resolve(); }
+    catch (e) { reject(e); }
+    finally { document.body.removeChild(ta); }
+  });
+}
 function copyInstall(el) {
   var text = '/plugin install grainulator';
   var btn = el.querySelector('.install-copy');
-  navigator.clipboard.writeText(text).then(function() {
+  copyToClipboard(text).then(function() {
     if (btn) { btn.textContent = 'Copied'; btn.classList.add('copied'); }
     setTimeout(function() { if (btn) { btn.textContent = 'Copy'; btn.classList.remove('copied'); } }, 1200);
   });
@@ -665,7 +685,7 @@ function copyInstall(el) {
 function copyCta(el) {
   var text = '/plugin install grainulator';
   var btn = el.querySelector('.cta-copy');
-  navigator.clipboard.writeText(text).then(function() {
+  copyToClipboard(text).then(function() {
     if (btn) { btn.textContent = 'Copied'; btn.classList.add('copied'); }
     setTimeout(function() { if (btn) { btn.textContent = 'Copy'; btn.classList.remove('copied'); } }, 1200);
   });

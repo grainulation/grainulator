@@ -64,6 +64,10 @@ Three levels of deployment:
 2. **IT admin**: Deploy managed settings via MDM with pre-approved permissions
 3. **Air-gapped**: Use `CLAUDE_CODE_PLUGIN_SEED_DIR` with the plugin baked into container images
 
+## npm scope
+
+The `@grainulator` npm scope must be claimed before publishing. The hooks in `hooks/hooks.json` use `npx -y @grainulator/wheat-mcp` which auto-installs on first run -- if the scope is unclaimed, this is a supply chain risk. Claim the scope at https://www.npmjs.com/org/create before publishing.
+
 ## License
 
 MIT

@@ -21,8 +21,7 @@
     ".mcp.json",
     "skills/",
     "agents/",
-    "hooks/",
-    "servers/"
+    "hooks/"
   ],
   "engines": {
     "node": ">=20"

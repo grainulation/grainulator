@@ -13,6 +13,9 @@ tools:
   - mcp__silo__silo_search
   - mcp__silo__silo_pull
   - mcp__silo__silo_store
+  # NOTE: DeepWiki tool names are dynamically discovered from the HTTP MCP server
+  # at https://mcp.deepwiki.com/mcp. These names may change if DeepWiki updates
+  # their API. Verify with `mcp__deepwiki__` tool discovery if tools stop working.
   - mcp__deepwiki__ask_question
   - mcp__deepwiki__read_wiki_structure
   - mcp__deepwiki__read_wiki_contents
