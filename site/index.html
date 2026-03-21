@@ -81,6 +81,12 @@
   --ease-snap: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+html {
+  scroll-snap-type: y proximity;
+  scroll-behavior: smooth;
+  scroll-padding-top: 72px;
+}
+
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
@@ -194,9 +200,10 @@ code, pre { font-family: var(--mono); }
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 120px 32px 80px;
+  padding: 60px 32px 100px;
   position: relative;
   overflow: hidden;
+  scroll-snap-align: start;
 }
 .hero-badge {
   display: inline-flex;
@@ -323,8 +330,9 @@ code, pre { font-family: var(--mono); }
 
 /* ===== SECTION 2: THE PROBLEM ===== */
 .s-problem {
-  padding: 120px 32px;
+  padding: 100px 32px;
   position: relative;
+  scroll-snap-align: start;
 }
 .problem-grid {
   display: grid;
@@ -343,7 +351,7 @@ code, pre { font-family: var(--mono); }
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--coral);
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 .problem-headline {
   font-family: var(--sans);
@@ -408,7 +416,7 @@ code, pre { font-family: var(--mono); }
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-faint);
-  margin-bottom: 16px;
+  margin-bottom: 8px;
   position: relative;
 }
 .command-line {
@@ -431,8 +439,9 @@ code, pre { font-family: var(--mono); }
 
 /* ===== SECTION 4: THE SPRINT ===== */
 .s-sprint {
-  padding: 120px 32px;
+  padding: 100px 32px;
   position: relative;
+  scroll-snap-align: start;
 }
 .sprint-layout {
   display: grid;
@@ -452,7 +461,7 @@ code, pre { font-family: var(--mono); }
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--lime);
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 .sprint-headline {
   font-family: var(--sans);
@@ -632,8 +641,9 @@ code, pre { font-family: var(--mono); }
 
 /* ===== SECTION 5: THE BRIEF ===== */
 .s-brief {
-  padding: 120px 32px;
+  padding: 100px 32px;
   position: relative;
+  scroll-snap-align: start;
 }
 .brief-layout {
   max-width: 900px;
@@ -649,7 +659,7 @@ code, pre { font-family: var(--mono); }
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--lime);
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 .brief-big-headline {
   font-family: var(--sans);
@@ -798,6 +808,7 @@ code, pre { font-family: var(--mono); }
   display: flex;
   align-items: center;
   justify-content: center;
+  scroll-snap-align: start;
 }
 .sarah-container {
   max-width: 420px;
@@ -854,7 +865,8 @@ code, pre { font-family: var(--mono); }
   align-items: center;
   justify-content: center;
   position: relative;
-  padding: 120px 32px;
+  padding: 80px 32px 160px;
+  scroll-snap-align: start;
 }
 .s-close::before {
   content: '';
@@ -908,7 +920,7 @@ code, pre { font-family: var(--mono); }
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-faint);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 .close-cmd {
   position: relative;
@@ -923,6 +935,7 @@ code, pre { font-family: var(--mono); }
   background: transparent;
   transition: all 0.3s var(--ease);
   box-shadow: 0 0 40px var(--lime-glow);
+  overflow: visible;
 }
 .close-cmd:hover {
   background: rgba(191, 255, 0, 0.04);
@@ -991,6 +1004,7 @@ code, pre { font-family: var(--mono); }
   font-size: 0.6875rem;
   color: var(--text-faint);
   letter-spacing: 0.04em;
+  line-height: 2;
 }
 
 /* ===== SCROLL REVEAL ===== */
@@ -1025,22 +1039,28 @@ code, pre { font-family: var(--mono); }
   .brief-stat:nth-child(1), .brief-stat:nth-child(2) { border-bottom: 1px solid var(--border); }
   .brief-stat:nth-child(odd) { border-right: 1px solid var(--border); }
   .hero-terminal-float { display: none; }
+  .game-terminal { border-radius: 8px; }
 }
 
 @media (max-width: 480px) {
-  .s-hero { padding: 100px 20px 60px; }
-  .s-problem, .s-sprint, .s-brief, .s-close { padding: 80px 20px; }
-  .s-command { padding: 100px 20px; }
+  .s-hero { padding: 40px 20px 60px; }
+  .s-problem, .s-sprint, .s-brief { padding: 60px 20px; }
+  .s-close { padding: 60px 20px 160px; }
+  .s-command { padding: 80px 20px; }
   .brief-card-header { flex-direction: column; align-items: flex-start; gap: 8px; }
   .brief-card-body { padding: 20px; }
   .brief-stats { grid-template-columns: 1fr; }
   .brief-stat { border-right: none !important; border-bottom: 1px solid var(--border); }
   .brief-stat:last-child { border-bottom: none; }
-  .close-cmd { font-size: 0.8125rem; padding: 16px 60px 16px 16px; }
+  .close-cmd { font-size: 0.8125rem; padding: 16px 60px 16px 16px; overflow: visible; }
   .chaos-card:nth-child(n+5) { display: none; }
   .sticky-nav { padding: 12px 20px; }
   .sticky-nav-links { display: none; }
   .terminal-body { padding: 16px; font-size: 11px; }
+  .game-terminal { border-radius: 8px; }
+  .close-links { gap: 20px; flex-wrap: wrap; }
+  .close-links a { min-height: 48px; min-width: 48px; }
+  .site-footer { padding: 24px 20px; }
 }
 
 /* ===== REDUCED MOTION ===== */
