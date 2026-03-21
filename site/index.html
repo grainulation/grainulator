@@ -43,13 +43,13 @@
   --border-light: #2a2620;
   --text: #ede8e0;
   --text-dim: #a09888;
-  --text-faint: #5c564c;
+  --text-faint: #8a8278;
   --sage: #7a9b6d;
   --sage-dim: rgba(122, 155, 109, 0.12);
   --ember: #c47a4a;
   --ember-dim: rgba(196, 122, 74, 0.10);
-  --rose: #b85c5c;
-  --rose-dim: rgba(184, 92, 92, 0.10);
+  --rose: #c46868;
+  --rose-dim: rgba(196, 104, 104, 0.10);
   --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
   --serif: 'Georgia', 'Times New Roman', 'Palatino', serif;
   --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
@@ -87,6 +87,48 @@ code, pre { font-family: var(--mono); }
   border-radius: 4px; text-decoration: none; z-index: 10000;
 }
 
+/* ===== STICKY NAV (x015) ===== */
+.sticky-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: rgba(10, 9, 8, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.sticky-nav-brand {
+  font-family: var(--serif);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gold);
+  text-decoration: none;
+}
+.sticky-nav-brand:hover { text-decoration: none; }
+.sticky-nav-cta {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: var(--gold);
+  text-decoration: none;
+  padding: 8px 16px;
+  border: 1px solid var(--gold-dim);
+  border-radius: 4px;
+  transition: all 0.3s;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+.sticky-nav-cta:hover {
+  background: var(--gold);
+  color: var(--bg);
+  text-decoration: none;
+}
+
 /* ===== FOCUS ===== */
 *:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 
@@ -96,9 +138,9 @@ code, pre { font-family: var(--mono); }
   width: 100%;
 }
 
-/* ===== SECTION 1: THE QUESTION ===== */
+/* ===== SECTION 1: THE QUESTION (w009: cut to 200vh) ===== */
 .s-question {
-  height: 300vh;
+  height: 200vh;
   position: relative;
 }
 .s-question-sticky {
@@ -145,7 +187,7 @@ code, pre { font-family: var(--mono); }
   opacity: 1;
 }
 
-/* ===== SECTION 2: THE CHAOS ===== */
+/* ===== SECTION 2: THE CHAOS (w013: cooler tones) ===== */
 .s-chaos {
   height: 400vh;
   position: relative;
@@ -159,7 +201,10 @@ code, pre { font-family: var(--mono); }
   justify-content: center;
   overflow: hidden;
   perspective: 1200px;
+  background: linear-gradient(180deg, var(--bg) 0%, #08090c 50%, var(--bg) 100%);
+  transition: background 0.8s;
 }
+
 .chaos-container {
   position: relative;
   width: 100%;
@@ -171,8 +216,8 @@ code, pre { font-family: var(--mono); }
 /* Browser tabs that multiply */
 .chaos-tab {
   position: absolute;
-  background: var(--bg-panel);
-  border: 1px solid var(--border);
+  background: #0f1015;
+  border: 1px solid #1a1c24;
   border-radius: 6px 6px 0 0;
   padding: 8px 14px;
   font-family: var(--mono);
@@ -195,8 +240,8 @@ code, pre { font-family: var(--mono); }
 /* Floating Slack messages */
 .chaos-slack {
   position: absolute;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
+  background: #13141a;
+  border: 1px solid #1a1c24;
   border-radius: 8px;
   padding: 12px 16px;
   max-width: 280px;
@@ -230,7 +275,14 @@ code, pre { font-family: var(--mono); }
   transition: opacity 0.8s var(--ease), filter 1s var(--ease), transform 0.8s var(--ease);
 }
 
-/* ===== SECTION 3: THE COMMAND ===== */
+/* ===== SECTION 2.5: THE SILENCE (w008: empty black beat) ===== */
+.s-silence {
+  height: 100vh;
+  position: relative;
+  background: var(--bg);
+}
+
+/* ===== SECTION 3: THE COMMAND (w013: 5x warmer glow) ===== */
 .s-command {
   height: 300vh;
   position: relative;
@@ -243,6 +295,7 @@ code, pre { font-family: var(--mono); }
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  background: radial-gradient(ellipse at center, rgba(212, 165, 71, 0.04) 0%, transparent 70%);
 }
 .command-inner {
   text-align: center;
@@ -254,9 +307,9 @@ code, pre { font-family: var(--mono); }
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 600px;
-  height: 400px;
-  background: radial-gradient(ellipse at center, rgba(212, 165, 71, 0.12) 0%, transparent 70%);
+  width: 800px;
+  height: 500px;
+  background: radial-gradient(ellipse at center, rgba(212, 165, 71, 0.30) 0%, rgba(212, 165, 71, 0.08) 40%, transparent 70%);
   opacity: 0;
   transition: opacity 1.2s var(--ease-slow);
   pointer-events: none;
@@ -272,6 +325,7 @@ code, pre { font-family: var(--mono); }
   transition: opacity 1s var(--ease-slow), transform 1s var(--ease-slow);
   position: relative;
   z-index: 1;
+  text-shadow: 0 0 40px rgba(212, 165, 71, 0.4);
 }
 .command-sub {
   font-family: var(--mono);
@@ -309,7 +363,7 @@ code, pre { font-family: var(--mono); }
 }
 .sprint-terminal {
   width: 100%;
-  max-width: 720px;
+  max-width: min(720px, 90vw);
   margin: 0 auto;
   padding: 0 24px;
   opacity: 0;
@@ -319,6 +373,13 @@ code, pre { font-family: var(--mono); }
 .sprint-terminal.visible {
   opacity: 1;
   transform: none;
+}
+/* Billboard state: terminal shrinks/blurs when billboard is active (w014) */
+.sprint-terminal.billboard-active {
+  filter: blur(8px);
+  transform: scale(0.92);
+  opacity: 0.3;
+  transition: all 0.8s var(--ease-slow);
 }
 .terminal-chrome {
   border-radius: 8px;
@@ -380,7 +441,7 @@ code, pre { font-family: var(--mono); }
   margin-right: 4px;
 }
 .tag-factual { background: rgba(122, 155, 109, 0.15); color: var(--sage); }
-.tag-risk { background: rgba(184, 92, 92, 0.15); color: var(--rose); }
+.tag-risk { background: rgba(196, 104, 104, 0.15); color: var(--rose); }
 .tag-estimate { background: rgba(196, 122, 74, 0.15); color: var(--ember); }
 .tag-rec { background: rgba(212, 165, 71, 0.15); color: var(--gold); }
 
@@ -400,10 +461,58 @@ code, pre { font-family: var(--mono); }
   margin: 6px -12px;
   border-radius: 4px;
   border-left: 2px solid var(--rose);
-  background: rgba(184, 92, 92, 0.06);
+  background: rgba(196, 104, 104, 0.06);
 }
 .sprint-challenge.visible {
   opacity: 1;
+}
+
+/* ===== THE BILLBOARD FRAME (w014) ===== */
+.billboard-frame {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 32px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.8s var(--ease-slow);
+}
+.billboard-frame.active {
+  opacity: 1;
+}
+.billboard-line-1 {
+  font-family: var(--serif);
+  font-size: clamp(1.6rem, 4vw, 3rem);
+  font-weight: 400;
+  color: var(--text-dim);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  margin-bottom: 16px;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.6s var(--ease-slow) 0.2s, transform 0.6s var(--ease-slow) 0.2s;
+}
+.billboard-line-2 {
+  font-family: var(--serif);
+  font-size: clamp(2.4rem, 6vw, 5rem);
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.6s var(--ease-slow) 0.6s, transform 0.6s var(--ease-slow) 0.6s;
+  text-shadow: 0 0 80px rgba(212, 165, 71, 0.3);
+}
+.billboard-frame.active .billboard-line-1,
+.billboard-frame.active .billboard-line-2 {
+  opacity: 1;
+  transform: none;
 }
 
 /* Coverage bars */
@@ -432,7 +541,7 @@ code, pre { font-family: var(--mono); }
   text-shadow: 0 0 30px rgba(122, 155, 109, 0.4);
 }
 
-/* ===== SECTION 5: THE BRIEF ===== */
+/* ===== SECTION 5: THE BRIEF (w013: brightest, like daylight) ===== */
 .s-brief {
   height: 400vh;
   position: relative;
@@ -445,6 +554,7 @@ code, pre { font-family: var(--mono); }
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  background: radial-gradient(ellipse at center, rgba(212, 165, 71, 0.06) 0%, transparent 60%);
 }
 .brief-container {
   max-width: 640px;
@@ -460,10 +570,10 @@ code, pre { font-family: var(--mono); }
 }
 .brief-document {
   border-radius: 8px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   background: var(--bg-panel);
   box-shadow:
-    0 0 120px rgba(212, 165, 71, 0.05),
+    0 0 160px rgba(212, 165, 71, 0.08),
     0 40px 120px rgba(0, 0, 0, 0.5);
   overflow: hidden;
 }
@@ -512,9 +622,9 @@ code, pre { font-family: var(--mono); }
 }
 .brief-risks {
   padding: 14px 18px;
-  border: 1px solid rgba(184, 92, 92, 0.15);
+  border: 1px solid rgba(196, 104, 104, 0.15);
   border-radius: 6px;
-  background: rgba(184, 92, 92, 0.03);
+  background: rgba(196, 104, 104, 0.03);
 }
 .brief-risks h4 {
   font-family: var(--mono);
@@ -571,6 +681,70 @@ code, pre { font-family: var(--mono); }
   color: var(--text-faint);
   margin-top: 4px;
   letter-spacing: 0.04em;
+}
+
+/* ===== SECTION 5.5: THE SARAH MOMENT (w016: end with character) ===== */
+.s-sarah {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 60px 32px;
+}
+.sarah-container {
+  max-width: 400px;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 1s var(--ease-slow), transform 1s var(--ease-slow);
+}
+.sarah-container.visible {
+  opacity: 1;
+  transform: none;
+}
+.sarah-message {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+}
+.sarah-message .slack-name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+.sarah-message .slack-text {
+  font-size: 0.9375rem;
+  color: var(--text);
+  line-height: 1.5;
+  font-style: italic;
+}
+.sarah-typing {
+  display: flex;
+  gap: 4px;
+  margin-top: 12px;
+  padding-left: 4px;
+  opacity: 0;
+  transition: opacity 0.8s var(--ease-slow) 0.6s;
+}
+.sarah-container.visible .sarah-typing {
+  opacity: 1;
+}
+.sarah-typing .typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-faint);
+  animation: typing-pulse 1.4s infinite;
+}
+.sarah-typing .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.sarah-typing .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typing-pulse {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-3px); }
 }
 
 /* ===== SECTION 6: THE CLOSE ===== */
@@ -657,6 +831,11 @@ code, pre { font-family: var(--mono); }
   font-family: var(--sans);
   font-weight: 600;
   transition: all 0.3s;
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .close-copy:hover { background: var(--gold); color: var(--bg); }
 .close-copy.copied { border-color: var(--sage); color: var(--sage); }
@@ -676,17 +855,34 @@ code, pre { font-family: var(--mono); }
   opacity: 1;
   transform: none;
 }
-.close-links a { color: var(--text-dim); }
+.close-links a {
+  color: var(--text-dim);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
 .close-links a:hover { color: var(--text); }
 .close-links .sep { color: var(--border-light); }
 
+/* aria-live region for copy feedback (x024) */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ===== MOBILE ===== */
 @media (max-width: 768px) {
-  .s-question { height: 250vh; }
+  .s-question { height: 180vh; }
   .s-chaos { height: 300vh; }
   .s-command { height: 250vh; }
   .s-sprint { height: 500vh; }
   .s-brief { height: 350vh; }
+  .s-silence { height: 60vh; }
 
   .question-text { font-size: clamp(1.4rem, 6vw, 2rem); }
 
@@ -702,6 +898,8 @@ code, pre { font-family: var(--mono); }
   .brief-stats { gap: 20px; }
 
   .close-cmd { font-size: 0.875rem; padding: 18px 52px 18px 16px; }
+
+  .sticky-nav { padding: 10px 16px; }
 }
 
 @media (max-width: 480px) {
@@ -721,7 +919,8 @@ code, pre { font-family: var(--mono); }
   .s-chaos,
   .s-command,
   .s-sprint,
-  .s-brief {
+  .s-brief,
+  .s-silence {
     height: auto !important;
   }
   .s-question-sticky,
@@ -748,13 +947,91 @@ code, pre { font-family: var(--mono); }
   .brief-stat,
   .close-headline,
   .close-install,
-  .close-links {
+  .close-links,
+  .sarah-container,
+  .sarah-typing,
+  .billboard-frame,
+  .billboard-line-1,
+  .billboard-line-2 {
     opacity: 1 !important;
     transform: none !important;
     filter: none !important;
   }
   .bar-fill { width: var(--target-w) !important; }
   .cursor-blink { animation: none; opacity: 1; }
+  .billboard-frame { display: none !important; }
+}
+
+/* ===== PRINT (x021) ===== */
+@media print {
+  body {
+    background: #fff;
+    color: #111;
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+  .sticky-nav,
+  .billboard-frame,
+  .s-silence,
+  .s-chaos,
+  .command-glow,
+  .cursor-blink,
+  .close-copy,
+  .sarah-typing { display: none !important; }
+
+  .s-question,
+  .s-command,
+  .s-sprint,
+  .s-brief,
+  .s-sarah,
+  .s-close {
+    height: auto !important;
+    min-height: 0 !important;
+    page-break-inside: avoid;
+  }
+  .s-question-sticky,
+  .s-command-sticky,
+  .s-sprint-sticky,
+  .s-brief-sticky {
+    position: relative !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+  .scroll-section * {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+  .question-text .char { opacity: 1 !important; }
+  .bar-fill { width: var(--target-w) !important; }
+
+  a { color: #111; text-decoration: underline; }
+  .tag, .evidence-pill { border: 1px solid #ccc; }
+  .terminal-chrome {
+    border: 1px solid #ccc;
+    background: #f9f9f9;
+    box-shadow: none;
+  }
+  .brief-document {
+    border: 1px solid #ccc;
+    background: #fff;
+    box-shadow: none;
+  }
+  .c-dim, .c-text, .c-white, .c-green, .c-amber, .c-red, .c-gold,
+  .tag-factual, .tag-risk, .tag-estimate, .tag-rec,
+  .command-line, .close-cmd, .prompt {
+    color: #111 !important;
+    text-shadow: none !important;
+  }
+  .brief-section h4, .brief-risks h4 { color: #333 !important; }
+  .brief-section p, .brief-risks p { color: #333 !important; }
+  .stat-number { color: #111 !important; }
+  .stat-label { color: #555 !important; }
+  .close-cmd {
+    border-color: #111 !important;
+    box-shadow: none !important;
+  }
+  .s-close::before { display: none; }
 }
 </style>
 <script type="application/ld+json">
@@ -783,13 +1060,28 @@ code, pre { font-family: var(--mono); }
 <body>
 <a href="#main" class="skip-link">Skip to main content</a>
 
+<!-- Sticky nav (x015) -->
+<nav class="sticky-nav" aria-label="Main navigation">
+  <a href="/" class="sticky-nav-brand">Grainulator</a>
+  <a href="#install" class="sticky-nav-cta">Get started</a>
+</nav>
+
+<!-- aria-live region for copy feedback (x024) -->
+<div id="copy-status" class="sr-only" aria-live="polite" role="status"></div>
+
+<!-- Billboard frame overlay (w014) -->
+<div class="billboard-frame" id="billboard-frame" aria-hidden="true">
+  <div class="billboard-line-1">Your estimate of 6 weeks?</div>
+  <div class="billboard-line-2">The evidence says 12.</div>
+</div>
+
 <main id="main">
 
 <!-- ===== SECTION 1: THE QUESTION ===== -->
 <section class="scroll-section s-question" aria-label="The question">
   <div class="s-question-sticky">
     <div class="question-inner">
-      <div class="question-text" id="question-text" aria-label="Should we migrate to Postgres?"></div>
+      <div class="question-text" id="question-text" role="heading" aria-level="1" aria-label="Should we migrate to Postgres?"></div>
     </div>
   </div>
 </section>
@@ -797,7 +1089,7 @@ code, pre { font-family: var(--mono); }
 <!-- ===== SECTION 2: THE CHAOS ===== -->
 <section class="scroll-section s-chaos" aria-label="The chaos of unstructured research">
   <div class="s-chaos-sticky">
-    <div class="chaos-container" id="chaos-container">
+    <div class="chaos-container" id="chaos-container" role="group" aria-label="Simulated chaos of browser tabs, Slack messages, and unstructured research">
       <!-- Browser tabs -->
       <div class="chaos-tab" style="--tab-transform: translate(-30%, -60%) rotate(-4deg); top: 12%; left: 10%;">postgres vs mysql — reddit</div>
       <div class="chaos-tab" style="--tab-transform: translate(10%, -40%) rotate(2deg); top: 8%; left: 45%;">Stack Overflow: pgbouncer</div>
@@ -833,6 +1125,9 @@ code, pre { font-family: var(--mono); }
   </div>
 </section>
 
+<!-- ===== SECTION 2.5: THE SILENCE (w008) ===== -->
+<div class="s-silence" aria-hidden="true"></div>
+
 <!-- ===== SECTION 3: THE COMMAND ===== -->
 <section class="scroll-section s-command" aria-label="The command that changes everything">
   <div class="s-command-sticky">
@@ -847,12 +1142,12 @@ code, pre { font-family: var(--mono); }
 <!-- ===== SECTION 4: THE SPRINT ===== -->
 <section class="scroll-section s-sprint" aria-label="Watch a research sprint compile">
   <div class="s-sprint-sticky">
-    <div class="sprint-terminal" id="sprint-terminal">
-      <div class="terminal-chrome">
+    <div class="sprint-terminal" id="sprint-terminal" aria-label="Simulated terminal showing a Grainulator research sprint running, gathering claims, challenging estimates, and compiling results">
+      <div class="terminal-chrome" role="img" aria-label="Terminal session: research sprint on Postgres migration with 6 claims compiled, 1 estimate revised from 6 to 12 weeks, all gates passed">
         <div class="terminal-bar">
-          <div class="dot dot-r"></div>
-          <div class="dot dot-y"></div>
-          <div class="dot dot-g"></div>
+          <div class="dot dot-r" aria-hidden="true"></div>
+          <div class="dot dot-y" aria-hidden="true"></div>
+          <div class="dot dot-g" aria-hidden="true"></div>
           <div class="terminal-title" id="terminal-title">wheat init</div>
         </div>
         <div class="terminal-body" id="terminal-body">
@@ -913,16 +1208,16 @@ code, pre { font-family: var(--mono); }
             <span class="c-white">Coverage:</span>
           </div>
           <div class="sprint-line" data-phase="4" data-step="15">
-            <div class="bar-row"><span class="bar-label">query-perf</span><div class="bar-track"><div class="bar-fill high" data-w="92" style="--target-w:92%"></div></div><span class="bar-pct c-green">92%</span></div>
+            <div class="bar-row"><span class="bar-label">query-perf</span><div class="bar-track" role="progressbar" aria-valuenow="92" aria-valuemax="100" aria-label="Query performance coverage"><div class="bar-fill high" data-w="92" style="--target-w:92%"></div></div><span class="bar-pct c-green">92%</span></div>
           </div>
           <div class="sprint-line" data-phase="4" data-step="16">
-            <div class="bar-row"><span class="bar-label">migration</span><div class="bar-track"><div class="bar-fill high" data-w="87" style="--target-w:87%"></div></div><span class="bar-pct c-green">87%</span></div>
+            <div class="bar-row"><span class="bar-label">migration</span><div class="bar-track" role="progressbar" aria-valuenow="87" aria-valuemax="100" aria-label="Migration coverage"><div class="bar-fill high" data-w="87" style="--target-w:87%"></div></div><span class="bar-pct c-green">87%</span></div>
           </div>
           <div class="sprint-line" data-phase="4" data-step="17">
-            <div class="bar-row"><span class="bar-label">ops-risk</span><div class="bar-track"><div class="bar-fill high" data-w="94" style="--target-w:94%"></div></div><span class="bar-pct c-green">94%</span></div>
+            <div class="bar-row"><span class="bar-label">ops-risk</span><div class="bar-track" role="progressbar" aria-valuenow="94" aria-valuemax="100" aria-label="Ops risk coverage"><div class="bar-fill high" data-w="94" style="--target-w:94%"></div></div><span class="bar-pct c-green">94%</span></div>
           </div>
           <div class="sprint-line" data-phase="4" data-step="18">
-            <div class="bar-row"><span class="bar-label">team-skill</span><div class="bar-track"><div class="bar-fill mid" data-w="71" style="--target-w:71%"></div></div><span class="bar-pct c-amber">71%</span></div>
+            <div class="bar-row"><span class="bar-label">team-skill</span><div class="bar-track" role="progressbar" aria-valuenow="71" aria-valuemax="100" aria-label="Team skill coverage"><div class="bar-fill mid" data-w="71" style="--target-w:71%"></div></div><span class="bar-pct c-amber">71%</span></div>
           </div>
 
           <!-- Phase 5: PASS -->
@@ -943,7 +1238,7 @@ code, pre { font-family: var(--mono); }
       <div class="brief-document">
         <div class="brief-header">
           <div class="brief-title">Postgres Migration Brief</div>
-          <div class="brief-meta">6 claims &middot; 4 topics &middot; compiled 2 min ago</div>
+          <div class="brief-meta">6 claims <span aria-hidden="true">&middot;</span> 4 topics <span aria-hidden="true">&middot;</span> compiled 2 min ago</div>
         </div>
         <div class="brief-body">
           <div class="brief-section" data-brief-step="0">
@@ -960,7 +1255,7 @@ code, pre { font-family: var(--mono); }
           </div>
           <div class="brief-section brief-risks" data-brief-step="3">
             <h4>3 risks your team would have missed</h4>
-            <p>No Postgres production experience on team &middot; ORM compatibility gaps with existing queries &middot; Backup strategy requires complete redesign</p>
+            <p>No Postgres production experience on team <span aria-hidden="true">&middot;</span> ORM compatibility gaps with existing queries <span aria-hidden="true">&middot;</span> Backup strategy requires complete redesign</p>
           </div>
         </div>
       </div>
@@ -984,6 +1279,21 @@ code, pre { font-family: var(--mono); }
           <div class="stat-label">total time</div>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 5.5: THE SARAH MOMENT (w016) ===== -->
+<section class="scroll-section s-sarah" aria-label="The protagonist gets the answer">
+  <div class="sarah-container" id="sarah-container">
+    <div class="sarah-message">
+      <div class="slack-name">Sarah</div>
+      <div class="slack-text">&ldquo;Wait &mdash; where did you get these numbers?&rdquo;</div>
+    </div>
+    <div class="sarah-typing" aria-label="Typing indicator">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
     </div>
   </div>
 </section>
@@ -1030,10 +1340,34 @@ code, pre { font-family: var(--mono); }
     var rect = section.getBoundingClientRect();
     var sectionHeight = section.offsetHeight;
     var viewportHeight = window.innerHeight;
-    /* 0 = section top at viewport bottom, 1 = section bottom at viewport top */
     var scrolled = -rect.top;
     var total = sectionHeight - viewportHeight;
     return clamp(scrolled / total, 0, 1);
+  }
+
+  /* ======================================================
+     REDUCED MOTION FIXES (x013, x014)
+     ====================================================== */
+  if (prefersReduced) {
+    /* x013: set counter values immediately */
+    var counters = document.querySelectorAll('[data-count-to]');
+    counters.forEach(function (el) {
+      var target = el.getAttribute('data-count-to');
+      var suffix = el.getAttribute('data-suffix') || '';
+      el.textContent = target + suffix;
+    });
+
+    /* x014: add .visible to close section elements */
+    var closeHeadlineRM = document.getElementById('close-headline');
+    var closeInstallRM = document.getElementById('close-install');
+    var closeLinksRM = document.getElementById('close-links');
+    if (closeHeadlineRM) closeHeadlineRM.classList.add('visible');
+    if (closeInstallRM) closeInstallRM.classList.add('visible');
+    if (closeLinksRM) closeLinksRM.classList.add('visible');
+
+    /* Also make sarah visible */
+    var sarahRM = document.getElementById('sarah-container');
+    if (sarahRM) sarahRM.classList.add('visible');
   }
 
   /* ======================================================
@@ -1055,6 +1389,7 @@ code, pre { font-family: var(--mono); }
     }
     cursorEl = document.createElement('span');
     cursorEl.className = 'cursor-blink';
+    cursorEl.setAttribute('aria-hidden', 'true');
     questionEl.appendChild(cursorEl);
 
     if (prefersReduced) {
@@ -1063,7 +1398,6 @@ code, pre { font-family: var(--mono); }
   })();
 
   function updateQuestion(progress) {
-    /* 0-0.5: type the question. 0.5-0.8: hold. 0.8-1.0: fade out. */
     var typeProgress = clamp(progress / 0.5, 0, 1);
     var visibleCount = Math.floor(typeProgress * questionChars.length);
     for (var i = 0; i < questionChars.length; i++) {
@@ -1074,12 +1408,10 @@ code, pre { font-family: var(--mono); }
       }
     }
 
-    /* Fade out */
     var fadeProgress = clamp((progress - 0.7) / 0.3, 0, 1);
     var stickyEl = questionEl.parentElement;
     stickyEl.style.opacity = 1 - fadeProgress;
 
-    /* Show cursor only while typing */
     if (cursorEl) {
       cursorEl.style.opacity = (progress < 0.5 && progress > 0.02) ? '1' : '0';
     }
@@ -1087,6 +1419,7 @@ code, pre { font-family: var(--mono); }
 
   /* ======================================================
      SECTION 2: THE CHAOS — elements appear then dissolve
+     (w009: dissolve pushed to 80%)
      ====================================================== */
   var chaosContainer = document.getElementById('chaos-container');
   var chaosTabs = chaosContainer.querySelectorAll('.chaos-tab');
@@ -1096,8 +1429,8 @@ code, pre { font-family: var(--mono); }
   chaosSlacks.forEach(function (el, i) { chaosElements.push({ el: el, threshold: 0.15 + i * 0.05 }); });
 
   function updateChaos(progress) {
-    /* 0-0.5: elements appear staggered. 0.5-0.7: hold with slight drift. 0.7-1.0: dissolve. */
-    var dissolveProgress = clamp((progress - 0.65) / 0.35, 0, 1);
+    /* w009: dissolve starts at 80% instead of 65% */
+    var dissolveProgress = clamp((progress - 0.80) / 0.20, 0, 1);
 
     if (dissolveProgress > 0) {
       chaosContainer.classList.add('dissolving');
@@ -1121,14 +1454,12 @@ code, pre { font-family: var(--mono); }
   var commandInner = document.getElementById('command-inner');
 
   function updateCommand(progress) {
-    /* 0.15-0.5: command fades in. Glow builds. */
     if (progress > 0.15 && progress < 0.85) {
       commandInner.classList.add('active');
     } else {
       commandInner.classList.remove('active');
     }
 
-    /* Glow intensity scales with scroll */
     var glowProgress = clamp((progress - 0.2) / 0.5, 0, 1);
     var glow = commandInner.querySelector('.command-glow');
     if (glow && commandInner.classList.contains('active')) {
@@ -1139,6 +1470,7 @@ code, pre { font-family: var(--mono); }
 
   /* ======================================================
      SECTION 4: THE SPRINT — scroll-driven terminal
+     + BILLBOARD FRAME (w014)
      ====================================================== */
   var sprintTerminal = document.getElementById('sprint-terminal');
   var terminalTitle = document.getElementById('terminal-title');
@@ -1147,6 +1479,8 @@ code, pre { font-family: var(--mono); }
   var barsFilled = false;
   var claimR002 = document.getElementById('claim-r002');
   var r002Struck = false;
+  var billboardFrame = document.getElementById('billboard-frame');
+  var billboardActive = false;
 
   var phaseNames = {
     1: 'researching',
@@ -1157,7 +1491,6 @@ code, pre { font-family: var(--mono); }
   };
 
   function updateSprint(progress) {
-    /* 0-0.08: terminal appears. 0.08-0.95: steps reveal. */
     if (progress > 0.04) {
       sprintTerminal.classList.add('visible');
     } else {
@@ -1179,7 +1512,6 @@ code, pre { font-family: var(--mono); }
       }
     });
 
-    /* Update terminal title */
     if (terminalTitle) {
       terminalTitle.textContent = phaseNames[currentPhase] || 'wheat';
     }
@@ -1193,6 +1525,22 @@ code, pre { font-family: var(--mono); }
       claimR002.style.textDecoration = 'none';
       claimR002.style.opacity = '';
       r002Struck = false;
+    }
+
+    /* BILLBOARD FRAME (w014): after challenge (step 10), show full-viewport moment */
+    /* Billboard activates in a window after the challenge, holds for ~200vh worth of scroll */
+    var billboardStart = 0.08 + (10.5 / totalSteps) * 0.82; /* just after step 10 */
+    var billboardEnd = billboardStart + 0.15; /* hold for ~15% of sprint section = ~90vh */
+    var inBillboard = progress > billboardStart && progress < billboardEnd;
+
+    if (inBillboard && !billboardActive) {
+      billboardActive = true;
+      billboardFrame.classList.add('active');
+      sprintTerminal.classList.add('billboard-active');
+    } else if (!inBillboard && billboardActive) {
+      billboardActive = false;
+      billboardFrame.classList.remove('active');
+      sprintTerminal.classList.remove('billboard-active');
     }
 
     /* Fill bars when they appear */
@@ -1225,7 +1573,6 @@ code, pre { font-family: var(--mono); }
     function tick(now) {
       var elapsed = now - start;
       var t = clamp(elapsed / duration, 0, 1);
-      /* Ease out */
       t = 1 - Math.pow(1 - t, 3);
       var current = Math.round(t * target);
       el.textContent = current + suffix;
@@ -1235,35 +1582,52 @@ code, pre { font-family: var(--mono); }
   }
 
   function updateBrief(progress) {
-    /* 0-0.1: document fades in. 0.1-0.8: sections reveal. */
     if (progress > 0.05) {
       briefContainer.classList.add('visible');
     } else {
       briefContainer.classList.remove('visible');
     }
 
-    var sectionProgress = clamp((progress - 0.1) / 0.7, 0, 1);
+    var sectionProg = clamp((progress - 0.1) / 0.7, 0, 1);
     var totalSections = briefSections.length;
 
     briefSections.forEach(function (section) {
       var step = parseInt(section.getAttribute('data-brief-step'));
       var threshold = step / totalSections;
-      if (sectionProgress > threshold) {
+      if (sectionProg > threshold) {
         section.classList.add('visible');
       } else {
         section.classList.remove('visible');
       }
     });
 
-    /* Start counters when stats become visible */
-    if (sectionProgress > 0.5 && !countersStarted) {
+    if (sectionProg > 0.5 && !countersStarted) {
       countersStarted = true;
-      var counters = document.querySelectorAll('[data-count-to]');
-      counters.forEach(function (c, i) {
-        setTimeout(function () { animateCounter(c); }, i * 150);
-      });
+      if (!prefersReduced) {
+        var ctrs = document.querySelectorAll('[data-count-to]');
+        ctrs.forEach(function (c, i) {
+          setTimeout(function () { animateCounter(c); }, i * 150);
+        });
+      }
     }
   }
+
+  /* ======================================================
+     SECTION 5.5: SARAH MOMENT — reveal on intersect
+     ====================================================== */
+  var sarahContainer = document.getElementById('sarah-container');
+  var sarahRevealed = false;
+
+  var sarahObs = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting && !sarahRevealed) {
+        sarahRevealed = true;
+        sarahContainer.classList.add('visible');
+        sarahObs.disconnect();
+      }
+    });
+  }, { threshold: 0.3 });
+  sarahObs.observe(document.querySelector('.s-sarah'));
 
   /* ======================================================
      SECTION 6: THE CLOSE — simple reveal
@@ -1318,8 +1682,10 @@ code, pre { font-family: var(--mono); }
   onScroll();
 
   /* ======================================================
-     CLIPBOARD
+     CLIPBOARD (x024: aria-live feedback)
      ====================================================== */
+  var copyStatus = document.getElementById('copy-status');
+
   window.copyCmd = function (el) {
     var text = '/plugin install grainulator';
     var btn = el.querySelector('.close-copy');
@@ -1333,7 +1699,11 @@ code, pre { font-family: var(--mono); }
       document.body.removeChild(ta);
     }
     if (btn) { btn.textContent = 'Copied'; btn.classList.add('copied'); }
-    setTimeout(function () { if (btn) { btn.textContent = 'Copy'; btn.classList.remove('copied'); } }, 1800);
+    if (copyStatus) { copyStatus.textContent = 'Command copied to clipboard'; }
+    setTimeout(function () {
+      if (btn) { btn.textContent = 'Copy'; btn.classList.remove('copied'); }
+      if (copyStatus) { copyStatus.textContent = ''; }
+    }, 1800);
   };
 
   /* Keyboard support */
