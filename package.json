@@ -7,7 +7,7 @@
   "homepage": "https://grainulator.app",
   "repository": {
     "type": "git",
-    "url": "https://github.com/grainulation/grainulator.git"
+    "url": "git+https://github.com/grainulation/grainulator.git"
   },
   "keywords": [
     "claude-code",
@@ -25,6 +25,10 @@
     "hooks/",
     "lib/"
   ],
+  "author": "grainulation contributors",
+  "bugs": {
+    "url": "https://github.com/grainulation/grainulator/issues"
+  },
   "engines": {
     "node": ">=20"
   }

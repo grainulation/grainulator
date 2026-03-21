@@ -1,695 +1,1872 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="robots" content="index, follow">
-<title>Grainulator — Research Sprints for Everyone</title>
-<meta name="description" content="Type a question, get a compiled brief in 5 minutes. Grainulator is a research sprint orchestrator that runs inside Claude Code. Open source, $6-12 per sprint.">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Grainulator">
-<meta property="og:locale" content="en_US">
-<meta property="og:title" content="Grainulator — Research Sprints for Everyone">
-<meta property="og:description" content="Type a question, get a compiled brief in 5 minutes. Research sprint orchestrator for Claude Code. Open source, $6-12 per sprint.">
-<meta property="og:url" content="https://grainulator.app/">
-<meta property="og:image" content="https://grainulator.app/og-image.png">
-<meta property="og:image:type" content="image/png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Grainulator — Research Sprints for Everyone">
-<meta name="twitter:description" content="Type a question, get a compiled brief in 5 minutes. Research sprint orchestrator for Claude Code.">
-<meta name="twitter:image" content="https://grainulator.app/og-image.png">
-<link rel="canonical" href="https://grainulator.app/">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%2360a5fa'/><stop offset='1' stop-color='%23a78bfa'/></linearGradient></defs><text x='32' y='33' text-anchor='middle' dominant-baseline='central' fill='url(%23g)' font-family='-apple-system,system-ui,sans-serif' font-size='42' font-weight='800'>G</text></svg>">
-<meta name="theme-color" content="#60a5fa">
-<style>
-:root {
-  --bg: #0a0e1a;
-  --bg-2: #111827;
-  --surface: rgba(255,255,255,0.03);
-  --surface-hover: rgba(255,255,255,0.06);
-  --border: rgba(255,255,255,0.07);
-  --border-light: rgba(255,255,255,0.12);
-  --accent: #60a5fa;
-  --accent-dim: rgba(96,165,250,0.12);
-  --accent-glow: rgba(96,165,250,0.06);
-  --green: #34d399;
-  --green-dim: rgba(52,211,153,0.1);
-  --red: #f87171;
-  --red-dim: rgba(248,113,113,0.1);
-  --blue: #60a5fa;
-  --blue-dim: rgba(96,165,250,0.1);
-  --purple: #a78bfa;
-  --purple-dim: rgba(167,139,250,0.1);
-  --amber: #fbbf24;
-  --amber-dim: rgba(251,191,36,0.12);
-  /* Text colors aligned with grainulation-tokens.css (--fg/#e2e8f0, --fg2/#94a3b8, --fg3/#64748b).
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="index, follow" />
+    <title>Grainulator — Research Sprints for Everyone</title>
+    <meta
+      name="description"
+      content="Type a question, get a compiled brief in 5 minutes. Grainulator is a research sprint orchestrator that runs inside Claude Code. Open source, $6-12 per sprint."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Grainulator" />
+    <meta property="og:locale" content="en_US" />
+    <meta
+      property="og:title"
+      content="Grainulator — Research Sprints for Everyone"
+    />
+    <meta
+      property="og:description"
+      content="Type a question, get a compiled brief in 5 minutes. Research sprint orchestrator for Claude Code. Open source, $6-12 per sprint."
+    />
+    <meta property="og:url" content="https://grainulator.app/" />
+    <meta property="og:image" content="https://grainulator.app/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Grainulator — Research Sprints for Everyone"
+    />
+    <meta
+      name="twitter:description"
+      content="Type a question, get a compiled brief in 5 minutes. Research sprint orchestrator for Claude Code."
+    />
+    <meta name="twitter:image" content="https://grainulator.app/og-image.png" />
+    <link rel="canonical" href="https://grainulator.app/" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%2360a5fa'/><stop offset='1' stop-color='%23a78bfa'/></linearGradient></defs><text x='32' y='33' text-anchor='middle' dominant-baseline='central' fill='url(%23g)' font-family='-apple-system,system-ui,sans-serif' font-size='42' font-weight='800'>G</text></svg>"
+    />
+    <meta name="theme-color" content="#60a5fa" />
+    <style>
+      :root {
+        --bg: #0a0e1a;
+        --bg-2: #111827;
+        --surface: rgba(255, 255, 255, 0.03);
+        --surface-hover: rgba(255, 255, 255, 0.06);
+        --border: rgba(255, 255, 255, 0.07);
+        --border-light: rgba(255, 255, 255, 0.12);
+        --accent: #60a5fa;
+        --accent-dim: rgba(96, 165, 250, 0.12);
+        --accent-glow: rgba(96, 165, 250, 0.06);
+        --green: #34d399;
+        --green-dim: rgba(52, 211, 153, 0.1);
+        --red: #f87171;
+        --red-dim: rgba(248, 113, 113, 0.1);
+        --blue: #60a5fa;
+        --blue-dim: rgba(96, 165, 250, 0.1);
+        --purple: #a78bfa;
+        --purple-dim: rgba(167, 139, 250, 0.1);
+        --amber: #fbbf24;
+        --amber-dim: rgba(251, 191, 36, 0.12);
+        /* Text colors aligned with grainulation-tokens.css (--fg/#e2e8f0, --fg2/#94a3b8, --fg3/#64748b).
      Using slightly lighter values for marketing page readability on large text. */
-  --text: #e2e8f0;
-  --text-2: #94a3b8;
-  --text-3: #8b95a5;
-  --mono: 'SF Mono','Fira Code','Cascadia Code','Consolas',monospace;
-  --sans: -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
-  --max-w: 1080px;
-  --ease: cubic-bezier(.22,1,.36,1);
-}
-*{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-snap-type:y proximity}
-body{font-family:var(--sans);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;line-height:1.6;overflow-x:hidden}
-a{color:var(--accent);text-decoration:none}
-a:hover{text-decoration:underline}
-code,pre{font-family:var(--mono)}
+        --text: #e2e8f0;
+        --text-2: #94a3b8;
+        --text-3: #8b95a5;
+        --mono: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+        --sans:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+        --max-w: 1080px;
+        --ease: cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+        scroll-snap-type: y proximity;
+      }
+      body {
+        font-family: var(--sans);
+        background: var(--bg);
+        color: var(--text);
+        -webkit-font-smoothing: antialiased;
+        line-height: 1.6;
+        overflow-x: hidden;
+      }
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      code,
+      pre {
+        font-family: var(--mono);
+      }
 
-/* Ambient background */
-.bg-ambient{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;contain:paint}
-.bg-ambient .orb{position:absolute;border-radius:50%;filter:blur(120px);opacity:.04;animation:drift 28s ease-in-out infinite alternate}
-.bg-ambient .orb:nth-child(1){width:600px;height:600px;background:var(--accent);top:-10%;left:20%}
-.bg-ambient .orb:nth-child(2){width:400px;height:400px;background:var(--purple);top:50%;right:-5%;animation-delay:-10s}
-.bg-ambient .orb:nth-child(3){width:350px;height:350px;background:var(--green);bottom:5%;left:-5%;animation-delay:-18s}
-@keyframes drift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(20px,-15px) scale(1.03)}100%{transform:translate(-12px,10px) scale(.97)}}
+      /* Ambient background */
+      .bg-ambient {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+        contain: paint;
+      }
+      .bg-ambient .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(120px);
+        opacity: 0.04;
+        animation: drift 28s ease-in-out infinite alternate;
+      }
+      .bg-ambient .orb:nth-child(1) {
+        width: 600px;
+        height: 600px;
+        background: var(--accent);
+        top: -10%;
+        left: 20%;
+      }
+      .bg-ambient .orb:nth-child(2) {
+        width: 400px;
+        height: 400px;
+        background: var(--purple);
+        top: 50%;
+        right: -5%;
+        animation-delay: -10s;
+      }
+      .bg-ambient .orb:nth-child(3) {
+        width: 350px;
+        height: 350px;
+        background: var(--green);
+        bottom: 5%;
+        left: -5%;
+        animation-delay: -18s;
+      }
+      @keyframes drift {
+        0% {
+          transform: translate(0, 0) scale(1);
+        }
+        50% {
+          transform: translate(20px, -15px) scale(1.03);
+        }
+        100% {
+          transform: translate(-12px, 10px) scale(0.97);
+        }
+      }
 
-.page{position:relative;z-index:2}
-.container{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+      .page {
+        position: relative;
+        z-index: 2;
+      }
+      .container {
+        max-width: var(--max-w);
+        margin: 0 auto;
+        padding: 0 24px;
+      }
 
-/* Reveal animations */
-.rv{opacity:0;transform:translateY(24px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
-.rv.vis{opacity:1;transform:none}
-.rv-d1{transition-delay:.08s}.rv-d2{transition-delay:.16s}.rv-d3{transition-delay:.24s}.rv-d4{transition-delay:.32s}
+      /* Reveal animations */
+      .rv {
+        opacity: 0;
+        transform: translateY(24px);
+        transition:
+          opacity 0.6s var(--ease),
+          transform 0.6s var(--ease);
+      }
+      .rv.vis {
+        opacity: 1;
+        transform: none;
+      }
+      .rv-d1 {
+        transition-delay: 0.08s;
+      }
+      .rv-d2 {
+        transition-delay: 0.16s;
+      }
+      .rv-d3 {
+        transition-delay: 0.24s;
+      }
+      .rv-d4 {
+        transition-delay: 0.32s;
+      }
 
-.hf{opacity:0;transform:translateY(16px);animation:hIn .65s var(--ease) forwards}
-.hf1{animation-delay:.05s}.hf2{animation-delay:.15s}.hf3{animation-delay:.25s}.hf4{animation-delay:.4s}.hf5{animation-delay:.55s}
-@keyframes hIn{to{opacity:1;transform:none}}
+      .hf {
+        opacity: 0;
+        transform: translateY(16px);
+        animation: hIn 0.65s var(--ease) forwards;
+      }
+      .hf1 {
+        animation-delay: 0.05s;
+      }
+      .hf2 {
+        animation-delay: 0.15s;
+      }
+      .hf3 {
+        animation-delay: 0.25s;
+      }
+      .hf4 {
+        animation-delay: 0.4s;
+      }
+      .hf5 {
+        animation-delay: 0.55s;
+      }
+      @keyframes hIn {
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
 
-/* Nav */
-nav{position:sticky;top:0;z-index:100;background:rgba(10,14,26,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:14px 0}
-nav .container{display:flex;align-items:center;justify-content:space-between}
-.nav-logo{font-weight:800;font-size:1.5rem;letter-spacing:-.02em;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:8px}
-.nav-logo .logo-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff}
-.nav-links{display:flex;gap:24px;font-size:.875rem;color:var(--text-2);align-items:center}
-.nav-links a{color:var(--text-2);transition:color .2s;min-height:44px;display:inline-flex;align-items:center}
-.nav-links a:hover{color:var(--text);text-decoration:none}
+      /* Nav */
+      nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(10, 14, 26, 0.85);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--border);
+        padding: 14px 0;
+      }
+      nav .container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .nav-logo {
+        font-weight: 800;
+        font-size: 1.5rem;
+        letter-spacing: -0.02em;
+        color: var(--text);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .nav-logo .logo-mark {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--accent), var(--purple));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: 800;
+        color: #fff;
+      }
+      .nav-links {
+        display: flex;
+        gap: 24px;
+        font-size: 0.875rem;
+        color: var(--text-2);
+        align-items: center;
+      }
+      .nav-links a {
+        color: var(--text-2);
+        transition: color 0.2s;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+      }
+      .nav-links a:hover {
+        color: var(--text);
+        text-decoration: none;
+      }
 
-/* Buttons */
-.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:10px;font-weight:600;font-size:.9375rem;transition:all .2s;cursor:pointer;border:none}
-.btn svg{transition:transform 0.2s ease}
-.btn:hover svg{transform:translateX(3px)}
-.btn-primary{background:linear-gradient(135deg,var(--accent),var(--purple));color:#fff}.btn-primary:hover{opacity:.88;text-decoration:none;transform:translateY(-1px)}
-.btn-ghost{border:1px solid var(--border-light);color:var(--text);background:transparent}.btn-ghost:hover{background:var(--surface-hover);text-decoration:none;transform:translateY(-1px)}
+      /* Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 28px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        transition: all 0.2s;
+        cursor: pointer;
+        border: none;
+      }
+      .btn svg {
+        transition: transform 0.2s ease;
+      }
+      .btn:hover svg {
+        transform: translateX(3px);
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, var(--accent), var(--purple));
+        color: #fff;
+      }
+      .btn-primary:hover {
+        opacity: 0.88;
+        text-decoration: none;
+        transform: translateY(-1px);
+      }
+      .btn-ghost {
+        border: 1px solid var(--border-light);
+        color: var(--text);
+        background: transparent;
+      }
+      .btn-ghost:hover {
+        background: var(--surface-hover);
+        text-decoration: none;
+        transform: translateY(-1px);
+      }
 
-/* Section styling */
-.section-label{font-size:.8125rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:12px;font-weight:600}
-.section-title{font-size:clamp(1.6rem,3.5vw,2.2rem);font-weight:800;letter-spacing:-.03em;margin-bottom:16px;line-height:1.15}
-.section-sub{color:var(--text-2);font-size:1.05rem;max-width:620px;margin-bottom:48px;line-height:1.55}
-.sep{border:none;border-top:1px solid var(--border);margin:0}
+      /* Section styling */
+      .section-label {
+        font-size: 0.8125rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--accent);
+        margin-bottom: 12px;
+        font-weight: 600;
+      }
+      .section-title {
+        font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        margin-bottom: 16px;
+        line-height: 1.15;
+      }
+      .section-sub {
+        color: var(--text-2);
+        font-size: 1.05rem;
+        max-width: 620px;
+        margin-bottom: 48px;
+        line-height: 1.55;
+      }
+      .sep {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 0;
+      }
 
-/* ===== HERO ===== */
-.hero{padding:100px 0 80px;text-align:center;scroll-snap-align:start}
-.hero-badge{display:inline-block;padding:5px 14px;border:1px solid var(--border-light);border-radius:100px;font-size:.75rem;color:var(--text-2);margin-bottom:24px;letter-spacing:.04em;text-transform:uppercase}
-.hero h1{font-size:clamp(2.4rem,5.5vw,3.8rem);font-weight:800;letter-spacing:-.035em;line-height:1.1;margin-bottom:20px}
-.hero h1 em{font-style:normal;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero p.hero-sub{font-size:clamp(1.05rem,2vw,1.25rem);color:var(--text-2);max-width:580px;margin:0 auto 40px;line-height:1.55}
+      /* ===== HERO ===== */
+      .hero {
+        padding: 100px 0 80px;
+        text-align: center;
+        scroll-snap-align: start;
+      }
+      .hero-badge {
+        display: inline-block;
+        padding: 5px 14px;
+        border: 1px solid var(--border-light);
+        border-radius: 100px;
+        font-size: 0.75rem;
+        color: var(--text-2);
+        margin-bottom: 24px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .hero h1 {
+        font-size: clamp(2.4rem, 5.5vw, 3.8rem);
+        font-weight: 800;
+        letter-spacing: -0.035em;
+        line-height: 1.1;
+        margin-bottom: 20px;
+      }
+      .hero h1 em {
+        font-style: normal;
+        background: linear-gradient(135deg, var(--accent), var(--purple));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .hero p.hero-sub {
+        font-size: clamp(1.05rem, 2vw, 1.25rem);
+        color: var(--text-2);
+        max-width: 580px;
+        margin: 0 auto 40px;
+        line-height: 1.55;
+      }
 
-/* Hero install command */
-.hero-install{max-width:420px;margin:0 auto 32px}
-.install-cmd{position:relative;background:var(--bg-2);border:1px solid var(--border-light);border-radius:12px;padding:16px 60px 16px 20px;font-family:var(--mono);font-size:.9375rem;color:var(--green);text-align:left;cursor:pointer;transition:border-color .2s}
-.install-cmd:hover{border-color:var(--accent)}
-.install-cmd .prompt{color:var(--text-3)}
-.install-copy{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text-3);border-radius:6px;padding:6px 12px;font-size:.75rem;cursor:pointer;font-family:var(--sans);transition:all .15s}
-.install-copy:hover{color:var(--text);border-color:var(--border-light)}
-.install-copy.copied{color:var(--green);border-color:var(--green)}
+      /* Hero install command */
+      .hero-install {
+        max-width: 420px;
+        margin: 0 auto 32px;
+      }
+      .install-cmd {
+        position: relative;
+        background: var(--bg-2);
+        border: 1px solid var(--border-light);
+        border-radius: 12px;
+        padding: 16px 60px 16px 20px;
+        font-family: var(--mono);
+        font-size: 0.9375rem;
+        color: var(--green);
+        text-align: left;
+        cursor: pointer;
+        transition: border-color 0.2s;
+      }
+      .install-cmd:hover {
+        border-color: var(--accent);
+      }
+      .install-cmd .prompt {
+        color: var(--text-3);
+      }
+      .install-copy {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--border);
+        color: var(--text-3);
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-size: 0.75rem;
+        cursor: pointer;
+        font-family: var(--sans);
+        transition: all 0.15s;
+      }
+      .install-copy:hover {
+        color: var(--text);
+        border-color: var(--border-light);
+      }
+      .install-copy.copied {
+        color: var(--green);
+        border-color: var(--green);
+      }
 
-/* Hero flow visual */
-.hero-flow{display:flex;align-items:center;justify-content:center;gap:0;margin-top:48px;flex-wrap:wrap}
-.hero-flow-step{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 20px}
-.hero-flow-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px}
-.hero-flow-label{font-size:.75rem;color:var(--text-2);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
-.hero-flow-arrow{color:var(--text-3);display:flex;align-items:center;height:48px}
+      /* Hero flow visual */
+      .hero-flow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+        margin-top: 48px;
+        flex-wrap: wrap;
+      }
+      .hero-flow-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 12px 20px;
+      }
+      .hero-flow-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+      }
+      .hero-flow-label {
+        font-size: 0.75rem;
+        color: var(--text-2);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .hero-flow-arrow {
+        color: var(--text-3);
+        display: flex;
+        align-items: center;
+        height: 48px;
+      }
 
-/* ===== HOW IT WORKS ===== */
-.how{padding:80px 0;scroll-snap-align:start}
-.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;max-width:900px;margin:0 auto}
-.how-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:32px 24px;text-align:center;transition:border-color .2s}
-.how-card:hover{border-color:rgba(96,165,250,.25)}
-.how-num{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;font-weight:700;font-size:1rem;margin-bottom:16px}
-.how-card h3{font-size:1.05rem;font-weight:700;margin-bottom:8px}
-.how-card p{font-size:.875rem;color:var(--text-2);line-height:1.55}
-.how-tagline{text-align:center;margin-top:32px;font-size:1rem;color:var(--text-2);font-style:italic}
+      /* ===== HOW IT WORKS ===== */
+      .how {
+        padding: 80px 0;
+        scroll-snap-align: start;
+      }
+      .how-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      .how-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 32px 24px;
+        text-align: center;
+        transition: border-color 0.2s;
+      }
+      .how-card:hover {
+        border-color: rgba(96, 165, 250, 0.25);
+      }
+      .how-num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 1rem;
+        margin-bottom: 16px;
+      }
+      .how-card h3 {
+        font-size: 1.05rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+      .how-card p {
+        font-size: 0.875rem;
+        color: var(--text-2);
+        line-height: 1.55;
+      }
+      .how-tagline {
+        text-align: center;
+        margin-top: 32px;
+        font-size: 1rem;
+        color: var(--text-2);
+        font-style: italic;
+      }
 
-/* ===== DEMO ===== */
-.demo{padding:80px 0;scroll-snap-align:start}
-.demo-card{max-width:640px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden}
-.demo-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.demo-header h3{font-size:.9375rem;font-weight:700}
-.demo-badge{font-size:.6875rem;padding:4px 10px;border-radius:6px;background:var(--green-dim);color:var(--green);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
-.demo-body{padding:24px}
-.demo-question{font-size:1rem;color:var(--text);margin-bottom:20px;padding:12px 16px;background:var(--bg);border-radius:8px;border-left:3px solid var(--accent)}
-.demo-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.demo-stat{text-align:center;padding:12px 8px;background:var(--bg);border-radius:8px}
-.demo-stat .num{font-size:1.5rem;font-weight:800;line-height:1}
-.demo-stat .label{font-size:.6875rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;margin-top:4px}
-.demo-topics{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
-.demo-topic{font-size:.75rem;padding:4px 10px;border-radius:6px;border:1px solid var(--border);color:var(--text-2)}
-.demo-footer{font-size:.75rem;color:var(--text-3);text-align:right}
+      /* ===== DEMO ===== */
+      .demo {
+        padding: 80px 0;
+        scroll-snap-align: start;
+      }
+      .demo-card {
+        max-width: 640px;
+        margin: 0 auto;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        overflow: hidden;
+      }
+      .demo-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .demo-header h3 {
+        font-size: 0.9375rem;
+        font-weight: 700;
+      }
+      .demo-badge {
+        font-size: 0.6875rem;
+        padding: 4px 10px;
+        border-radius: 6px;
+        background: var(--green-dim);
+        color: var(--green);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .demo-body {
+        padding: 24px;
+      }
+      .demo-question {
+        font-size: 1rem;
+        color: var(--text);
+        margin-bottom: 20px;
+        padding: 12px 16px;
+        background: var(--bg);
+        border-radius: 8px;
+        border-left: 3px solid var(--accent);
+      }
+      .demo-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+      .demo-stat {
+        text-align: center;
+        padding: 12px 8px;
+        background: var(--bg);
+        border-radius: 8px;
+      }
+      .demo-stat .num {
+        font-size: 1.5rem;
+        font-weight: 800;
+        line-height: 1;
+      }
+      .demo-stat .label {
+        font-size: 0.6875rem;
+        color: var(--text-3);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-top: 4px;
+      }
+      .demo-topics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 16px;
+      }
+      .demo-topic {
+        font-size: 0.75rem;
+        padding: 4px 10px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        color: var(--text-2);
+      }
+      .demo-footer {
+        font-size: 0.75rem;
+        color: var(--text-3);
+        text-align: right;
+      }
 
-/* ===== SURFACES ===== */
-.surfaces{padding:80px 0;scroll-snap-align:start}
-.surfaces-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;max-width:720px;margin:0 auto}
-.surface-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 16px;text-align:center;transition:border-color .2s}
-.surface-card:hover{border-color:rgba(96,165,250,.25)}
-.surface-card.primary{border-color:var(--accent);background:var(--accent-dim)}
-.surface-icon{font-size:1.5rem;margin-bottom:8px}
-.surface-card h3{font-size:.875rem;font-weight:700;margin-bottom:2px}
-.surface-card p{font-size:.75rem;color:var(--text-3)}
-.coming-soon{font-size:.625rem;padding:2px 6px;border-radius:4px;background:var(--amber-dim);color:var(--amber);font-weight:600;text-transform:uppercase;letter-spacing:.04em;vertical-align:middle;margin-left:4px}
+      /* ===== SURFACES ===== */
+      .surfaces {
+        padding: 80px 0;
+        scroll-snap-align: start;
+      }
+      .surfaces-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        max-width: 720px;
+        margin: 0 auto;
+      }
+      .surface-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px 16px;
+        text-align: center;
+        transition: border-color 0.2s;
+      }
+      .surface-card:hover {
+        border-color: rgba(96, 165, 250, 0.25);
+      }
+      .surface-card.primary {
+        border-color: var(--accent);
+        background: var(--accent-dim);
+      }
+      .surface-icon {
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+      }
+      .surface-card h3 {
+        font-size: 0.875rem;
+        font-weight: 700;
+        margin-bottom: 2px;
+      }
+      .surface-card p {
+        font-size: 0.75rem;
+        color: var(--text-3);
+      }
+      .coming-soon {
+        font-size: 0.625rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: var(--amber-dim);
+        color: var(--amber);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        vertical-align: middle;
+        margin-left: 4px;
+      }
 
-/* ===== VOCABULARY ===== */
-.vocab{padding:80px 0;scroll-snap-align:start}
-.vocab-box{max-width:700px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:40px 36px}
-.vocab-quote{font-size:1.1rem;color:var(--text-2);margin-bottom:32px;text-align:center;line-height:1.55}
-.vocab-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.vocab-col{text-align:center}
-.vocab-role{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:12px;font-weight:600}
-.vocab-items{display:flex;flex-direction:column;gap:6px}
-.vocab-item{font-size:.8125rem;padding:6px 12px;border-radius:6px;background:var(--bg);border:1px solid var(--border);color:var(--text-2)}
+      /* ===== VOCABULARY ===== */
+      .vocab {
+        padding: 80px 0;
+        scroll-snap-align: start;
+      }
+      .vocab-box {
+        max-width: 700px;
+        margin: 0 auto;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 40px 36px;
+      }
+      .vocab-quote {
+        font-size: 1.1rem;
+        color: var(--text-2);
+        margin-bottom: 32px;
+        text-align: center;
+        line-height: 1.55;
+      }
+      .vocab-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+      .vocab-col {
+        text-align: center;
+      }
+      .vocab-role {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-3);
+        margin-bottom: 12px;
+        font-weight: 600;
+      }
+      .vocab-items {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .vocab-item {
+        font-size: 0.8125rem;
+        padding: 6px 12px;
+        border-radius: 6px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        color: var(--text-2);
+      }
 
-/* ===== ENTERPRISE ===== */
-.enterprise{padding:80px 0;scroll-snap-align:start}
-.ent-hero{text-align:center;margin-bottom:48px}
-.ent-hero .big-stat{font-size:clamp(2rem,4vw,3rem);font-weight:800;margin-bottom:8px}
-.ent-hero .big-stat .old{color:var(--text-3);text-decoration:line-through;opacity:.6}
-.ent-hero .big-stat .new{color:var(--green)}
-.ent-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;max-width:900px;margin:0 auto}
-.ent-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px 24px;transition:border-color .2s}
-.ent-card:hover{border-color:rgba(96,165,250,.25)}
-.ent-card h3{font-size:.9375rem;font-weight:700;margin-bottom:6px}
-.ent-card p{font-size:.8125rem;color:var(--text-2);line-height:1.6}
+      /* ===== ENTERPRISE ===== */
+      .enterprise {
+        padding: 80px 0;
+        scroll-snap-align: start;
+      }
+      .ent-hero {
+        text-align: center;
+        margin-bottom: 48px;
+      }
+      .ent-hero .big-stat {
+        font-size: clamp(2rem, 4vw, 3rem);
+        font-weight: 800;
+        margin-bottom: 8px;
+      }
+      .ent-hero .big-stat .old {
+        color: var(--text-3);
+        text-decoration: line-through;
+        opacity: 0.6;
+      }
+      .ent-hero .big-stat .new {
+        color: var(--green);
+      }
+      .ent-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      .ent-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 28px 24px;
+        transition: border-color 0.2s;
+      }
+      .ent-card:hover {
+        border-color: rgba(96, 165, 250, 0.25);
+      }
+      .ent-card h3 {
+        font-size: 0.9375rem;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+      .ent-card p {
+        font-size: 0.8125rem;
+        color: var(--text-2);
+        line-height: 1.6;
+      }
 
-/* ===== OPEN SOURCE ===== */
-.oss{padding:80px 0;scroll-snap-align:start}
-.oss-box{max-width:720px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:40px 36px;text-align:center}
-.oss-box h2{font-size:1.3rem;font-weight:700;margin-bottom:16px}
-.oss-box p{color:var(--text-2);font-size:1rem;line-height:1.65;margin-bottom:16px}
-.oss-stats{display:flex;justify-content:center;gap:32px;margin:24px 0}
-.oss-stat{text-align:center}
-.oss-stat .num{font-size:1.5rem;font-weight:800;color:var(--text)}
-.oss-stat .label{font-size:.6875rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em}
+      /* ===== OPEN SOURCE ===== */
+      .oss {
+        padding: 80px 0;
+        scroll-snap-align: start;
+      }
+      .oss-box {
+        max-width: 720px;
+        margin: 0 auto;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 40px 36px;
+        text-align: center;
+      }
+      .oss-box h2 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 16px;
+      }
+      .oss-box p {
+        color: var(--text-2);
+        font-size: 1rem;
+        line-height: 1.65;
+        margin-bottom: 16px;
+      }
+      .oss-stats {
+        display: flex;
+        justify-content: center;
+        gap: 32px;
+        margin: 24px 0;
+      }
+      .oss-stat {
+        text-align: center;
+      }
+      .oss-stat .num {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--text);
+      }
+      .oss-stat .label {
+        font-size: 0.6875rem;
+        color: var(--text-3);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
 
-/* ===== COST ===== */
-.cost{padding:80px 0;scroll-snap-align:start;text-align:center}
-.cost-box{max-width:560px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:40px 36px}
-.cost-price{font-size:clamp(2rem,4vw,3rem);font-weight:800;margin-bottom:8px;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.cost-per{font-size:1rem;color:var(--text-2);margin-bottom:24px}
-.cost-breakdown{display:flex;flex-direction:column;gap:8px;text-align:left;margin:0 auto;max-width:360px}
-.cost-line{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
-.cost-line:last-child{border-bottom:none}
-.cost-line .what{color:var(--text-2);font-size:.875rem}
-.cost-line .val{color:var(--text);font-weight:600;font-size:.875rem}
+      /* ===== COST ===== */
+      .cost {
+        padding: 80px 0;
+        scroll-snap-align: start;
+        text-align: center;
+      }
+      .cost-box {
+        max-width: 560px;
+        margin: 0 auto;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 40px 36px;
+      }
+      .cost-price {
+        font-size: clamp(2rem, 4vw, 3rem);
+        font-weight: 800;
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, var(--accent), var(--purple));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .cost-per {
+        font-size: 1rem;
+        color: var(--text-2);
+        margin-bottom: 24px;
+      }
+      .cost-breakdown {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        text-align: left;
+        margin: 0 auto;
+        max-width: 360px;
+      }
+      .cost-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .cost-line:last-child {
+        border-bottom: none;
+      }
+      .cost-line .what {
+        color: var(--text-2);
+        font-size: 0.875rem;
+      }
+      .cost-line .val {
+        color: var(--text);
+        font-weight: 600;
+        font-size: 0.875rem;
+      }
 
-/* ===== FINAL CTA ===== */
-.cta{padding:100px 0;scroll-snap-align:start;text-align:center}
-.cta h2{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;letter-spacing:-.03em;margin-bottom:12px}
-.cta p{color:var(--text-2);font-size:1.05rem;margin-bottom:40px}
-.cta-install{max-width:480px;margin:0 auto}
-.cta-cmd{position:relative;background:var(--bg-2);border:2px solid var(--accent);border-radius:14px;padding:20px 70px 20px 24px;font-family:var(--mono);font-size:1.0625rem;color:var(--green);text-align:left;cursor:pointer;transition:all .2s;box-shadow:0 0 40px var(--accent-glow)}
-.cta-cmd:hover{box-shadow:0 0 60px var(--accent-dim)}
-.cta-cmd .prompt{color:var(--text-3)}
-.cta-copy{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:var(--accent-dim);border:1px solid var(--accent);color:var(--accent);border-radius:8px;padding:8px 16px;font-size:.8125rem;cursor:pointer;font-family:var(--sans);font-weight:600;transition:all .15s}
-.cta-copy:hover{background:var(--accent);color:#000}
-.cta-copy.copied{background:var(--green-dim);border-color:var(--green);color:var(--green)}
+      /* ===== FINAL CTA ===== */
+      .cta {
+        padding: 100px 0;
+        scroll-snap-align: start;
+        text-align: center;
+      }
+      .cta h2 {
+        font-size: clamp(1.8rem, 4vw, 2.8rem);
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        margin-bottom: 12px;
+      }
+      .cta p {
+        color: var(--text-2);
+        font-size: 1.05rem;
+        margin-bottom: 40px;
+      }
+      .cta-install {
+        max-width: 480px;
+        margin: 0 auto;
+      }
+      .cta-cmd {
+        position: relative;
+        background: var(--bg-2);
+        border: 2px solid var(--accent);
+        border-radius: 14px;
+        padding: 20px 70px 20px 24px;
+        font-family: var(--mono);
+        font-size: 1.0625rem;
+        color: var(--green);
+        text-align: left;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 0 40px var(--accent-glow);
+      }
+      .cta-cmd:hover {
+        box-shadow: 0 0 60px var(--accent-dim);
+      }
+      .cta-cmd .prompt {
+        color: var(--text-3);
+      }
+      .cta-copy {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--accent-dim);
+        border: 1px solid var(--accent);
+        color: var(--accent);
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-size: 0.8125rem;
+        cursor: pointer;
+        font-family: var(--sans);
+        font-weight: 600;
+        transition: all 0.15s;
+      }
+      .cta-copy:hover {
+        background: var(--accent);
+        color: #000;
+      }
+      .cta-copy.copied {
+        background: var(--green-dim);
+        border-color: var(--green);
+        color: var(--green);
+      }
 
-/* Footer */
-footer{border-top:1px solid var(--border);padding:32px 0;text-align:center;font-size:.8125rem;color:var(--text-3)}
-footer a{color:var(--text-2)}
-footer .footer-links{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
+      /* Footer */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 32px 0;
+        text-align: center;
+        font-size: 0.8125rem;
+        color: var(--text-3);
+      }
+      footer a {
+        color: var(--text-2);
+      }
+      footer .footer-links {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
 
-/* Responsive */
-@media(max-width:720px){
-  nav{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(10,14,26,.98)}
-  .bg-ambient{display:none}
-  .rv{opacity:1;transform:none;transition:none}
-  .rv.vis{opacity:1;transform:none}
-  .hf{opacity:1;transform:none;animation:none}
-  html{scroll-snap-type:none}
-  .hero{padding:80px 0 60px}
-  .hero h1{font-size:2rem}
-  .how-grid{grid-template-columns:1fr}
-  .demo-stats{grid-template-columns:repeat(2,1fr)}
-  .surfaces-grid{grid-template-columns:repeat(2,1fr)}
-  .vocab-grid{grid-template-columns:1fr;gap:20px}
-  .ent-grid{grid-template-columns:1fr}
-  .container{padding:0 16px}
-  section,.how,.demo,.surfaces,.vocab,.enterprise,.oss,.cost,.cta{padding:40px 0}
-  .hero{padding:48px 0 32px}
-  .hero-flow{flex-direction:column;gap:0}
-  .hero-flow-arrow{transform:rotate(90deg);height:auto;margin:0}
-  .oss-box,.vocab-box,.cost-box{padding:28px 20px}
-  .oss-stats{gap:20px}
-}
-@media(max-width:480px){
-  .nav-logo{font-size:1.25rem}
-  .hero h1{font-size:1.6rem}
-  .hero-sub,.section-sub{font-size:0.95rem}
-  .nav-links a:not(:last-child){display:none}
-  .demo-stats{grid-template-columns:repeat(2,1fr)}
-  .surfaces-grid{grid-template-columns:1fr}
-  .btn{width:100%;justify-content:center;min-height:44px}
-  .install-cmd{font-size:.8125rem;padding:14px 50px 14px 16px}
-  .cta-cmd{font-size:.875rem;padding:16px 50px 16px 16px}
-}
-@media(prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:0.01ms !important;transition-duration:0.01ms !important}
-}
-*:focus-visible{outline:2px solid currentColor;outline-offset:2px}
-.skip-link{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:1000}
-.skip-link:focus{position:fixed;top:8px;left:8px;width:auto;height:auto;padding:12px 24px;background:var(--accent);color:#000;font-weight:700;font-size:.875rem;border-radius:8px;text-decoration:none;z-index:10000}
-</style>
-<script type="application/ld+json">
-{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Grainulator","description":"Research sprint orchestrator for Claude Code. Type a question, get a compiled brief in 5 minutes.","applicationCategory":"DeveloperApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD","description":"Plugin is free and open source (MIT). Sprints consume your own Claude API key ($6-12 per sprint in API costs, paid to Anthropic)."},"author":{"@type":"Organization","name":"Grainulation","url":"https://grainulation.com"},"license":"https://opensource.org/licenses/MIT"}
-</script>
-</head>
-<body>
-<a href="#main" class="skip-link">Skip to main content</a>
+      /* Responsive */
+      @media (max-width: 720px) {
+        nav {
+          backdrop-filter: none;
+          -webkit-backdrop-filter: none;
+          background: rgba(10, 14, 26, 0.98);
+        }
+        .bg-ambient {
+          display: none;
+        }
+        .rv {
+          opacity: 1;
+          transform: none;
+          transition: none;
+        }
+        .rv.vis {
+          opacity: 1;
+          transform: none;
+        }
+        .hf {
+          opacity: 1;
+          transform: none;
+          animation: none;
+        }
+        html {
+          scroll-snap-type: none;
+        }
+        .hero {
+          padding: 80px 0 60px;
+        }
+        .hero h1 {
+          font-size: 2rem;
+        }
+        .how-grid {
+          grid-template-columns: 1fr;
+        }
+        .demo-stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .surfaces-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .vocab-grid {
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
+        .ent-grid {
+          grid-template-columns: 1fr;
+        }
+        .container {
+          padding: 0 16px;
+        }
+        section,
+        .how,
+        .demo,
+        .surfaces,
+        .vocab,
+        .enterprise,
+        .oss,
+        .cost,
+        .cta {
+          padding: 40px 0;
+        }
+        .hero {
+          padding: 48px 0 32px;
+        }
+        .hero-flow {
+          flex-direction: column;
+          gap: 0;
+        }
+        .hero-flow-arrow {
+          transform: rotate(90deg);
+          height: auto;
+          margin: 0;
+        }
+        .oss-box,
+        .vocab-box,
+        .cost-box {
+          padding: 28px 20px;
+        }
+        .oss-stats {
+          gap: 20px;
+        }
+      }
+      @media (max-width: 480px) {
+        .nav-logo {
+          font-size: 1.25rem;
+        }
+        .hero h1 {
+          font-size: 1.6rem;
+        }
+        .hero-sub,
+        .section-sub {
+          font-size: 0.95rem;
+        }
+        .nav-links a:not(:last-child) {
+          display: none;
+        }
+        .demo-stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .surfaces-grid {
+          grid-template-columns: 1fr;
+        }
+        .btn {
+          width: 100%;
+          justify-content: center;
+          min-height: 44px;
+        }
+        .install-cmd {
+          font-size: 0.8125rem;
+          padding: 14px 50px 14px 16px;
+        }
+        .cta-cmd {
+          font-size: 0.875rem;
+          padding: 16px 50px 16px 16px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+      *:focus-visible {
+        outline: 2px solid currentColor;
+        outline-offset: 2px;
+      }
+      .skip-link {
+        position: absolute;
+        left: -9999px;
+        top: auto;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        z-index: 1000;
+      }
+      .skip-link:focus {
+        position: fixed;
+        top: 8px;
+        left: 8px;
+        width: auto;
+        height: auto;
+        padding: 12px 24px;
+        background: var(--accent);
+        color: #000;
+        font-weight: 700;
+        font-size: 0.875rem;
+        border-radius: 8px;
+        text-decoration: none;
+        z-index: 10000;
+      }
+    </style>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Grainulator",
+        "description": "Research sprint orchestrator for Claude Code. Type a question, get a compiled brief in 5 minutes.",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Any",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+          "description": "Plugin is free and open source (MIT). Sprints consume your own Claude API key ($6-12 per sprint in API costs, paid to Anthropic)."
+        },
+        "author": {
+          "@type": "Organization",
+          "name": "Grainulation",
+          "url": "https://grainulation.com"
+        },
+        "license": "https://opensource.org/licenses/MIT"
+      }
+    </script>
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to main content</a>
 
-<div class="bg-ambient" aria-hidden="true"><div class="orb"></div><div class="orb"></div><div class="orb"></div></div>
-
-<div class="page">
-
-<nav aria-label="Main navigation">
-  <div class="container">
-    <a href="#" class="nav-logo">
-      <span class="logo-mark">G</span>
-      Grainulator
-    </a>
-    <div class="nav-links">
-      <a href="#how">How It Works</a>
-      <a href="#enterprise">Enterprise</a>
-      <a href="#cost">Pricing</a>
-      <a href="https://github.com/grainulator/grainulator" aria-label="GitHub"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
+    <div class="bg-ambient" aria-hidden="true">
+      <div class="orb"></div>
+      <div class="orb"></div>
+      <div class="orb"></div>
     </div>
-  </div>
-</nav>
 
-<main id="main">
-
-<!-- ===== HERO ===== -->
-<section class="hero">
-  <div class="container">
-    <div class="hero-badge hf hf1">Claude Code Plugin</div>
-    <h1 class="hf hf2">Research sprints<br><em>for everyone.</em></h1>
-    <p class="hero-sub hf hf3">Type a question, get a compiled brief in 5 minutes. Grainulator researches, challenges, and compiles -- so you get the answer, not another meeting.</p>
-
-    <div class="hero-install hf hf4">
-      <div class="install-cmd" onclick="copyInstall(this)">
-        <span class="prompt">/</span>plugin install grainulator
-        <button class="install-copy" onclick="event.stopPropagation();copyInstall(this.parentElement)">Copy</button>
-      </div>
-    </div>
-
-    <div class="hero-flow hf hf5" role="img" aria-label="Research sprint flow: Ask, Research, Challenge, Compile, Brief">
-      <div class="hero-flow-step">
-        <div class="hero-flow-icon" style="background:var(--accent-dim);color:var(--accent)" aria-hidden="true">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        </div>
-        <div class="hero-flow-label">Ask</div>
-      </div>
-      <div class="hero-flow-arrow" aria-hidden="true">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>
-      <div class="hero-flow-step">
-        <div class="hero-flow-icon" style="background:var(--blue-dim);color:var(--blue)" aria-hidden="true">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        </div>
-        <div class="hero-flow-label">Research</div>
-      </div>
-      <div class="hero-flow-arrow" aria-hidden="true">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>
-      <div class="hero-flow-step">
-        <div class="hero-flow-icon" style="background:var(--red-dim);color:var(--red)" aria-hidden="true">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
-        </div>
-        <div class="hero-flow-label">Challenge</div>
-      </div>
-      <div class="hero-flow-arrow" aria-hidden="true">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>
-      <div class="hero-flow-step">
-        <div class="hero-flow-icon" style="background:var(--purple-dim);color:var(--purple)" aria-hidden="true">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-        </div>
-        <div class="hero-flow-label">Compile</div>
-      </div>
-      <div class="hero-flow-arrow" aria-hidden="true">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>
-      <div class="hero-flow-step">
-        <div class="hero-flow-icon" style="background:var(--green-dim);color:var(--green)" aria-hidden="true">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        </div>
-        <div class="hero-flow-label">Brief</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<hr class="sep">
-
-<!-- ===== HOW IT WORKS ===== -->
-<section class="how" id="how">
-  <div class="container" style="text-align:center">
-    <div class="section-label rv">How it works</div>
-    <h2 class="section-title rv rv-d1">You ask. Grainulator delivers.</h2>
-    <p class="section-sub rv rv-d2" style="margin-left:auto;margin-right:auto">Five stages, completely automatic. You see "researching 3 angles in parallel." You get a compiled brief.</p>
-
-    <div class="how-grid">
-      <div class="how-card rv rv-d1">
-        <div class="how-num" style="background:var(--accent-dim);color:var(--accent)">1</div>
-        <h3>Ask your question</h3>
-        <p>Type anything: "Should we migrate to Postgres?" Grainulator extracts parameters and searches for prior research.</p>
-      </div>
-      <div class="how-card rv rv-d2">
-        <div class="how-num" style="background:var(--purple-dim);color:var(--purple)">2</div>
-        <h3>Research and challenge</h3>
-        <p>Multiple angles explored in parallel. Findings are gathered, challenged adversarially, and corroborated with evidence.</p>
-      </div>
-      <div class="how-card rv rv-d3">
-        <div class="how-num" style="background:var(--green-dim);color:var(--green)">3</div>
-        <h3>Compile the brief</h3>
-        <p>The compiler validates everything -- catches contradictions, flags weak evidence, and produces your decision document.</p>
-      </div>
-    </div>
-    <p class="how-tagline rv rv-d4">"You ask. Grainulator researches, challenges, and compiles. You get the answer."</p>
-  </div>
-</section>
-
-<hr class="sep">
-
-<!-- ===== DEMO ===== -->
-<section class="demo" id="demo">
-  <div class="container" style="text-align:center">
-    <div class="section-label rv">See it in action</div>
-    <h2 class="section-title rv rv-d1">What a sprint looks like</h2>
-    <p class="section-sub rv rv-d2" style="margin-left:auto;margin-right:auto">A real sprint output card. One question in, compiled brief out.</p>
-
-    <div class="demo-card rv rv-d3">
-      <div class="demo-header">
-        <h3>Sprint: Vendor Due Diligence</h3>
-        <span class="demo-badge">Compiled</span>
-      </div>
-      <div class="demo-body">
-        <div class="demo-question">"Should we approve Acme Corp as a data processor under GDPR?"</div>
-        <div class="demo-stats">
-          <div class="demo-stat">
-            <div class="num" style="color:var(--accent)">47</div>
-            <div class="label">Claims</div>
+    <div class="page">
+      <nav aria-label="Main navigation">
+        <div class="container">
+          <a href="#" class="nav-logo">
+            <span class="logo-mark">G</span>
+            Grainulator
+          </a>
+          <div class="nav-links">
+            <a href="#how">How It Works</a>
+            <a href="#enterprise">Enterprise</a>
+            <a href="#cost">Pricing</a>
+            <a
+              href="https://github.com/grainulation/grainulator"
+              aria-label="GitHub"
+              ><svg
+                width="24"
+                height="24"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+              >
+                <path
+                  d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+                /></svg
+            ></a>
           </div>
-          <div class="demo-stat">
-            <div class="num" style="color:var(--purple)">12</div>
-            <div class="label">Topics</div>
+        </div>
+      </nav>
+
+      <main id="main">
+        <!-- ===== HERO ===== -->
+        <section class="hero">
+          <div class="container">
+            <div class="hero-badge hf hf1">Claude Code Plugin</div>
+            <h1 class="hf hf2">Research sprints<br /><em>for everyone.</em></h1>
+            <p class="hero-sub hf hf3">
+              Type a question, get a compiled brief in 5 minutes. Grainulator
+              researches, challenges, and compiles -- so you get the answer, not
+              another meeting.
+            </p>
+
+            <div class="hero-install hf hf4">
+              <div class="install-cmd" onclick="copyInstall(this)">
+                <span class="prompt">/</span>plugin install grainulator
+                <button
+                  class="install-copy"
+                  onclick="
+                    event.stopPropagation();
+                    copyInstall(this.parentElement);
+                  "
+                >
+                  Copy
+                </button>
+              </div>
+            </div>
+
+            <div
+              class="hero-flow hf hf5"
+              role="img"
+              aria-label="Research sprint flow: Ask, Research, Challenge, Compile, Brief"
+            >
+              <div class="hero-flow-step">
+                <div
+                  class="hero-flow-icon"
+                  style="background: var(--accent-dim); color: var(--accent)"
+                  aria-hidden="true"
+                >
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                  </svg>
+                </div>
+                <div class="hero-flow-label">Ask</div>
+              </div>
+              <div class="hero-flow-arrow" aria-hidden="true">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </div>
+              <div class="hero-flow-step">
+                <div
+                  class="hero-flow-icon"
+                  style="background: var(--blue-dim); color: var(--blue)"
+                  aria-hidden="true"
+                >
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                </div>
+                <div class="hero-flow-label">Research</div>
+              </div>
+              <div class="hero-flow-arrow" aria-hidden="true">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </div>
+              <div class="hero-flow-step">
+                <div
+                  class="hero-flow-icon"
+                  style="background: var(--red-dim); color: var(--red)"
+                  aria-hidden="true"
+                >
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+                    />
+                  </svg>
+                </div>
+                <div class="hero-flow-label">Challenge</div>
+              </div>
+              <div class="hero-flow-arrow" aria-hidden="true">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </div>
+              <div class="hero-flow-step">
+                <div
+                  class="hero-flow-icon"
+                  style="background: var(--purple-dim); color: var(--purple)"
+                  aria-hidden="true"
+                >
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                  </svg>
+                </div>
+                <div class="hero-flow-label">Compile</div>
+              </div>
+              <div class="hero-flow-arrow" aria-hidden="true">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </div>
+              <div class="hero-flow-step">
+                <div
+                  class="hero-flow-icon"
+                  style="background: var(--green-dim); color: var(--green)"
+                  aria-hidden="true"
+                >
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
+                    />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                </div>
+                <div class="hero-flow-label">Brief</div>
+              </div>
+            </div>
           </div>
-          <div class="demo-stat">
-            <div class="num" style="color:var(--red)">3</div>
-            <div class="label">Risks</div>
+        </section>
+
+        <hr class="sep" />
+
+        <!-- ===== HOW IT WORKS ===== -->
+        <section class="how" id="how">
+          <div class="container" style="text-align: center">
+            <div class="section-label rv">How it works</div>
+            <h2 class="section-title rv rv-d1">
+              You ask. Grainulator delivers.
+            </h2>
+            <p
+              class="section-sub rv rv-d2"
+              style="margin-left: auto; margin-right: auto"
+            >
+              Five stages, completely automatic. You see "researching 3 angles
+              in parallel." You get a compiled brief.
+            </p>
+
+            <div class="how-grid">
+              <div class="how-card rv rv-d1">
+                <div
+                  class="how-num"
+                  style="background: var(--accent-dim); color: var(--accent)"
+                >
+                  1
+                </div>
+                <h3>Ask your question</h3>
+                <p>
+                  Type anything: "Should we migrate to Postgres?" Grainulator
+                  extracts parameters and searches for prior research.
+                </p>
+              </div>
+              <div class="how-card rv rv-d2">
+                <div
+                  class="how-num"
+                  style="background: var(--purple-dim); color: var(--purple)"
+                >
+                  2
+                </div>
+                <h3>Research and challenge</h3>
+                <p>
+                  Multiple angles explored in parallel. Findings are gathered,
+                  challenged adversarially, and corroborated with evidence.
+                </p>
+              </div>
+              <div class="how-card rv rv-d3">
+                <div
+                  class="how-num"
+                  style="background: var(--green-dim); color: var(--green)"
+                >
+                  3
+                </div>
+                <h3>Compile the brief</h3>
+                <p>
+                  The compiler validates everything -- catches contradictions,
+                  flags weak evidence, and produces your decision document.
+                </p>
+              </div>
+            </div>
+            <p class="how-tagline rv rv-d4">
+              "You ask. Grainulator researches, challenges, and compiles. You
+              get the answer."
+            </p>
           </div>
-          <div class="demo-stat">
-            <div class="num" style="color:var(--green)">4 min</div>
-            <div class="label">Compiled</div>
+        </section>
+
+        <hr class="sep" />
+
+        <!-- ===== DEMO ===== -->
+        <section class="demo" id="demo">
+          <div class="container" style="text-align: center">
+            <div class="section-label rv">See it in action</div>
+            <h2 class="section-title rv rv-d1">What a sprint looks like</h2>
+            <p
+              class="section-sub rv rv-d2"
+              style="margin-left: auto; margin-right: auto"
+            >
+              A real sprint output card. One question in, compiled brief out.
+            </p>
+
+            <div class="demo-card rv rv-d3">
+              <div class="demo-header">
+                <h3>Sprint: Vendor Due Diligence</h3>
+                <span class="demo-badge">Compiled</span>
+              </div>
+              <div class="demo-body">
+                <div class="demo-question">
+                  "Should we approve Acme Corp as a data processor under GDPR?"
+                </div>
+                <div class="demo-stats">
+                  <div class="demo-stat">
+                    <div class="num" style="color: var(--accent)">47</div>
+                    <div class="label">Claims</div>
+                  </div>
+                  <div class="demo-stat">
+                    <div class="num" style="color: var(--purple)">12</div>
+                    <div class="label">Topics</div>
+                  </div>
+                  <div class="demo-stat">
+                    <div class="num" style="color: var(--red)">3</div>
+                    <div class="label">Risks</div>
+                  </div>
+                  <div class="demo-stat">
+                    <div class="num" style="color: var(--green)">4 min</div>
+                    <div class="label">Compiled</div>
+                  </div>
+                </div>
+                <div class="demo-topics">
+                  <span class="demo-topic">SOC 2 compliance</span>
+                  <span class="demo-topic">Data residency</span>
+                  <span class="demo-topic">Subprocessors</span>
+                  <span class="demo-topic">Breach history</span>
+                  <span class="demo-topic">DPA terms</span>
+                  <span class="demo-topic">Encryption</span>
+                </div>
+                <div class="demo-footer">
+                  2 conflicts resolved &middot; evidence: 8 documented, 31 web,
+                  5 tested, 3 stated
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <hr class="sep" />
+
+        <!-- ===== SURFACES ===== -->
+        <section class="surfaces" id="surfaces">
+          <div class="container" style="text-align: center">
+            <div class="section-label rv">Works everywhere</div>
+            <h2 class="section-title rv rv-d1">Five surfaces, one engine</h2>
+            <p
+              class="section-sub rv rv-d2"
+              style="margin-left: auto; margin-right: auto"
+            >
+              Start in Claude Code. Take it anywhere.
+            </p>
+
+            <div class="surfaces-grid rv rv-d3">
+              <div class="surface-card primary">
+                <div class="surface-icon">
+                  <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <polyline points="4 17 10 11 4 5" />
+                    <line x1="12" y1="19" x2="20" y2="19" />
+                  </svg>
+                </div>
+                <h3>Claude Code</h3>
+                <p>Primary. Plugin.</p>
+              </div>
+              <div class="surface-card">
+                <div class="surface-icon">
+                  <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                    <line x1="12" y1="18" x2="12.01" y2="18" />
+                  </svg>
+                </div>
+                <h3>Mobile <span class="coming-soon">Coming soon</span></h3>
+                <p>Approve on your phone.</p>
+              </div>
+              <div class="surface-card">
+                <div class="surface-icon">
+                  <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="2" y1="12" x2="22" y2="12" />
+                    <path
+                      d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"
+                    />
+                  </svg>
+                </div>
+                <h3>Web <span class="coming-soon">Coming soon</span></h3>
+                <p>Share briefs publicly.</p>
+              </div>
+              <div class="surface-card">
+                <div class="surface-icon">
+                  <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <rect x="2" y="3" width="20" height="14" rx="2" />
+                    <line x1="8" y1="21" x2="16" y2="21" />
+                    <line x1="12" y1="17" x2="12" y2="21" />
+                  </svg>
+                </div>
+                <h3>Cursor <span class="coming-soon">Planned</span></h3>
+                <p>MCP adapter.</p>
+              </div>
+              <div class="surface-card">
+                <div class="surface-icon">
+                  <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M4 17l6-6-6-6" />
+                    <line x1="12" y1="19" x2="20" y2="19" />
+                  </svg>
+                </div>
+                <h3>CLI <span class="coming-soon">Planned</span></h3>
+                <p>CI/CD pipelines.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <hr class="sep" />
+
+        <!-- ===== VOCABULARY ===== -->
+        <section class="vocab" id="vocab">
+          <div class="container">
+            <div style="text-align: center">
+              <div class="section-label rv">For everyone</div>
+              <h2 class="section-title rv rv-d1">Same tool, your vocabulary</h2>
+            </div>
+            <div class="vocab-box rv rv-d2">
+              <p class="vocab-quote">
+                "Engineers say 'claims.' PMs say 'findings.' Executives say
+                'insights.' Same tool, your vocabulary."
+              </p>
+              <div class="vocab-grid">
+                <div class="vocab-col">
+                  <div class="vocab-role">Engineers</div>
+                  <div class="vocab-items">
+                    <div class="vocab-item">Claims</div>
+                    <div class="vocab-item">Evidence tiers</div>
+                    <div class="vocab-item">Compiler</div>
+                    <div class="vocab-item">Sprint</div>
+                  </div>
+                </div>
+                <div class="vocab-col">
+                  <div class="vocab-role">Product Managers</div>
+                  <div class="vocab-items">
+                    <div class="vocab-item">Findings</div>
+                    <div class="vocab-item">Confidence levels</div>
+                    <div class="vocab-item">Validator</div>
+                    <div class="vocab-item">Investigation</div>
+                  </div>
+                </div>
+                <div class="vocab-col">
+                  <div class="vocab-role">Executives</div>
+                  <div class="vocab-items">
+                    <div class="vocab-item">Insights</div>
+                    <div class="vocab-item">Trust scores</div>
+                    <div class="vocab-item">Quality gate</div>
+                    <div class="vocab-item">Assessment</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <hr class="sep" />
+
+        <!-- ===== ENTERPRISE ===== -->
+        <section class="enterprise" id="enterprise">
+          <div class="container" style="text-align: center">
+            <div class="section-label rv">Enterprise</div>
+            <div class="ent-hero rv rv-d1">
+              <div class="big-stat">
+                <span class="old">45 days</span> &rarr;
+                <span class="new">15 minutes</span>
+              </div>
+              <p style="color: var(--text-2); font-size: 1.05rem">
+                Pass audits faster. Vendor due diligence, compliance reviews,
+                architecture decisions.
+              </p>
+            </div>
+
+            <div class="ent-grid">
+              <div class="ent-card rv rv-d1">
+                <h3>Zero procurement</h3>
+                <p>
+                  Runs inside already-approved Claude Code. No new vendor, no
+                  new security review, no new infrastructure.
+                </p>
+              </div>
+              <div class="ent-card rv rv-d2">
+                <h3>Confluence publish</h3>
+                <p>
+                  Local .wheat/ as the live database. Publish to Confluence for
+                  visibility and search. Git-push model, not real-time sync.
+                </p>
+              </div>
+              <div class="ent-card rv rv-d3">
+                <h3>Managed settings</h3>
+                <p>
+                  Admin console, MDM, 4 permission tiers. Budget pacing, not
+                  "permission denied." OTel audit events for compliance.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <hr class="sep" />
+
+        <!-- ===== OPEN SOURCE ===== -->
+        <section class="oss" id="oss">
+          <div class="container">
+            <div class="oss-box rv">
+              <div class="section-label">Open source</div>
+              <h2>Built on Grainulation</h2>
+              <p>
+                The entire engine is open source. Wheat, Farmer, Mill, Silo,
+                Harvest, Orchard, Barn -- 7 packages plus the Grainulation CLI,
+                all zero-dependency and MIT-licensed. Audit the entire codebase
+                in 5 minutes.
+              </p>
+              <div class="oss-stats">
+                <div class="oss-stat">
+                  <div class="num">7+1</div>
+                  <div class="label">Packages + CLI</div>
+                </div>
+                <div class="oss-stat">
+                  <div class="num">0</div>
+                  <div class="label">npm deps</div>
+                </div>
+                <div class="oss-stat">
+                  <div class="num" style="font-size: 1.1rem">MIT</div>
+                  <div class="label">License</div>
+                </div>
+              </div>
+              <a
+                href="https://grainulation.com"
+                class="btn btn-ghost"
+                style="margin-top: 8px"
+                >Explore grainulation.com</a
+              >
+            </div>
+          </div>
+        </section>
+
+        <hr class="sep" />
+
+        <!-- ===== COST ===== -->
+        <section class="cost" id="cost">
+          <div class="container">
+            <div class="section-label rv">Pricing</div>
+            <div class="cost-box rv rv-d1">
+              <div class="cost-price">$6 - $12</div>
+              <div class="cost-per">per sprint</div>
+              <div class="cost-breakdown">
+                <div class="cost-line">
+                  <span class="what">Your Claude API key</span>
+                  <span class="val" style="color: var(--green)"
+                    >You own it</span
+                  >
+                </div>
+                <div class="cost-line">
+                  <span class="what">Our compiler</span>
+                  <span class="val" style="color: var(--green)">Free</span>
+                </div>
+                <div class="cost-line">
+                  <span class="what">Optimized (RouteLLM)</span>
+                  <span class="val">$2 - $5</span>
+                </div>
+                <div class="cost-line">
+                  <span class="what">Hosted farmer</span>
+                  <span class="val">$5/mo</span>
+                </div>
+                <div class="cost-line">
+                  <span class="what">vs. human analyst</span>
+                  <span class="val" style="color: var(--accent)"
+                    >3-10x cheaper</span
+                  >
+                </div>
+              </div>
+              <p
+                style="
+                  color: var(--text-3);
+                  font-size: 0.8125rem;
+                  margin-top: 20px;
+                "
+              >
+                Your Claude API key. Our compiler. That's it.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <hr class="sep" />
+
+        <!-- ===== FINAL CTA ===== -->
+        <section class="cta" id="install">
+          <div class="container">
+            <h2 class="rv">Start your first sprint</h2>
+            <p class="rv rv-d1">
+              One command. Five minutes to your first brief.
+            </p>
+            <div class="cta-install rv rv-d2">
+              <div class="cta-cmd" onclick="copyCta(this)">
+                <span class="prompt">/</span>plugin install grainulator
+                <button
+                  class="cta-copy"
+                  onclick="
+                    event.stopPropagation();
+                    copyCta(this.parentElement);
+                  "
+                >
+                  Copy
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <div class="container">
+          <div class="footer-links">
+            <a href="https://github.com/grainulation/grainulator">GitHub</a>
+            <a href="https://grainulation.com">Grainulation</a>
+            <a href="https://wheat.grainulation.com">Wheat</a>
+            <span style="color: var(--text-3)">MIT</span>
           </div>
         </div>
-        <div class="demo-topics">
-          <span class="demo-topic">SOC 2 compliance</span>
-          <span class="demo-topic">Data residency</span>
-          <span class="demo-topic">Subprocessors</span>
-          <span class="demo-topic">Breach history</span>
-          <span class="demo-topic">DPA terms</span>
-          <span class="demo-topic">Encryption</span>
-        </div>
-        <div class="demo-footer">2 conflicts resolved &middot; evidence: 8 documented, 31 web, 5 tested, 3 stated</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<hr class="sep">
-
-<!-- ===== SURFACES ===== -->
-<section class="surfaces" id="surfaces">
-  <div class="container" style="text-align:center">
-    <div class="section-label rv">Works everywhere</div>
-    <h2 class="section-title rv rv-d1">Five surfaces, one engine</h2>
-    <p class="section-sub rv rv-d2" style="margin-left:auto;margin-right:auto">Start in Claude Code. Take it anywhere.</p>
-
-    <div class="surfaces-grid rv rv-d3">
-      <div class="surface-card primary">
-        <div class="surface-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-        </div>
-        <h3>Claude Code</h3>
-        <p>Primary. Plugin.</p>
-      </div>
-      <div class="surface-card">
-        <div class="surface-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-        </div>
-        <h3>Mobile <span class="coming-soon">Coming soon</span></h3>
-        <p>Approve on your phone.</p>
-      </div>
-      <div class="surface-card">
-        <div class="surface-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
-        </div>
-        <h3>Web <span class="coming-soon">Coming soon</span></h3>
-        <p>Share briefs publicly.</p>
-      </div>
-      <div class="surface-card">
-        <div class="surface-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-        </div>
-        <h3>Cursor <span class="coming-soon">Planned</span></h3>
-        <p>MCP adapter.</p>
-      </div>
-      <div class="surface-card">
-        <div class="surface-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 17l6-6-6-6"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-        </div>
-        <h3>CLI <span class="coming-soon">Planned</span></h3>
-        <p>CI/CD pipelines.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<hr class="sep">
-
-<!-- ===== VOCABULARY ===== -->
-<section class="vocab" id="vocab">
-  <div class="container">
-    <div style="text-align:center">
-      <div class="section-label rv">For everyone</div>
-      <h2 class="section-title rv rv-d1">Same tool, your vocabulary</h2>
-    </div>
-    <div class="vocab-box rv rv-d2">
-      <p class="vocab-quote">"Engineers say 'claims.' PMs say 'findings.' Executives say 'insights.' Same tool, your vocabulary."</p>
-      <div class="vocab-grid">
-        <div class="vocab-col">
-          <div class="vocab-role">Engineers</div>
-          <div class="vocab-items">
-            <div class="vocab-item">Claims</div>
-            <div class="vocab-item">Evidence tiers</div>
-            <div class="vocab-item">Compiler</div>
-            <div class="vocab-item">Sprint</div>
-          </div>
-        </div>
-        <div class="vocab-col">
-          <div class="vocab-role">Product Managers</div>
-          <div class="vocab-items">
-            <div class="vocab-item">Findings</div>
-            <div class="vocab-item">Confidence levels</div>
-            <div class="vocab-item">Validator</div>
-            <div class="vocab-item">Investigation</div>
-          </div>
-        </div>
-        <div class="vocab-col">
-          <div class="vocab-role">Executives</div>
-          <div class="vocab-items">
-            <div class="vocab-item">Insights</div>
-            <div class="vocab-item">Trust scores</div>
-            <div class="vocab-item">Quality gate</div>
-            <div class="vocab-item">Assessment</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<hr class="sep">
-
-<!-- ===== ENTERPRISE ===== -->
-<section class="enterprise" id="enterprise">
-  <div class="container" style="text-align:center">
-    <div class="section-label rv">Enterprise</div>
-    <div class="ent-hero rv rv-d1">
-      <div class="big-stat"><span class="old">45 days</span> &rarr; <span class="new">15 minutes</span></div>
-      <p style="color:var(--text-2);font-size:1.05rem">Pass audits faster. Vendor due diligence, compliance reviews, architecture decisions.</p>
+      </footer>
     </div>
 
-    <div class="ent-grid">
-      <div class="ent-card rv rv-d1">
-        <h3>Zero procurement</h3>
-        <p>Runs inside already-approved Claude Code. No new vendor, no new security review, no new infrastructure.</p>
-      </div>
-      <div class="ent-card rv rv-d2">
-        <h3>Confluence publish</h3>
-        <p>Local .wheat/ as the live database. Publish to Confluence for visibility and search. Git-push model, not real-time sync.</p>
-      </div>
-      <div class="ent-card rv rv-d3">
-        <h3>Managed settings</h3>
-        <p>Admin console, MDM, 4 permission tiers. Budget pacing, not "permission denied." OTel audit events for compliance.</p>
-      </div>
-    </div>
-  </div>
-</section>
+    <script>
+      /* Reveal on scroll */
+      var obs = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) {
+              e.target.classList.add("vis");
+              obs.unobserve(e.target);
+            }
+          });
+        },
+        { threshold: 0.1, rootMargin: "0px 0px -40px 0px" },
+      );
+      document.querySelectorAll(".rv").forEach(function (el) {
+        obs.observe(el);
+      });
 
-<hr class="sep">
-
-<!-- ===== OPEN SOURCE ===== -->
-<section class="oss" id="oss">
-  <div class="container">
-    <div class="oss-box rv">
-      <div class="section-label">Open source</div>
-      <h2>Built on Grainulation</h2>
-      <p>The entire engine is open source. Wheat, Farmer, Mill, Silo, Harvest, Orchard, Barn -- 7 packages plus the Grainulation CLI, all zero-dependency and MIT-licensed. Audit the entire codebase in 5 minutes.</p>
-      <div class="oss-stats">
-        <div class="oss-stat">
-          <div class="num">7+1</div>
-          <div class="label">Packages + CLI</div>
-        </div>
-        <div class="oss-stat">
-          <div class="num">0</div>
-          <div class="label">npm deps</div>
-        </div>
-        <div class="oss-stat">
-          <div class="num" style="font-size:1.1rem">MIT</div>
-          <div class="label">License</div>
-        </div>
-      </div>
-      <a href="https://grainulation.com" class="btn btn-ghost" style="margin-top:8px">Explore grainulation.com</a>
-    </div>
-  </div>
-</section>
-
-<hr class="sep">
-
-<!-- ===== COST ===== -->
-<section class="cost" id="cost">
-  <div class="container">
-    <div class="section-label rv">Pricing</div>
-    <div class="cost-box rv rv-d1">
-      <div class="cost-price">$6 - $12</div>
-      <div class="cost-per">per sprint</div>
-      <div class="cost-breakdown">
-        <div class="cost-line">
-          <span class="what">Your Claude API key</span>
-          <span class="val" style="color:var(--green)">You own it</span>
-        </div>
-        <div class="cost-line">
-          <span class="what">Our compiler</span>
-          <span class="val" style="color:var(--green)">Free</span>
-        </div>
-        <div class="cost-line">
-          <span class="what">Optimized (RouteLLM)</span>
-          <span class="val">$2 - $5</span>
-        </div>
-        <div class="cost-line">
-          <span class="what">Hosted farmer</span>
-          <span class="val">$5/mo</span>
-        </div>
-        <div class="cost-line">
-          <span class="what">vs. human analyst</span>
-          <span class="val" style="color:var(--accent)">3-10x cheaper</span>
-        </div>
-      </div>
-      <p style="color:var(--text-3);font-size:.8125rem;margin-top:20px">Your Claude API key. Our compiler. That's it.</p>
-    </div>
-  </div>
-</section>
-
-<hr class="sep">
-
-<!-- ===== FINAL CTA ===== -->
-<section class="cta" id="install">
-  <div class="container">
-    <h2 class="rv">Start your first sprint</h2>
-    <p class="rv rv-d1">One command. Five minutes to your first brief.</p>
-    <div class="cta-install rv rv-d2">
-      <div class="cta-cmd" onclick="copyCta(this)">
-        <span class="prompt">/</span>plugin install grainulator
-        <button class="cta-copy" onclick="event.stopPropagation();copyCta(this.parentElement)">Copy</button>
-      </div>
-    </div>
-  </div>
-</section>
-
-</main>
-
-<footer>
-  <div class="container">
-    <div class="footer-links">
-      <a href="https://github.com/grainulator/grainulator">GitHub</a>
-      <a href="https://grainulation.com">Grainulation</a>
-      <a href="https://wheat.grainulation.com">Wheat</a>
-      <span style="color:var(--text-3)">MIT</span>
-    </div>
-  </div>
-</footer>
-
-</div>
-
-<script>
-/* Reveal on scroll */
-var obs = new IntersectionObserver(function(entries) {
-  entries.forEach(function(e) {
-    if (e.isIntersecting) { e.target.classList.add('vis'); obs.unobserve(e.target); }
-  });
-}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-document.querySelectorAll('.rv').forEach(function(el) { obs.observe(el); });
-
-/* Copy helpers with fallback for non-HTTPS contexts */
-function copyToClipboard(text) {
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    return navigator.clipboard.writeText(text);
-  }
-  /* Fallback: hidden textarea + execCommand */
-  return new Promise(function(resolve, reject) {
-    var ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.position = 'fixed';
-    ta.style.left = '-9999px';
-    document.body.appendChild(ta);
-    ta.select();
-    try { document.execCommand('copy'); resolve(); }
-    catch (e) { reject(e); }
-    finally { document.body.removeChild(ta); }
-  });
-}
-function copyInstall(el) {
-  var text = '/plugin install grainulator';
-  var btn = el.querySelector('.install-copy');
-  copyToClipboard(text).then(function() {
-    if (btn) { btn.textContent = 'Copied'; btn.classList.add('copied'); }
-    setTimeout(function() { if (btn) { btn.textContent = 'Copy'; btn.classList.remove('copied'); } }, 1200);
-  });
-}
-function copyCta(el) {
-  var text = '/plugin install grainulator';
-  var btn = el.querySelector('.cta-copy');
-  copyToClipboard(text).then(function() {
-    if (btn) { btn.textContent = 'Copied'; btn.classList.add('copied'); }
-    setTimeout(function() { if (btn) { btn.textContent = 'Copy'; btn.classList.remove('copied'); } }, 1200);
-  });
-}
-</script>
-</body>
+      /* Copy helpers with fallback for non-HTTPS contexts */
+      function copyToClipboard(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          return navigator.clipboard.writeText(text);
+        }
+        /* Fallback: hidden textarea + execCommand */
+        return new Promise(function (resolve, reject) {
+          var ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.left = "-9999px";
+          document.body.appendChild(ta);
+          ta.select();
+          try {
+            document.execCommand("copy");
+            resolve();
+          } catch (e) {
+            reject(e);
+          } finally {
+            document.body.removeChild(ta);
+          }
+        });
+      }
+      function copyInstall(el) {
+        var text = "/plugin install grainulator";
+        var btn = el.querySelector(".install-copy");
+        copyToClipboard(text).then(function () {
+          if (btn) {
+            btn.textContent = "Copied";
+            btn.classList.add("copied");
+          }
+          setTimeout(function () {
+            if (btn) {
+              btn.textContent = "Copy";
+              btn.classList.remove("copied");
+            }
+          }, 1200);
+        });
+      }
+      function copyCta(el) {
+        var text = "/plugin install grainulator";
+        var btn = el.querySelector(".cta-copy");
+        copyToClipboard(text).then(function () {
+          if (btn) {
+            btn.textContent = "Copied";
+            btn.classList.add("copied");
+          }
+          setTimeout(function () {
+            if (btn) {
+              btn.textContent = "Copy";
+              btn.classList.remove("copied");
+            }
+          }, 1200);
+        });
+      }
+    </script>
+  </body>
 </html>
