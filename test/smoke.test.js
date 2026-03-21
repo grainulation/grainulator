@@ -48,21 +48,27 @@ describe('plugin.json', () => {
 
 describe('skill files', () => {
   const skillsDir = path.join(ROOT, 'skills');
-  const skillFiles = fs.readdirSync(skillsDir).filter(f => f.endsWith('.md'));
+  // Skills use subdirectory format: skills/<name>/SKILL.md
+  const skillDirs = fs.readdirSync(skillsDir).filter(f =>
+    fs.statSync(path.join(skillsDir, f)).isDirectory()
+  );
 
-  it('has at least one skill file', () => {
-    assert.ok(skillFiles.length > 0, 'no skill .md files found');
+  it('has at least one skill directory', () => {
+    assert.ok(skillDirs.length > 0, 'no skill subdirectories found');
   });
 
-  for (const file of skillFiles) {
-    it(`${file} has YAML frontmatter with name and description`, () => {
-      const content = fs.readFileSync(path.join(skillsDir, file), 'utf8');
-      assert.ok(content.startsWith('---'), `${file} missing frontmatter delimiter`);
+  for (const dir of skillDirs) {
+    const skillFile = path.join(skillsDir, dir, 'SKILL.md');
+
+    it(`${dir}/SKILL.md exists and has YAML frontmatter with name and description`, () => {
+      assert.ok(fs.existsSync(skillFile), `${dir}/SKILL.md does not exist`);
+      const content = fs.readFileSync(skillFile, 'utf8');
+      assert.ok(content.startsWith('---'), `${dir}/SKILL.md missing frontmatter delimiter`);
       const endIdx = content.indexOf('---', 3);
-      assert.ok(endIdx > 3, `${file} missing closing frontmatter delimiter`);
+      assert.ok(endIdx > 3, `${dir}/SKILL.md missing closing frontmatter delimiter`);
       const frontmatter = content.slice(3, endIdx);
-      assert.ok(/^name:\s*.+$/m.test(frontmatter), `${file} missing "name" in frontmatter`);
-      assert.ok(/^description:\s*.+$/m.test(frontmatter), `${file} missing "description" in frontmatter`);
+      assert.ok(/^name:\s*.+$/m.test(frontmatter), `${dir}/SKILL.md missing "name" in frontmatter`);
+      assert.ok(/^description:\s*.+$/m.test(frontmatter), `${dir}/SKILL.md missing "description" in frontmatter`);
     });
   }
 });

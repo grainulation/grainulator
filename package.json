@@ -2,6 +2,7 @@
   "name": "@grainulator/grainulator",
   "version": "0.1.0",
   "description": "Research sprint orchestrator for Claude Code",
+  "type": "module",
   "license": "MIT",
   "homepage": "https://grainulator.app",
   "repository": {
