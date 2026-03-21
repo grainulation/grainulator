@@ -38,6 +38,7 @@ $ARGUMENTS
 6. Run `wheat_compile` to validate the initial sprint.
 
 7. Print a summary:
+
    ```
    Sprint initialized: <slug>
    Question: <question>

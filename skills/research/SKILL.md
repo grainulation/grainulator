@@ -53,6 +53,7 @@ $ARGUMENTS
    - Otherwise, suggest next steps.
 
 5. **Print summary**:
+
    ```
    Research complete: <pass_count> passes, <claim_count> claims across <topic_count> topics.
 

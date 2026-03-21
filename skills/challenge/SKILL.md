@@ -41,6 +41,7 @@ If no claim ID is provided, ask which claim to challenge. Use `wheat_search` to 
 5. Run `wheat_compile` to surface any new conflicts.
 
 6. **Print verdict**:
+
    ```
    Challenge result for <claim_id>:
    Verdict: HELD / WEAKENED / REFUTED

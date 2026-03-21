@@ -55,6 +55,7 @@ Optional: audience override, format (html, pdf). Default: html scroll-snap deck.
 7. **Write output** to `output/presentation.<ext>`.
 
 8. **Print summary**:
+
    ```
    Presentation generated: output/presentation.<ext>
    Slides: <count>

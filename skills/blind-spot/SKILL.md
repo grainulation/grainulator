@@ -38,6 +38,7 @@ $ARGUMENTS
 4. Run `wheat_compile`.
 
 5. **Print findings**:
+
    ```
    Blind spot analysis:
    - <gap 1>

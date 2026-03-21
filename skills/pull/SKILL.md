@@ -34,6 +34,7 @@ Expected: Confluence page URL or page ID, or a search query.
 5. **Run `wheat_compile`** to validate.
 
 6. **Print result**:
+
    ```
    Imported from Confluence: <page_title>
    Claims imported: <count>

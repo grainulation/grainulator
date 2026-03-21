@@ -40,6 +40,7 @@ Expected format: `/witness <claim_id> <url>`
 6. Run `wheat_compile`.
 
 7. **Print result**:
+
    ```
    Witness result for <claim_id>:
    Source: <url>

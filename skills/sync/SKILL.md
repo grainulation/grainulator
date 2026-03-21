@@ -36,6 +36,7 @@ Optional: Confluence space key, parent page ID.
 5. **Publish** using `createConfluencePage` or `updateConfluencePage`.
 
 6. **Print result**:
+
    ```
    Published to Confluence: <page_url>
 

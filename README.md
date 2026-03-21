@@ -37,16 +37,16 @@ No slash syntax required. The intent router detects what you want and runs the r
 
 ## Skills
 
-| Skill | Description |
-|-------|-------------|
-| `/init` | Start a new research sprint |
-| `/research` | Multi-pass investigation with evidence gathering |
-| `/challenge` | Adversarial testing of a claim |
-| `/witness` | Corroborate a claim against an external source |
-| `/brief` | Generate a compiled decision brief |
-| `/status` | Sprint dashboard snapshot |
-| `/present` | Generate a presentation deck |
-| `/blind-spot` | Structural gap analysis |
+| Skill         | Description                                      |
+| ------------- | ------------------------------------------------ |
+| `/init`       | Start a new research sprint                      |
+| `/research`   | Multi-pass investigation with evidence gathering |
+| `/challenge`  | Adversarial testing of a claim                   |
+| `/witness`    | Corroborate a claim against an external source   |
+| `/brief`      | Generate a compiled decision brief               |
+| `/status`     | Sprint dashboard snapshot                        |
+| `/present`    | Generate a presentation deck                     |
+| `/blind-spot` | Structural gap analysis                          |
 
 ## Architecture
 

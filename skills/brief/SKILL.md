@@ -58,6 +58,7 @@ Optional: output format (pdf, html, md). Default: html.
 7. **Write output** to `output/brief.<ext>` in the sprint directory.
 
 8. **Print summary**:
+
    ```
    Brief generated: output/brief.<ext>
    Claims: <count> active, <count> topics
