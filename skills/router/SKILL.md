@@ -22,6 +22,8 @@ Routes plain-language user messages to the appropriate grainulator skill.
 | "where are we", "what's the status" | `/status` | Sprint snapshot |
 | "write it up", "summarize for the team" | `/brief` | Decision document |
 | "make slides", "prepare for the meeting" | `/present` | Stakeholder presentation |
+| "publish to confluence", "sync to confluence", "push to wiki" | `/sync` | Confluence publish |
+| "pull from confluence", "import from wiki", "backfill from confluence" | `/pull <slug>` | Confluence pull |
 
 ## Instructions
 

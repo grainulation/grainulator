@@ -13,6 +13,11 @@ tools:
   - mcp__silo__silo_search
   - mcp__silo__silo_pull
   - mcp__silo__silo_store
+  - mcp__claude_ai_Atlassian__createConfluencePage
+  - mcp__claude_ai_Atlassian__updateConfluencePage
+  - mcp__claude_ai_Atlassian__getConfluencePage
+  - mcp__claude_ai_Atlassian__searchConfluenceUsingCql
+  - mcp__claude_ai_Atlassian__getConfluenceSpaces
   # NOTE: DeepWiki tool names are dynamically discovered from the HTTP MCP server
   # at https://mcp.deepwiki.com/mcp. These names may change if DeepWiki updates
   # their API. Verify with `mcp__deepwiki__` tool discovery if tools stop working.
