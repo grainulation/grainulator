@@ -180,11 +180,10 @@ code, pre { font-family: var(--mono); }
   min-height: 1.3em;
 }
 .question-text .char {
-  opacity: 0;
-  transition: none;
+  display: none;
 }
 .question-text .char.visible {
-  opacity: 1;
+  display: inline;
 }
 
 /* ===== SECTION 2: THE CHAOS (w013: cooler tones) ===== */
@@ -1081,7 +1080,7 @@ code, pre { font-family: var(--mono); }
 <section class="scroll-section s-question" aria-label="The question">
   <div class="s-question-sticky">
     <div class="question-inner">
-      <div class="question-text" id="question-text" role="heading" aria-level="1" aria-label="Should we migrate to Postgres?"></div>
+      <div class="question-text" id="question-text" role="heading" aria-level="1" aria-label="What's the best way to solve this?"></div>
     </div>
   </div>
 </section>
@@ -1153,7 +1152,7 @@ code, pre { font-family: var(--mono); }
         <div class="terminal-body" id="terminal-body">
           <!-- Phase 1: Init -->
           <div class="sprint-line" data-phase="1" data-step="0">
-            <span class="c-dim">$</span> <span class="c-gold">wheat init</span> <span class="c-dim">&ldquo;Should we migrate to Postgres?&rdquo;</span>
+            <span class="c-dim">$</span> <span class="c-gold">wheat init</span> <span class="c-dim">&ldquo;What's the best way to solve this?&rdquo;</span>
           </div>
           <div class="sprint-line" data-phase="1" data-step="1">
             <span class="c-dim">extracting parameters&hellip;</span>
@@ -1375,7 +1374,7 @@ code, pre { font-family: var(--mono); }
      ====================================================== */
   var questionEl = document.getElementById('question-text');
   var questionChars = [];
-  var questionText = '\u201CShould we migrate to Postgres?\u201D';
+  var questionText = '\u201CWhat's the best way to solve this?\u201D';
   var cursorEl = null;
 
   (function initQuestion() {
@@ -1406,6 +1405,13 @@ code, pre { font-family: var(--mono); }
       } else {
         questionChars[i].classList.remove('visible');
       }
+    }
+
+    /* Move cursor to sit right after the last visible char */
+    if (cursorEl && visibleCount < questionChars.length) {
+      questionChars[visibleCount].parentNode.insertBefore(cursorEl, questionChars[visibleCount]);
+    } else if (cursorEl && visibleCount >= questionChars.length) {
+      questionEl.appendChild(cursorEl);
     }
 
     var fadeProgress = clamp((progress - 0.7) / 0.3, 0, 1);
