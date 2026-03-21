@@ -856,53 +856,107 @@ code, pre { font-family: var(--mono); }
   /* ======================================================
      ALL PROMPTS — the fish in the pond
      ====================================================== */
+  // size: 's' = casual/junior, 'm' = standard, 'l' = weighty/strategic
   var allPrompts = [
-    { text: "Should we use Postgres or MongoDB?", key: "postgres-mongo" },
-    { text: "Is our pricing strategy competitive?", key: "pricing" },
-    { text: "Should we expand to the EU market?", key: "eu-expansion" },
-    { text: "How does our auth system compare to Auth0?", key: "auth-compare" },
-    { text: "What\u2019s our incident response gap?", key: "incident-response" },
-    { text: "What are competitors doing with AI agents?", key: "ai-agents" },
-    { text: "Monolith vs microservices for our scale?", key: "monolith-micro" },
-    { text: "Evaluate Datadog vs Grafana for observability", key: "datadog-grafana" },
-    { text: "How should we structure the platform team?", key: "platform-team" },
-    { text: "What features should we cut from v2?", key: "v2-cuts" },
-    { text: "Are we ready for SOC 2 audit?", key: "soc2" },
-    { text: "What\u2019s the best channel for our first 1000 users?", key: "first-1000" },
-    { text: "How does our Jira workflow compare to Linear?", key: "jira-linear" },
-    { text: "What are the risks in our auth module?", key: "auth-risks" },
-    { text: "Evaluate Snowflake vs Databricks for our data pipeline", key: "snowflake-databricks" },
-    { text: "Should we break the monolith into services?", key: "break-monolith" },
-    { text: "How should we run the eng hiring process?", key: "eng-hiring" },
-    { text: "Is our sprint planning effective?", key: "sprint-planning" },
-    { text: "What\u2019s Stripe doing that we\u2019re not?", key: "stripe-competitor" },
-    { text: "Are we GDPR ready?", key: "gdpr" },
-    { text: "Where are we overspending on cloud?", key: "cloud-cost" },
-    { text: "What\u2019s the best way to reach enterprise customers?", key: "enterprise-growth" },
-    { text: "Should we migrate from REST to GraphQL?", key: "rest-graphql" },
-    { text: "Is Kubernetes worth it at our scale?", key: "k8s" },
-    { text: "Build or buy our billing system?", key: "billing-build-buy" },
-    { text: "How do we reduce our p95 latency?", key: "p95-latency" },
-    { text: "Should we adopt TypeScript across all services?", key: "typescript" },
-    { text: "What\u2019s our technical debt costing us?", key: "tech-debt" },
-    { text: "How do we improve developer onboarding?", key: "dev-onboarding" },
-    { text: "Is our CI/CD pipeline slowing us down?", key: "cicd" },
-    { text: "Should we open-source our SDK?", key: "open-source-sdk" },
-    { text: "What\u2019s the right database for time-series data?", key: "timeseries-db" },
-    { text: "How should we handle multi-tenancy?", key: "multi-tenancy" },
-    { text: "Evaluate Vercel vs Cloudflare for our frontend", key: "vercel-cloudflare" },
-    { text: "Should we build a design system?", key: "design-system" },
-    { text: "What\u2019s our bus factor on the payments team?", key: "bus-factor" },
-    { text: "How do competitors handle rate limiting?", key: "rate-limiting" },
-    { text: "Is our API versioning strategy sustainable?", key: "api-versioning" },
-    { text: "Should we invest in a developer portal?", key: "dev-portal" },
-    { text: "What\u2019s the ROI of switching to trunk-based development?", key: "trunk-based" }
+    // === ENGINEERING: Junior ===
+    { text: "Which testing framework should I learn \u2014 Jest or Vitest?", key: "jest-vitest", size: 's' },
+    { text: "How do I structure my first PR for the auth service?", key: "first-pr", size: 's' },
+    { text: "What\u2019s the difference between useEffect and useMemo?", key: "react-hooks", size: 's' },
+    { text: "What\u2019s the fastest way to set up my local dev environment?", key: "local-dev", size: 's' },
+
+    // === ENGINEERING: Mid ===
+    { text: "Should we refactor the notification system or rebuild it?", key: "notif-refactor", size: 'm' },
+    { text: "What\u2019s the best caching strategy for our product catalog API?", key: "caching-strategy", size: 'm' },
+    { text: "Should we use Postgres or MongoDB?", key: "postgres-mongo", size: 'm' },
+    { text: "How do competitors handle rate limiting?", key: "rate-limiting", size: 'm' },
+
+    // === ENGINEERING: Senior ===
+    { text: "How do we migrate 2TB of user data with zero downtime?", key: "data-migration", size: 'l' },
+    { text: "How do we reduce our p95 latency?", key: "p95-latency", size: 'l' },
+    { text: "Should we adopt TypeScript across all services?", key: "typescript", size: 'm' },
+    { text: "Is our API versioning strategy sustainable?", key: "api-versioning", size: 'm' },
+
+    // === ENGINEERING: Staff / Principal ===
+    { text: "Should we adopt gRPC or stick with REST for internal services?", key: "grpc-rest", size: 'l' },
+    { text: "What\u2019s the right service boundary for the payments domain?", key: "payments-boundary", size: 'l' },
+    { text: "Monolith vs microservices for our scale?", key: "monolith-micro", size: 'l' },
+    { text: "What\u2019s our technical debt costing us?", key: "tech-debt", size: 'l' },
+
+    // === DEVOPS / PLATFORM ===
+    { text: "Why is our CI pipeline taking 45 minutes?", key: "ci-slow", size: 'm' },
+    { text: "Evaluate Terraform vs Pulumi for our IaC", key: "terraform-pulumi", size: 'm' },
+    { text: "How should we handle secrets rotation across 30 services?", key: "secrets-rotation", size: 'l' },
+    { text: "What\u2019s the cheapest way to run our staging environment?", key: "staging-cost", size: 's' },
+    { text: "Evaluate Datadog vs Grafana for observability", key: "datadog-grafana", size: 'm' },
+
+    // === DESIGN ===
+    { text: "Should we switch from Figma to Penpot?", key: "figma-penpot", size: 'm' },
+    { text: "What\u2019s the best way to document our design system?", key: "design-system-docs", size: 'm' },
+    { text: "How do other companies handle dark mode in their component library?", key: "dark-mode", size: 's' },
+    { text: "Is our onboarding flow losing users at step 3?", key: "onboarding-drop", size: 'l' },
+
+    // === PRODUCT ===
+    { text: "What features should we cut from the v2 roadmap?", key: "v2-cuts", size: 'l' },
+    { text: "How do competitors handle their free-to-paid conversion?", key: "free-to-paid", size: 'm' },
+    { text: "Should we build the analytics dashboard or buy Mixpanel?", key: "build-buy-analytics", size: 'l' },
+    { text: "What\u2019s our biggest churn risk this quarter?", key: "churn-risk", size: 'l' },
+    { text: "Is our pricing strategy competitive?", key: "pricing", size: 'l' },
+
+    // === DATA / ANALYTICS ===
+    { text: "Should we move from Redshift to BigQuery?", key: "redshift-bigquery", size: 'm' },
+    { text: "What\u2019s the best way to set up our event tracking?", key: "event-tracking", size: 's' },
+    { text: "How do we measure feature adoption across segments?", key: "feature-adoption", size: 'm' },
+    { text: "Is our data pipeline reliable enough for real-time dashboards?", key: "data-pipeline", size: 'l' },
+
+    // === SECURITY ===
+    { text: "Are we ready for the SOC 2 audit next month?", key: "soc2", size: 'l' },
+    { text: "What are the top 5 vulnerabilities in our dependency tree?", key: "dep-vulns", size: 'm' },
+    { text: "How should we handle API key rotation for 200 integrations?", key: "api-key-rotation", size: 'l' },
+    { text: "What\u2019s our blast radius if the admin service gets compromised?", key: "blast-radius", size: 'l' },
+    { text: "Are we GDPR ready?", key: "gdpr", size: 'l' },
+
+    // === SUPPORT / SUCCESS ===
+    { text: "Why are enterprise customers churning after month 6?", key: "enterprise-churn", size: 'l' },
+    { text: "What\u2019s the fastest way to reduce our ticket resolution time?", key: "ticket-resolution", size: 'm' },
+    { text: "Should we build a knowledge base or use Zendesk Guide?", key: "kb-zendesk", size: 'm' },
+    { text: "How do we improve our NPS from 32 to 50?", key: "nps-improve", size: 'l' },
+
+    // === SALES / GROWTH ===
+    { text: "What\u2019s the best outbound strategy for mid-market SaaS?", key: "outbound-strategy", size: 'm' },
+    { text: "Should we hire SDRs or invest in product-led growth?", key: "sdr-plg", size: 'l' },
+    { text: "How do competitors position against us in enterprise deals?", key: "competitive-positioning", size: 'l' },
+    { text: "What\u2019s our ideal customer profile based on win/loss data?", key: "icp-analysis", size: 'm' },
+
+    // === HR / PEOPLE ===
+    { text: "How should we structure our engineering levels and comp bands?", key: "eng-levels", size: 'l' },
+    { text: "What\u2019s the best interview process for senior engineers?", key: "eng-hiring", size: 'm' },
+    { text: "Are we competitive on remote work policy vs peers?", key: "remote-policy", size: 'm' },
+    { text: "How do we improve our offer acceptance rate?", key: "offer-acceptance", size: 'm' },
+
+    // === FINANCE / OPS ===
+    { text: "Where are we overspending on SaaS tools?", key: "saas-spend", size: 'm' },
+    { text: "What\u2019s the ROI on our developer experience investments?", key: "dx-roi", size: 'l' },
+    { text: "Should we renegotiate our AWS contract or go multi-cloud?", key: "cloud-cost", size: 'l' },
+    { text: "How do we forecast headcount for next year?", key: "headcount-forecast", size: 'm' },
+
+    // === MANAGEMENT ===
+    { text: "Is our sprint planning process actually effective?", key: "sprint-planning", size: 'm' },
+    { text: "How should we reorganize after the acquisition?", key: "reorg", size: 'l' },
+    { text: "What\u2019s the best way to communicate the layoff plan?", key: "layoff-comms", size: 'l' },
+    { text: "How do other companies run quarterly planning?", key: "quarterly-planning", size: 'm' },
+
+    // === INTERN / NEW HIRE ===
+    { text: "What should I read to understand our architecture?", key: "learn-arch", size: 's' },
+    { text: "How does the deployment pipeline actually work?", key: "learn-deploy", size: 's' },
+    { text: "What are the unwritten rules on this team?", key: "unwritten-rules", size: 's' },
+    { text: "Which codebase should I explore first?", key: "explore-first", size: 's' }
   ];
 
   /* ======================================================
      SPRINT SCRIPTS — pre-written demo sequences
      ====================================================== */
   var scripts = {
+    // === ENGINEERING: Mid-level (database decision) ===
     "postgres-mongo": [
       { type: 'cmd', text: 'grainulator init "Should we use Postgres or MongoDB?"', delay: 50 },
       { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">engineering leadership</span>', delay: 350 },
@@ -929,6 +983,169 @@ code, pre { font-family: var(--mono); }
       { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
       { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/postgres-vs-mongo-brief.html</span>', delay: 250 }
     ],
+    // === ENGINEERING: Junior (first PR) ===
+    "jest-vitest": [
+      { type: 'cmd', text: 'grainulator init "Which testing framework should I learn \u2014 Jest or Vitest?"', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">me (junior engineer, week 3)</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-dim">sprint:</span> <span class="c-white">jest-vs-vitest</span>', delay: 250 },
+      { type: 'blank', delay: 150 },
+      { type: 'cmd', text: '/research Jest vs Vitest for a junior engineer', delay: 50 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r001: Our codebase already uses Vitest in 4 of 5 packages</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r002: Jest has 10x more Stack Overflow answers and tutorials</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-estimate">estimate</span> <span class="c-text" id="claim-jv-r003">r003: Learning curve is roughly equal \u2014 2 days either way</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r004: Vitest runs 3x faster due to native ESM + Vite pipeline</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r005: Jest knowledge transfers to more companies long-term</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-rec">rec</span> <span class="c-text">r006: Start with Vitest (match the team), learn Jest concepts later</span>', delay: 400 },
+      { type: 'blank', delay: 250 },
+      { type: 'challenge', html: '<span class="c-dim">$</span> <span class="c-lime">/challenge r003</span><br><span class="c-dim">finding:</span> <span class="c-text">\u201cLearning curve is roughly equal \u2014 2 days either way.\u201d</span><br><span class="c-dim">supporting evidence:</span> <span class="c-amber">r001</span> <span class="c-dim">\u2014 existing Vitest config means zero setup time</span><br><span class="c-dim">context:</span> <span class="c-text">Vitest API is Jest-compatible, so learning transfers both ways</span><br><br><span class="c-green">\u2713 UPGRADED</span> <span class="c-dim">\u2014 r003 updated to</span> <span class="c-white">Vitest: 1 day (existing config), Jest: 2 days</span>', strikeId: 'claim-jv-r003', delay: 1000 },
+      { type: 'blank', delay: 250 },
+      { type: 'cmd', text: 'grainulator compile \u2014 generating brief', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">findings:</span> <span class="c-green">6 analyzed</span> <span class="c-dim">| 1 revised | 0 retired</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-white">Coverage:</span>', delay: 250 },
+      { type: 'bar', label: 'team-fit', pct: 96, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'learning', pct: 91, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'career', pct: 78, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'bar', label: 'speed', pct: 94, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'blank', delay: 250 },
+      { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
+      { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/jest-vs-vitest-brief.html</span>', delay: 250 }
+    ],
+    // === DESIGN (onboarding flow) ===
+    "onboarding-drop": [
+      { type: 'cmd', text: 'grainulator init "Is our onboarding flow losing users at step 3?"', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">design lead + product manager</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-dim">sprint:</span> <span class="c-white">onboarding-dropoff</span>', delay: 250 },
+      { type: 'blank', delay: 150 },
+      { type: 'cmd', text: '/research onboarding funnel analysis and UX patterns', delay: 50 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r001: Step 3 (connect integrations) has 61% abandonment rate</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r002: Average onboarding time: 8 min. Industry best: 3 min</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-estimate">estimate</span> <span class="c-text" id="claim-ob-r003">r003: Making integrations optional would recover 40% of drop-offs</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r004: Users who skip integrations have 3x higher churn at day 14</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r005: Slack and Notion use progressive disclosure \u2014 setup later</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-rec">rec</span> <span class="c-text">r006: Move integrations to in-app prompt after first value moment</span>', delay: 400 },
+      { type: 'blank', delay: 250 },
+      { type: 'challenge', html: '<span class="c-dim">$</span> <span class="c-lime">/challenge r003</span><br><span class="c-dim">finding:</span> <span class="c-text">\u201cMaking integrations optional would recover 40% of drop-offs.\u201d</span><br><span class="c-dim">contradicting evidence:</span> <span class="c-amber">r004</span> <span class="c-dim">\u2014 skip-users churn 3x more, net impact is lower</span><br><span class="c-dim">comparable:</span> <span class="c-text">Notion saw 25% recovery with deferred setup, 90% eventual adoption</span><br><br><span class="c-red">\u2717 REVISED</span> <span class="c-dim">\u2014 r003 updated to</span> <span class="c-white">25% recovery, but must trigger setup by day 3</span>', strikeId: 'claim-ob-r003', delay: 1000 },
+      { type: 'blank', delay: 250 },
+      { type: 'cmd', text: 'grainulator compile \u2014 generating brief', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">findings:</span> <span class="c-green">6 analyzed</span> <span class="c-dim">| 1 revised | 0 retired</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-white">Coverage:</span>', delay: 250 },
+      { type: 'bar', label: 'drop-off', pct: 95, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'ux-patterns', pct: 87, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'retention', pct: 82, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'effort', pct: 71, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'blank', delay: 250 },
+      { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
+      { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/onboarding-dropoff-brief.html</span>', delay: 250 }
+    ],
+    // === PRODUCT (churn risk) ===
+    "churn-risk": [
+      { type: 'cmd', text: 'grainulator init "What\u2019s our biggest churn risk this quarter?"', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">head of product + CEO</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-dim">sprint:</span> <span class="c-white">churn-risk-q1</span>', delay: 250 },
+      { type: 'blank', delay: 150 },
+      { type: 'cmd', text: '/research churn drivers and leading indicators', delay: 50 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r001: 23% of enterprise accounts reduced seat count last month</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r002: Feature usage dropped 35% after competitor launched free tier</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-estimate">estimate</span> <span class="c-text" id="claim-cr-r003">r003: At-risk revenue is $180k ARR across 12 accounts</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r004: 3 of top 10 accounts have open support escalations</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r005: NPS dropped from 42 to 31 in the API-heavy segment</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-rec">rec</span> <span class="c-text">r006: Executive QBRs for top 12 at-risk accounts this month</span>', delay: 400 },
+      { type: 'blank', delay: 250 },
+      { type: 'challenge', html: '<span class="c-dim">$</span> <span class="c-lime">/challenge r003</span><br><span class="c-dim">finding:</span> <span class="c-text">\u201cAt-risk revenue is $180k ARR across 12 accounts.\u201d</span><br><span class="c-dim">supporting evidence:</span> <span class="c-amber">r001, r004</span> <span class="c-dim">\u2014 seat reduction + escalations suggest deeper issue</span><br><span class="c-dim">recalculated:</span> <span class="c-text">including expansion pipeline at risk: $260k ARR exposure</span><br><br><span class="c-red">\u2717 REVISED</span> <span class="c-dim">\u2014 r003 updated to</span> <span class="c-white">$260k ARR at risk (includes expansion pipeline)</span>', strikeId: 'claim-cr-r003', delay: 1000 },
+      { type: 'blank', delay: 250 },
+      { type: 'cmd', text: 'grainulator compile \u2014 generating brief', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">findings:</span> <span class="c-green">6 analyzed</span> <span class="c-dim">| 1 revised | 0 retired</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-white">Coverage:</span>', delay: 250 },
+      { type: 'bar', label: 'revenue-risk', pct: 93, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'root-cause', pct: 79, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'bar', label: 'competitive', pct: 84, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'intervention', pct: 68, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'blank', delay: 250 },
+      { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
+      { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/churn-risk-q1-brief.html</span>', delay: 250 }
+    ],
+    // === SUPPORT / SUCCESS (ticket resolution) ===
+    "enterprise-churn": [
+      { type: 'cmd', text: 'grainulator init "Why are enterprise customers churning after month 6?"', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">head of customer success</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-dim">sprint:</span> <span class="c-white">enterprise-churn-analysis</span>', delay: 250 },
+      { type: 'blank', delay: 150 },
+      { type: 'cmd', text: '/research enterprise churn patterns and root causes', delay: 50 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r001: 67% of churned accounts cite "didn\u2019t see ROI" in exit surveys</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r002: Avg enterprise onboarding takes 6 weeks; value realization at week 12</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-estimate">estimate</span> <span class="c-text" id="claim-ec-r003">r003: Dedicated CSM would reduce churn by 30%</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r004: Champion turnover in 4 of 7 churned accounts \u2014 no backup contact</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r005: Accounts with 3+ integrations have 89% retention vs 54%</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-rec">rec</span> <span class="c-text">r006: Mandatory 90-day success plan + multi-thread every account</span>', delay: 400 },
+      { type: 'blank', delay: 250 },
+      { type: 'challenge', html: '<span class="c-dim">$</span> <span class="c-lime">/challenge r003</span><br><span class="c-dim">finding:</span> <span class="c-text">\u201cDedicated CSM would reduce churn by 30%.\u201d</span><br><span class="c-dim">contradicting evidence:</span> <span class="c-amber">r004</span> <span class="c-dim">\u2014 champion turnover is structural, CSM alone won\u2019t fix it</span><br><span class="c-dim">industry data:</span> <span class="c-text">CSM + multi-threading reduces churn 18\u201322% on average</span><br><br><span class="c-red">\u2717 REVISED</span> <span class="c-dim">\u2014 r003 updated to</span> <span class="c-white">20% churn reduction with CSM + multi-threading</span>', strikeId: 'claim-ec-r003', delay: 1000 },
+      { type: 'blank', delay: 250 },
+      { type: 'cmd', text: 'grainulator compile \u2014 generating brief', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">findings:</span> <span class="c-green">6 analyzed</span> <span class="c-dim">| 1 revised | 0 retired</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-white">Coverage:</span>', delay: 250 },
+      { type: 'bar', label: 'root-cause', pct: 91, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'onboarding', pct: 86, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'retention', pct: 77, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'bar', label: 'process', pct: 69, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'blank', delay: 250 },
+      { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
+      { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/enterprise-churn-analysis-brief.html</span>', delay: 250 }
+    ],
+    // === DATA / ANALYTICS (pipeline reliability) ===
+    "data-pipeline": [
+      { type: 'cmd', text: 'grainulator init "Is our data pipeline reliable enough for real-time dashboards?"', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">data engineering lead + VP product</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-dim">sprint:</span> <span class="c-white">pipeline-reliability</span>', delay: 250 },
+      { type: 'blank', delay: 150 },
+      { type: 'cmd', text: '/research data pipeline reliability and real-time requirements', delay: 50 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r001: Pipeline has 94.2% uptime; real-time dashboards need 99.5%</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r002: Current batch window is 15 min; stakeholders want sub-minute</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-estimate">estimate</span> <span class="c-text" id="claim-dp-r003">r003: Switching to Kafka Streams achieves sub-second latency in 3 weeks</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r004: Team has zero Kafka experience \u2014 operational risk is high</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r005: 73% of dashboard queries hit stale data due to late-arriving events</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-rec">rec</span> <span class="c-text">r006: Materialize or ksqlDB for streaming, keep batch as fallback</span>', delay: 400 },
+      { type: 'blank', delay: 250 },
+      { type: 'challenge', html: '<span class="c-dim">$</span> <span class="c-lime">/challenge r003</span><br><span class="c-dim">finding:</span> <span class="c-text">\u201cSwitching to Kafka Streams achieves sub-second latency in 3 weeks.\u201d</span><br><span class="c-dim">contradicting evidence:</span> <span class="c-amber">r004</span> <span class="c-dim">\u2014 zero Kafka experience means 4\u20136 week learning curve alone</span><br><span class="c-dim">industry data:</span> <span class="c-text">Kafka Streams adoption averages 8 weeks with training</span><br><br><span class="c-red">\u2717 REVISED</span> <span class="c-dim">\u2014 r003 updated to</span> <span class="c-white">8\u201310 weeks including team ramp-up</span>', strikeId: 'claim-dp-r003', delay: 1000 },
+      { type: 'blank', delay: 250 },
+      { type: 'cmd', text: 'grainulator compile \u2014 generating brief', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">findings:</span> <span class="c-green">6 analyzed</span> <span class="c-dim">| 1 revised | 0 retired</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-white">Coverage:</span>', delay: 250 },
+      { type: 'bar', label: 'reliability', pct: 92, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'latency', pct: 88, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'team-skill', pct: 54, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'bar', label: 'migration', pct: 71, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'blank', delay: 250 },
+      { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
+      { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/pipeline-reliability-brief.html</span>', delay: 250 }
+    ],
+    // === HR / PEOPLE (eng levels) ===
+    "eng-levels": [
+      { type: 'cmd', text: 'grainulator init "How should we structure our engineering levels and comp bands?"', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">VP People + CTO</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-dim">sprint:</span> <span class="c-white">eng-levels-comp</span>', delay: 250 },
+      { type: 'blank', delay: 150 },
+      { type: 'cmd', text: '/research engineering career ladders and compensation structures', delay: 50 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r001: Current "flat" structure causing senior retention issues \u2014 3 left in 6 months</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r002: Industry standard is 6\u20138 levels (IC1\u2013IC6 + Staff/Principal)</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-estimate">estimate</span> <span class="c-text" id="claim-el-r003">r003: Implementing levels takes 2 weeks of People team effort</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r004: Comp bands 15% below market for senior+ roles in our geo</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r005: Companies with clear ladders see 40% lower senior attrition</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-rec">rec</span> <span class="c-text">r006: 6-level IC ladder + manager track, re-band to 50th percentile</span>', delay: 400 },
+      { type: 'blank', delay: 250 },
+      { type: 'challenge', html: '<span class="c-dim">$</span> <span class="c-lime">/challenge r003</span><br><span class="c-dim">finding:</span> <span class="c-text">\u201cImplementing levels takes 2 weeks of People team effort.\u201d</span><br><span class="c-dim">contradicting evidence:</span> <span class="c-amber">r004</span> <span class="c-dim">\u2014 comp re-banding requires budget approval + board alignment</span><br><span class="c-dim">industry data:</span> <span class="c-text">full leveling + comp rollout averages 8\u201312 weeks</span><br><br><span class="c-red">\u2717 REVISED</span> <span class="c-dim">\u2014 r003 updated to</span> <span class="c-white">8 weeks: 2 for ladder, 6 for comp alignment</span>', strikeId: 'claim-el-r003', delay: 1000 },
+      { type: 'blank', delay: 250 },
+      { type: 'cmd', text: 'grainulator compile \u2014 generating brief', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">findings:</span> <span class="c-green">6 analyzed</span> <span class="c-dim">| 1 revised | 0 retired</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-white">Coverage:</span>', delay: 250 },
+      { type: 'bar', label: 'retention', pct: 91, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'comp-data', pct: 85, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'structure', pct: 88, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'rollout', pct: 64, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'blank', delay: 250 },
+      { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
+      { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/eng-levels-comp-brief.html</span>', delay: 250 }
+    ],
+    // === PRODUCT (pricing) ===
     "pricing": [
       { type: 'cmd', text: 'grainulator init "Is our pricing strategy competitive?"', delay: 50 },
       { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">CEO + head of product</span>', delay: 350 },
@@ -955,6 +1172,7 @@ code, pre { font-family: var(--mono); }
       { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
       { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/pricing-analysis-brief.html</span>', delay: 250 }
     ],
+    // === ENGINEERING: Staff (architecture) ===
     "monolith-micro": [
       { type: 'cmd', text: 'grainulator init "Monolith vs microservices for our scale?"', delay: 50 },
       { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">platform engineering team</span>', delay: 350 },
@@ -981,8 +1199,9 @@ code, pre { font-family: var(--mono); }
       { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
       { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/architecture-decision-brief.html</span>', delay: 250 }
     ],
+    // === SECURITY (SOC 2) ===
     "soc2": [
-      { type: 'cmd', text: 'grainulator init "Are we ready for SOC 2 audit?"', delay: 50 },
+      { type: 'cmd', text: 'grainulator init "Are we ready for the SOC 2 audit next month?"', delay: 50 },
       { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">CTO + compliance lead</span>', delay: 350 },
       { type: 'line', html: '<span class="c-dim">sprint:</span> <span class="c-white">soc2-readiness</span>', delay: 250 },
       { type: 'blank', delay: 150 },
@@ -1007,8 +1226,9 @@ code, pre { font-family: var(--mono); }
       { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
       { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/soc2-readiness-brief.html</span>', delay: 250 }
     ],
+    // === FINANCE / OPS (cloud cost) ===
     "cloud-cost": [
-      { type: 'cmd', text: 'grainulator init "Where are we overspending on cloud?"', delay: 50 },
+      { type: 'cmd', text: 'grainulator init "Should we renegotiate our AWS contract or go multi-cloud?"', delay: 50 },
       { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">VP Engineering + finance</span>', delay: 350 },
       { type: 'line', html: '<span class="c-dim">sprint:</span> <span class="c-white">cloud-cost-audit</span>', delay: 250 },
       { type: 'blank', delay: 150 },
@@ -1033,32 +1253,34 @@ code, pre { font-family: var(--mono); }
       { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
       { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/cloud-cost-audit-brief.html</span>', delay: 250 }
     ],
-    "eng-hiring": [
-      { type: 'cmd', text: 'grainulator init "How should we run the eng hiring process?"', delay: 50 },
-      { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">VP Engineering + recruiting</span>', delay: 350 },
-      { type: 'line', html: '<span class="c-dim">sprint:</span> <span class="c-white">eng-hiring-process</span>', delay: 250 },
+    // === SALES / GROWTH (SDR vs PLG) ===
+    "sdr-plg": [
+      { type: 'cmd', text: 'grainulator init "Should we hire SDRs or invest in product-led growth?"', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">VP Sales + CEO</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-dim">sprint:</span> <span class="c-white">growth-strategy</span>', delay: 250 },
       { type: 'blank', delay: 150 },
-      { type: 'cmd', text: '/research engineering hiring best practices', delay: 50 },
-      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r001: Current time-to-hire is 47 days; industry median is 36</span>', delay: 400 },
-      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r002: Take-home assignments have 38% drop-off rate</span>', delay: 400 },
-      { type: 'line', html: '<span class="tag tag-estimate">estimate</span> <span class="c-text" id="claim-eh-r003">r003: Switching to pair programming interviews saves 8 days</span>', delay: 400 },
-      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r004: No structured rubric \u2014 interviewer bias is high</span>', delay: 400 },
-      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r005: Companies with structured interviews see 2x better retention</span>', delay: 400 },
-      { type: 'line', html: '<span class="tag tag-rec">rec</span> <span class="c-text">r006: Structured rubric + pair programming + 4-stage pipeline</span>', delay: 400 },
+      { type: 'cmd', text: '/research SDR-led vs product-led growth for B2B SaaS', delay: 50 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r001: SDR cost per meeting: $420 avg; PLG self-serve: $18 avg</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r002: 78% of enterprise deals still close with human touch</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-estimate">estimate</span> <span class="c-text" id="claim-sp-r003">r003: PLG alone can cover SMB segment within 6 months</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r004: Our ACV is $38k \u2014 too high for pure self-serve</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r005: Hybrid companies (PLG + sales) grow 2.4x faster per OpenView</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-rec">rec</span> <span class="c-text">r006: PLG for acquisition, 2 SDRs for enterprise conversion</span>', delay: 400 },
       { type: 'blank', delay: 250 },
-      { type: 'challenge', html: '<span class="c-dim">$</span> <span class="c-lime">/challenge r003</span><br><span class="c-dim">finding:</span> <span class="c-text">\u201cSwitching to pair programming interviews saves 8 days.\u201d</span><br><span class="c-dim">contradicting evidence:</span> <span class="c-amber">r004</span> <span class="c-dim">\u2014 rubric creation adds 1\u20132 weeks upfront</span><br><span class="c-dim">industry data:</span> <span class="c-text">net savings after process change: 5 days average</span><br><br><span class="c-red">\u2717 REVISED</span> <span class="c-dim">\u2014 r003 updated to</span> <span class="c-white">saves 5 days after 2-week setup investment</span>', strikeId: 'claim-eh-r003', delay: 1000 },
+      { type: 'challenge', html: '<span class="c-dim">$</span> <span class="c-lime">/challenge r003</span><br><span class="c-dim">finding:</span> <span class="c-text">\u201cPLG alone can cover SMB segment within 6 months.\u201d</span><br><span class="c-dim">contradicting evidence:</span> <span class="c-amber">r004</span> <span class="c-dim">\u2014 $38k ACV means even SMBs want a demo before buying</span><br><span class="c-dim">comparable:</span> <span class="c-text">Notion hit PLG-only at $8k ACV; Datadog needed sales at $25k+</span><br><br><span class="c-red">\u2717 REVISED</span> <span class="c-dim">\u2014 r003 updated to</span> <span class="c-white">PLG covers trial-to-paid under $15k ACV; sales needed above</span>', strikeId: 'claim-sp-r003', delay: 1000 },
       { type: 'blank', delay: 250 },
       { type: 'cmd', text: 'grainulator compile \u2014 generating brief', delay: 50 },
       { type: 'line', html: '<span class="c-dim">findings:</span> <span class="c-green">6 analyzed</span> <span class="c-dim">| 1 revised | 0 retired</span>', delay: 350 },
       { type: 'line', html: '<span class="c-white">Coverage:</span>', delay: 250 },
-      { type: 'bar', label: 'speed', pct: 87, cls: 'high', color: 'c-green', delay: 350 },
-      { type: 'bar', label: 'quality', pct: 91, cls: 'high', color: 'c-green', delay: 350 },
-      { type: 'bar', label: 'fairness', pct: 83, cls: 'high', color: 'c-green', delay: 350 },
-      { type: 'bar', label: 'candidate-exp', pct: 76, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'bar', label: 'unit-econ', pct: 93, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'segment-fit', pct: 86, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'competitive', pct: 81, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'hiring-plan', pct: 67, cls: 'mid', color: 'c-amber', delay: 350 },
       { type: 'blank', delay: 250 },
       { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
-      { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/eng-hiring-process-brief.html</span>', delay: 250 }
+      { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/growth-strategy-brief.html</span>', delay: 250 }
     ],
+    // === DEVOPS (Datadog vs Grafana) ===
     "datadog-grafana": [
       { type: 'cmd', text: 'grainulator init "Evaluate Datadog vs Grafana for observability"', delay: 50 },
       { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">SRE team + engineering management</span>', delay: 350 },
@@ -1085,31 +1307,32 @@ code, pre { font-family: var(--mono); }
       { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
       { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/observability-eval-brief.html</span>', delay: 250 }
     ],
-    "gdpr": [
-      { type: 'cmd', text: 'grainulator init "Are we GDPR ready?"', delay: 50 },
-      { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">legal + CTO</span>', delay: 350 },
-      { type: 'line', html: '<span class="c-dim">sprint:</span> <span class="c-white">gdpr-readiness</span>', delay: 250 },
+    // === MANAGEMENT (reorg) ===
+    "reorg": [
+      { type: 'cmd', text: 'grainulator init "How should we reorganize after the acquisition?"', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">CEO + VP Engineering + VP People</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-dim">sprint:</span> <span class="c-white">post-acquisition-reorg</span>', delay: 250 },
       { type: 'blank', delay: 150 },
-      { type: 'cmd', text: '/research GDPR compliance gap analysis', delay: 50 },
-      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r001: No data processing agreement with 4 of 7 sub-processors</span>', delay: 400 },
-      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r002: User data deletion takes 30 days; GDPR requires \u201cwithout undue delay\u201d</span>', delay: 400 },
-      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r003: Privacy policy last updated 18 months ago</span>', delay: 400 },
-      { type: 'line', html: '<span class="tag tag-estimate">estimate</span> <span class="c-text" id="claim-gd-r004">r004: Full compliance achievable in 4 weeks</span>', delay: 400 },
-      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r005: No Data Protection Officer designated</span>', delay: 400 },
-      { type: 'line', html: '<span class="tag tag-rec">rec</span> <span class="c-text">r006: Prioritize DPAs, deletion pipeline, and DPO appointment</span>', delay: 400 },
+      { type: 'cmd', text: '/research post-acquisition org design patterns', delay: 50 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r001: 47% of acquired-team engineers leave within 12 months industry-wide</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r002: Acquired team uses different stack (Python/Django vs our Node/React)</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-estimate">estimate</span> <span class="c-text" id="claim-rg-r003">r003: Full integration achievable in 8 weeks</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r004: Merging on-call rotations without planning will burn out both teams</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r005: Spotify and Figma ran acquired teams as "pods" for 6+ months</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-rec">rec</span> <span class="c-text">r006: Autonomous pod for 6 months, shared rituals from day 1</span>', delay: 400 },
       { type: 'blank', delay: 250 },
-      { type: 'challenge', html: '<span class="c-dim">$</span> <span class="c-lime">/challenge r004</span><br><span class="c-dim">finding:</span> <span class="c-text">\u201cFull compliance achievable in 4 weeks.\u201d</span><br><span class="c-dim">contradicting evidence:</span> <span class="c-amber">r001, r005</span> <span class="c-dim">\u2014 DPA negotiation + DPO search take 6\u20138 weeks minimum</span><br><span class="c-dim">industry data:</span> <span class="c-text">GDPR remediation averages 11 weeks for similar-sized companies</span><br><br><span class="c-red">\u2717 REVISED</span> <span class="c-dim">\u2014 r004 updated to</span> <span class="c-white">10\u201312 weeks</span>', strikeId: 'claim-gd-r004', delay: 1000 },
+      { type: 'challenge', html: '<span class="c-dim">$</span> <span class="c-lime">/challenge r003</span><br><span class="c-dim">finding:</span> <span class="c-text">\u201cFull integration achievable in 8 weeks.\u201d</span><br><span class="c-dim">contradicting evidence:</span> <span class="c-amber">r001, r002</span> <span class="c-dim">\u2014 stack differences + retention risk require slower pace</span><br><span class="c-dim">industry data:</span> <span class="c-text">successful integrations average 6\u20139 months for eng teams</span><br><br><span class="c-red">\u2717 REVISED</span> <span class="c-dim">\u2014 r003 updated to</span> <span class="c-white">6 months phased integration, not 8 weeks</span>', strikeId: 'claim-rg-r003', delay: 1000 },
       { type: 'blank', delay: 250 },
       { type: 'cmd', text: 'grainulator compile \u2014 generating brief', delay: 50 },
       { type: 'line', html: '<span class="c-dim">findings:</span> <span class="c-green">6 analyzed</span> <span class="c-dim">| 1 revised | 0 retired</span>', delay: 350 },
       { type: 'line', html: '<span class="c-white">Coverage:</span>', delay: 250 },
-      { type: 'bar', label: 'legal', pct: 58, cls: 'mid', color: 'c-amber', delay: 350 },
-      { type: 'bar', label: 'technical', pct: 71, cls: 'mid', color: 'c-amber', delay: 350 },
-      { type: 'bar', label: 'process', pct: 45, cls: 'mid', color: 'c-amber', delay: 350 },
-      { type: 'bar', label: 'governance', pct: 33, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'bar', label: 'retention', pct: 87, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'culture', pct: 73, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'bar', label: 'technical', pct: 81, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'timeline', pct: 65, cls: 'mid', color: 'c-amber', delay: 350 },
       { type: 'blank', delay: 250 },
       { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
-      { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/gdpr-readiness-brief.html</span>', delay: 250 }
+      { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/post-acquisition-reorg-brief.html</span>', delay: 250 }
     ]
   };
 
@@ -1179,8 +1402,10 @@ code, pre { font-family: var(--mono); }
       var bw = tw + padX * 2;
       var bh = baseFontSize + padY * 2;
 
-      // Size variation
-      var scale = 0.7 + Math.random() * 0.5;
+      // Size variation based on prompt weight
+      var sizeMap = { s: 0.7, m: 0.9, l: 1.1 };
+      var baseScale = sizeMap[p.size] || 0.9;
+      var scale = baseScale + (Math.random() - 0.5) * 0.15;
       bw *= scale;
       bh *= scale;
       var fontSize = baseFontSize * scale;
