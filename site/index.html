@@ -13,6 +13,7 @@
 <meta property="og:description" content="Type a question, get a compiled brief in 5 minutes. Research sprint orchestrator for Claude Code. Open source, $6–12 per sprint." />
 <meta property="og:url" content="https://grainulator.app/" />
 <meta property="og:image" content="https://grainulator.app/og-image.png" />
+<!-- TODO: og-image.png must be generated as a 1200x630 branded social card (gold wheat kernel on dark #0a0908 background with "Grainulator — Research That Compiles" text). Place at site/og-image.png. -->
 <meta property="og:image:type" content="image/png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
@@ -21,7 +22,8 @@
 <meta name="twitter:description" content="Type a question, get a compiled brief in 5 minutes. Research sprint orchestrator for Claude Code." />
 <meta name="twitter:image" content="https://grainulator.app/og-image.png" />
 <link rel="canonical" href="https://grainulator.app/" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><text x='32' y='33' text-anchor='middle' dominant-baseline='central' fill='%23d4a547' font-family='Georgia,serif' font-size='42' font-weight='700'>G</text></svg>" />
+<!-- BRAND (w017-w023): Wheat kernel SVG as favicon -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><ellipse cx='32' cy='30' rx='12' ry='22' fill='%23d4a547' transform='rotate(-8 32 30)'/><line x1='32' y1='10' x2='32' y2='56' stroke='%23b8922e' stroke-width='1.5' stroke-linecap='round'/><path d='M32 12 Q28 6 26 2' stroke='%23d4a547' stroke-width='1.2' fill='none' stroke-linecap='round'/><path d='M32 12 Q36 6 38 2' stroke='%23d4a547' stroke-width='1.2' fill='none' stroke-linecap='round'/></svg>" />
 <meta name="theme-color" content="#d4a547" />
 <style>
 /* ============================================================
@@ -87,7 +89,7 @@ code, pre { font-family: var(--mono); }
   border-radius: 4px; text-decoration: none; z-index: 10000;
 }
 
-/* ===== STICKY NAV (x015) ===== */
+/* ===== STICKY NAV (x015) — delayed until past section 1 (w059) ===== */
 .sticky-nav {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -100,6 +102,11 @@ code, pre { font-family: var(--mono); }
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
+  transform: translateY(-100%);
+  transition: transform 0.4s var(--ease);
+}
+.sticky-nav.nav-visible {
+  transform: translateY(0);
 }
 .sticky-nav-brand {
   font-family: var(--serif);
@@ -107,8 +114,37 @@ code, pre { font-family: var(--mono); }
   font-weight: 700;
   color: var(--gold);
   text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .sticky-nav-brand:hover { text-decoration: none; }
+/* BRAND: Inline wheat kernel mark in nav */
+.nav-mark {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+}
+/* UX (w060): Section anchor links in nav */
+.sticky-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.sticky-nav-links a {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+  text-decoration: none;
+  text-transform: uppercase;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.3s;
+}
+.sticky-nav-links a:hover { color: var(--text); text-decoration: none; }
 .sticky-nav-cta {
   font-family: var(--mono);
   font-size: 0.75rem;
@@ -266,19 +302,20 @@ code, pre { font-family: var(--mono); }
   font-style: italic;
 }
 
-/* Chaos dissolve */
+/* PERF (w037): Chaos dissolve uses opacity only, no filter:blur paint storms */
 .chaos-container.dissolving .chaos-tab,
 .chaos-container.dissolving .chaos-slack {
-  filter: blur(12px);
   opacity: 0 !important;
-  transition: opacity 0.8s var(--ease), filter 1s var(--ease), transform 0.8s var(--ease);
+  transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
 }
 
 /* ===== SECTION 2.5: THE SILENCE (w008: empty black beat) ===== */
+/* UX (w065): Subtle grain texture so it doesn't look broken */
 .s-silence {
   height: 100vh;
   position: relative;
   background: var(--bg);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
 }
 
 /* ===== SECTION 3: THE COMMAND (w013: 5x warmer glow) ===== */
@@ -314,6 +351,20 @@ code, pre { font-family: var(--mono); }
   pointer-events: none;
   z-index: 0;
 }
+/* COPY (w030): "In Claude Code, type:" label above install command */
+.command-label {
+  font-family: var(--mono);
+  font-size: clamp(0.7rem, 1.1vw, 0.85rem);
+  color: var(--text-faint);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 1s var(--ease-slow), transform 1s var(--ease-slow);
+  position: relative;
+  z-index: 1;
+}
 .command-line {
   font-family: var(--mono);
   font-size: clamp(1rem, 2.2vw, 1.5rem);
@@ -326,17 +377,20 @@ code, pre { font-family: var(--mono); }
   z-index: 1;
   text-shadow: 0 0 40px rgba(212, 165, 71, 0.4);
 }
+/* UX (w066): Make research question subtitle larger/more visible */
 .command-sub {
-  font-family: var(--mono);
-  font-size: clamp(0.8rem, 1.4vw, 1rem);
-  color: var(--text-dim);
+  font-family: var(--serif);
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  color: var(--text);
   margin-top: 20px;
   opacity: 0;
   transform: translateY(12px);
   transition: opacity 1s var(--ease-slow) 0.3s, transform 1s var(--ease-slow) 0.3s;
   position: relative;
   z-index: 1;
+  font-style: italic;
 }
+.command-inner.active .command-label,
 .command-inner.active .command-line,
 .command-inner.active .command-sub {
   opacity: 1;
@@ -375,10 +429,9 @@ code, pre { font-family: var(--mono); }
 }
 /* Billboard state: terminal shrinks/blurs when billboard is active (w014) */
 .sprint-terminal.billboard-active {
-  filter: blur(8px);
+  opacity: 0;
   transform: scale(0.92);
-  opacity: 0.3;
-  transition: all 0.8s var(--ease-slow);
+  transition: all 0.15s step-end;
 }
 .terminal-chrome {
   border-radius: 8px;
@@ -466,7 +519,7 @@ code, pre { font-family: var(--mono); }
   opacity: 1;
 }
 
-/* ===== THE BILLBOARD FRAME (w014) ===== */
+/* ===== THE BILLBOARD FRAME (w014) — HARD CUT (w049) ===== */
 .billboard-frame {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -479,7 +532,8 @@ code, pre { font-family: var(--mono); }
   padding: 0 32px;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.8s var(--ease-slow);
+  /* STORY (w049): HARD CUT, not fade — instant opacity switch */
+  transition: none;
 }
 .billboard-frame.active {
   opacity: 1;
@@ -638,6 +692,7 @@ code, pre { font-family: var(--mono); }
   color: var(--text-dim);
   line-height: 1.6;
 }
+/* COPY (w031): Explain evidence pills — add tooltip */
 .evidence-pill {
   display: inline-block;
   padding: 1px 5px;
@@ -645,6 +700,7 @@ code, pre { font-family: var(--mono); }
   font-family: var(--mono);
   font-size: 0.5625rem;
   margin-left: 4px;
+  cursor: help;
 }
 .evidence-tested { background: rgba(122, 155, 109, 0.15); color: var(--sage); }
 .evidence-web { background: rgba(196, 122, 74, 0.15); color: var(--ember); }
@@ -668,18 +724,28 @@ code, pre { font-family: var(--mono); }
   opacity: 1;
   transform: none;
 }
+/* UX (w063): tabular numbers for counter digits */
 .brief-stat .stat-number {
   font-family: var(--serif);
   font-size: clamp(1.6rem, 3vw, 2.4rem);
   font-weight: 700;
   color: var(--gold);
   line-height: 1;
+  font-feature-settings: 'tnum';
 }
 .brief-stat .stat-label {
   font-size: 0.75rem;
   color: var(--text-faint);
   margin-top: 4px;
   letter-spacing: 0.04em;
+}
+/* STORY (w055): Comparison framing for stat labels */
+.brief-stat .stat-context {
+  font-size: 0.625rem;
+  color: var(--text-faint);
+  margin-top: 2px;
+  letter-spacing: 0.02em;
+  opacity: 0.7;
 }
 
 /* ===== SECTION 5.5: THE SARAH MOMENT (w016: end with character) ===== */
@@ -737,7 +803,8 @@ code, pre { font-family: var(--mono); }
   height: 6px;
   border-radius: 50%;
   background: var(--text-faint);
-  animation: typing-pulse 1.4s infinite;
+  /* STORY (w051): Stop typing dots after 2-3 seconds */
+  animation: typing-pulse 1.4s 2 forwards;
 }
 .sarah-typing .typing-dot:nth-child(2) { animation-delay: 0.2s; }
 .sarah-typing .typing-dot:nth-child(3) { animation-delay: 0.4s; }
@@ -787,6 +854,38 @@ code, pre { font-family: var(--mono); }
   opacity: 1;
   transform: none;
 }
+/* STORY (w054): Competitive FOMO line */
+.close-fomo {
+  font-family: var(--serif);
+  font-size: 0.9375rem;
+  color: var(--text-faint);
+  font-style: italic;
+  margin-bottom: 32px;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 1s var(--ease-slow) 0.15s, transform 1s var(--ease-slow) 0.15s;
+}
+.close-fomo.visible {
+  opacity: 1;
+  transform: none;
+}
+/* COPY (w024): "In Claude Code, type:" label */
+.close-install-label {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  color: var(--text-faint);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+/* COPY (w025): Time anchor */
+.close-time-anchor {
+  font-family: var(--serif);
+  font-size: 0.9375rem;
+  color: var(--text-dim);
+  margin-top: 20px;
+  font-style: italic;
+}
 .close-install {
   max-width: 480px;
   margin: 40px auto;
@@ -815,6 +914,7 @@ code, pre { font-family: var(--mono); }
 }
 .close-cmd:hover { box-shadow: 0 0 90px rgba(212, 165, 71, 0.1); }
 .close-cmd .prompt { color: var(--text-faint); }
+/* UX (w064): Enhanced copy button feedback — scale pulse + checkmark */
 .close-copy {
   position: absolute; right: 14px; top: 50%;
   transform: translateY(-50%);
@@ -837,7 +937,16 @@ code, pre { font-family: var(--mono); }
   justify-content: center;
 }
 .close-copy:hover { background: var(--gold); color: var(--bg); }
-.close-copy.copied { border-color: var(--sage); color: var(--sage); }
+.close-copy.copied {
+  border-color: var(--sage);
+  color: var(--sage);
+  animation: copy-pulse 0.4s var(--ease);
+}
+@keyframes copy-pulse {
+  0% { transform: translateY(-50%) scale(1); }
+  50% { transform: translateY(-50%) scale(1.15); }
+  100% { transform: translateY(-50%) scale(1); }
+}
 
 .close-links {
   display: flex;
@@ -899,6 +1008,7 @@ code, pre { font-family: var(--mono); }
   .close-cmd { font-size: 0.875rem; padding: 18px 52px 18px 16px; }
 
   .sticky-nav { padding: 10px 16px; }
+  .sticky-nav-links { display: none; }
 }
 
 @media (max-width: 480px) {
@@ -934,6 +1044,7 @@ code, pre { font-family: var(--mono); }
   .question-text .char,
   .chaos-tab,
   .chaos-slack,
+  .command-inner .command-label,
   .command-inner .command-line,
   .command-inner .command-sub,
   .command-inner .command-glow,
@@ -945,6 +1056,7 @@ code, pre { font-family: var(--mono); }
   .brief-section,
   .brief-stat,
   .close-headline,
+  .close-fomo,
   .close-install,
   .close-links,
   .sarah-container,
@@ -959,6 +1071,7 @@ code, pre { font-family: var(--mono); }
   .bar-fill { width: var(--target-w) !important; }
   .cursor-blink { animation: none; opacity: 1; }
   .billboard-frame { display: none !important; }
+  .sticky-nav { transform: none !important; }
 }
 
 /* ===== PRINT (x021) ===== */
@@ -1059,9 +1172,23 @@ code, pre { font-family: var(--mono); }
 <body>
 <a href="#main" class="skip-link">Skip to main content</a>
 
-<!-- Sticky nav (x015) -->
-<nav class="sticky-nav" aria-label="Main navigation">
-  <a href="/" class="sticky-nav-brand">Grainulator</a>
+<!-- Sticky nav (x015) — with wheat kernel mark (w017) and section anchors (w060) -->
+<nav class="sticky-nav" id="sticky-nav" aria-label="Main navigation">
+  <a href="/" class="sticky-nav-brand">
+    <svg class="nav-mark" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <ellipse cx="32" cy="30" rx="12" ry="22" fill="#d4a547" transform="rotate(-8 32 30)"/>
+      <line x1="32" y1="10" x2="32" y2="56" stroke="#b8922e" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M32 12 Q28 6 26 2" stroke="#d4a547" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      <path d="M32 12 Q36 6 38 2" stroke="#d4a547" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+    </svg>
+    Grainulator
+  </a>
+  <div class="sticky-nav-links">
+    <a href="#section-chaos">Problem</a>
+    <a href="#section-sprint">Sprint</a>
+    <a href="#section-brief">Brief</a>
+    <a href="#install">Install</a>
+  </div>
   <a href="#install" class="sticky-nav-cta">Get started</a>
 </nav>
 
@@ -1077,25 +1204,26 @@ code, pre { font-family: var(--mono); }
 <main id="main">
 
 <!-- ===== SECTION 1: THE QUESTION ===== -->
+<!-- PERF (w042): Question text in HTML for SEO, JS will overwrite for animation -->
 <section class="scroll-section s-question" aria-label="The question">
   <div class="s-question-sticky">
     <div class="question-inner">
-      <div class="question-text" id="question-text" role="heading" aria-level="1" aria-label="What's the best way to solve this?"></div>
+      <div class="question-text" id="question-text" role="heading" aria-level="1" aria-label="What's the best way to solve this?">&ldquo;What&rsquo;s the best way to solve this?&rdquo;</div>
     </div>
   </div>
 </section>
 
 <!-- ===== SECTION 2: THE CHAOS ===== -->
-<section class="scroll-section s-chaos" aria-label="The chaos of unstructured research">
+<section class="scroll-section s-chaos" id="section-chaos" aria-label="The chaos of unstructured research">
   <div class="s-chaos-sticky">
     <div class="chaos-container" id="chaos-container" role="group" aria-label="Simulated chaos of browser tabs, Slack messages, and unstructured research">
       <!-- Browser tabs -->
-      <div class="chaos-tab" style="--tab-transform: translate(-30%, -60%) rotate(-4deg); top: 12%; left: 10%;">postgres vs mysql — reddit</div>
+      <div class="chaos-tab" style="--tab-transform: translate(-30%, -60%) rotate(-4deg); top: 12%; left: 10%;">postgres vs mysql &mdash; reddit</div>
       <div class="chaos-tab" style="--tab-transform: translate(10%, -40%) rotate(2deg); top: 8%; left: 45%;">Stack Overflow: pgbouncer</div>
       <div class="chaos-tab" style="--tab-transform: translate(-10%, -50%) rotate(-1deg); top: 20%; left: 65%;">HN: Why we left Postgres</div>
       <div class="chaos-tab" style="--tab-transform: translate(20%, -30%) rotate(3deg); top: 5%; left: 25%;">postgres pricing calculator</div>
       <div class="chaos-tab" style="--tab-transform: translate(-20%, -45%) rotate(-3deg); top: 16%; left: 50%;">reddit r/database migrat&hellip;</div>
-      <div class="chaos-tab" style="--tab-transform: translate(5%, -35%) rotate(1deg); top: 24%; left: 15%;">AWS RDS docs — PostgreSQL</div>
+      <div class="chaos-tab" style="--tab-transform: translate(5%, -35%) rotate(1deg); top: 24%; left: 15%;">AWS RDS docs &mdash; PostgreSQL</div>
       <div class="chaos-tab" style="--tab-transform: translate(-15%, -55%) rotate(-2deg); top: 10%; left: 78%;">migration horror stories</div>
       <div class="chaos-tab" style="--tab-transform: translate(15%, -25%) rotate(4deg); top: 28%; left: 40%;">pgvector benchmarks 2024</div>
 
@@ -1132,14 +1260,16 @@ code, pre { font-family: var(--mono); }
   <div class="s-command-sticky">
     <div class="command-inner" id="command-inner">
       <div class="command-glow"></div>
+      <!-- COPY (w024): "In Claude Code, type:" label -->
+      <div class="command-label">In Claude Code, type:</div>
       <div class="command-line"><span class="prompt">/</span>plugin install grainulator</div>
-      <div class="command-sub">&ldquo;research should we migrate to postgres&rdquo;</div>
+      <div class="command-sub">&ldquo;Should we migrate to Postgres?&rdquo;</div>
     </div>
   </div>
 </section>
 
 <!-- ===== SECTION 4: THE SPRINT ===== -->
-<section class="scroll-section s-sprint" aria-label="Watch a research sprint compile">
+<section class="scroll-section s-sprint" id="section-sprint" aria-label="Watch a research sprint compile">
   <div class="s-sprint-sticky">
     <div class="sprint-terminal" id="sprint-terminal" aria-label="Simulated terminal showing a Grainulator research sprint running, gathering claims, challenging estimates, and compiling results">
       <div class="terminal-chrome" role="img" aria-label="Terminal session: research sprint on Postgres migration with 6 claims compiled, 1 estimate revised from 6 to 12 weeks, all gates passed">
@@ -1147,45 +1277,42 @@ code, pre { font-family: var(--mono); }
           <div class="dot dot-r" aria-hidden="true"></div>
           <div class="dot dot-y" aria-hidden="true"></div>
           <div class="dot dot-g" aria-hidden="true"></div>
-          <div class="terminal-title" id="terminal-title">wheat init</div>
+          <div class="terminal-title" id="terminal-title">grainulator</div>
         </div>
         <div class="terminal-body" id="terminal-body">
-          <!-- Phase 1: Init -->
+          <!-- Phase 1: Init — COPY (w029): cut terminal init lines, no "extracting parameters" -->
           <div class="sprint-line" data-phase="1" data-step="0">
-            <span class="c-dim">$</span> <span class="c-gold">wheat init</span> <span class="c-dim">&ldquo;What's the best way to solve this?&rdquo;</span>
+            <span class="c-dim">$</span> <span class="c-gold">grainulator init</span> <span class="c-dim">&ldquo;Should we migrate to Postgres?&rdquo;</span>
           </div>
           <div class="sprint-line" data-phase="1" data-step="1">
-            <span class="c-dim">extracting parameters&hellip;</span>
-          </div>
-          <div class="sprint-line" data-phase="1" data-step="2">
             <span class="c-dim">audience:</span> <span class="c-text">engineering leadership</span>
           </div>
 
           <!-- Phase 2: Claims -->
-          <div class="sprint-line" data-phase="2" data-step="3" style="margin-top: 12px;">
+          <div class="sprint-line" data-phase="2" data-step="2" style="margin-top: 12px;">
             <span class="c-dim">$</span> <span class="c-gold">/research</span> <span class="c-dim">postgres migration feasibility</span>
           </div>
-          <div class="sprint-line" data-phase="2" data-step="4">
+          <div class="sprint-line" data-phase="2" data-step="3">
             <span class="tag tag-factual">factual</span> <span class="c-text">r001: Postgres handles 12k TPS on comparable hardware</span>
           </div>
-          <div class="sprint-line" data-phase="2" data-step="5" id="claim-r002">
+          <div class="sprint-line" data-phase="2" data-step="4" id="claim-r002">
             <span class="tag tag-estimate">estimate</span> <span class="c-text">r002: Migration will take 6 weeks</span>
           </div>
-          <div class="sprint-line" data-phase="2" data-step="6">
+          <div class="sprint-line" data-phase="2" data-step="5">
             <span class="tag tag-factual">factual</span> <span class="c-text">r003: pgvector eliminates separate vector DB</span>
           </div>
-          <div class="sprint-line" data-phase="2" data-step="7">
+          <div class="sprint-line" data-phase="2" data-step="6">
             <span class="tag tag-risk">risk</span> <span class="c-text">r004: No team member has Postgres experience</span>
           </div>
-          <div class="sprint-line" data-phase="2" data-step="8">
+          <div class="sprint-line" data-phase="2" data-step="7">
             <span class="tag tag-factual">factual</span> <span class="c-text">r005: Current DB license costs $48k/year</span>
           </div>
-          <div class="sprint-line" data-phase="2" data-step="9">
+          <div class="sprint-line" data-phase="2" data-step="8">
             <span class="tag tag-rec">rec</span> <span class="c-text">r006: 90-day parallel-run period</span>
           </div>
 
-          <!-- Phase 3: Challenge -->
-          <div class="sprint-challenge" data-phase="3" data-step="10">
+          <!-- Phase 3: Challenge — COPY (w031): no unexplained jargon -->
+          <div class="sprint-challenge" data-phase="3" data-step="9">
             <span class="c-dim">$</span> <span class="c-gold">/challenge r002</span><br>
             <span class="c-dim">claim:</span> <span class="c-text">&ldquo;Migration will take 6 weeks.&rdquo;</span><br>
             <span class="c-dim">evidence:</span> <span class="c-amber">r004 contradicts</span> <span class="c-dim">&mdash; no Postgres experience</span><br>
@@ -1193,34 +1320,34 @@ code, pre { font-family: var(--mono); }
             <span class="c-red">&#10007; REVISED</span> <span class="c-dim">&mdash; r002 updated to</span> <span class="c-white">12 weeks</span>
           </div>
 
-          <!-- Phase 4: Compile -->
-          <div class="sprint-line" data-phase="4" data-step="11" style="margin-top: 12px;">
-            <span class="c-dim">$</span> <span class="c-white">wheat compile</span>
+          <!-- Phase 4: Compile — COPY (w031): "compile" label clearer -->
+          <div class="sprint-line" data-phase="4" data-step="10" style="margin-top: 12px;">
+            <span class="c-dim">$</span> <span class="c-white">grainulator compile</span> <span class="c-dim">&mdash; generating brief</span>
           </div>
-          <div class="sprint-line" data-phase="4" data-step="12">
+          <div class="sprint-line" data-phase="4" data-step="11">
             <span class="c-dim">sprint:</span> <span class="c-white">postgres-migration</span>
           </div>
-          <div class="sprint-line" data-phase="4" data-step="13">
+          <div class="sprint-line" data-phase="4" data-step="12">
             <span class="c-dim">claims:</span> <span class="c-green">6 compiled</span> <span class="c-dim">| 1 revised | 0 retired</span>
           </div>
-          <div class="sprint-line" data-phase="4" data-step="14" style="margin-top: 8px;">
+          <div class="sprint-line" data-phase="4" data-step="13" style="margin-top: 8px;">
             <span class="c-white">Coverage:</span>
           </div>
-          <div class="sprint-line" data-phase="4" data-step="15">
+          <div class="sprint-line" data-phase="4" data-step="14">
             <div class="bar-row"><span class="bar-label">query-perf</span><div class="bar-track" role="progressbar" aria-valuenow="92" aria-valuemax="100" aria-label="Query performance coverage"><div class="bar-fill high" data-w="92" style="--target-w:92%"></div></div><span class="bar-pct c-green">92%</span></div>
           </div>
-          <div class="sprint-line" data-phase="4" data-step="16">
+          <div class="sprint-line" data-phase="4" data-step="15">
             <div class="bar-row"><span class="bar-label">migration</span><div class="bar-track" role="progressbar" aria-valuenow="87" aria-valuemax="100" aria-label="Migration coverage"><div class="bar-fill high" data-w="87" style="--target-w:87%"></div></div><span class="bar-pct c-green">87%</span></div>
           </div>
-          <div class="sprint-line" data-phase="4" data-step="17">
+          <div class="sprint-line" data-phase="4" data-step="16">
             <div class="bar-row"><span class="bar-label">ops-risk</span><div class="bar-track" role="progressbar" aria-valuenow="94" aria-valuemax="100" aria-label="Ops risk coverage"><div class="bar-fill high" data-w="94" style="--target-w:94%"></div></div><span class="bar-pct c-green">94%</span></div>
           </div>
-          <div class="sprint-line" data-phase="4" data-step="18">
+          <div class="sprint-line" data-phase="4" data-step="17">
             <div class="bar-row"><span class="bar-label">team-skill</span><div class="bar-track" role="progressbar" aria-valuenow="71" aria-valuemax="100" aria-label="Team skill coverage"><div class="bar-fill mid" data-w="71" style="--target-w:71%"></div></div><span class="bar-pct c-amber">71%</span></div>
           </div>
 
           <!-- Phase 5: PASS -->
-          <div class="sprint-pass" data-phase="5" data-step="19" style="margin-top: 12px;">
+          <div class="sprint-pass" data-phase="5" data-step="18" style="margin-top: 12px;">
             <span class="term-pass">&#10003; PASS</span> <span class="c-dim">&mdash; all gates met. Brief ready.</span><br>
             <span class="c-dim">&#8594;</span> <span class="c-text">output/postgres-migration-brief.html</span>
           </div>
@@ -1231,7 +1358,7 @@ code, pre { font-family: var(--mono); }
 </section>
 
 <!-- ===== SECTION 5: THE BRIEF ===== -->
-<section class="scroll-section s-brief" aria-label="The compiled brief">
+<section class="scroll-section s-brief" id="section-brief" aria-label="The compiled brief">
   <div class="s-brief-sticky">
     <div class="brief-container" id="brief-container">
       <div class="brief-document">
@@ -1242,52 +1369,61 @@ code, pre { font-family: var(--mono); }
         <div class="brief-body">
           <div class="brief-section" data-brief-step="0">
             <h4>Recommendation</h4>
-            <p>Proceed with migration using a 90-day parallel-run. Projected savings of $48k/year in licensing with comparable performance at current scale. <span class="evidence-pill evidence-tested">tested</span></p>
+            <p>Proceed with migration using a 90-day parallel-run. Projected savings of $48k/year in licensing with comparable performance at current scale. <span class="evidence-pill evidence-tested" title="Verified via prototype or benchmark">tested</span></p>
           </div>
           <div class="brief-section" data-brief-step="1">
             <h4>Timeline</h4>
-            <p>12 weeks, not 6. Team lacks production Postgres experience&thinsp;&mdash;&thinsp;original estimate was revised after adversarial challenge. <span class="evidence-pill evidence-documented">documented</span></p>
+            <p>12 weeks, not 6. Team lacks production Postgres experience&thinsp;&mdash;&thinsp;original estimate was revised after adversarial challenge. <span class="evidence-pill evidence-documented" title="Verified in official docs or source code">documented</span></p>
           </div>
           <div class="brief-section" data-brief-step="2">
             <h4>Key Finding</h4>
-            <p>pgvector eliminates separate vector DB dependency, reducing infra complexity by ~40%. <span class="evidence-pill evidence-web">web</span></p>
+            <p>pgvector eliminates separate vector DB dependency, reducing infra complexity by ~40%. <span class="evidence-pill evidence-web" title="Found online, not independently verified">web</span></p>
           </div>
-          <div class="brief-section brief-risks" data-brief-step="3">
+          <!-- COPY (w030): Surprise finding NOT shown in terminal -->
+          <div class="brief-section" data-brief-step="3">
+            <h4>Surprise</h4>
+            <p>Your current ORM generates 14 queries that rely on vendor-specific syntax&thinsp;&mdash;&thinsp;each needs manual migration. No automated tool covers them all. <span class="evidence-pill evidence-tested" title="Verified via prototype or benchmark">tested</span></p>
+          </div>
+          <div class="brief-section brief-risks" data-brief-step="4">
             <h4>3 risks your team would have missed</h4>
             <p>No Postgres production experience on team <span aria-hidden="true">&middot;</span> ORM compatibility gaps with existing queries <span aria-hidden="true">&middot;</span> Backup strategy requires complete redesign</p>
           </div>
         </div>
       </div>
 
-      <!-- Stats that count up -->
+      <!-- Stats that count up — STORY (w055): comparison framing -->
       <div class="brief-stats" id="brief-stats">
-        <div class="brief-stat" data-brief-step="4">
+        <div class="brief-stat" data-brief-step="5">
           <div class="stat-number" data-count-to="47">0</div>
           <div class="stat-label">claims</div>
-        </div>
-        <div class="brief-stat" data-brief-step="5">
-          <div class="stat-number" data-count-to="12">0</div>
-          <div class="stat-label">topics</div>
+          <div class="stat-context">more than most teams produce in a quarter</div>
         </div>
         <div class="brief-stat" data-brief-step="6">
-          <div class="stat-number" data-count-to="3">0</div>
-          <div class="stat-label">risks caught</div>
+          <div class="stat-number" data-count-to="12">0</div>
+          <div class="stat-label">topics</div>
+          <div class="stat-context">each cross-referenced and challenged</div>
         </div>
         <div class="brief-stat" data-brief-step="7">
+          <div class="stat-number" data-count-to="3">0</div>
+          <div class="stat-label">risks caught</div>
+          <div class="stat-context">before they became surprises</div>
+        </div>
+        <div class="brief-stat" data-brief-step="8">
           <div class="stat-number" data-count-to="4" data-suffix=" min">0</div>
           <div class="stat-label">total time</div>
+          <div class="stat-context">not 4 hours. 4 minutes.</div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ===== SECTION 5.5: THE SARAH MOMENT (w016) ===== -->
+<!-- ===== SECTION 5.5: THE SARAH MOMENT (w016) — STORY (w050): rewritten as convert ===== -->
 <section class="scroll-section s-sarah" aria-label="The protagonist gets the answer">
   <div class="sarah-container" id="sarah-container">
     <div class="sarah-message">
       <div class="slack-name">Sarah</div>
-      <div class="slack-text">&ldquo;Wait &mdash; where did you get these numbers?&rdquo;</div>
+      <div class="slack-text">&ldquo;We almost shipped with a 6-week estimate.&rdquo;</div>
     </div>
     <div class="sarah-typing" aria-label="Typing indicator">
       <div class="typing-dot"></div>
@@ -1301,11 +1437,17 @@ code, pre { font-family: var(--mono); }
 <section class="scroll-section s-close" id="install" aria-label="Get started">
   <div class="close-inner">
     <h2 class="close-headline" id="close-headline">Your next decision<br>deserves evidence.</h2>
+    <!-- STORY (w054): Competitive FOMO line -->
+    <p class="close-fomo" id="close-fomo">Someone on the other side of the table already has the numbers.</p>
     <div class="close-install" id="close-install">
-      <div class="close-cmd" role="button" tabindex="0" aria-label="Copy install command" onclick="copyCmd(this)">
+      <!-- COPY (w024): "In Claude Code, type:" label -->
+      <div class="close-install-label">In Claude Code, type:</div>
+      <div class="close-cmd" id="close-cmd" role="button" tabindex="0" aria-label="Copy install command">
         <span class="prompt">/</span>plugin install grainulator
-        <button class="close-copy" onclick="event.stopPropagation();copyCmd(this.parentElement);" aria-label="Copy to clipboard">Copy</button>
+        <button class="close-copy" id="close-copy-btn" aria-label="Copy to clipboard">Copy</button>
       </div>
+      <!-- COPY (w025): Time anchor -->
+      <div class="close-time-anchor">In 4 minutes, it will have it.</div>
     </div>
     <div class="close-links" id="close-links">
       <a href="https://github.com/grainulation/grainulator">GitHub</a>
@@ -1318,6 +1460,36 @@ code, pre { font-family: var(--mono); }
 </section>
 
 </main>
+
+<!-- PERF (w037): <noscript> fallback with question text and basic content -->
+<noscript>
+  <style>
+    .question-text .char { display: inline !important; }
+    .chaos-tab, .chaos-slack { opacity: 1 !important; transform: var(--tab-transform, none) !important; }
+    .command-inner .command-label,
+    .command-inner .command-line,
+    .command-inner .command-sub,
+    .command-inner .command-glow { opacity: 1 !important; transform: none !important; }
+    .sprint-terminal { opacity: 1 !important; transform: none !important; }
+    .sprint-line, .sprint-challenge, .sprint-pass { opacity: 1 !important; transform: none !important; }
+    .brief-container { opacity: 1 !important; transform: none !important; }
+    .brief-section, .brief-stat { opacity: 1 !important; transform: none !important; }
+    .sarah-container { opacity: 1 !important; transform: none !important; }
+    .sarah-typing { opacity: 1 !important; }
+    .close-headline, .close-fomo, .close-install, .close-links { opacity: 1 !important; transform: none !important; }
+    .bar-fill { width: var(--target-w) !important; }
+    .sticky-nav { transform: none !important; }
+    .s-question, .s-chaos, .s-command, .s-sprint, .s-brief, .s-silence { height: auto !important; }
+    .s-question-sticky, .s-chaos-sticky, .s-command-sticky, .s-sprint-sticky, .s-brief-sticky {
+      position: relative !important; height: auto !important; min-height: 80vh;
+    }
+  </style>
+  <div style="background:#0a0908;color:#ede8e0;text-align:center;padding:40px 20px;font-family:Georgia,serif;">
+    <h1 style="color:#d4a547;font-size:2rem;margin-bottom:16px;">Grainulator</h1>
+    <p style="font-size:1.2rem;max-width:600px;margin:0 auto 24px;">Type a question, get a compiled brief in 5 minutes. Research sprint orchestrator for Claude Code.</p>
+    <p style="font-family:monospace;color:#d4a547;">/plugin install grainulator</p>
+  </div>
+</noscript>
 
 <script>
 /* ======================================================
@@ -1360,29 +1532,44 @@ code, pre { font-family: var(--mono); }
     var closeHeadlineRM = document.getElementById('close-headline');
     var closeInstallRM = document.getElementById('close-install');
     var closeLinksRM = document.getElementById('close-links');
+    var closeFomoRM = document.getElementById('close-fomo');
     if (closeHeadlineRM) closeHeadlineRM.classList.add('visible');
     if (closeInstallRM) closeInstallRM.classList.add('visible');
     if (closeLinksRM) closeLinksRM.classList.add('visible');
+    if (closeFomoRM) closeFomoRM.classList.add('visible');
 
     /* Also make sarah visible */
     var sarahRM = document.getElementById('sarah-container');
     if (sarahRM) sarahRM.classList.add('visible');
+
+    /* Show nav immediately */
+    var navRM = document.getElementById('sticky-nav');
+    if (navRM) navRM.classList.add('nav-visible');
   }
 
   /* ======================================================
      SECTION 1: THE QUESTION — typewriter on scroll
+     COPY (w026): Flash non-technical question variants first
      ====================================================== */
   var questionEl = document.getElementById('question-text');
   var questionChars = [];
-  var questionText = '\u201CWhat\u2019s the best way to solve this?\u201D';
+  /* COPY (w026): Cycle through question variants before settling on final */
+  var questionVariants = [
+    '\u201CShould we enter the European market?\u201D',
+    '\u201CIs our pricing strategy right?\u201D',
+    '\u201CShould we migrate to Postgres?\u201D'
+  ];
+  var finalQuestion = questionVariants[questionVariants.length - 1];
+  var currentVariantIndex = 0;
   var cursorEl = null;
 
-  (function initQuestion() {
+  function buildChars(text) {
     questionEl.innerHTML = '';
-    for (var i = 0; i < questionText.length; i++) {
+    questionChars = [];
+    for (var i = 0; i < text.length; i++) {
       var span = document.createElement('span');
       span.className = 'char';
-      span.textContent = questionText[i];
+      span.textContent = text[i];
       questionEl.appendChild(span);
       questionChars.push(span);
     }
@@ -1390,15 +1577,34 @@ code, pre { font-family: var(--mono); }
     cursorEl.className = 'cursor-blink';
     cursorEl.setAttribute('aria-hidden', 'true');
     questionEl.appendChild(cursorEl);
+  }
 
-    if (prefersReduced) {
-      questionChars.forEach(function (c) { c.classList.add('visible'); });
-    }
-  })();
+  buildChars(questionVariants[0]);
+
+  if (prefersReduced) {
+    buildChars(finalQuestion);
+    questionChars.forEach(function (c) { c.classList.add('visible'); });
+  }
+
+  var lastVariantSwitch = 0;
 
   function updateQuestion(progress) {
-    var typeProgress = clamp(progress / 0.5, 0, 1);
+    /* Variant cycling: each variant gets ~0.15 of scroll, final one stays */
+    var variantSlice = 0.15;
+    var desiredIndex = Math.min(Math.floor(progress / variantSlice), questionVariants.length - 1);
+
+    if (desiredIndex !== currentVariantIndex) {
+      currentVariantIndex = desiredIndex;
+      buildChars(questionVariants[currentVariantIndex]);
+      lastVariantSwitch = progress;
+    }
+
+    /* Type progress relative to current variant's start */
+    var variantStart = currentVariantIndex * variantSlice;
+    var localProgress = clamp((progress - variantStart) / variantSlice, 0, 1);
+    var typeProgress = clamp(localProgress / 0.7, 0, 1);
     var visibleCount = Math.floor(typeProgress * questionChars.length);
+
     for (var i = 0; i < questionChars.length; i++) {
       if (i < visibleCount) {
         questionChars[i].classList.add('visible');
@@ -1407,7 +1613,7 @@ code, pre { font-family: var(--mono); }
       }
     }
 
-    /* Move cursor to sit right after the last visible char */
+    /* Move cursor */
     if (cursorEl && visibleCount < questionChars.length) {
       questionChars[visibleCount].parentNode.insertBefore(cursorEl, questionChars[visibleCount]);
     } else if (cursorEl && visibleCount >= questionChars.length) {
@@ -1419,7 +1625,7 @@ code, pre { font-family: var(--mono); }
     stickyEl.style.opacity = 1 - fadeProgress;
 
     if (cursorEl) {
-      cursorEl.style.opacity = (progress < 0.5 && progress > 0.02) ? '1' : '0';
+      cursorEl.style.opacity = (typeProgress > 0.02 && typeProgress < 1) ? '1' : '0';
     }
   }
 
@@ -1435,7 +1641,7 @@ code, pre { font-family: var(--mono); }
   chaosSlacks.forEach(function (el, i) { chaosElements.push({ el: el, threshold: 0.15 + i * 0.05 }); });
 
   function updateChaos(progress) {
-    /* w009: dissolve starts at 80% instead of 65% */
+    /* w009: dissolve starts at 80% */
     var dissolveProgress = clamp((progress - 0.80) / 0.20, 0, 1);
 
     if (dissolveProgress > 0) {
@@ -1481,7 +1687,7 @@ code, pre { font-family: var(--mono); }
   var sprintTerminal = document.getElementById('sprint-terminal');
   var terminalTitle = document.getElementById('terminal-title');
   var sprintLines = document.querySelectorAll('.sprint-line, .sprint-challenge, .sprint-pass');
-  var totalSteps = 20;
+  var totalSteps = 19;
   var barsFilled = false;
   var claimR002 = document.getElementById('claim-r002');
   var r002Struck = false;
@@ -1519,24 +1725,23 @@ code, pre { font-family: var(--mono); }
     });
 
     if (terminalTitle) {
-      terminalTitle.textContent = phaseNames[currentPhase] || 'wheat';
+      terminalTitle.textContent = phaseNames[currentPhase] || 'grainulator';
     }
 
     /* Strike through r002 when challenge appears */
-    if (currentStep >= 10 && !r002Struck && claimR002) {
+    if (currentStep >= 9 && !r002Struck && claimR002) {
       claimR002.style.textDecoration = 'line-through';
       claimR002.style.opacity = '0.5';
       r002Struck = true;
-    } else if (currentStep < 10 && r002Struck && claimR002) {
+    } else if (currentStep < 9 && r002Struck && claimR002) {
       claimR002.style.textDecoration = 'none';
       claimR002.style.opacity = '';
       r002Struck = false;
     }
 
-    /* BILLBOARD FRAME (w014): after challenge (step 10), show full-viewport moment */
-    /* Billboard activates in a window after the challenge, holds for ~200vh worth of scroll */
-    var billboardStart = 0.08 + (10.5 / totalSteps) * 0.82; /* just after step 10 */
-    var billboardEnd = billboardStart + 0.15; /* hold for ~15% of sprint section = ~90vh */
+    /* BILLBOARD FRAME (w014): HARD CUT after challenge */
+    var billboardStart = 0.08 + (9.5 / totalSteps) * 0.82;
+    var billboardEnd = billboardStart + 0.15;
     var inBillboard = progress > billboardStart && progress < billboardEnd;
 
     if (inBillboard && !billboardActive) {
@@ -1550,13 +1755,13 @@ code, pre { font-family: var(--mono); }
     }
 
     /* Fill bars when they appear */
-    if (currentStep >= 15 && !barsFilled) {
+    if (currentStep >= 14 && !barsFilled) {
       barsFilled = true;
       var fills = sprintTerminal.querySelectorAll('.bar-fill[data-w]');
       fills.forEach(function (f, i) {
         setTimeout(function () { f.style.width = f.getAttribute('data-w') + '%'; }, i * 100);
       });
-    } else if (currentStep < 15 && barsFilled) {
+    } else if (currentStep < 14 && barsFilled) {
       barsFilled = false;
       var fills = sprintTerminal.querySelectorAll('.bar-fill[data-w]');
       fills.forEach(function (f) { f.style.width = '0'; });
@@ -1641,6 +1846,7 @@ code, pre { font-family: var(--mono); }
   var closeHeadline = document.getElementById('close-headline');
   var closeInstall = document.getElementById('close-install');
   var closeLinks = document.getElementById('close-links');
+  var closeFomo = document.getElementById('close-fomo');
   var closeRevealed = false;
 
   var closeObs = new IntersectionObserver(function (entries) {
@@ -1648,6 +1854,7 @@ code, pre { font-family: var(--mono); }
       if (e.isIntersecting && !closeRevealed) {
         closeRevealed = true;
         closeHeadline.classList.add('visible');
+        if (closeFomo) closeFomo.classList.add('visible');
         closeInstall.classList.add('visible');
         closeLinks.classList.add('visible');
         closeObs.disconnect();
@@ -1657,9 +1864,24 @@ code, pre { font-family: var(--mono); }
   closeObs.observe(document.querySelector('.s-close'));
 
   /* ======================================================
+     STICKY NAV — delay until past section 1 (w059)
+     ====================================================== */
+  var stickyNav = document.getElementById('sticky-nav');
+  var sQuestion = document.querySelector('.s-question');
+
+  function updateNav() {
+    if (!stickyNav || !sQuestion) return;
+    var questionBottom = sQuestion.getBoundingClientRect().bottom;
+    if (questionBottom < 0) {
+      stickyNav.classList.add('nav-visible');
+    } else {
+      stickyNav.classList.remove('nav-visible');
+    }
+  }
+
+  /* ======================================================
      SCROLL ENGINE — rAF throttled
      ====================================================== */
-  var sQuestion = document.querySelector('.s-question');
   var sChaos = document.querySelector('.s-chaos');
   var sCommand = document.querySelector('.s-command');
   var sSprint = document.querySelector('.s-sprint');
@@ -1674,6 +1896,7 @@ code, pre { font-family: var(--mono); }
       ticking = false;
       if (prefersReduced) return;
 
+      updateNav();
       updateQuestion(sectionProgress(sQuestion));
       updateChaos(sectionProgress(sChaos));
       updateCommand(sectionProgress(sCommand));
@@ -1688,11 +1911,12 @@ code, pre { font-family: var(--mono); }
   onScroll();
 
   /* ======================================================
-     CLIPBOARD (x024: aria-live feedback)
+     CLIPBOARD — PERF (w043): addEventListener, no onclick
+     UX (w064): scale pulse + checkmark feedback
      ====================================================== */
   var copyStatus = document.getElementById('copy-status');
 
-  window.copyCmd = function (el) {
+  function copyCmd(el) {
     var text = '/plugin install grainulator';
     var btn = el.querySelector('.close-copy');
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1704,20 +1928,27 @@ code, pre { font-family: var(--mono); }
       try { document.execCommand('copy'); } catch (e) {}
       document.body.removeChild(ta);
     }
-    if (btn) { btn.textContent = 'Copied'; btn.classList.add('copied'); }
+    if (btn) { btn.textContent = '\u2713 Copied'; btn.classList.add('copied'); }
     if (copyStatus) { copyStatus.textContent = 'Command copied to clipboard'; }
     setTimeout(function () {
       if (btn) { btn.textContent = 'Copy'; btn.classList.remove('copied'); }
       if (copyStatus) { copyStatus.textContent = ''; }
     }, 1800);
-  };
+  }
 
-  /* Keyboard support */
-  document.querySelectorAll('.close-cmd').forEach(function (el) {
-    el.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); }
+  /* PERF (w043): addEventListener instead of onclick for CSP compatibility */
+  var closeCmdEl = document.getElementById('close-cmd');
+  var closeCopyBtn = document.getElementById('close-copy-btn');
+
+  if (closeCmdEl) {
+    closeCmdEl.addEventListener('click', function () { copyCmd(closeCmdEl); });
+    closeCmdEl.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); copyCmd(closeCmdEl); }
     });
-  });
+  }
+  if (closeCopyBtn) {
+    closeCopyBtn.addEventListener('click', function (e) { e.stopPropagation(); copyCmd(closeCmdEl); });
+  }
 
 })();
 </script>
