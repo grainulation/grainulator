@@ -3,7 +3,7 @@
   "displayName": "Grainulation Marketplace",
   "source": "npm",
   "registry": "https://registry.npmjs.org",
-  "package": "@grainulator/grainulator",
+  "package": "@grainulation/grainulator",
   "categories": ["research", "analysis", "documentation"],
   "tags": ["wheat", "research-sprints", "claims", "evidence", "briefs"]
 }

@@ -1,5 +1,5 @@
 {
-  "name": "@grainulator/grainulator",
+  "name": "@grainulation/grainulator",
   "version": "0.1.0",
   "description": "Research sprint orchestrator for Claude Code",
   "type": "module",
