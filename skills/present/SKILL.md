@@ -27,7 +27,9 @@ Optional: audience override, format (html, pdf). Default: html scroll-snap deck.
 
 2. **Read `compilation.json`** as the source of truth.
 
-3. **Structure the presentation**:
+3. **Read the template** at `skills/_templates/scroll-snap-deck.html` for the canonical accessible HTML structure. All generated HTML MUST follow this template exactly.
+
+4. **Structure the presentation**:
    - Slide 1: Title + research question + audience
    - Slide 2: Executive summary (3-4 bullet points)
    - Slides 3-N: One slide per topic with key findings
@@ -35,11 +37,24 @@ Optional: audience override, format (html, pdf). Default: html scroll-snap deck.
    - Recommendations slide: Prioritized action items
    - Evidence appendix: Claim IDs, sources, evidence tiers
 
-4. **Generate** using `mill_convert` with the presentation template (dark scroll-snap for HTML).
+5. **Generate** using `mill_convert` with the presentation template (dark scroll-snap for HTML).
 
-5. **Write output** to `output/presentation.<ext>`.
+6. **WCAG compliance checklist** -- verify the generated HTML includes all of these:
+   - [ ] `<a href="#main-content" class="skip-nav">Skip to content</a>` as first child of `<body>`
+   - [ ] `<main id="main-content" role="main" aria-roledescription="carousel" aria-label="...">` wrapping all slides
+   - [ ] Each slide is `<section aria-roledescription="slide" aria-label="Slide N of M: Title" tabindex="0">` (NOT `<div class="slide">`)
+   - [ ] First slide uses `<h1>`, all subsequent slides use `<h2>`, card titles within slides use `<h3>`
+   - [ ] `<div id="slide-announcer" role="status" aria-live="polite" aria-atomic="true" class="sr-only">` for transition announcements
+   - [ ] IntersectionObserver script that updates the announcer (no Space/ArrowKey trapping)
+   - [ ] `:focus-visible` outline styles (2px solid #4ecdc4, offset 2px)
+   - [ ] `.sr-only` utility class defined in CSS
+   - [ ] Risk indicators and tags include text labels, never color alone
+   - [ ] Gradient text has `@supports not (-webkit-background-clip: text)` fallback
+   - [ ] `<footer role="contentinfo">` wrapping the compilation certificate
 
-6. **Print summary**:
+7. **Write output** to `output/presentation.<ext>`.
+
+8. **Print summary**:
    ```
    Presentation generated: output/presentation.<ext>
    Slides: <count>
