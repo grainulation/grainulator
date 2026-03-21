@@ -66,4 +66,4 @@ Three levels of deployment:
 
 ## License
 
-Apache 2.0
+MIT

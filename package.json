@@ -2,7 +2,7 @@
   "name": "@grainulator/grainulator",
   "version": "0.1.0",
   "description": "Research sprint orchestrator for Claude Code",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "homepage": "https://grainulator.app",
   "repository": {
     "type": "git",
@@ -25,6 +25,6 @@
     "servers/"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   }
 }
