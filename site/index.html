@@ -4,12 +4,12 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="robots" content="index, follow" />
-<title>Grainulator — Stop Vibing Your Way Through Architecture Decisions</title>
+<title>Grainulator — Research Sprints for Claude Code</title>
 <meta name="description" content="Type a question, get a decision-ready brief in 4 minutes. Grainulator is a research sprint tool that runs inside Claude Code. Every finding tracked, challenged, and confidence-graded. Open source, MIT, zero dependencies." />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Grainulator" />
 <meta property="og:locale" content="en_US" />
-<meta property="og:title" content="Grainulator — Stop Vibing Your Way Through Architecture Decisions" />
+<meta property="og:title" content="Grainulator — Research Sprints for Claude Code" />
 <meta property="og:description" content="Type a question, get a decision-ready brief in 4 minutes. Research sprint tool for Claude Code. Open source, $6-12 per sprint." />
 <meta property="og:url" content="https://grainulator.app/" />
 <meta name="twitter:card" content="summary_large_image" />
@@ -40,9 +40,8 @@
 </script>
 <style>
 /* ============================================================
-   GRAINULATOR — Interactive Terminal Landing Page
-   The terminal IS the hero. Tutorial Island pattern.
-   Ueno neon green (#BFFF00) on dark.
+   GRAINULATOR — Swimming Prompts Landing Page
+   One viewport. Prompts swim like fish. Click to demo.
    ============================================================ */
 
 @font-face {
@@ -82,12 +81,13 @@
   --ease-snap: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-html {
-  scroll-behavior: smooth;
-  overflow-y: scroll;
-}
-
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
 
 body {
   font-family: var(--sans);
@@ -96,10 +96,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.6;
-  overflow-x: clip;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  position: relative;
 }
 
 a { color: var(--lime); text-decoration: none; }
@@ -109,7 +106,7 @@ code, pre { font-family: var(--mono); }
 /* ===== SKIP LINK ===== */
 .skip-link {
   position: absolute; left: -9999px; top: auto;
-  width: 1px; height: 1px; overflow: hidden; z-index: 1000;
+  width: 1px; height: 1px; overflow: hidden; z-index: 10000;
 }
 .skip-link:focus {
   position: fixed; top: 12px; left: 12px;
@@ -126,131 +123,152 @@ code, pre { font-family: var(--mono); }
   outline-offset: 3px;
 }
 
-/* ===== LOGO BAR ===== */
-.logo-bar {
+/* ===== CANVAS ===== */
+#pond {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 1;
+  cursor: pointer;
+}
+#pond.dimmed { opacity: 0.15; pointer-events: none; transition: opacity 0.5s var(--ease); }
+#pond.bright { opacity: 1; transition: opacity 0.5s var(--ease); }
+
+/* ===== TOP BAR ===== */
+.top-bar {
   position: fixed;
   top: 0; left: 0; right: 0;
-  z-index: 100;
+  z-index: 200;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 32px;
-  background: rgba(10, 10, 11, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--border);
+  padding: 16px 28px;
+  pointer-events: none;
 }
+.top-bar > * { pointer-events: auto; }
+
 .logo-brand {
   font-family: var(--sans);
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 900;
   color: var(--lime);
   text-decoration: none;
   letter-spacing: -0.02em;
   text-transform: uppercase;
-  min-height: 44px;
   display: inline-flex;
   align-items: center;
+  gap: 8px;
+  min-height: 44px;
 }
 .logo-brand:hover { text-decoration: none; }
-.logo-badge {
-  font-family: var(--mono);
-  font-size: 0.625rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-}
-.logo-github {
-  font-family: var(--mono);
-  font-size: 0.6875rem;
-  color: var(--text-faint);
-  text-decoration: none;
-  min-height: 44px;
-  min-width: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s;
-}
-.logo-github:hover,
-.logo-github:focus-visible { color: var(--lime); text-decoration: none; }
-
-/* ===== MAIN LAYOUT ===== */
-.page-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80px 24px 40px;
-  min-height: 100vh;
+.logo-kernel {
+  display: inline-block;
+  width: 20px; height: 20px;
 }
 
-/* ===== QUESTION PICKER ===== */
-.question-picker {
-  text-align: center;
-  margin-bottom: 24px;
-  opacity: 1;
-  transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
-}
-.question-picker.hidden {
-  opacity: 0;
-  pointer-events: none;
-  position: absolute;
-  transform: translateY(-20px);
-}
-.picker-label {
-  font-family: var(--mono);
-  font-size: 0.6875rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-  margin-bottom: 16px;
-}
-.picker-options {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: center;
-  list-style: none;
-}
-.picker-btn {
+.get-it-link {
   font-family: var(--mono);
   font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--lime);
+  text-decoration: none;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  transition: opacity 0.2s;
+}
+.get-it-link:hover { text-decoration: none; opacity: 0.8; }
+
+/* ===== HINT ===== */
+.hint {
+  position: fixed;
+  bottom: 60px;
+  left: 50%; transform: translateX(-50%);
+  z-index: 50;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  opacity: 0.6;
+  pointer-events: none;
+  transition: opacity 0.5s var(--ease);
+}
+.hint.hidden { opacity: 0; }
+
+/* ===== FOOTER ===== */
+.site-footer {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 200;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  color: var(--text-faint);
+  letter-spacing: 0.04em;
+  padding: 14px 28px;
+  pointer-events: none;
+}
+.site-footer a {
   color: var(--text-dim);
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  padding: 14px 24px;
-  cursor: pointer;
-  transition: all 0.2s var(--ease);
-  min-height: 48px;
-  min-width: 48px;
-  text-align: left;
-  line-height: 1.4;
-  max-width: 320px;
+  pointer-events: auto;
+  transition: color 0.2s;
 }
-.picker-btn:hover,
-.picker-btn:focus-visible {
-  color: var(--lime);
-  border-color: var(--lime);
-  background: rgba(191, 255, 0, 0.04);
-  transform: translateY(-2px);
+.site-footer a:hover { color: var(--lime); text-decoration: none; }
+.site-footer .sep { color: var(--border-light); margin: 0 10px; }
+
+/* ===== TERMINAL OVERLAY ===== */
+.terminal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px 40px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s var(--ease);
 }
-.picker-btn:active { transform: translateY(0); }
-.picker-btn .picker-icon {
-  color: var(--lime);
-  margin-right: 8px;
+.terminal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.terminal-overlay-bg {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(10, 10, 11, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.terminal-container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 820px;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 100px);
+}
+
+/* ===== SELECTED PROMPT DISPLAY ===== */
+.selected-prompt {
+  font-family: var(--sans);
+  font-size: clamp(1rem, 2.5vw, 1.375rem);
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+  padding: 0 4px;
+  line-height: 1.3;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.3s var(--ease), transform 0.3s var(--ease);
+}
+.selected-prompt.visible {
+  opacity: 1;
+  transform: none;
 }
 
 /* ===== THE TERMINAL ===== */
-.terminal-wrap {
-  width: 100%;
-  max-width: 800px;
-  position: relative;
-}
 .game-terminal {
   background: var(--bg-panel);
   border: 1px solid var(--border);
@@ -259,6 +277,10 @@ code, pre { font-family: var(--mono); }
     0 0 120px rgba(191, 255, 0, 0.04),
     0 40px 120px rgba(0,0,0,0.5);
   position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 .game-terminal::before {
   content: '';
@@ -275,6 +297,7 @@ code, pre { font-family: var(--mono); }
   padding: 12px 16px;
   background: rgba(191, 255, 0, 0.02);
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 .terminal-dots {
   display: flex; gap: 7px;
@@ -313,10 +336,9 @@ code, pre { font-family: var(--mono); }
   font-family: var(--mono);
   font-size: 0.8125rem;
   line-height: 2;
-  min-height: 460px;
-  max-height: 60vh;
   overflow-y: auto;
-  position: relative;
+  flex: 1;
+  min-height: 0;
 }
 
 /* Terminal lines */
@@ -419,8 +441,9 @@ code, pre { font-family: var(--mono); }
   align-items: center;
   justify-content: center;
   gap: 12px;
-  margin-top: 16px;
+  margin-top: 12px;
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
 .ctrl-btn {
   font-family: var(--mono);
@@ -442,48 +465,77 @@ code, pre { font-family: var(--mono); }
 }
 .ctrl-btn[hidden] { display: none; }
 
-/* ===== CTA SECTION ===== */
-.cta-section {
+/* ===== SPRINT COMPLETE CTA ===== */
+.sprint-done {
   text-align: center;
-  margin-top: 48px;
+  margin-top: 16px;
   opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.8s var(--ease-snap), transform 0.8s var(--ease-snap);
-  width: 100%;
-  max-width: 600px;
+  transform: translateY(10px);
+  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
+  flex-shrink: 0;
 }
-.cta-section.visible {
+.sprint-done.visible {
   opacity: 1;
   transform: none;
 }
-.cta-headline {
+.sprint-done-text {
   font-family: var(--sans);
-  font-size: clamp(1.5rem, 4vw, 2.5rem);
-  font-weight: 900;
-  letter-spacing: -0.03em;
-  line-height: 1;
-  margin-bottom: 8px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 10px;
 }
-.cta-headline .lime { color: var(--lime); }
-.cta-sub {
-  font-size: 1rem;
-  color: var(--text-dim);
-  margin-bottom: 32px;
-  font-style: italic;
+.sprint-done-text .lime { color: var(--lime); }
+.sprint-done-sub {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  color: var(--text-faint);
 }
-.cta-install-label {
+
+/* ===== INSTALL OVERLAY ===== */
+.install-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s var(--ease);
+}
+.install-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.install-overlay-bg {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(10, 10, 11, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.install-card {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  max-width: 520px;
+  width: 100%;
+}
+.install-label {
   font-family: var(--mono);
   font-size: 0.6875rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-faint);
-  margin-bottom: 8px;
+  margin-bottom: 16px;
 }
-.cta-cmd {
+.install-cmd {
   position: relative;
-  padding: 20px 80px 20px 24px;
+  padding: 24px 80px 24px 28px;
   font-family: var(--mono);
-  font-size: 1rem;
+  font-size: 1.0625rem;
   letter-spacing: 0.02em;
   color: var(--lime);
   text-align: left;
@@ -491,19 +543,17 @@ code, pre { font-family: var(--mono); }
   border: 2px solid var(--lime);
   background: transparent;
   transition: all 0.3s var(--ease);
-  box-shadow: 0 0 40px var(--lime-glow);
-  overflow: visible;
+  box-shadow: 0 0 60px var(--lime-glow);
   display: block;
   width: 100%;
 }
-.cta-cmd:hover,
-.cta-cmd:focus-visible {
+.install-cmd:hover,
+.install-cmd:focus-visible {
   background: rgba(191, 255, 0, 0.04);
   box-shadow: 0 0 80px rgba(191, 255, 0, 0.08);
 }
-.cta-cmd:active { transform: scale(0.98); }
-.cta-cmd .prompt { color: var(--text-faint); }
-.cta-copy {
+.install-cmd .prompt { color: var(--text-faint); }
+.install-copy {
   position: absolute; right: 12px; top: 50%;
   transform: translateY(-50%);
   background: var(--lime);
@@ -523,83 +573,47 @@ code, pre { font-family: var(--mono); }
   align-items: center;
   justify-content: center;
 }
-.cta-copy:hover { background: var(--lime-bright); transform: translateY(-50%) scale(0.96); }
-.cta-copy:active { transform: translateY(-50%) scale(0.92); }
-.cta-copy.copied { background: var(--green); }
-.cta-time {
-  font-size: 0.875rem;
+.install-copy:hover { background: var(--lime-bright); transform: translateY(-50%) scale(0.96); }
+.install-copy:active { transform: translateY(-50%) scale(0.92); }
+.install-copy.copied { background: var(--green); }
+.install-compat {
+  font-size: 0.8125rem;
   color: var(--text-dim);
-  margin-top: 16px;
-  font-style: italic;
+  margin-top: 20px;
+  line-height: 1.6;
 }
-.cta-stats {
-  display: flex;
-  justify-content: center;
-  gap: 32px;
-  margin-top: 24px;
-  flex-wrap: wrap;
-}
-.cta-stat {
-  text-align: center;
-}
-.cta-stat-num {
-  font-family: var(--sans);
-  font-size: 1.5rem;
-  font-weight: 900;
-  color: var(--lime);
-  line-height: 1;
-}
-.cta-stat-label {
-  font-family: var(--mono);
-  font-size: 0.625rem;
-  color: var(--text-faint);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-top: 4px;
-}
-
-/* ===== RESTART ===== */
-.restart-row {
-  text-align: center;
-  margin-top: 24px;
-  opacity: 0;
-  transition: opacity 0.4s var(--ease);
-}
-.restart-row.visible { opacity: 1; }
-
-/* ===== FOOTER ===== */
-.site-footer {
-  padding: 24px 32px;
-  border-top: 1px solid var(--border);
-  text-align: center;
+.install-dismiss {
   font-family: var(--mono);
   font-size: 0.6875rem;
   color: var(--text-faint);
-  letter-spacing: 0.04em;
-  line-height: 2;
+  margin-top: 24px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  transition: color 0.2s;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
 }
-.footer-links {
+.install-dismiss:hover { color: var(--lime); }
+
+/* ===== DEMO COMING SOON STATE ===== */
+.demo-soon {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 24px;
-  margin-bottom: 8px;
-  flex-wrap: wrap;
+  height: 100%;
+  min-height: 300px;
+  text-align: center;
 }
-.footer-links a {
-  color: var(--text-dim);
-  min-height: 44px;
-  min-width: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s;
+.demo-soon-inner {
+  color: var(--text-faint);
+  font-family: var(--mono);
+  font-size: 0.8125rem;
 }
-.footer-links a:hover,
-.footer-links a:focus-visible { color: var(--lime); text-decoration: none; }
-.footer-links .sep { color: var(--border-light); }
+.demo-soon-inner .lime { color: var(--lime); }
 
-/* aria-live region */
+/* ===== SR-ONLY ===== */
 .sr-only {
   position: absolute;
   width: 1px; height: 1px;
@@ -609,41 +623,113 @@ code, pre { font-family: var(--mono); }
   white-space: nowrap; border: 0;
 }
 
+/* ===== A11Y: prompt list for screen readers ===== */
+.sr-prompt-list {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap; border: 0;
+}
+.sr-prompt-list:focus-within {
+  position: fixed;
+  top: 60px; left: 20px; right: 20px;
+  width: auto; height: auto;
+  clip: auto;
+  z-index: 500;
+  background: var(--bg-panel);
+  border: 2px solid var(--lime);
+  padding: 20px;
+  max-height: 80vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sr-prompt-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  color: var(--text);
+  background: none;
+  border: 1px solid transparent;
+  padding: 8px 12px;
+  cursor: pointer;
+  min-height: 44px;
+}
+.sr-prompt-btn:hover,
+.sr-prompt-btn:focus-visible {
+  border-color: var(--lime);
+  color: var(--lime);
+  background: rgba(191, 255, 0, 0.04);
+}
+
 /* ===== MOBILE ===== */
 @media (max-width: 768px) {
-  .logo-bar { padding: 12px 20px; }
-  .logo-badge { display: none; }
-  .page-main { padding: 72px 16px 32px; }
-  .terminal-body { padding: 16px; font-size: 0.75rem; min-height: 400px; }
-  .picker-options { flex-direction: column; align-items: center; }
-  .picker-btn { max-width: 100%; width: 100%; }
-  .cta-cmd { font-size: 0.8125rem; padding: 16px 60px 16px 16px; }
+  .top-bar { padding: 12px 16px; }
+  .terminal-body { padding: 16px; font-size: 0.75rem; }
+  .terminal-overlay { padding: 50px 12px 32px; }
+  .terminal-container { max-height: calc(100vh - 80px); }
   .bar-label { width: 80px; font-size: 0.625rem; }
-  .footer-links a { min-height: 48px; min-width: 48px; }
+  .selected-prompt { font-size: 1rem; }
+  .install-cmd { font-size: 0.875rem; padding: 18px 60px 18px 20px; }
+  .hint { bottom: 50px; font-size: 0.6875rem; }
 }
 
 /* ===== REDUCED MOTION ===== */
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto !important; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  .cta-section {
-    opacity: 1 !important;
-    transform: none !important;
-  }
-  .question-picker {
-    transition-duration: 0.01ms !important;
-  }
   .bar-fill { width: var(--target-w) !important; }
+  #pond { display: none !important; }
+  .reduced-grid { display: block !important; }
+}
+
+/* ===== REDUCED MOTION GRID FALLBACK ===== */
+.reduced-grid {
+  display: none;
+  position: fixed;
+  top: 60px; left: 0; right: 0; bottom: 40px;
+  z-index: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+.reduced-grid-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.reduced-grid-btn {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  padding: 12px 18px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  min-height: 44px;
+}
+.reduced-grid-btn:hover,
+.reduced-grid-btn:focus-visible {
+  color: var(--lime);
+  border-color: var(--lime);
+  background: rgba(191, 255, 0, 0.04);
 }
 
 /* ===== PRINT ===== */
 @media print {
   body { background: #fff; color: #111; font-size: 12pt; line-height: 1.5; }
-  .logo-bar { display: none !important; }
+  .top-bar, .site-footer, #pond, .hint { display: none !important; }
   * {
     opacity: 1 !important;
     transform: none !important;
@@ -651,118 +737,104 @@ code, pre { font-family: var(--mono); }
     text-shadow: none !important;
     box-shadow: none !important;
   }
-  a { text-decoration: underline; }
   .game-terminal { border: 1px solid #ccc; background: #f9f9f9; }
   .tag { border: 1px solid #ccc; }
-  .cta-copy { display: none; }
 }
 </style>
 </head>
 <body>
-<a href="#main" class="skip-link">Skip to main content</a>
+<a href="#sr-prompts" class="skip-link">Skip to prompt list</a>
 
-<!-- Logo bar -->
-<nav class="logo-bar" aria-label="Main navigation">
-  <a href="/" class="logo-brand" aria-label="Grainulator home">Grainulator</a>
-  <span class="logo-badge">Open source &middot; MIT &middot; $6&#8211;12 per sprint</span>
-  <a href="https://github.com/grainulation/grainulator" class="logo-github" aria-label="View on GitHub">GitHub</a>
-</nav>
-
-<!-- aria-live for terminal narration and copy feedback -->
+<!-- aria-live regions -->
 <div id="terminal-live" class="sr-only" aria-live="polite" role="status"></div>
 <div id="copy-status" class="sr-only" aria-live="polite" role="status"></div>
 
-<!-- sr-only full description of the demo -->
-<div id="terminal-sr-desc" class="sr-only">
-Interactive demo: Pick a research question and watch Grainulator run a full research sprint. The tool gathers findings, challenges its own assumptions, revises estimates, and compiles a decision-ready brief. This is a pre-recorded simulation showing how the tool works inside Claude Code.
+<!-- Top bar -->
+<nav class="top-bar" aria-label="Main navigation">
+  <a href="/" class="logo-brand" aria-label="Grainulator home">
+    <svg class="logo-kernel" viewBox="0 0 64 64" aria-hidden="true"><ellipse cx="32" cy="30" rx="12" ry="22" fill="#BFFF00" transform="rotate(-8 32 30)"/><line x1="32" y1="10" x2="32" y2="56" stroke="#99CC00" stroke-width="1.5" stroke-linecap="round"/></svg>
+    Grainulator
+  </a>
+  <a href="#" class="get-it-link" id="get-it-link" role="button">Get it &rarr;</a>
+</nav>
+
+<!-- Canvas for swimming prompts -->
+<canvas id="pond" aria-hidden="true"></canvas>
+
+<!-- Screen reader accessible prompt list -->
+<div class="sr-prompt-list" id="sr-prompts" role="region" aria-label="Research prompts &mdash; click one to see a demo sprint">
+  <!-- Populated by JS -->
 </div>
 
-<main id="main" class="page-main">
-
-<!-- Question picker -->
-<div class="question-picker" id="question-picker" role="region" aria-label="Choose a research question">
-  <div class="picker-label">Pick a question. Watch the sprint.</div>
-  <ul class="picker-options" role="list">
-    <li><button class="picker-btn" data-q="postgres" type="button"><span class="picker-icon" aria-hidden="true">&#9656;</span>Should we migrate to Postgres or stick with MySQL?</button></li>
-    <li><button class="picker-btn" data-q="monorepo" type="button"><span class="picker-icon" aria-hidden="true">&#9656;</span>Monorepo or polyrepo for our 4 microservices?</button></li>
-    <li><button class="picker-btn" data-q="build-buy" type="button"><span class="picker-icon" aria-hidden="true">&#9656;</span>Should we build our auth system or buy one?</button></li>
-  </ul>
+<!-- Reduced motion: static grid of prompts -->
+<div class="reduced-grid" id="reduced-grid" role="region" aria-label="Research prompts">
+  <div class="reduced-grid-inner" id="reduced-grid-inner">
+    <!-- Populated by JS -->
+  </div>
 </div>
 
-<!-- The terminal -->
-<div class="terminal-wrap" id="terminal-wrap">
-  <div class="game-terminal" id="game-terminal" aria-describedby="terminal-sr-desc">
-    <div class="terminal-bar">
-      <div class="terminal-dots" aria-hidden="true">
-        <div class="dot dot-r"></div>
-        <div class="dot dot-y"></div>
-        <div class="dot dot-g"></div>
+<!-- Hint -->
+<div class="hint" id="hint">Click a prompt to see it in action</div>
+
+<!-- Terminal overlay -->
+<div class="terminal-overlay" id="terminal-overlay" role="dialog" aria-label="Sprint demo" aria-modal="true">
+  <div class="terminal-overlay-bg" id="terminal-overlay-bg"></div>
+  <div class="terminal-container">
+    <div class="selected-prompt" id="selected-prompt"></div>
+    <div class="game-terminal" id="game-terminal">
+      <div class="terminal-bar">
+        <div class="terminal-dots" aria-hidden="true">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+        </div>
+        <div class="terminal-title" id="terminal-title">grainulator</div>
+        <div class="terminal-status"><span class="status-dot" aria-hidden="true"></span> <span id="terminal-status-text">ready</span></div>
       </div>
-      <div class="terminal-title" id="terminal-title">grainulator</div>
-      <div class="terminal-status"><span class="status-dot" aria-hidden="true"></span> <span id="terminal-status-text">ready</span></div>
+      <div class="terminal-body" id="terminal-body" role="log" aria-label="Sprint output"></div>
     </div>
-    <div class="terminal-body" id="terminal-body" role="log" aria-label="Sprint output">
-      <div class="t-line"><span class="c-dim">$</span> <span class="c-text">Select a question above to start a sprint&#8230;</span><span class="cursor" aria-hidden="true"></span></div>
+    <div class="terminal-controls" id="terminal-controls">
+      <button class="ctrl-btn" id="btn-skip" type="button" hidden aria-label="Skip animation and show all steps">Skip to end</button>
+      <button class="ctrl-btn" id="btn-pause" type="button" hidden aria-label="Pause or resume the animation">Pause</button>
+      <button class="ctrl-btn" id="btn-dismiss" type="button" hidden aria-label="Close and return to prompts">Back to prompts</button>
     </div>
-  </div>
-  <div class="terminal-controls" id="terminal-controls">
-    <button class="ctrl-btn" id="btn-skip" type="button" hidden aria-label="Skip animation and show all steps">Skip to end</button>
-    <button class="ctrl-btn" id="btn-pause" type="button" hidden aria-label="Pause or resume the animation">Pause</button>
-  </div>
-</div>
-
-<!-- CTA (shown after sprint completes) -->
-<div class="cta-section" id="cta-section" aria-label="Install Grainulator">
-  <h2 class="cta-headline">Like that? Get it in <span class="lime">Claude Code.</span></h2>
-  <p class="cta-sub">That was 60 seconds. The real thing takes 4 minutes&#8202;&#8212;&#8202;and uses live research.</p>
-  <div class="cta-install-label">In Claude Code, type:</div>
-  <div class="cta-cmd" id="cta-cmd" role="button" tabindex="0" aria-label="Copy install command: /plugin install grainulator">
-    <span class="prompt" aria-hidden="true">/</span>plugin install grainulator
-    <button class="cta-copy" id="cta-copy-btn" aria-label="Copy to clipboard">Copy</button>
-  </div>
-  <div class="cta-time">In 4 minutes, you will have the brief.</div>
-  <div class="cta-stats">
-    <div class="cta-stat">
-      <div class="cta-stat-num">0</div>
-      <div class="cta-stat-label">Dependencies</div>
-    </div>
-    <div class="cta-stat">
-      <div class="cta-stat-num">MIT</div>
-      <div class="cta-stat-label">License</div>
-    </div>
-    <div class="cta-stat">
-      <div class="cta-stat-num">$6&#8211;12</div>
-      <div class="cta-stat-label">Per sprint</div>
+    <div class="sprint-done" id="sprint-done">
+      <div class="sprint-done-text">Like that? <span class="lime">That took 60 seconds.</span> The real thing takes 4 minutes.</div>
+      <div class="sprint-done-sub">Click elsewhere or press Escape to go back. Or &mdash;</div>
+      <button class="ctrl-btn" id="btn-get-it-cta" type="button" style="margin-top:12px;color:var(--lime);border-color:var(--lime);">Get Grainulator &rarr;</button>
     </div>
   </div>
 </div>
 
-<!-- Restart -->
-<div class="restart-row" id="restart-row">
-  <button class="ctrl-btn" id="btn-restart" type="button" aria-label="Try a different question">Try another question</button>
+<!-- Install overlay -->
+<div class="install-overlay" id="install-overlay">
+  <div class="install-overlay-bg" id="install-overlay-bg"></div>
+  <div class="install-card">
+    <div class="install-label">In Claude Code, type:</div>
+    <div class="install-cmd" id="install-cmd" role="button" tabindex="0" aria-label="Copy install command: /plugin install grainulator">
+      <span class="prompt" aria-hidden="true">/</span>plugin install grainulator
+      <button class="install-copy" id="install-copy-btn" aria-label="Copy to clipboard">Copy</button>
+    </div>
+    <div class="install-compat">Works with your existing codebase, Jira, Confluence, Slack&thinsp;&mdash;&thinsp;no migration needed.</div>
+    <button class="install-dismiss" id="install-dismiss" type="button">Back to fishing &darr;</button>
+  </div>
 </div>
 
-</main>
-
+<!-- Footer -->
 <footer class="site-footer" role="contentinfo">
-  <div class="footer-links">
-    <a href="https://github.com/grainulation/grainulator">GitHub</a>
-    <span class="sep" aria-hidden="true">&middot;</span>
-    <a href="https://grainulation.com/docs">Docs</a>
-    <span class="sep" aria-hidden="true">&middot;</span>
-    <a href="https://grainulation.com">grainulation.com</a>
-  </div>
-  <span>MIT License</span> &middot; <span>Zero dependencies</span> &middot; <span>Built for Claude Code</span>
+  <a href="https://github.com/grainulation/grainulator">GitHub</a>
+  <span class="sep" aria-hidden="true">&middot;</span>
+  <a href="https://grainulation.com/docs">Docs</a>
+  <span class="sep" aria-hidden="true">&middot;</span>
+  <a href="https://grainulation.com">grainulation.com</a>
 </footer>
 
 <!-- noscript fallback -->
 <noscript>
   <style>
-    .question-picker { display: none !important; }
-    .terminal-controls { display: none !important; }
-    .cta-section { opacity: 1 !important; transform: none !important; }
+    #pond, .hint, .terminal-overlay, .install-overlay, .reduced-grid { display: none !important; }
   </style>
-  <div style="background:#0A0A0B;color:#F0F0F0;text-align:center;padding:40px 20px;font-family:system-ui,sans-serif;">
+  <div style="background:#0A0A0B;color:#F0F0F0;text-align:center;padding:80px 20px;font-family:system-ui,sans-serif;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;">
     <h2 style="color:#BFFF00;font-size:2rem;margin-bottom:16px;">Grainulator</h2>
     <p style="font-size:1.2rem;max-width:600px;margin:0 auto 24px;">Type a question, get a decision-ready brief in 4 minutes. Research sprint tool for Claude Code.</p>
     <p style="font-family:monospace;color:#BFFF00;">/plugin install grainulator</p>
@@ -772,8 +844,8 @@ Interactive demo: Pick a research question and watch Grainulator run a full rese
 
 <script>
 /* ======================================================
-   GRAINULATOR — Interactive Terminal Demo
-   Pre-scripted sprint sequences with typewriter effect.
+   GRAINULATOR — Swimming Prompts + Terminal Demo
+   Canvas 2D fish pond. Click a prompt, watch a sprint.
    Zero libraries. Full a11y.
    ====================================================== */
 (function () {
@@ -782,103 +854,290 @@ Interactive demo: Pick a research question and watch Grainulator run a full rese
   var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ======================================================
-     SPRINT SCRIPTS — pre-written sequences per question
+     ALL PROMPTS — the fish in the pond
+     ====================================================== */
+  var allPrompts = [
+    { text: "Should we use Postgres or MongoDB?", key: "postgres-mongo" },
+    { text: "Is our pricing strategy competitive?", key: "pricing" },
+    { text: "Should we expand to the EU market?", key: "eu-expansion" },
+    { text: "How does our auth system compare to Auth0?", key: "auth-compare" },
+    { text: "What\u2019s our incident response gap?", key: "incident-response" },
+    { text: "What are competitors doing with AI agents?", key: "ai-agents" },
+    { text: "Monolith vs microservices for our scale?", key: "monolith-micro" },
+    { text: "Evaluate Datadog vs Grafana for observability", key: "datadog-grafana" },
+    { text: "How should we structure the platform team?", key: "platform-team" },
+    { text: "What features should we cut from v2?", key: "v2-cuts" },
+    { text: "Are we ready for SOC 2 audit?", key: "soc2" },
+    { text: "What\u2019s the best channel for our first 1000 users?", key: "first-1000" },
+    { text: "How does our Jira workflow compare to Linear?", key: "jira-linear" },
+    { text: "What are the risks in our auth module?", key: "auth-risks" },
+    { text: "Evaluate Snowflake vs Databricks for our data pipeline", key: "snowflake-databricks" },
+    { text: "Should we break the monolith into services?", key: "break-monolith" },
+    { text: "How should we run the eng hiring process?", key: "eng-hiring" },
+    { text: "Is our sprint planning effective?", key: "sprint-planning" },
+    { text: "What\u2019s Stripe doing that we\u2019re not?", key: "stripe-competitor" },
+    { text: "Are we GDPR ready?", key: "gdpr" },
+    { text: "Where are we overspending on cloud?", key: "cloud-cost" },
+    { text: "What\u2019s the best way to reach enterprise customers?", key: "enterprise-growth" },
+    { text: "Should we migrate from REST to GraphQL?", key: "rest-graphql" },
+    { text: "Is Kubernetes worth it at our scale?", key: "k8s" },
+    { text: "Build or buy our billing system?", key: "billing-build-buy" },
+    { text: "How do we reduce our p95 latency?", key: "p95-latency" },
+    { text: "Should we adopt TypeScript across all services?", key: "typescript" },
+    { text: "What\u2019s our technical debt costing us?", key: "tech-debt" },
+    { text: "How do we improve developer onboarding?", key: "dev-onboarding" },
+    { text: "Is our CI/CD pipeline slowing us down?", key: "cicd" },
+    { text: "Should we open-source our SDK?", key: "open-source-sdk" },
+    { text: "What\u2019s the right database for time-series data?", key: "timeseries-db" },
+    { text: "How should we handle multi-tenancy?", key: "multi-tenancy" },
+    { text: "Evaluate Vercel vs Cloudflare for our frontend", key: "vercel-cloudflare" },
+    { text: "Should we build a design system?", key: "design-system" },
+    { text: "What\u2019s our bus factor on the payments team?", key: "bus-factor" },
+    { text: "How do competitors handle rate limiting?", key: "rate-limiting" },
+    { text: "Is our API versioning strategy sustainable?", key: "api-versioning" },
+    { text: "Should we invest in a developer portal?", key: "dev-portal" },
+    { text: "What\u2019s the ROI of switching to trunk-based development?", key: "trunk-based" }
+  ];
+
+  /* ======================================================
+     SPRINT SCRIPTS — pre-written demo sequences
      ====================================================== */
   var scripts = {
-    postgres: [
-      { type: 'cmd', text: 'grainulator init "Should we migrate to Postgres?"', delay: 60 },
-      { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">engineering leadership</span>', delay: 400 },
-      { type: 'line', html: '<span class="c-dim">sprint:</span> <span class="c-white">postgres-migration</span>', delay: 300 },
-      { type: 'blank', delay: 200 },
-      { type: 'cmd', text: '/research postgres migration feasibility', delay: 60 },
-      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r001: Postgres handles 12k TPS on comparable hardware</span>', delay: 500 },
-      { type: 'line', html: '<span class="tag tag-estimate">estimate</span> <span class="c-text" id="claim-r002">r002: Migration will take 6 weeks</span>', delay: 500 },
-      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r003: pgvector eliminates separate vector DB</span>', delay: 500 },
-      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r004: No team member has Postgres experience</span>', delay: 500 },
-      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r005: Current DB license costs $48k/year</span>', delay: 500 },
-      { type: 'line', html: '<span class="tag tag-rec">rec</span> <span class="c-text">r006: 90-day parallel-run period</span>', delay: 500 },
-      { type: 'blank', delay: 300 },
-      { type: 'challenge', html: '<span class="c-dim">$</span> <span class="c-lime">/challenge r002</span><br><span class="c-dim">finding:</span> <span class="c-text">\u201cMigration will take 6 weeks.\u201d</span><br><span class="c-dim">contradicting evidence:</span> <span class="c-amber">r004</span> <span class="c-dim">\u2014 no Postgres experience on team</span><br><span class="c-dim">industry benchmark:</span> <span class="c-text">comparable migrations averaged 11.4 weeks</span><br><br><span class="c-red">\u2717 REVISED</span> <span class="c-dim">\u2014 r002 updated to</span> <span class="c-white">12 weeks</span>', strikeId: 'claim-r002', delay: 1200 },
-      { type: 'blank', delay: 300 },
-      { type: 'cmd', text: 'grainulator compile \u2014 generating brief', delay: 60 },
-      { type: 'line', html: '<span class="c-dim">findings:</span> <span class="c-green">6 analyzed</span> <span class="c-dim">| 1 revised | 0 retired</span>', delay: 400 },
-      { type: 'line', html: '<span class="c-white">Coverage:</span>', delay: 300 },
-      { type: 'bar', label: 'query-perf', pct: 92, cls: 'high', color: 'c-green', delay: 400 },
-      { type: 'bar', label: 'migration', pct: 87, cls: 'high', color: 'c-green', delay: 400 },
-      { type: 'bar', label: 'ops-risk', pct: 94, cls: 'high', color: 'c-green', delay: 400 },
-      { type: 'bar', label: 'team-skill', pct: 71, cls: 'mid', color: 'c-amber', delay: 400 },
-      { type: 'blank', delay: 300 },
-      { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 600 },
-      { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/postgres-migration-brief.html</span>', delay: 300 }
+    "postgres-mongo": [
+      { type: 'cmd', text: 'grainulator init "Should we use Postgres or MongoDB?"', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">engineering leadership</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-dim">sprint:</span> <span class="c-white">postgres-vs-mongo</span>', delay: 250 },
+      { type: 'blank', delay: 150 },
+      { type: 'cmd', text: '/research postgres vs mongodb for our workload', delay: 50 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r001: Postgres handles 12k TPS on comparable hardware</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r002: MongoDB excels at document-shaped data with flexible schemas</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-estimate">estimate</span> <span class="c-text" id="claim-pm-r003">r003: Schema migration effort is 2 weeks either way</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r004: 80% of our queries are relational joins \u2014 MongoDB penalty</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r005: pgvector eliminates need for separate vector DB</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-rec">rec</span> <span class="c-text">r006: Postgres with JSONB columns for flexible fields</span>', delay: 400 },
+      { type: 'blank', delay: 250 },
+      { type: 'challenge', html: '<span class="c-dim">$</span> <span class="c-lime">/challenge r003</span><br><span class="c-dim">finding:</span> <span class="c-text">\u201cSchema migration effort is 2 weeks either way.\u201d</span><br><span class="c-dim">contradicting evidence:</span> <span class="c-amber">r004</span> <span class="c-dim">\u2014 rewriting join-heavy queries for MongoDB adds 4+ weeks</span><br><span class="c-dim">industry data:</span> <span class="c-text">relational-to-document migrations average 8.3 weeks</span><br><br><span class="c-red">\u2717 REVISED</span> <span class="c-dim">\u2014 r003 updated to</span> <span class="c-white">Postgres: 2 weeks, MongoDB: 9 weeks</span>', strikeId: 'claim-pm-r003', delay: 1000 },
+      { type: 'blank', delay: 250 },
+      { type: 'cmd', text: 'grainulator compile \u2014 generating brief', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">findings:</span> <span class="c-green">6 analyzed</span> <span class="c-dim">| 1 revised | 0 retired</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-white">Coverage:</span>', delay: 250 },
+      { type: 'bar', label: 'query-perf', pct: 94, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'schema-flex', pct: 88, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'migration', pct: 91, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'ecosystem', pct: 73, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'blank', delay: 250 },
+      { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
+      { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/postgres-vs-mongo-brief.html</span>', delay: 250 }
     ],
-    monorepo: [
-      { type: 'cmd', text: 'grainulator init "Monorepo or polyrepo for 4 microservices?"', delay: 60 },
-      { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">platform engineering team</span>', delay: 400 },
-      { type: 'line', html: '<span class="c-dim">sprint:</span> <span class="c-white">repo-strategy</span>', delay: 300 },
-      { type: 'blank', delay: 200 },
-      { type: 'cmd', text: '/research monorepo vs polyrepo tradeoffs', delay: 60 },
-      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r001: Google, Meta, and Stripe use monorepos at massive scale</span>', delay: 500 },
-      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r002: CI pipeline will slow 3x with monorepo at current config</span>', delay: 500 },
-      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r003: Turborepo/Nx reduce CI overhead by ~60% with caching</span>', delay: 500 },
-      { type: 'line', html: '<span class="tag tag-estimate">estimate</span> <span class="c-text" id="claim-mono-r004">r004: Migration to monorepo takes 2 weeks</span>', delay: 500 },
-      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r005: Team uses 3 different languages \u2014 tooling fragmentation</span>', delay: 500 },
-      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r006: Cross-repo PRs currently take 3x longer to merge</span>', delay: 500 },
-      { type: 'line', html: '<span class="tag tag-rec">rec</span> <span class="c-text">r007: Start with 2-service monorepo pilot, keep others separate</span>', delay: 500 },
-      { type: 'blank', delay: 300 },
-      { type: 'challenge', html: '<span class="c-dim">$</span> <span class="c-lime">/challenge r004</span><br><span class="c-dim">finding:</span> <span class="c-text">\u201cMigration to monorepo takes 2 weeks.\u201d</span><br><span class="c-dim">contradicting evidence:</span> <span class="c-amber">r005</span> <span class="c-dim">\u2014 3 languages means 3 build systems to unify</span><br><span class="c-dim">industry data:</span> <span class="c-text">similar migrations averaged 6.2 weeks</span><br><br><span class="c-red">\u2717 REVISED</span> <span class="c-dim">\u2014 r004 updated to</span> <span class="c-white">5 weeks</span>', strikeId: 'claim-mono-r004', delay: 1200 },
-      { type: 'blank', delay: 300 },
-      { type: 'cmd', text: 'grainulator compile \u2014 generating brief', delay: 60 },
-      { type: 'line', html: '<span class="c-dim">findings:</span> <span class="c-green">7 analyzed</span> <span class="c-dim">| 1 revised | 0 retired</span>', delay: 400 },
-      { type: 'line', html: '<span class="c-white">Coverage:</span>', delay: 300 },
-      { type: 'bar', label: 'ci-perf', pct: 88, cls: 'high', color: 'c-green', delay: 400 },
-      { type: 'bar', label: 'dx', pct: 91, cls: 'high', color: 'c-green', delay: 400 },
-      { type: 'bar', label: 'migration', pct: 79, cls: 'mid', color: 'c-amber', delay: 400 },
-      { type: 'bar', label: 'tooling', pct: 85, cls: 'high', color: 'c-green', delay: 400 },
-      { type: 'blank', delay: 300 },
-      { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 600 },
-      { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/repo-strategy-brief.html</span>', delay: 300 }
+    "pricing": [
+      { type: 'cmd', text: 'grainulator init "Is our pricing strategy competitive?"', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">CEO + head of product</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-dim">sprint:</span> <span class="c-white">pricing-analysis</span>', delay: 250 },
+      { type: 'blank', delay: 150 },
+      { type: 'cmd', text: '/research pricing competitiveness and positioning', delay: 50 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r001: Our $49/mo sits 23% above median competitor price</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r002: Top 3 competitors offer freemium; we don\u2019t</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-estimate">estimate</span> <span class="c-text" id="claim-pr-r003">r003: Adding a free tier would increase signups 40%</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r004: Free tier could cannibalize 15% of paid conversions</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r005: Our NPS is 72 \u2014 highest in category</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-rec">rec</span> <span class="c-text">r006: Keep premium pricing, add limited free trial instead</span>', delay: 400 },
+      { type: 'blank', delay: 250 },
+      { type: 'challenge', html: '<span class="c-dim">$</span> <span class="c-lime">/challenge r003</span><br><span class="c-dim">finding:</span> <span class="c-text">\u201cAdding a free tier would increase signups 40%.\u201d</span><br><span class="c-dim">contradicting evidence:</span> <span class="c-amber">r004</span> <span class="c-dim">\u2014 cannibalization offsets raw signup gains</span><br><span class="c-dim">comparable data:</span> <span class="c-text">Basecamp saw only 12% net growth from freemium experiment</span><br><br><span class="c-red">\u2717 REVISED</span> <span class="c-dim">\u2014 r003 updated to</span> <span class="c-white">net growth likely 10\u201318%</span>', strikeId: 'claim-pr-r003', delay: 1000 },
+      { type: 'blank', delay: 250 },
+      { type: 'cmd', text: 'grainulator compile \u2014 generating brief', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">findings:</span> <span class="c-green">6 analyzed</span> <span class="c-dim">| 1 revised | 0 retired</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-white">Coverage:</span>', delay: 250 },
+      { type: 'bar', label: 'market-pos', pct: 91, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'conversion', pct: 84, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'retention', pct: 79, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'bar', label: 'competitor', pct: 93, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'blank', delay: 250 },
+      { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
+      { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/pricing-analysis-brief.html</span>', delay: 250 }
     ],
-    'build-buy': [
-      { type: 'cmd', text: 'grainulator init "Build our auth system or buy one?"', delay: 60 },
-      { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">CTO + security lead</span>', delay: 400 },
-      { type: 'line', html: '<span class="c-dim">sprint:</span> <span class="c-white">auth-build-buy</span>', delay: 300 },
-      { type: 'blank', delay: 200 },
-      { type: 'cmd', text: '/research build vs buy authentication', delay: 60 },
-      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r001: Auth0/Clerk handle SSO, MFA, RBAC out of the box</span>', delay: 500 },
-      { type: 'line', html: '<span class="tag tag-estimate">estimate</span> <span class="c-text" id="claim-auth-r002">r002: Building custom auth takes 4 weeks</span>', delay: 500 },
-      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r003: Custom auth = custom security vulnerabilities</span>', delay: 500 },
-      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r004: Clerk pricing: $0.02/MAU after 10k free</span>', delay: 500 },
-      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r005: 73% of startups regret building auth in-house (Snyk survey)</span>', delay: 500 },
-      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r006: Vendor lock-in \u2014 migrating away from auth provider is painful</span>', delay: 500 },
-      { type: 'line', html: '<span class="tag tag-rec">rec</span> <span class="c-text">r007: Buy Clerk, but abstract behind interface for portability</span>', delay: 500 },
-      { type: 'blank', delay: 300 },
-      { type: 'challenge', html: '<span class="c-dim">$</span> <span class="c-lime">/challenge r002</span><br><span class="c-dim">finding:</span> <span class="c-text">\u201cBuilding custom auth takes 4 weeks.\u201d</span><br><span class="c-dim">contradicting evidence:</span> <span class="c-amber">r003</span> <span class="c-dim">\u2014 security hardening not included in estimate</span><br><span class="c-dim">industry data:</span> <span class="c-text">custom auth + security audit averaged 14 weeks</span><br><br><span class="c-red">\u2717 REVISED</span> <span class="c-dim">\u2014 r002 updated to</span> <span class="c-white">14 weeks</span>', strikeId: 'claim-auth-r002', delay: 1200 },
-      { type: 'blank', delay: 300 },
-      { type: 'cmd', text: 'grainulator compile \u2014 generating brief', delay: 60 },
-      { type: 'line', html: '<span class="c-dim">findings:</span> <span class="c-green">7 analyzed</span> <span class="c-dim">| 1 revised | 0 retired</span>', delay: 400 },
-      { type: 'line', html: '<span class="c-white">Coverage:</span>', delay: 300 },
-      { type: 'bar', label: 'security', pct: 96, cls: 'high', color: 'c-green', delay: 400 },
-      { type: 'bar', label: 'cost', pct: 89, cls: 'high', color: 'c-green', delay: 400 },
-      { type: 'bar', label: 'time-to-ship', pct: 93, cls: 'high', color: 'c-green', delay: 400 },
-      { type: 'bar', label: 'lock-in risk', pct: 68, cls: 'mid', color: 'c-amber', delay: 400 },
-      { type: 'blank', delay: 300 },
-      { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 600 },
-      { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/auth-build-buy-brief.html</span>', delay: 300 }
+    "monolith-micro": [
+      { type: 'cmd', text: 'grainulator init "Monolith vs microservices for our scale?"', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">platform engineering team</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-dim">sprint:</span> <span class="c-white">architecture-decision</span>', delay: 250 },
+      { type: 'blank', delay: 150 },
+      { type: 'cmd', text: '/research monolith vs microservices tradeoffs', delay: 50 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r001: Our monolith deploys take 45 min; services average 8 min</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r002: Team of 12 \u2014 microservices add coordination overhead</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r003: Shopify runs a modular monolith at massive scale</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-estimate">estimate</span> <span class="c-text" id="claim-mm-r004">r004: Extracting 3 services takes 4 weeks</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r005: Distributed tracing and debugging complexity doubles</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-rec">rec</span> <span class="c-text">r006: Modular monolith now, extract only the payments service</span>', delay: 400 },
+      { type: 'blank', delay: 250 },
+      { type: 'challenge', html: '<span class="c-dim">$</span> <span class="c-lime">/challenge r004</span><br><span class="c-dim">finding:</span> <span class="c-text">\u201cExtracting 3 services takes 4 weeks.\u201d</span><br><span class="c-dim">contradicting evidence:</span> <span class="c-amber">r005</span> <span class="c-dim">\u2014 observability setup alone takes 2 weeks</span><br><span class="c-dim">industry data:</span> <span class="c-text">service extraction averages 3.5 weeks per service</span><br><br><span class="c-red">\u2717 REVISED</span> <span class="c-dim">\u2014 r004 updated to</span> <span class="c-white">10\u201312 weeks for 3 services</span>', strikeId: 'claim-mm-r004', delay: 1000 },
+      { type: 'blank', delay: 250 },
+      { type: 'cmd', text: 'grainulator compile \u2014 generating brief', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">findings:</span> <span class="c-green">6 analyzed</span> <span class="c-dim">| 1 revised | 0 retired</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-white">Coverage:</span>', delay: 250 },
+      { type: 'bar', label: 'deploy-vel', pct: 89, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'team-fit', pct: 92, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'complexity', pct: 85, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'migration', pct: 68, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'blank', delay: 250 },
+      { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
+      { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/architecture-decision-brief.html</span>', delay: 250 }
+    ],
+    "soc2": [
+      { type: 'cmd', text: 'grainulator init "Are we ready for SOC 2 audit?"', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">CTO + compliance lead</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-dim">sprint:</span> <span class="c-white">soc2-readiness</span>', delay: 250 },
+      { type: 'blank', delay: 150 },
+      { type: 'cmd', text: '/research SOC 2 Type II readiness assessment', delay: 50 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r001: 14 of 22 required controls are documented</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r002: No formal access review process exists</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r003: Logging covers 6 of 9 trust service criteria</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-estimate">estimate</span> <span class="c-text" id="claim-soc-r004">r004: Audit-ready in 6 weeks with focused effort</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r005: Vendor risk management program is missing entirely</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-rec">rec</span> <span class="c-text">r006: Use Vanta/Drata to automate evidence collection</span>', delay: 400 },
+      { type: 'blank', delay: 250 },
+      { type: 'challenge', html: '<span class="c-dim">$</span> <span class="c-lime">/challenge r004</span><br><span class="c-dim">finding:</span> <span class="c-text">\u201cAudit-ready in 6 weeks with focused effort.\u201d</span><br><span class="c-dim">contradicting evidence:</span> <span class="c-amber">r005</span> <span class="c-dim">\u2014 vendor risk program alone takes 4\u20136 weeks</span><br><span class="c-dim">industry data:</span> <span class="c-text">first SOC 2 prep averages 14 weeks</span><br><br><span class="c-red">\u2717 REVISED</span> <span class="c-dim">\u2014 r004 updated to</span> <span class="c-white">12\u201314 weeks</span>', strikeId: 'claim-soc-r004', delay: 1000 },
+      { type: 'blank', delay: 250 },
+      { type: 'cmd', text: 'grainulator compile \u2014 generating brief', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">findings:</span> <span class="c-green">6 analyzed</span> <span class="c-dim">| 1 revised | 0 retired</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-white">Coverage:</span>', delay: 250 },
+      { type: 'bar', label: 'controls', pct: 64, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'bar', label: 'logging', pct: 67, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'bar', label: 'access-mgmt', pct: 42, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'bar', label: 'vendor-risk', pct: 18, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'blank', delay: 250 },
+      { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
+      { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/soc2-readiness-brief.html</span>', delay: 250 }
+    ],
+    "cloud-cost": [
+      { type: 'cmd', text: 'grainulator init "Where are we overspending on cloud?"', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">VP Engineering + finance</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-dim">sprint:</span> <span class="c-white">cloud-cost-audit</span>', delay: 250 },
+      { type: 'blank', delay: 150 },
+      { type: 'cmd', text: '/research cloud spend optimization opportunities', delay: 50 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r001: 34% of EC2 instances run below 10% CPU utilization</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r002: No reserved instances \u2014 paying full on-demand pricing</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-estimate">estimate</span> <span class="c-text" id="claim-cc-r003">r003: Savings potential is $8k/month</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r004: Staging environment costs 60% of production</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r005: S3 lifecycle policies could save $2.1k/month</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-rec">rec</span> <span class="c-text">r006: Right-size instances, buy 1yr reserved, schedule staging</span>', delay: 400 },
+      { type: 'blank', delay: 250 },
+      { type: 'challenge', html: '<span class="c-dim">$</span> <span class="c-lime">/challenge r003</span><br><span class="c-dim">finding:</span> <span class="c-text">\u201cSavings potential is $8k/month.\u201d</span><br><span class="c-dim">supporting evidence:</span> <span class="c-amber">r001, r002, r004, r005</span> <span class="c-dim">\u2014 combined savings likely higher</span><br><span class="c-dim">recalculated:</span> <span class="c-text">instance right-sizing ($4.2k) + reserved ($3.8k) + S3 ($2.1k) + staging ($2.9k)</span><br><br><span class="c-green">\u2713 UPGRADED</span> <span class="c-dim">\u2014 r003 updated to</span> <span class="c-white">$13k/month savings potential</span>', strikeId: 'claim-cc-r003', delay: 1000 },
+      { type: 'blank', delay: 250 },
+      { type: 'cmd', text: 'grainulator compile \u2014 generating brief', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">findings:</span> <span class="c-green">6 analyzed</span> <span class="c-dim">| 1 revised | 0 retired</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-white">Coverage:</span>', delay: 250 },
+      { type: 'bar', label: 'compute', pct: 96, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'storage', pct: 88, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'networking', pct: 61, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'bar', label: 'non-prod', pct: 93, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'blank', delay: 250 },
+      { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
+      { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/cloud-cost-audit-brief.html</span>', delay: 250 }
+    ],
+    "eng-hiring": [
+      { type: 'cmd', text: 'grainulator init "How should we run the eng hiring process?"', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">VP Engineering + recruiting</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-dim">sprint:</span> <span class="c-white">eng-hiring-process</span>', delay: 250 },
+      { type: 'blank', delay: 150 },
+      { type: 'cmd', text: '/research engineering hiring best practices', delay: 50 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r001: Current time-to-hire is 47 days; industry median is 36</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r002: Take-home assignments have 38% drop-off rate</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-estimate">estimate</span> <span class="c-text" id="claim-eh-r003">r003: Switching to pair programming interviews saves 8 days</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r004: No structured rubric \u2014 interviewer bias is high</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r005: Companies with structured interviews see 2x better retention</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-rec">rec</span> <span class="c-text">r006: Structured rubric + pair programming + 4-stage pipeline</span>', delay: 400 },
+      { type: 'blank', delay: 250 },
+      { type: 'challenge', html: '<span class="c-dim">$</span> <span class="c-lime">/challenge r003</span><br><span class="c-dim">finding:</span> <span class="c-text">\u201cSwitching to pair programming interviews saves 8 days.\u201d</span><br><span class="c-dim">contradicting evidence:</span> <span class="c-amber">r004</span> <span class="c-dim">\u2014 rubric creation adds 1\u20132 weeks upfront</span><br><span class="c-dim">industry data:</span> <span class="c-text">net savings after process change: 5 days average</span><br><br><span class="c-red">\u2717 REVISED</span> <span class="c-dim">\u2014 r003 updated to</span> <span class="c-white">saves 5 days after 2-week setup investment</span>', strikeId: 'claim-eh-r003', delay: 1000 },
+      { type: 'blank', delay: 250 },
+      { type: 'cmd', text: 'grainulator compile \u2014 generating brief', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">findings:</span> <span class="c-green">6 analyzed</span> <span class="c-dim">| 1 revised | 0 retired</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-white">Coverage:</span>', delay: 250 },
+      { type: 'bar', label: 'speed', pct: 87, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'quality', pct: 91, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'fairness', pct: 83, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'candidate-exp', pct: 76, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'blank', delay: 250 },
+      { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
+      { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/eng-hiring-process-brief.html</span>', delay: 250 }
+    ],
+    "datadog-grafana": [
+      { type: 'cmd', text: 'grainulator init "Evaluate Datadog vs Grafana for observability"', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">SRE team + engineering management</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-dim">sprint:</span> <span class="c-white">observability-eval</span>', delay: 250 },
+      { type: 'blank', delay: 150 },
+      { type: 'cmd', text: '/research Datadog vs Grafana stack comparison', delay: 50 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r001: Datadog costs $23/host/mo; Grafana Cloud $0 for first 3 users</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r002: Datadog APM auto-instruments 90% of our stack</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-estimate">estimate</span> <span class="c-text" id="claim-dg-r003">r003: Grafana setup takes 2 days with existing Prometheus</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r004: Datadog bill projected to hit $14k/mo at current growth</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r005: Grafana Loki + Tempo cover logs + traces at 1/5 the cost</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-rec">rec</span> <span class="c-text">r006: Grafana stack with Datadog as backup for APM only</span>', delay: 400 },
+      { type: 'blank', delay: 250 },
+      { type: 'challenge', html: '<span class="c-dim">$</span> <span class="c-lime">/challenge r003</span><br><span class="c-dim">finding:</span> <span class="c-text">\u201cGrafana setup takes 2 days with existing Prometheus.\u201d</span><br><span class="c-dim">contradicting evidence:</span> <span class="c-amber">r005</span> <span class="c-dim">\u2014 Loki + Tempo integration adds significant config</span><br><span class="c-dim">industry data:</span> <span class="c-text">full Grafana stack rollout averages 2.5 weeks</span><br><br><span class="c-red">\u2717 REVISED</span> <span class="c-dim">\u2014 r003 updated to</span> <span class="c-white">2\u20133 weeks for full stack</span>', strikeId: 'claim-dg-r003', delay: 1000 },
+      { type: 'blank', delay: 250 },
+      { type: 'cmd', text: 'grainulator compile \u2014 generating brief', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">findings:</span> <span class="c-green">6 analyzed</span> <span class="c-dim">| 1 revised | 0 retired</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-white">Coverage:</span>', delay: 250 },
+      { type: 'bar', label: 'cost', pct: 95, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'features', pct: 88, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'bar', label: 'setup', pct: 74, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'bar', label: 'scalability', pct: 91, cls: 'high', color: 'c-green', delay: 350 },
+      { type: 'blank', delay: 250 },
+      { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
+      { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/observability-eval-brief.html</span>', delay: 250 }
+    ],
+    "gdpr": [
+      { type: 'cmd', text: 'grainulator init "Are we GDPR ready?"', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">legal + CTO</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-dim">sprint:</span> <span class="c-white">gdpr-readiness</span>', delay: 250 },
+      { type: 'blank', delay: 150 },
+      { type: 'cmd', text: '/research GDPR compliance gap analysis', delay: 50 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r001: No data processing agreement with 4 of 7 sub-processors</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r002: User data deletion takes 30 days; GDPR requires \u201cwithout undue delay\u201d</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-factual">factual</span> <span class="c-text">r003: Privacy policy last updated 18 months ago</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-estimate">estimate</span> <span class="c-text" id="claim-gd-r004">r004: Full compliance achievable in 4 weeks</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-risk">risk</span> <span class="c-text">r005: No Data Protection Officer designated</span>', delay: 400 },
+      { type: 'line', html: '<span class="tag tag-rec">rec</span> <span class="c-text">r006: Prioritize DPAs, deletion pipeline, and DPO appointment</span>', delay: 400 },
+      { type: 'blank', delay: 250 },
+      { type: 'challenge', html: '<span class="c-dim">$</span> <span class="c-lime">/challenge r004</span><br><span class="c-dim">finding:</span> <span class="c-text">\u201cFull compliance achievable in 4 weeks.\u201d</span><br><span class="c-dim">contradicting evidence:</span> <span class="c-amber">r001, r005</span> <span class="c-dim">\u2014 DPA negotiation + DPO search take 6\u20138 weeks minimum</span><br><span class="c-dim">industry data:</span> <span class="c-text">GDPR remediation averages 11 weeks for similar-sized companies</span><br><br><span class="c-red">\u2717 REVISED</span> <span class="c-dim">\u2014 r004 updated to</span> <span class="c-white">10\u201312 weeks</span>', strikeId: 'claim-gd-r004', delay: 1000 },
+      { type: 'blank', delay: 250 },
+      { type: 'cmd', text: 'grainulator compile \u2014 generating brief', delay: 50 },
+      { type: 'line', html: '<span class="c-dim">findings:</span> <span class="c-green">6 analyzed</span> <span class="c-dim">| 1 revised | 0 retired</span>', delay: 350 },
+      { type: 'line', html: '<span class="c-white">Coverage:</span>', delay: 250 },
+      { type: 'bar', label: 'legal', pct: 58, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'bar', label: 'technical', pct: 71, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'bar', label: 'process', pct: 45, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'bar', label: 'governance', pct: 33, cls: 'mid', color: 'c-amber', delay: 350 },
+      { type: 'blank', delay: 250 },
+      { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
+      { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/gdpr-readiness-brief.html</span>', delay: 250 }
     ]
   };
+
+  /* Keys that have full scripts */
+  var scriptedKeys = Object.keys(scripts);
 
   /* ======================================================
      DOM REFS
      ====================================================== */
-  var picker = document.getElementById('question-picker');
+  var canvas = document.getElementById('pond');
+  var ctx = canvas.getContext('2d');
+  var termOverlay = document.getElementById('terminal-overlay');
+  var termOverlayBg = document.getElementById('terminal-overlay-bg');
   var termBody = document.getElementById('terminal-body');
   var termStatus = document.getElementById('terminal-status-text');
-  var termTitle = document.getElementById('terminal-title');
+  var selectedPromptEl = document.getElementById('selected-prompt');
   var btnSkip = document.getElementById('btn-skip');
   var btnPause = document.getElementById('btn-pause');
-  var btnRestart = document.getElementById('btn-restart');
-  var ctaSection = document.getElementById('cta-section');
-  var restartRow = document.getElementById('restart-row');
+  var btnDismiss = document.getElementById('btn-dismiss');
+  var sprintDone = document.getElementById('sprint-done');
+  var btnGetItCta = document.getElementById('btn-get-it-cta');
+  var installOverlay = document.getElementById('install-overlay');
+  var installOverlayBg = document.getElementById('install-overlay-bg');
+  var installDismiss = document.getElementById('install-dismiss');
+  var installCmdEl = document.getElementById('install-cmd');
+  var installCopyBtn = document.getElementById('install-copy-btn');
+  var getItLink = document.getElementById('get-it-link');
+  var hintEl = document.getElementById('hint');
   var terminalLive = document.getElementById('terminal-live');
 
   var currentScript = null;
@@ -886,6 +1145,314 @@ Interactive demo: Pick a research question and watch Grainulator run a full rese
   var timeoutId = null;
   var paused = false;
   var finished = false;
+  var terminalActive = false;
+  var demosWatched = 0;
+
+  /* ======================================================
+     FISH / PROMPT BUBBLES
+     ====================================================== */
+  var fish = [];
+  var W, H;
+  var dpr = window.devicePixelRatio || 1;
+  var hoveredFish = null;
+  var mouseX = -1000, mouseY = -1000;
+
+  function resize() {
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function initFish() {
+    fish = [];
+    var baseFontSize = W < 768 ? 11 : 13;
+    for (var i = 0; i < allPrompts.length; i++) {
+      var p = allPrompts[i];
+      // Measure text width
+      ctx.font = '600 ' + baseFontSize + 'px ' + getComputedStyle(document.body).fontFamily;
+      var tw = ctx.measureText(p.text).width;
+      var padX = 24, padY = 16;
+      var bw = tw + padX * 2;
+      var bh = baseFontSize + padY * 2;
+
+      // Size variation
+      var scale = 0.7 + Math.random() * 0.5;
+      bw *= scale;
+      bh *= scale;
+      var fontSize = baseFontSize * scale;
+
+      fish.push({
+        text: p.text,
+        key: p.key,
+        x: Math.random() * (W - bw),
+        y: Math.random() * (H - bh),
+        w: bw,
+        h: bh,
+        fontSize: fontSize,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.3,
+        wobblePhase: Math.random() * Math.PI * 2,
+        wobbleSpeed: 0.3 + Math.random() * 0.4,
+        opacity: 0.25 + Math.random() * 0.35,
+        hovered: false,
+        scale: scale
+      });
+    }
+  }
+
+  function updateFish(dt) {
+    for (var i = 0; i < fish.length; i++) {
+      var f = fish[i];
+
+      // Wobble
+      f.wobblePhase += f.wobbleSpeed * dt;
+      var wobbleX = Math.sin(f.wobblePhase) * 0.15;
+      var wobbleY = Math.cos(f.wobblePhase * 0.7) * 0.1;
+
+      f.x += (f.vx + wobbleX) * dt * 60;
+      f.y += (f.vy + wobbleY) * dt * 60;
+
+      // Bounce off edges
+      if (f.x < 0) { f.x = 0; f.vx = Math.abs(f.vx); }
+      if (f.x + f.w > W) { f.x = W - f.w; f.vx = -Math.abs(f.vx); }
+      if (f.y < 50) { f.y = 50; f.vy = Math.abs(f.vy); }
+      if (f.y + f.h > H - 40) { f.y = H - 40 - f.h; f.vy = -Math.abs(f.vy); }
+
+      // Hit test for hover
+      f.hovered = (mouseX >= f.x && mouseX <= f.x + f.w && mouseY >= f.y && mouseY <= f.y + f.h);
+    }
+  }
+
+  function drawFish() {
+    ctx.clearRect(0, 0, W, H);
+    var fontFamily = getComputedStyle(document.body).fontFamily;
+
+    for (var i = 0; i < fish.length; i++) {
+      var f = fish[i];
+      var opacity = f.hovered ? Math.min(f.opacity + 0.35, 1) : f.opacity;
+      var borderColor = f.hovered ? 'rgba(191, 255, 0, 0.6)' : 'rgba(255, 255, 255, 0.06)';
+      var bgColor = f.hovered ? 'rgba(191, 255, 0, 0.08)' : 'rgba(255, 255, 255, 0.02)';
+
+      ctx.globalAlpha = opacity;
+
+      // Rounded rect
+      var r = 6;
+      ctx.beginPath();
+      ctx.moveTo(f.x + r, f.y);
+      ctx.lineTo(f.x + f.w - r, f.y);
+      ctx.quadraticCurveTo(f.x + f.w, f.y, f.x + f.w, f.y + r);
+      ctx.lineTo(f.x + f.w, f.y + f.h - r);
+      ctx.quadraticCurveTo(f.x + f.w, f.y + f.h, f.x + f.w - r, f.y + f.h);
+      ctx.lineTo(f.x + r, f.y + f.h);
+      ctx.quadraticCurveTo(f.x, f.y + f.h, f.x, f.y + f.h - r);
+      ctx.lineTo(f.x, f.y + r);
+      ctx.quadraticCurveTo(f.x, f.y, f.x + r, f.y);
+      ctx.closePath();
+
+      ctx.fillStyle = bgColor;
+      ctx.fill();
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = f.hovered ? 1.5 : 0.5;
+      ctx.stroke();
+
+      // Text
+      ctx.font = '600 ' + f.fontSize + 'px ' + fontFamily;
+      ctx.fillStyle = f.hovered ? '#BFFF00' : '#9A9A9A';
+      ctx.textBaseline = 'middle';
+
+      // Truncate text to fit
+      var maxTextW = f.w - 20;
+      var displayText = f.text;
+      if (ctx.measureText(displayText).width > maxTextW) {
+        while (displayText.length > 0 && ctx.measureText(displayText + '\u2026').width > maxTextW) {
+          displayText = displayText.slice(0, -1);
+        }
+        displayText += '\u2026';
+      }
+      ctx.fillText(displayText, f.x + 10, f.y + f.h / 2);
+    }
+
+    ctx.globalAlpha = 1;
+  }
+
+  /* ======================================================
+     ANIMATION LOOP
+     ====================================================== */
+  var lastTime = 0;
+  var animRunning = true;
+
+  function animate(time) {
+    if (!animRunning) return;
+    var dt = lastTime ? Math.min((time - lastTime) / 1000, 0.1) : 0.016;
+    lastTime = time;
+
+    if (!terminalActive) {
+      updateFish(dt);
+      drawFish();
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  /* ======================================================
+     CANVAS EVENTS
+     ====================================================== */
+  canvas.addEventListener('mousemove', function (e) {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    var found = false;
+    for (var i = fish.length - 1; i >= 0; i--) {
+      if (fish[i].hovered) { found = true; break; }
+    }
+    canvas.style.cursor = found ? 'pointer' : 'default';
+  });
+
+  canvas.addEventListener('mouseleave', function () {
+    mouseX = -1000;
+    mouseY = -1000;
+  });
+
+  canvas.addEventListener('click', function (e) {
+    var cx = e.clientX, cy = e.clientY;
+    // Find topmost hit fish
+    for (var i = fish.length - 1; i >= 0; i--) {
+      var f = fish[i];
+      if (cx >= f.x && cx <= f.x + f.w && cy >= f.y && cy <= f.y + f.h) {
+        selectPrompt(f.key, f.text);
+        return;
+      }
+    }
+  });
+
+  // Touch support
+  canvas.addEventListener('touchend', function (e) {
+    if (e.changedTouches.length === 0) return;
+    var t = e.changedTouches[0];
+    var cx = t.clientX, cy = t.clientY;
+    for (var i = fish.length - 1; i >= 0; i--) {
+      var f = fish[i];
+      if (cx >= f.x && cx <= f.x + f.w && cy >= f.y && cy <= f.y + f.h) {
+        e.preventDefault();
+        selectPrompt(f.key, f.text);
+        return;
+      }
+    }
+  }, { passive: false });
+
+  /* ======================================================
+     SELECT A PROMPT — open terminal
+     ====================================================== */
+  function selectPrompt(key, text) {
+    terminalActive = true;
+    canvas.classList.add('dimmed');
+    hintEl.classList.add('hidden');
+
+    // Show overlay
+    termOverlay.classList.add('active');
+    selectedPromptEl.textContent = '\u201c' + text + '\u201d';
+    setTimeout(function () { selectedPromptEl.classList.add('visible'); }, 50);
+
+    // Clear previous state
+    termBody.innerHTML = '';
+    sprintDone.classList.remove('visible');
+    btnDismiss.hidden = true;
+
+    if (scripts[key]) {
+      runSprint(key);
+    } else {
+      showDemoSoon(text);
+    }
+  }
+
+  function showDemoSoon(text) {
+    termBody.innerHTML = '<div class="demo-soon"><div class="demo-soon-inner">' +
+      '<div style="margin-bottom:12px;"><span class="lime">\u2713</span> This prompt would run a full sprint.</div>' +
+      '<div>In a real Grainulator session, you\u2019d get a decision-ready brief</div>' +
+      '<div>for <span class="lime">\u201c' + escHtml(text) + '\u201d</span> in about 4 minutes.</div>' +
+      '<div style="margin-top:20px;color:var(--text-faint);">Try one of the scripted demos \u2014 click elsewhere or press Escape.</div>' +
+      '</div></div>';
+    if (termStatus) termStatus.textContent = 'ready';
+    btnSkip.hidden = true;
+    btnPause.hidden = true;
+    btnDismiss.hidden = false;
+    finished = true;
+  }
+
+  /* ======================================================
+     DISMISS TERMINAL
+     ====================================================== */
+  function dismissTerminal() {
+    if (timeoutId) clearTimeout(timeoutId);
+    terminalActive = false;
+    finished = true;
+    paused = false;
+    currentScript = null;
+
+    termOverlay.classList.remove('active');
+    selectedPromptEl.classList.remove('visible');
+    canvas.classList.remove('dimmed');
+    canvas.classList.add('bright');
+    hintEl.classList.remove('hidden');
+
+    setTimeout(function () { canvas.classList.remove('bright'); }, 500);
+  }
+
+  termOverlayBg.addEventListener('click', dismissTerminal);
+  btnDismiss.addEventListener('click', dismissTerminal);
+
+  /* ======================================================
+     INSTALL OVERLAY
+     ====================================================== */
+  function showInstall() {
+    installOverlay.classList.add('active');
+  }
+  function hideInstall() {
+    installOverlay.classList.remove('active');
+  }
+
+  getItLink.addEventListener('click', function (e) { e.preventDefault(); showInstall(); });
+  btnGetItCta.addEventListener('click', showInstall);
+  installDismiss.addEventListener('click', hideInstall);
+  installOverlayBg.addEventListener('click', hideInstall);
+
+  /* ======================================================
+     CLIPBOARD
+     ====================================================== */
+  var copyStatusEl = document.getElementById('copy-status');
+
+  function copyCmd() {
+    var text = '/plugin install grainulator';
+    var btn = installCopyBtn;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text);
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+    if (btn) { btn.textContent = '\u2713 Copied'; btn.classList.add('copied'); }
+    if (copyStatusEl) copyStatusEl.textContent = 'Command copied to clipboard';
+    setTimeout(function () {
+      if (btn) { btn.textContent = 'Copy'; btn.classList.remove('copied'); }
+      if (copyStatusEl) copyStatusEl.textContent = '';
+    }, 2000);
+  }
+
+  if (installCmdEl) {
+    installCmdEl.addEventListener('click', copyCmd);
+    installCmdEl.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); copyCmd(); }
+    });
+  }
+  if (installCopyBtn) {
+    installCopyBtn.addEventListener('click', function (e) { e.stopPropagation(); copyCmd(); });
+  }
 
   /* ======================================================
      TYPEWRITER
@@ -934,10 +1501,7 @@ Interactive demo: Pick a research question and watch Grainulator run a full rese
       div.appendChild(cmdSpan);
       termBody.appendChild(div);
       scrollTerminal();
-
-      // Narrate for sr
       if (terminalLive) terminalLive.textContent = 'Running: ' + step.text;
-
       typewrite(cmdSpan, step.text, step.delay, callback);
       return;
     }
@@ -961,16 +1525,11 @@ Interactive demo: Pick a research question and watch Grainulator run a full rese
       div.setAttribute('role', 'alert');
       termBody.appendChild(div);
       scrollTerminal();
-
-      // Strike the original claim
       if (step.strikeId) {
         var el = document.getElementById(step.strikeId);
         if (el) el.classList.add('t-struck');
       }
-
-      // Update status
       if (termStatus) termStatus.textContent = 'challenging';
-
       if (terminalLive) terminalLive.textContent = 'Challenge fired. Estimate revised.';
       timeoutId = setTimeout(callback, prefersReduced ? 0 : step.delay);
       return;
@@ -984,8 +1543,6 @@ Interactive demo: Pick a research question and watch Grainulator run a full rese
         '<span class="bar-pct ' + step.color + '" aria-hidden="true">' + step.pct + '%</span></div>';
       termBody.appendChild(div);
       scrollTerminal();
-
-      // Animate bar fill
       var fill = div.querySelector('.bar-fill');
       if (fill) {
         if (prefersReduced) {
@@ -998,7 +1555,6 @@ Interactive demo: Pick a research question and watch Grainulator run a full rese
           });
         }
       }
-
       timeoutId = setTimeout(callback, prefersReduced ? 0 : step.delay);
       return;
     }
@@ -1030,19 +1586,15 @@ Interactive demo: Pick a research question and watch Grainulator run a full rese
     finished = false;
     paused = false;
 
-    // Clear terminal
     termBody.innerHTML = '';
     if (termStatus) termStatus.textContent = 'running';
 
-    // Hide picker, show controls
-    picker.classList.add('hidden');
     btnSkip.hidden = false;
     btnPause.hidden = false;
     btnPause.textContent = 'Pause';
-    ctaSection.classList.remove('visible');
-    restartRow.classList.remove('visible');
+    btnDismiss.hidden = true;
+    sprintDone.classList.remove('visible');
 
-    // Start stepping
     nextStep();
   }
 
@@ -1056,13 +1608,11 @@ Interactive demo: Pick a research question and watch Grainulator run a full rese
     var step = currentScript[stepIndex];
     stepIndex++;
 
-    // Update status based on progress
     var progress = stepIndex / currentScript.length;
     if (termStatus && !finished) {
       if (progress < 0.2) termStatus.textContent = 'initializing';
       else if (progress < 0.6) termStatus.textContent = 'researching';
       else if (progress < 0.75) termStatus.textContent = 'analyzing';
-      // 'challenging' and 'complete' set by step handlers
     }
 
     var delayBetween = prefersReduced ? 0 : 200;
@@ -1075,18 +1625,21 @@ Interactive demo: Pick a research question and watch Grainulator run a full rese
     finished = true;
     btnSkip.hidden = true;
     btnPause.hidden = true;
+    btnDismiss.hidden = false;
+    demosWatched++;
 
-    // Show CTA
     if (prefersReduced) {
-      ctaSection.classList.add('visible');
+      sprintDone.classList.add('visible');
     } else {
       setTimeout(function () {
-        ctaSection.classList.add('visible');
+        sprintDone.classList.add('visible');
       }, 400);
     }
 
-    // Show restart
-    restartRow.classList.add('visible');
+    // After 2 demos, auto-show install
+    if (demosWatched >= 2) {
+      setTimeout(showInstall, 1500);
+    }
   }
 
   /* ======================================================
@@ -1113,10 +1666,6 @@ Interactive demo: Pick a research question and watch Grainulator run a full rese
       } else if (step.type === 'challenge') {
         div.className = 't-line t-challenge';
         div.innerHTML = step.html;
-        if (step.strikeId) {
-          // The strike target might be in an earlier rendered line
-          // We need to find it after rendering all
-        }
       } else if (step.type === 'bar') {
         div.innerHTML = '<div class="bar-row">' +
           '<span class="bar-label">' + step.label + '</span>' +
@@ -1130,7 +1679,6 @@ Interactive demo: Pick a research question and watch Grainulator run a full rese
 
       termBody.appendChild(div);
 
-      // Apply strikes
       if (step.type === 'challenge' && step.strikeId) {
         var target = document.getElementById(step.strikeId);
         if (target) target.classList.add('t-struck');
@@ -1157,113 +1705,77 @@ Interactive demo: Pick a research question and watch Grainulator run a full rese
   }
 
   /* ======================================================
-     RESTART
-     ====================================================== */
-  function restart() {
-    if (timeoutId) clearTimeout(timeoutId);
-    finished = true;
-    paused = false;
-    currentScript = null;
-    stepIndex = 0;
-
-    // Reset terminal
-    termBody.innerHTML = '<div class="t-line"><span class="c-dim">$</span> <span class="c-text">Select a question above to start a sprint\u2026</span><span class="cursor" aria-hidden="true"></span></div>';
-    if (termStatus) termStatus.textContent = 'ready';
-
-    // Show picker, hide controls
-    picker.classList.remove('hidden');
-    btnSkip.hidden = true;
-    btnPause.hidden = true;
-    ctaSection.classList.remove('visible');
-    restartRow.classList.remove('visible');
-  }
-
-  /* ======================================================
      EVENT LISTENERS
      ====================================================== */
-  // Question picker buttons
-  document.querySelectorAll('.picker-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var q = btn.getAttribute('data-q');
-      runSprint(q);
-    });
-  });
-
   btnSkip.addEventListener('click', skipToEnd);
   btnPause.addEventListener('click', togglePause);
-  btnRestart.addEventListener('click', restart);
 
   /* ======================================================
-     CLIPBOARD
-     ====================================================== */
-  var copyStatus = document.getElementById('copy-status');
-  var ctaCmdEl = document.getElementById('cta-cmd');
-  var ctaCopyBtn = document.getElementById('cta-copy-btn');
-
-  function copyCmd() {
-    var text = '/plugin install grainulator';
-    var btn = ctaCopyBtn;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text);
-    } else {
-      var ta = document.createElement('textarea');
-      ta.value = text; ta.style.position = 'fixed'; ta.style.left = '-9999px';
-      document.body.appendChild(ta); ta.select();
-      try { document.execCommand('copy'); } catch (e) {}
-      document.body.removeChild(ta);
-    }
-    if (btn) { btn.textContent = '\u2713 Copied'; btn.classList.add('copied'); }
-    if (copyStatus) copyStatus.textContent = 'Command copied to clipboard';
-    setTimeout(function () {
-      if (btn) { btn.textContent = 'Copy'; btn.classList.remove('copied'); }
-      if (copyStatus) copyStatus.textContent = '';
-    }, 2000);
-  }
-
-  if (ctaCmdEl) {
-    ctaCmdEl.addEventListener('click', copyCmd);
-    ctaCmdEl.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); copyCmd(); }
-    });
-  }
-  if (ctaCopyBtn) {
-    ctaCopyBtn.addEventListener('click', function (e) { e.stopPropagation(); copyCmd(); });
-  }
-
-  /* ======================================================
-     KEYBOARD SHORTCUTS
+     KEYBOARD
      ====================================================== */
   document.addEventListener('keydown', function (e) {
     var tag = e.target.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return;
 
+    // Escape: dismiss terminal or install overlay
+    if (e.key === 'Escape') {
+      if (installOverlay.classList.contains('active')) {
+        hideInstall();
+        return;
+      }
+      if (terminalActive) {
+        if (!finished) skipToEnd();
+        else dismissTerminal();
+        return;
+      }
+    }
+
     // Space to pause/resume during sprint
-    if (e.key === ' ' && currentScript && !finished && e.target === document.body) {
+    if (e.key === ' ' && terminalActive && currentScript && !finished && e.target === document.body) {
       e.preventDefault();
       togglePause();
-    }
-    // Escape to skip
-    if (e.key === 'Escape' && currentScript && !finished) {
-      skipToEnd();
-    }
-    // Number keys to pick question
-    if (!currentScript || finished) {
-      if (e.key === '1') { runSprint('postgres'); }
-      if (e.key === '2') { runSprint('monorepo'); }
-      if (e.key === '3') { runSprint('build-buy'); }
-    }
-    // R to restart
-    if (e.key === 'r' && finished) {
-      restart();
     }
   });
 
   /* ======================================================
-     REDUCED MOTION — show CTA immediately, skip animations
+     SR PROMPT LIST + REDUCED MOTION GRID
      ====================================================== */
-  if (prefersReduced) {
-    // The typewriter will write instantly, delays are 0
-    // Everything else works normally
+  var srList = document.getElementById('sr-prompts');
+  var reducedGridInner = document.getElementById('reduced-grid-inner');
+
+  allPrompts.forEach(function (p) {
+    // SR list
+    var btn = document.createElement('button');
+    btn.className = 'sr-prompt-btn';
+    btn.textContent = p.text;
+    btn.type = 'button';
+    btn.addEventListener('click', function () { selectPrompt(p.key, p.text); });
+    srList.appendChild(btn);
+
+    // Reduced motion grid
+    var gbtn = document.createElement('button');
+    gbtn.className = 'reduced-grid-btn';
+    gbtn.textContent = p.text;
+    gbtn.type = 'button';
+    gbtn.addEventListener('click', function () { selectPrompt(p.key, p.text); });
+    reducedGridInner.appendChild(gbtn);
+  });
+
+  /* ======================================================
+     INIT
+     ====================================================== */
+  if (!prefersReduced) {
+    resize();
+    initFish();
+    window.addEventListener('resize', function () {
+      resize();
+      // Reposition fish that are out of bounds
+      for (var i = 0; i < fish.length; i++) {
+        if (fish[i].x + fish[i].w > W) fish[i].x = W - fish[i].w - 10;
+        if (fish[i].y + fish[i].h > H) fish[i].y = H - fish[i].h - 10;
+      }
+    });
+    requestAnimationFrame(animate);
   }
 
 })();
