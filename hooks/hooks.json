@@ -1,0 +1,19 @@
+{
+  "hooks": [
+    {
+      "type": "PostToolUse",
+      "matcher": {
+        "tool_name": "mcp__wheat__wheat_add-claim"
+      },
+      "script": "echo '--- Auto-compiling after claim mutation ---' && npx -y @grainulator/wheat-mcp compile 2>/dev/null || true"
+    },
+    {
+      "type": "PreToolUse",
+      "matcher": {
+        "tool_name": "Write",
+        "path_pattern": ".wheat/**"
+      },
+      "script": "echo 'BLOCKED: Direct writes to .wheat/ are not allowed. Use wheat MCP tools (wheat_add-claim, wheat_compile) to modify sprint data.' && exit 1"
+    }
+  ]
+}

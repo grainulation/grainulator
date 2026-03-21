@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grainulator - Research Sprint Orchestrator for Claude Code</title>
+  <meta name="description" content="Structured research with claims, evidence tiers, and compiled output. A Claude Code plugin.">
+  <meta property="og:title" content="Grainulator">
+  <meta property="og:description" content="Research sprint orchestrator for Claude Code">
+  <meta property="og:url" content="https://grainulator.app">
+  <meta property="og:type" content="website">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0a;
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      max-width: 640px;
+      padding: 2rem;
+      text-align: center;
+    }
+    h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+    .tagline {
+      font-size: 1.25rem;
+      color: #888;
+      margin-bottom: 2rem;
+    }
+    .install {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 1rem;
+      color: #4ade80;
+      margin-bottom: 2rem;
+      display: inline-block;
+    }
+    .features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      text-align: left;
+      margin-bottom: 2rem;
+    }
+    .feature {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    .feature h3 {
+      font-size: 0.875rem;
+      color: #4ade80;
+      margin-bottom: 0.25rem;
+    }
+    .feature p {
+      font-size: 0.8rem;
+      color: #888;
+      line-height: 1.4;
+    }
+    footer {
+      margin-top: 3rem;
+      color: #444;
+      font-size: 0.8rem;
+    }
+    a { color: #4ade80; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Grainulator</h1>
+    <p class="tagline">Research sprint orchestrator for Claude Code</p>
+    <div class="install">claude plugin install grainulator</div>
+    <div class="features">
+      <div class="feature">
+        <h3>/research</h3>
+        <p>Multi-pass investigation with evidence tiers and claim tracking.</p>
+      </div>
+      <div class="feature">
+        <h3>/challenge</h3>
+        <p>Adversarial testing. Try to disprove your own findings.</p>
+      </div>
+      <div class="feature">
+        <h3>/brief</h3>
+        <p>Compiled decision briefs from structured claims data.</p>
+      </div>
+      <div class="feature">
+        <h3>/blind-spot</h3>
+        <p>Structural gap analysis. Find what you have not considered.</p>
+      </div>
+    </div>
+    <p>Say <em>"research how auth works in our repo"</em> and it just works.</p>
+    <footer>
+      <p>Apache 2.0 &middot; <a href="https://github.com/grainulator/grainulator">GitHub</a></p>
+    </footer>
+  </div>
+</body>
+</html>

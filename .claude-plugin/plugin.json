@@ -1,0 +1,10 @@
+{
+  "name": "grainulator",
+  "version": "0.1.0",
+  "description": "Research sprint orchestrator for Claude Code. Structured research with claims, evidence tiers, and compiled output.",
+  "homepage": "https://grainulator.app",
+  "skills": "skills/",
+  "agents": "agents/",
+  "hooks": "hooks/hooks.json",
+  "mcpConfig": ".mcp.json"
+}

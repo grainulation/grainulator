@@ -1,0 +1,29 @@
+{
+  "mcpServers": {
+    "wheat": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@grainulator/wheat-mcp"],
+      "env": {
+        "WHEAT_ROOT": "${CWD}/.wheat"
+      }
+    },
+    "mill": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@grainulator/mill-mcp"]
+    },
+    "silo": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@grainulator/silo-mcp"],
+      "env": {
+        "SILO_STORE": "${CLAUDE_PLUGIN_DATA}/silo"
+      }
+    },
+    "deepwiki": {
+      "type": "http",
+      "url": "https://mcp.deepwiki.com/mcp"
+    }
+  }
+}

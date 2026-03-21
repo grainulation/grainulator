@@ -1,0 +1,30 @@
+{
+  "name": "@grainulator/grainulator",
+  "version": "0.1.0",
+  "description": "Research sprint orchestrator for Claude Code",
+  "license": "Apache-2.0",
+  "homepage": "https://grainulator.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grainulator/grainulator.git"
+  },
+  "keywords": [
+    "claude-code",
+    "plugin",
+    "research",
+    "wheat",
+    "claims",
+    "evidence"
+  ],
+  "files": [
+    ".claude-plugin/",
+    ".mcp.json",
+    "skills/",
+    "agents/",
+    "hooks/",
+    "servers/"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}
