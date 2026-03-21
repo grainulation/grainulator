@@ -25,8 +25,8 @@
 <meta name="theme-color" content="#d4a547" />
 <style>
 /* ============================================================
-   GRAINULATOR — Baroque Digital, Apple Philosophy
-   Show, don't tell. Every section is an experience.
+   GRAINULATOR — Scroll-Driven Landing Page
+   Apple-style: scrolling IS the experience.
    ============================================================ */
 
 :root {
@@ -53,13 +53,11 @@
   --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
   --serif: 'Georgia', 'Times New Roman', 'Palatino', serif;
   --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  --max-w: 1200px;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-slow: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
 
 body {
   font-family: var(--sans);
@@ -92,236 +90,289 @@ code, pre { font-family: var(--mono); }
 /* ===== FOCUS ===== */
 *:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 
-/* ===== REVEAL SYSTEM ===== */
-.rv {
-  opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 0.9s var(--ease-slow), transform 0.9s var(--ease-slow);
-}
-.rv.vis { opacity: 1; transform: none; }
-.rv-d1 { transition-delay: 0.1s; }
-.rv-d2 { transition-delay: 0.2s; }
-.rv-d3 { transition-delay: 0.3s; }
-.rv-d4 { transition-delay: 0.4s; }
-
-.hf {
-  opacity: 0;
-  transform: translateY(12px);
-  animation: heroFade 1s var(--ease-slow) forwards;
-}
-.hf1 { animation-delay: 0.1s; }
-.hf2 { animation-delay: 0.3s; }
-.hf3 { animation-delay: 0.5s; }
-.hf4 { animation-delay: 0.7s; }
-.hf5 { animation-delay: 0.9s; }
-@keyframes heroFade { to { opacity: 1; transform: none; } }
-
-/* ===== LAYOUT ===== */
-.page { position: relative; z-index: 2; }
-.container { max-width: var(--max-w); margin: 0 auto; padding: 0 32px; }
-
-/* ===== NAVIGATION ===== */
-nav {
-  position: sticky; top: 0; z-index: 100;
-  background: rgba(10, 9, 8, 0.92);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-  padding: 16px 0;
-}
-nav .container {
-  display: flex; align-items: center; justify-content: space-between;
-}
-.nav-logo {
-  font-family: var(--serif);
-  font-weight: 700; font-size: 1.35rem;
-  letter-spacing: 0.01em; color: var(--text);
-  text-decoration: none;
-  display: flex; align-items: center; gap: 12px;
-}
-.nav-logo:hover { text-decoration: none; }
-.nav-logo .logo-mark {
-  width: 30px; height: 30px;
-  border-radius: 4px;
-  background: var(--gold);
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--serif);
-  font-size: 16px; font-weight: 700; color: var(--bg);
-}
-.nav-links {
-  display: flex; gap: 28px; font-size: 0.875rem; align-items: center;
-}
-.nav-links a {
-  color: var(--text-dim);
-  transition: color 0.3s;
-  min-height: 44px;
-  display: inline-flex; align-items: center;
-}
-.nav-links a:hover { color: var(--text); text-decoration: none; }
-.nav-cta {
-  background: transparent;
-  color: var(--gold);
-  font-weight: 600;
-  padding: 8px 20px;
-  border: 1px solid var(--gold);
-  border-radius: 3px;
-  font-size: 0.8125rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  transition: all 0.3s;
-}
-.nav-cta:hover {
-  background: var(--gold); color: var(--bg);
-  text-decoration: none;
-}
-
-/* ===== SECTION LABELS ===== */
-.section-label {
-  font-size: 0.6875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: var(--gold);
-  margin-bottom: 20px;
-  font-weight: 600;
-}
-
-/* ===== HERO ===== */
-.hero {
+/* ===== SCROLL SECTIONS ===== */
+.scroll-section {
   position: relative;
-  padding: 160px 0 100px;
-  text-align: center;
+  width: 100%;
+}
+
+/* ===== SECTION 1: THE QUESTION ===== */
+.s-question {
+  height: 300vh;
+  position: relative;
+}
+.s-question-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
 }
-.hero::before {
-  content: '';
+.question-inner {
+  text-align: center;
+  max-width: 800px;
+  padding: 0 32px;
+}
+.cursor-blink {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: var(--gold);
+  vertical-align: text-bottom;
+  margin-left: 2px;
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.question-text {
+  font-family: var(--serif);
+  font-size: clamp(1.8rem, 4.5vw, 3.6rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--text);
+  min-height: 1.3em;
+}
+.question-text .char {
+  opacity: 0;
+  transition: none;
+}
+.question-text .char.visible {
+  opacity: 1;
+}
+
+/* ===== SECTION 2: THE CHAOS ===== */
+.s-chaos {
+  height: 400vh;
+  position: relative;
+}
+.s-chaos-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  perspective: 1200px;
+}
+.chaos-container {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  height: 70vh;
+  margin: 0 auto;
+}
+
+/* Browser tabs that multiply */
+.chaos-tab {
   position: absolute;
-  top: -10%; left: 50%;
-  transform: translateX(-50%);
-  width: 900px; height: 600px;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(212, 165, 71, 0.08) 0%,
-    rgba(212, 165, 71, 0.03) 35%,
-    rgba(196, 122, 74, 0.01) 55%,
-    transparent 75%
-  );
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 6px 6px 0 0;
+  padding: 8px 14px;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  color: var(--text-faint);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(40px) rotate(0deg);
+  transition: opacity 0.4s var(--ease), transform 0.6s var(--ease);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chaos-tab.visible {
+  opacity: 1;
+  transform: var(--tab-transform);
+}
+
+/* Floating Slack messages */
+.chaos-slack {
+  position: absolute;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  max-width: 280px;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.5s var(--ease), transform 0.7s var(--ease);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+}
+.chaos-slack.visible {
+  opacity: 1;
+  transform: var(--slack-transform);
+}
+.chaos-slack .slack-name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+.chaos-slack .slack-text {
+  font-size: 0.8125rem;
+  color: var(--text-faint);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* Chaos dissolve */
+.chaos-container.dissolving .chaos-tab,
+.chaos-container.dissolving .chaos-slack {
+  filter: blur(12px);
+  opacity: 0 !important;
+  transition: opacity 0.8s var(--ease), filter 1s var(--ease), transform 0.8s var(--ease);
+}
+
+/* ===== SECTION 3: THE COMMAND ===== */
+.s-command {
+  height: 300vh;
+  position: relative;
+}
+.s-command-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.command-inner {
+  text-align: center;
+  padding: 0 32px;
+  position: relative;
+}
+.command-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 400px;
+  background: radial-gradient(ellipse at center, rgba(212, 165, 71, 0.12) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 1.2s var(--ease-slow);
   pointer-events: none;
   z-index: 0;
 }
-.hero .container { position: relative; z-index: 1; }
-
-.hero h1 {
-  font-family: var(--serif);
-  font-size: clamp(2.8rem, 6.5vw, 4.8rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.06;
-  margin-bottom: 28px;
-  color: var(--text);
-}
-.hero h1 .accent {
-  color: var(--gold);
-  display: block;
-}
-
-.hero-sub {
-  font-size: clamp(1.05rem, 1.6vw, 1.2rem);
-  color: var(--text-dim);
-  max-width: 460px;
-  margin: 0 auto 56px;
-  line-height: 1.75;
-}
-
-/* Install inscription */
-.install-inscription {
-  max-width: 460px;
-  margin: 0 auto 72px;
-}
-.install-cmd {
-  position: relative;
-  padding: 20px 72px 20px 24px;
+.command-line {
   font-family: var(--mono);
-  font-size: 0.9375rem;
+  font-size: clamp(1rem, 2.2vw, 1.5rem);
   letter-spacing: 0.04em;
   color: var(--gold);
-  text-align: left;
-  cursor: pointer;
-  border-top: 1px solid var(--border-light);
-  border-bottom: 1px solid var(--border-light);
-  background: transparent;
-  transition: border-color 0.4s;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 1s var(--ease-slow), transform 1s var(--ease-slow);
+  position: relative;
+  z-index: 1;
 }
-.install-cmd:hover { border-color: var(--gold); }
-.install-cmd .prompt { color: var(--text-faint); }
-.install-copy {
-  position: absolute; right: 12px; top: 50%;
-  transform: translateY(-50%);
-  background: transparent;
-  border: 1px solid var(--border-light);
-  color: var(--text-faint);
-  border-radius: 3px;
-  padding: 6px 14px;
-  font-size: 0.6875rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  cursor: pointer;
-  font-family: var(--sans);
-  transition: all 0.3s;
+.command-sub {
+  font-family: var(--mono);
+  font-size: clamp(0.8rem, 1.4vw, 1rem);
+  color: var(--text-dim);
+  margin-top: 20px;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 1s var(--ease-slow) 0.3s, transform 1s var(--ease-slow) 0.3s;
+  position: relative;
+  z-index: 1;
 }
-.install-copy:hover { color: var(--gold); border-color: var(--gold); }
-.install-copy.copied { color: var(--sage); border-color: var(--sage); }
+.command-inner.active .command-line,
+.command-inner.active .command-sub {
+  opacity: 1;
+  transform: none;
+}
+.command-inner.active .command-glow {
+  opacity: 1;
+}
 
-/* ===== HERO SPRINT ANIMATION ===== */
-.sprint-stage {
-  max-width: 700px;
+/* ===== SECTION 4: THE SPRINT ===== */
+.s-sprint {
+  height: 600vh;
+  position: relative;
+}
+.s-sprint-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.sprint-terminal {
+  width: 100%;
+  max-width: 720px;
   margin: 0 auto;
-  border-radius: 6px;
+  padding: 0 24px;
+  opacity: 0;
+  transform: translateY(20px) scale(0.97);
+  transition: opacity 0.8s var(--ease-slow), transform 0.8s var(--ease-slow);
+}
+.sprint-terminal.visible {
+  opacity: 1;
+  transform: none;
+}
+.terminal-chrome {
+  border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--border);
   background: var(--bg-panel);
   box-shadow:
-    0 0 80px rgba(212, 165, 71, 0.04),
-    0 32px 100px rgba(0, 0, 0, 0.6),
+    0 0 100px rgba(212, 165, 71, 0.04),
+    0 40px 120px rgba(0, 0, 0, 0.6),
     inset 0 1px 0 rgba(212, 165, 71, 0.04);
 }
-.sprint-stage-bar {
-  display: flex; align-items: center; gap: 7px;
-  padding: 11px 16px;
+.terminal-bar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 16px;
   background: rgba(255, 255, 255, 0.015);
   border-bottom: 1px solid var(--border);
 }
-.sprint-stage-bar .dot { width: 9px; height: 9px; border-radius: 50%; }
-.sprint-stage-bar .dot.r { background: #6b3a3a; }
-.sprint-stage-bar .dot.y { background: #6b5c3a; }
-.sprint-stage-bar .dot.g { background: #3a6b4a; }
-.sprint-stage-bar .title {
+.terminal-bar .dot { width: 9px; height: 9px; border-radius: 50%; }
+.terminal-bar .dot-r { background: #6b3a3a; }
+.terminal-bar .dot-y { background: #6b5c3a; }
+.terminal-bar .dot-g { background: #3a6b4a; }
+.terminal-bar .terminal-title {
   margin-left: auto;
+  font-family: var(--mono);
   font-size: 10px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-faint);
 }
-.sprint-stage-body {
-  padding: 28px 24px;
+.terminal-body {
+  padding: 24px;
   font-family: var(--mono);
   font-size: 12.5px;
   line-height: 1.9;
-  text-align: left;
-  min-height: 220px;
+  min-height: 320px;
   background-image: repeating-linear-gradient(
     0deg, transparent, transparent 2px,
     rgba(212, 165, 71, 0.008) 2px, rgba(212, 165, 71, 0.008) 4px
   );
 }
 
-/* Claim nodes animation in hero */
-.claim-flow { display: flex; flex-direction: column; gap: 2px; }
-.claim-line {
+/* Sprint claim lines */
+.sprint-line {
   opacity: 0;
   transform: translateX(-8px);
-  animation: claimAppear 0.5s var(--ease-slow) forwards;
+  transition: opacity 0.5s var(--ease-slow), transform 0.5s var(--ease-slow);
 }
-.claim-line .tag {
+.sprint-line.visible {
+  opacity: 1;
+  transform: none;
+}
+.sprint-line .tag {
   display: inline-block;
   padding: 1px 6px;
   border-radius: 2px;
@@ -341,445 +392,140 @@ nav .container {
 .c-red { color: var(--rose); }
 .c-gold { color: var(--gold); }
 
-/* Challenge flash */
-@keyframes claimAppear {
-  to { opacity: 1; transform: none; }
-}
-@keyframes challengeFlash {
-  0% { background: transparent; }
-  20% { background: rgba(184, 92, 92, 0.12); }
-  100% { background: transparent; }
-}
-@keyframes strikethrough {
-  to { text-decoration: line-through; color: var(--text-faint); opacity: 0.5; }
-}
-@keyframes replaceIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: none; }
-}
-
-.claim-challenged {
-  animation: challengeFlash 1.2s var(--ease) forwards;
-  border-radius: 2px;
-  padding: 1px 4px;
-  margin: -1px -4px;
-}
-.claim-struck {
-  text-decoration: line-through;
-  color: var(--text-faint);
-  opacity: 0.5;
-}
-.claim-replaced {
+/* Challenge highlight */
+.sprint-challenge {
   opacity: 0;
-  animation: replaceIn 0.6s var(--ease-slow) forwards;
-}
-
-/* ===== SECTION DIVIDERS ===== */
-.archway {
-  height: 120px;
-  position: relative;
-  overflow: hidden;
-}
-.archway::before {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 50%;
-  transform: translateX(-50%);
-  width: 1px; height: 80px;
-  background: linear-gradient(to bottom, transparent, var(--border-light));
-}
-
-/* ===== LIVE DEMO SECTION ===== */
-.demo {
-  padding: 120px 0;
-  position: relative;
-}
-.demo::after {
-  content: '';
-  position: absolute;
-  top: 45%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 700px; height: 500px;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(212, 165, 71, 0.035) 0%,
-    transparent 55%
-  );
-  pointer-events: none;
-}
-.demo .container { position: relative; z-index: 1; }
-
-.demo-headline {
-  font-family: var(--serif);
-  font-size: clamp(1.7rem, 3.5vw, 2.6rem);
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  text-align: center;
-  margin-bottom: 14px;
-  color: var(--text);
-}
-.demo-sub {
-  text-align: center;
-  color: var(--text-dim);
-  font-size: 1.0625rem;
-  max-width: 520px;
-  margin: 0 auto 56px;
-  line-height: 1.7;
-}
-
-/* Sprint theater — the interactive demo */
-.sprint-theater {
-  max-width: 780px;
-  margin: 0 auto;
-  position: relative;
-}
-
-.theater-question {
-  text-align: center;
-  font-family: var(--serif);
-  font-size: clamp(1.1rem, 2vw, 1.4rem);
-  color: var(--text);
-  margin-bottom: 40px;
-  padding: 24px;
-  border: 1px solid var(--border);
+  transition: opacity 0.6s var(--ease);
+  padding: 8px 12px;
+  margin: 6px -12px;
   border-radius: 4px;
-  background: var(--bg-panel);
-  position: relative;
+  border-left: 2px solid var(--rose);
+  background: rgba(184, 92, 92, 0.06);
 }
-.theater-question::before {
-  content: 'QUESTION';
-  position: absolute;
-  top: -10px; left: 24px;
-  font-family: var(--sans);
-  font-size: 0.625rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--gold);
-  background: var(--bg-panel);
-  padding: 0 8px;
-  font-weight: 600;
-}
-.theater-question .q-mark { color: var(--gold); }
-
-/* Claim constellation */
-.constellation {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 12px;
-  margin-bottom: 40px;
-}
-.constellation-node {
-  padding: 14px 16px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  background: var(--bg-panel);
-  font-size: 0.8125rem;
-  line-height: 1.5;
-  opacity: 0;
-  transform: scale(0.95) translateY(6px);
-  transition: all 0.6s var(--ease-slow);
-}
-.constellation-node.vis {
+.sprint-challenge.visible {
   opacity: 1;
-  transform: none;
-}
-.constellation-node .node-id {
-  font-family: var(--mono);
-  font-size: 0.6875rem;
-  color: var(--gold);
-  margin-bottom: 6px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.constellation-node .node-type {
-  display: inline-block;
-  padding: 1px 5px;
-  border-radius: 2px;
-  font-size: 0.5625rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.node-type-factual { background: rgba(122, 155, 109, 0.15); color: var(--sage); }
-.node-type-risk { background: rgba(184, 92, 92, 0.15); color: var(--rose); }
-.node-type-estimate { background: rgba(196, 122, 74, 0.15); color: var(--ember); }
-.node-type-rec { background: rgba(212, 165, 71, 0.15); color: var(--gold); }
-.constellation-node .node-text {
-  color: var(--text-dim);
-}
-.constellation-node.challenged {
-  border-color: rgba(184, 92, 92, 0.4);
-  background: rgba(184, 92, 92, 0.05);
-}
-.constellation-node.challenged .node-text {
-  text-decoration: line-through;
-  color: var(--text-faint);
-}
-.constellation-node.challenged::after {
-  content: 'CHALLENGED';
-  display: block;
-  margin-top: 8px;
-  font-family: var(--mono);
-  font-size: 0.5625rem;
-  letter-spacing: 0.1em;
-  color: var(--rose);
-}
-.constellation-node.replaced {
-  border-color: rgba(122, 155, 109, 0.3);
-  background: rgba(122, 155, 109, 0.04);
-}
-.constellation-node.replaced .node-text {
-  text-decoration: none;
-  color: var(--text-dim);
 }
 
-/* Challenge moment */
-.challenge-moment {
-  text-align: center;
-  padding: 32px 24px;
-  border: 1px solid rgba(184, 92, 92, 0.2);
-  border-radius: 4px;
-  background: rgba(184, 92, 92, 0.03);
-  margin-bottom: 40px;
-  opacity: 0;
-  transform: translateY(8px);
-  transition: all 0.8s var(--ease-slow);
-}
-.challenge-moment.vis {
-  opacity: 1;
-  transform: none;
-}
-.challenge-moment .challenge-label {
-  font-family: var(--mono);
-  font-size: 0.6875rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--rose);
-  margin-bottom: 16px;
-}
-.challenge-moment .before-text {
-  font-family: var(--serif);
-  font-size: 1.15rem;
-  color: var(--text-faint);
-  text-decoration: line-through;
-  margin-bottom: 8px;
-}
-.challenge-moment .after-text {
-  font-family: var(--serif);
-  font-size: 1.15rem;
-  color: var(--text);
-}
-.challenge-moment .after-text strong {
-  color: var(--sage);
-  font-weight: 700;
-}
-
-/* Compile result */
-.compile-result {
-  border-radius: 6px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  background: var(--bg-panel);
-  box-shadow:
-    0 0 120px rgba(212, 165, 71, 0.03),
-    0 40px 120px rgba(0, 0, 0, 0.5);
-}
-.compile-result .cr-bar {
-  display: flex; align-items: center; gap: 7px;
-  padding: 11px 16px;
-  background: rgba(255, 255, 255, 0.015);
-  border-bottom: 1px solid var(--border);
-}
-.compile-result .dot { width: 9px; height: 9px; border-radius: 50%; }
-.compile-result .dot.r { background: #6b3a3a; }
-.compile-result .dot.y { background: #6b5c3a; }
-.compile-result .dot.g { background: #3a6b4a; }
-.compile-result .cr-title {
-  margin-left: auto;
-  font-size: 10px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-}
-.compile-result .cr-body {
-  padding: 24px;
-  font-family: var(--mono);
-  font-size: 12.5px;
-  line-height: 1.8;
-  text-align: left;
-  background-image: repeating-linear-gradient(
-    0deg, transparent, transparent 2px,
-    rgba(212, 165, 71, 0.008) 2px, rgba(212, 165, 71, 0.008) 4px
-  );
-}
+/* Coverage bars */
 .bar-row { display: flex; align-items: center; gap: 10px; margin: 3px 0; }
 .bar-label { width: 110px; text-align: right; color: var(--text-dim); font-size: 12px; }
 .bar-track { flex: 1; max-width: 280px; height: 5px; background: rgba(255,255,255,0.03); border-radius: 2px; overflow: hidden; }
 .bar-fill { height: 100%; border-radius: 2px; transition: width 1.2s var(--ease-slow); width: 0; }
 .bar-fill.high { background: var(--sage); }
 .bar-fill.mid { background: var(--ember); }
-.bar-fill.low { background: var(--rose); }
 .bar-pct { width: 36px; font-size: 12px; }
+
+/* PASS glow */
+.sprint-pass {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.8s var(--ease-slow), transform 0.8s var(--ease-slow);
+}
+.sprint-pass.visible {
+  opacity: 1;
+  transform: none;
+}
 .term-pass {
   color: var(--sage);
-  font-weight: 600;
-  text-shadow: 0 0 20px rgba(122, 155, 109, 0.3);
-}
-
-/* ===== BEFORE/AFTER — VISCERAL ===== */
-.transform-section {
-  padding: 120px 0;
-  position: relative;
-}
-.transform-section::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 50%;
-  transform: translateX(-50%);
-  width: 600px; height: 400px;
-  background: radial-gradient(
-    ellipse at center top,
-    rgba(212, 165, 71, 0.04) 0%,
-    transparent 60%
-  );
-  pointer-events: none;
-}
-.transform-headline {
-  font-family: var(--serif);
-  font-size: clamp(1.7rem, 3.5vw, 2.6rem);
   font-weight: 700;
-  letter-spacing: -0.01em;
-  text-align: center;
-  margin-bottom: 14px;
-  color: var(--text);
-}
-.transform-sub {
-  text-align: center;
-  color: var(--text-dim);
-  font-size: 1.0625rem;
-  max-width: 520px;
-  margin: 0 auto 64px;
+  font-size: 14px;
+  text-shadow: 0 0 30px rgba(122, 155, 109, 0.4);
 }
 
-.transform-compare {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
-  max-width: 920px;
-  margin: 0 auto;
-}
-
-/* The messy "before" — simulated chaos */
-.before-mess {
+/* ===== SECTION 5: THE BRIEF ===== */
+.s-brief {
+  height: 400vh;
   position: relative;
-  border-radius: 6px;
-  border: 1px solid rgba(184, 92, 92, 0.15);
-  background: var(--bg-panel);
-  padding: 32px 28px;
-  min-height: 380px;
+}
+.s-brief-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
 }
-.before-mess .corner-label {
-  font-family: var(--mono);
-  font-size: 0.5625rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--rose);
-  margin-bottom: 20px;
+.brief-container {
+  max-width: 640px;
+  width: 100%;
+  padding: 0 24px;
+  opacity: 0;
+  transform: translateY(30px) scale(0.96);
+  transition: opacity 1s var(--ease-slow), transform 1s var(--ease-slow);
 }
-
-/* Fake browser tabs */
-.fake-tabs {
-  display: flex; flex-wrap: wrap; gap: 4px;
-  margin-bottom: 16px;
+.brief-container.visible {
+  opacity: 1;
+  transform: none;
 }
-.fake-tab {
-  padding: 5px 10px;
-  font-size: 0.625rem;
-  background: rgba(255,255,255,0.03);
+.brief-document {
+  border-radius: 8px;
   border: 1px solid var(--border);
-  border-radius: 3px 3px 0 0;
-  color: var(--text-faint);
-  font-family: var(--mono);
-  white-space: nowrap;
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.fake-tab.active { background: rgba(255,255,255,0.06); color: var(--text-dim); }
-
-/* Fake slack messages */
-.fake-slack {
-  margin-top: 16px;
-  display: flex; flex-direction: column; gap: 10px;
-}
-.slack-msg {
-  display: flex; gap: 8px; align-items: flex-start;
-}
-.slack-avatar {
-  width: 24px; height: 24px;
-  border-radius: 4px;
-  background: var(--border-light);
-  flex-shrink: 0;
-}
-.slack-content {
-  font-size: 0.75rem;
-  line-height: 1.5;
-}
-.slack-name { color: var(--text-dim); font-weight: 600; }
-.slack-text { color: var(--text-faint); }
-.slack-text em { font-style: italic; }
-
-/* The clean "after" — compiled brief preview */
-.after-brief {
-  position: relative;
-  border-radius: 6px;
-  border: 1px solid rgba(122, 155, 109, 0.15);
   background: var(--bg-panel);
+  box-shadow:
+    0 0 120px rgba(212, 165, 71, 0.05),
+    0 40px 120px rgba(0, 0, 0, 0.5);
   overflow: hidden;
-  min-height: 380px;
-  box-shadow: 0 0 60px rgba(212, 165, 71, 0.02);
 }
-.after-brief .corner-label {
-  font-family: var(--mono);
-  font-size: 0.5625rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--sage);
-  padding: 24px 28px 0;
+.brief-header {
+  padding: 28px 32px 20px;
+  border-bottom: 1px solid var(--border);
 }
-
-/* Mini brief preview */
-.mini-brief {
-  padding: 20px 28px 28px;
-}
-.mini-brief-title {
+.brief-title {
   font-family: var(--serif);
-  font-size: 1rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--text);
   margin-bottom: 4px;
 }
-.mini-brief-meta {
+.brief-meta {
   font-family: var(--mono);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   color: var(--text-faint);
-  margin-bottom: 16px;
 }
-.mini-brief-section {
-  margin-bottom: 14px;
+.brief-body {
+  padding: 24px 32px 32px;
 }
-.mini-brief-section h4 {
+.brief-section {
+  margin-bottom: 20px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.7s var(--ease-slow), transform 0.7s var(--ease-slow);
+}
+.brief-section.visible {
+  opacity: 1;
+  transform: none;
+}
+.brief-section h4 {
   font-family: var(--serif);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   color: var(--gold);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
-.mini-brief-section p {
-  font-size: 0.75rem;
+.brief-section p {
+  font-size: 0.875rem;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+.brief-risks {
+  padding: 14px 18px;
+  border: 1px solid rgba(184, 92, 92, 0.15);
+  border-radius: 6px;
+  background: rgba(184, 92, 92, 0.03);
+}
+.brief-risks h4 {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  color: var(--rose);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+.brief-risks p {
+  font-size: 0.8125rem;
   color: var(--text-dim);
   line-height: 1.6;
 }
@@ -795,200 +541,91 @@ nav .container {
 .evidence-web { background: rgba(196, 122, 74, 0.15); color: var(--ember); }
 .evidence-documented { background: rgba(212, 165, 71, 0.15); color: var(--gold); }
 
-.mini-brief-risks {
-  padding: 12px 14px;
-  border: 1px solid rgba(184, 92, 92, 0.12);
-  border-radius: 4px;
-  background: rgba(184, 92, 92, 0.03);
-  margin-top: 14px;
-}
-.mini-brief-risks h4 {
-  font-family: var(--mono);
-  font-size: 0.5625rem;
-  color: var(--rose);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 6px;
-}
-.mini-brief-risks p {
-  font-size: 0.6875rem;
-  color: var(--text-dim);
-  line-height: 1.5;
-}
-
-/* ===== SOCIAL PROOF — ARTIFACT CARDS ===== */
-.artifacts-section {
-  padding: 120px 0;
-  position: relative;
-}
-.artifacts-headline {
-  font-family: var(--serif);
-  font-size: clamp(1.7rem, 3.5vw, 2.6rem);
-  font-weight: 700;
-  text-align: center;
-  margin-bottom: 56px;
-  color: var(--text);
-}
-
-.artifact-cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  max-width: 960px;
-  margin: 0 auto;
-}
-.artifact-card {
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  background: var(--bg-panel);
-  overflow: hidden;
-  transition: border-color 0.4s, transform 0.4s;
-}
-.artifact-card:hover {
-  border-color: rgba(212, 165, 71, 0.2);
-  transform: translateY(-2px);
-}
-.artifact-card-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
+/* Brief stats with counting */
+.brief-stats {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  gap: 32px;
+  justify-content: center;
+  margin-top: 32px;
+  flex-wrap: wrap;
 }
-.artifact-card-header .ac-icon {
-  width: 28px; height: 28px;
-  border-radius: 4px;
-  background: var(--gold-dim);
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--serif);
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--gold);
-  flex-shrink: 0;
-}
-.artifact-card-header .ac-meta {
-  flex: 1; min-width: 0;
-}
-.artifact-card-header .ac-title {
-  font-family: var(--serif);
-  font-size: 0.8125rem;
-  font-weight: 700;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.artifact-card-header .ac-team {
-  font-size: 0.6875rem;
-  color: var(--text-faint);
-}
-.artifact-card-body {
-  padding: 16px 20px;
-}
-.artifact-card-body .ac-stat {
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 0;
-  font-size: 0.75rem;
-  border-bottom: 1px solid rgba(255,255,255,0.02);
-}
-.artifact-card-body .ac-stat:last-child { border-bottom: none; }
-.artifact-card-body .ac-stat .label { color: var(--text-faint); }
-.artifact-card-body .ac-stat .value { color: var(--text-dim); font-weight: 600; }
-.artifact-card-body .ac-stat .value.pass { color: var(--sage); }
-
-/* ===== PRICING ===== */
-.pricing {
-  padding: 120px 0;
+.brief-stat {
   text-align: center;
-  position: relative;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.7s var(--ease-slow), transform 0.7s var(--ease-slow);
 }
-.pricing-headline {
+.brief-stat.visible {
+  opacity: 1;
+  transform: none;
+}
+.brief-stat .stat-number {
   font-family: var(--serif);
-  font-size: clamp(1.7rem, 3.5vw, 2.6rem);
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-.pricing-sub {
-  color: var(--text-dim);
-  font-size: 1.0625rem;
-  margin-bottom: 56px;
-}
-.price-visual {
-  max-width: 400px;
-  margin: 0 auto;
-  position: relative;
-}
-.price-big {
-  font-family: var(--serif);
-  font-size: clamp(3rem, 6vw, 5rem);
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
   font-weight: 700;
   color: var(--gold);
   line-height: 1;
-  margin-bottom: 8px;
 }
-.price-context {
-  color: var(--text-dim);
-  font-size: 0.9375rem;
-  margin-bottom: 40px;
+.brief-stat .stat-label {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  margin-top: 4px;
+  letter-spacing: 0.04em;
 }
-.price-breakdown {
-  display: flex; flex-direction: column;
-  text-align: left;
-  max-width: 320px;
-  margin: 0 auto;
-}
-.price-line {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.875rem;
-}
-.price-line:last-child { border-bottom: none; }
-.price-line .what { color: var(--text-dim); }
-.price-line .val { font-weight: 600; }
-.price-line .val-gold { color: var(--gold); }
 
-/* ===== FINAL CTA ===== */
-.final-cta {
-  padding: 160px 0 120px;
-  text-align: center;
+/* ===== SECTION 6: THE CLOSE ===== */
+.s-close {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
+  padding: 80px 32px;
 }
-.final-cta::before {
+.s-close::before {
   content: '';
   position: absolute;
-  top: 20%; left: 50%;
+  top: 20%;
+  left: 50%;
   transform: translateX(-50%);
-  width: 700px; height: 500px;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(212, 165, 71, 0.06) 0%,
-    rgba(212, 165, 71, 0.02) 30%,
-    transparent 60%
-  );
+  width: 700px;
+  height: 500px;
+  background: radial-gradient(ellipse at center, rgba(212, 165, 71, 0.06) 0%, rgba(212, 165, 71, 0.02) 30%, transparent 60%);
   pointer-events: none;
 }
-.final-cta h2 {
+.close-inner {
+  text-align: center;
+  max-width: 560px;
+  position: relative;
+  z-index: 1;
+}
+.close-headline {
   font-family: var(--serif);
   font-size: clamp(1.8rem, 4vw, 3rem);
   font-weight: 700;
   letter-spacing: -0.01em;
-  margin-bottom: 14px;
-  position: relative;
+  margin-bottom: 16px;
+  line-height: 1.15;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 1s var(--ease-slow), transform 1s var(--ease-slow);
 }
-.final-cta .cta-sub {
-  color: var(--text-dim);
-  font-size: 1.0625rem;
-  margin-bottom: 52px;
-  position: relative;
+.close-headline.visible {
+  opacity: 1;
+  transform: none;
 }
-.cta-install {
+.close-install {
   max-width: 480px;
-  margin: 0 auto 40px;
-  position: relative;
+  margin: 40px auto;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 1s var(--ease-slow) 0.2s, transform 1s var(--ease-slow) 0.2s;
 }
-.cta-cmd {
+.close-install.visible {
+  opacity: 1;
+  transform: none;
+}
+.close-cmd {
   position: relative;
   padding: 22px 76px 22px 28px;
   font-family: var(--mono);
@@ -999,15 +636,13 @@ nav .container {
   cursor: pointer;
   border-top: 1px solid var(--gold);
   border-bottom: 1px solid var(--gold);
-  border-left: none;
-  border-right: none;
   background: transparent;
   transition: all 0.4s;
   box-shadow: 0 0 60px var(--gold-glow);
 }
-.cta-cmd:hover { box-shadow: 0 0 90px rgba(212, 165, 71, 0.1); }
-.cta-cmd .prompt { color: var(--text-faint); }
-.cta-copy {
+.close-cmd:hover { box-shadow: 0 0 90px rgba(212, 165, 71, 0.1); }
+.close-cmd .prompt { color: var(--text-faint); }
+.close-copy {
   position: absolute; right: 14px; top: 50%;
   transform: translateY(-50%);
   background: transparent;
@@ -1023,106 +658,103 @@ nav .container {
   font-weight: 600;
   transition: all 0.3s;
 }
-.cta-copy:hover { background: var(--gold); color: var(--bg); }
-.cta-copy.copied { border-color: var(--sage); color: var(--sage); }
-.cta-links {
-  display: flex; align-items: center; justify-content: center;
+.close-copy:hover { background: var(--gold); color: var(--bg); }
+.close-copy.copied { border-color: var(--sage); color: var(--sage); }
+
+.close-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 32px;
   font-size: 0.8125rem;
   letter-spacing: 0.04em;
-  text-transform: uppercase;
-  position: relative;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 1s var(--ease-slow) 0.4s, transform 1s var(--ease-slow) 0.4s;
 }
-.cta-links a { color: var(--text-dim); }
-.cta-links a:hover { color: var(--text); }
+.close-links.visible {
+  opacity: 1;
+  transform: none;
+}
+.close-links a { color: var(--text-dim); }
+.close-links a:hover { color: var(--text); }
+.close-links .sep { color: var(--border-light); }
 
-/* ===== FOOTER ===== */
-footer {
-  border-top: 1px solid var(--border);
-  padding: 36px 0;
-  text-align: center;
-  font-size: 0.75rem;
-  color: var(--text-faint);
-  letter-spacing: 0.04em;
-}
-footer a { color: var(--text-dim); }
-footer .footer-links {
-  display: flex; align-items: center; justify-content: center;
-  gap: 24px; flex-wrap: wrap;
-}
-footer .footer-sep { color: var(--border-light); }
-
-/* ===== MOBILE STICKY CTA ===== */
-.mobile-cta {
-  display: none;
-  position: fixed; bottom: 0; left: 0; right: 0;
-  z-index: 99;
-  padding: 14px 20px;
-  background: rgba(10, 9, 8, 0.96);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid var(--border);
-}
-.mobile-cta .btn-mobile {
-  display: block;
-  width: 100%;
-  text-align: center;
-  background: transparent;
-  color: var(--gold);
-  font-weight: 600;
-  font-size: 0.8125rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  border: 1px solid var(--gold);
-  border-radius: 3px;
-  text-decoration: none;
-  min-height: 48px;
-  line-height: 48px;
-  padding: 0;
-}
-.mobile-cta .btn-mobile:hover {
-  background: var(--gold); color: var(--bg);
-  text-decoration: none;
-}
-
-/* ===== RESPONSIVE ===== */
+/* ===== MOBILE ===== */
 @media (max-width: 768px) {
-  .mobile-cta { display: block; }
-  .hero { padding: 96px 0 64px; }
-  .hero h1 { font-size: 2.4rem; }
-  .transform-compare { grid-template-columns: 1fr; gap: 16px; }
-  .artifact-cards { grid-template-columns: 1fr; }
-  .constellation { grid-template-columns: 1fr 1fr; }
-  .container { padding: 0 20px; }
-  .demo, .transform-section, .artifacts-section, .pricing { padding: 80px 0; }
-  .final-cta { padding: 100px 0 80px; }
-  .nav-links a.hide-mobile { display: none; }
-  .sprint-stage, .compile-result {
-    margin-left: -12px; margin-right: -12px;
-    border-radius: 4px;
-  }
-  .sprint-stage-body, .compile-result .cr-body { padding: 16px; font-size: 11px; }
-  footer { padding-bottom: 88px; }
-  .archway { height: 64px; }
+  .s-question { height: 250vh; }
+  .s-chaos { height: 300vh; }
+  .s-command { height: 250vh; }
+  .s-sprint { height: 500vh; }
+  .s-brief { height: 350vh; }
+
+  .question-text { font-size: clamp(1.4rem, 6vw, 2rem); }
+
+  .chaos-tab { font-size: 0.6rem; max-width: 140px; padding: 6px 10px; }
+  .chaos-slack { max-width: 220px; padding: 10px 14px; }
+  .chaos-slack .slack-text { font-size: 0.75rem; }
+
+  .terminal-body { padding: 16px; font-size: 11px; min-height: 260px; }
+  .bar-label { width: 80px; font-size: 11px; }
+
+  .brief-header { padding: 20px 20px 16px; }
+  .brief-body { padding: 16px 20px 24px; }
+  .brief-stats { gap: 20px; }
+
+  .close-cmd { font-size: 0.875rem; padding: 18px 52px 18px 16px; }
 }
+
 @media (max-width: 480px) {
-  .nav-logo { font-size: 1.15rem; }
-  .hero h1 { font-size: 1.9rem; }
-  .install-cmd { font-size: 0.8125rem; padding: 16px 52px 16px 16px; }
-  .cta-cmd { font-size: 0.875rem; padding: 18px 52px 18px 16px; }
-  .constellation { grid-template-columns: 1fr; }
-  .demo-headline, .transform-headline, .artifacts-headline, .pricing-headline { font-size: 1.5rem; }
+  .chaos-container { height: 60vh; }
+  .chaos-tab:nth-child(n+6) { display: none; }
+  .chaos-slack:nth-child(n+4) { display: none; }
+  .brief-stats { flex-direction: column; gap: 16px; }
 }
+
+/* ===== REDUCED MOTION ===== */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
-  .rv { opacity: 1; transform: none; }
-  .hf { opacity: 1; transform: none; }
-  .constellation-node { opacity: 1; transform: none; }
-  .challenge-moment { opacity: 1; transform: none; }
+  .s-question,
+  .s-chaos,
+  .s-command,
+  .s-sprint,
+  .s-brief {
+    height: auto !important;
+  }
+  .s-question-sticky,
+  .s-chaos-sticky,
+  .s-command-sticky,
+  .s-sprint-sticky,
+  .s-brief-sticky {
+    position: relative !important;
+    height: auto !important;
+    min-height: 100vh;
+  }
+  .question-text .char,
+  .chaos-tab,
+  .chaos-slack,
+  .command-inner .command-line,
+  .command-inner .command-sub,
+  .command-inner .command-glow,
+  .sprint-terminal,
+  .sprint-line,
+  .sprint-challenge,
+  .sprint-pass,
+  .brief-container,
+  .brief-section,
+  .brief-stat,
+  .close-headline,
+  .close-install,
+  .close-links {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
   .bar-fill { width: var(--target-w) !important; }
+  .cursor-blink { animation: none; opacity: 1; }
 }
 </style>
 <script type="application/ld+json">
@@ -1151,497 +783,567 @@ footer .footer-sep { color: var(--border-light); }
 <body>
 <a href="#main" class="skip-link">Skip to main content</a>
 
-<div class="page">
-<nav aria-label="Main navigation">
-  <div class="container">
-    <a href="#" class="nav-logo">
-      <span class="logo-mark">G</span>
-      Grainulator
-    </a>
-    <div class="nav-links">
-      <a href="#demo" class="hide-mobile">See It Work</a>
-      <a href="#transform" class="hide-mobile">Before &amp; After</a>
-      <a href="#pricing" class="hide-mobile">Pricing</a>
-      <a href="https://grainulation.com/docs" class="hide-mobile">Docs</a>
-      <a href="https://github.com/grainulation/grainulator" aria-label="GitHub">
-        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-      </a>
-      <a href="#install" class="nav-cta">Get Started</a>
-    </div>
-  </div>
-</nav>
-
 <main id="main">
 
-<!-- ===== HERO ===== -->
-<section class="hero" aria-label="Hero">
-  <div class="container">
-    <p class="section-label hf hf1">CI/CD for decisions</p>
-    <h1 class="hf hf2">Your research<br><span class="accent">ships compiled.</span></h1>
-    <p class="hero-sub hf hf3">Like a compiler catches bugs before deploy,<br>Grainulator catches bad evidence before commit.</p>
-
-    <div class="install-inscription hf hf4">
-      <div class="install-cmd" role="button" tabindex="0" aria-label="Copy install command" onclick="copyCmd(this,'/plugin install grainulator')">
-        <span class="prompt">/</span>plugin install grainulator
-        <button class="install-copy" onclick="event.stopPropagation();copyCmd(this.parentElement,'/plugin install grainulator');" aria-label="Copy to clipboard">Copy</button>
-      </div>
+<!-- ===== SECTION 1: THE QUESTION ===== -->
+<section class="scroll-section s-question" aria-label="The question">
+  <div class="s-question-sticky">
+    <div class="question-inner">
+      <div class="question-text" id="question-text" aria-label="Should we migrate to Postgres?"></div>
     </div>
+  </div>
+</section>
 
-    <!-- Animated sprint compilation — the product IS the hero -->
-    <div class="sprint-stage hf hf5" role="img" aria-label="Animated terminal showing a research sprint compiling in fast-forward: claims accumulate, a challenge fires, and the brief compiles to PASS">
-      <div class="sprint-stage-bar" aria-hidden="true">
-        <div class="dot r"></div>
-        <div class="dot y"></div>
-        <div class="dot g"></div>
-        <div class="title" id="stage-title">wheat compile</div>
+<!-- ===== SECTION 2: THE CHAOS ===== -->
+<section class="scroll-section s-chaos" aria-label="The chaos of unstructured research">
+  <div class="s-chaos-sticky">
+    <div class="chaos-container" id="chaos-container">
+      <!-- Browser tabs -->
+      <div class="chaos-tab" style="--tab-transform: translate(-30%, -60%) rotate(-4deg); top: 12%; left: 10%;">postgres vs mysql — reddit</div>
+      <div class="chaos-tab" style="--tab-transform: translate(10%, -40%) rotate(2deg); top: 8%; left: 45%;">Stack Overflow: pgbouncer</div>
+      <div class="chaos-tab" style="--tab-transform: translate(-10%, -50%) rotate(-1deg); top: 20%; left: 65%;">HN: Why we left Postgres</div>
+      <div class="chaos-tab" style="--tab-transform: translate(20%, -30%) rotate(3deg); top: 5%; left: 25%;">postgres pricing calculator</div>
+      <div class="chaos-tab" style="--tab-transform: translate(-20%, -45%) rotate(-3deg); top: 16%; left: 50%;">reddit r/database migrat&hellip;</div>
+      <div class="chaos-tab" style="--tab-transform: translate(5%, -35%) rotate(1deg); top: 24%; left: 15%;">AWS RDS docs — PostgreSQL</div>
+      <div class="chaos-tab" style="--tab-transform: translate(-15%, -55%) rotate(-2deg); top: 10%; left: 78%;">migration horror stories</div>
+      <div class="chaos-tab" style="--tab-transform: translate(15%, -25%) rotate(4deg); top: 28%; left: 40%;">pgvector benchmarks 2024</div>
+
+      <!-- Slack messages -->
+      <div class="chaos-slack" style="--slack-transform: translate(-5%, 0%) rotate(-2deg); top: 42%; left: 8%;">
+        <div class="slack-name">Sarah</div>
+        <div class="slack-text">&ldquo;Just go with our gut.&rdquo;</div>
       </div>
-      <div class="sprint-stage-body" id="sprint-body" aria-hidden="true">
-        <!-- Filled by JS animation -->
+      <div class="chaos-slack" style="--slack-transform: translate(5%, 0%) rotate(1.5deg); top: 48%; left: 52%;">
+        <div class="slack-name">Jake</div>
+        <div class="slack-text">&ldquo;We don&rsquo;t have time to research this.&rdquo;</div>
+      </div>
+      <div class="chaos-slack" style="--slack-transform: translate(-8%, 0%) rotate(-1deg); top: 62%; left: 25%;">
+        <div class="slack-name">Priya</div>
+        <div class="slack-text">&ldquo;Let&rsquo;s discuss Monday.&rdquo;</div>
+      </div>
+      <div class="chaos-slack" style="--slack-transform: translate(10%, 0%) rotate(2deg); top: 56%; left: 60%;">
+        <div class="slack-name">Mike</div>
+        <div class="slack-text">&ldquo;I read a blog post that said&hellip;&rdquo;</div>
+      </div>
+      <div class="chaos-slack" style="--slack-transform: translate(0%, 0%) rotate(-1.5deg); top: 72%; left: 42%;">
+        <div class="slack-name">Sarah</div>
+        <div class="slack-text">&ldquo;Meeting is in 2 hours. Just pick one.&rdquo;</div>
       </div>
     </div>
   </div>
 </section>
 
-<div class="archway" aria-hidden="true"></div>
+<!-- ===== SECTION 3: THE COMMAND ===== -->
+<section class="scroll-section s-command" aria-label="The command that changes everything">
+  <div class="s-command-sticky">
+    <div class="command-inner" id="command-inner">
+      <div class="command-glow"></div>
+      <div class="command-line"><span class="prompt">/</span>plugin install grainulator</div>
+      <div class="command-sub">&ldquo;research should we migrate to postgres&rdquo;</div>
+    </div>
+  </div>
+</section>
 
-<!-- ===== LIVE DEMO — "Be the product" ===== -->
-<section class="demo rv" id="demo" aria-label="Interactive demonstration">
-  <div class="container">
-    <div class="section-label" style="text-align:center">Watch it think</div>
-    <h2 class="demo-headline">A question goes in. A brief comes out.</h2>
-    <p class="demo-sub">Everything between is tracked, typed, challenged, and compiled. Here is one sprint, start to finish.</p>
+<!-- ===== SECTION 4: THE SPRINT ===== -->
+<section class="scroll-section s-sprint" aria-label="Watch a research sprint compile">
+  <div class="s-sprint-sticky">
+    <div class="sprint-terminal" id="sprint-terminal">
+      <div class="terminal-chrome">
+        <div class="terminal-bar">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+          <div class="terminal-title" id="terminal-title">wheat init</div>
+        </div>
+        <div class="terminal-body" id="terminal-body">
+          <!-- Phase 1: Init -->
+          <div class="sprint-line" data-phase="1" data-step="0">
+            <span class="c-dim">$</span> <span class="c-gold">wheat init</span> <span class="c-dim">&ldquo;Should we migrate to Postgres?&rdquo;</span>
+          </div>
+          <div class="sprint-line" data-phase="1" data-step="1">
+            <span class="c-dim">extracting parameters&hellip;</span>
+          </div>
+          <div class="sprint-line" data-phase="1" data-step="2">
+            <span class="c-dim">audience:</span> <span class="c-text">engineering leadership</span>
+          </div>
 
-    <div class="sprint-theater">
-      <!-- Step 1: The question -->
-      <div class="theater-question rv rv-d1">
-        <span class="q-mark">&ldquo;</span>Should we migrate to Postgres<span class="q-mark">&thinsp;?&rdquo;</span>
-      </div>
+          <!-- Phase 2: Claims -->
+          <div class="sprint-line" data-phase="2" data-step="3" style="margin-top: 12px;">
+            <span class="c-dim">$</span> <span class="c-gold">/research</span> <span class="c-dim">postgres migration feasibility</span>
+          </div>
+          <div class="sprint-line" data-phase="2" data-step="4">
+            <span class="tag tag-factual">factual</span> <span class="c-text">r001: Postgres handles 12k TPS on comparable hardware</span>
+          </div>
+          <div class="sprint-line" data-phase="2" data-step="5" id="claim-r002">
+            <span class="tag tag-estimate">estimate</span> <span class="c-text">r002: Migration will take 6 weeks</span>
+          </div>
+          <div class="sprint-line" data-phase="2" data-step="6">
+            <span class="tag tag-factual">factual</span> <span class="c-text">r003: pgvector eliminates separate vector DB</span>
+          </div>
+          <div class="sprint-line" data-phase="2" data-step="7">
+            <span class="tag tag-risk">risk</span> <span class="c-text">r004: No team member has Postgres experience</span>
+          </div>
+          <div class="sprint-line" data-phase="2" data-step="8">
+            <span class="tag tag-factual">factual</span> <span class="c-text">r005: Current DB license costs $48k/year</span>
+          </div>
+          <div class="sprint-line" data-phase="2" data-step="9">
+            <span class="tag tag-rec">rec</span> <span class="c-text">r006: 90-day parallel-run period</span>
+          </div>
 
-      <!-- Step 2: Claims materialize like a constellation -->
-      <div class="constellation rv rv-d2" id="claim-constellation">
-        <div class="constellation-node" data-delay="0">
-          <div class="node-id">r001 <span class="node-type node-type-factual">factual</span></div>
-          <div class="node-text">Postgres handles 12k TPS on comparable hardware</div>
-        </div>
-        <div class="constellation-node" data-delay="200">
-          <div class="node-id">r002 <span class="node-type node-type-estimate">estimate</span></div>
-          <div class="node-text" id="estimate-node">Migration will take 6 weeks with current team</div>
-        </div>
-        <div class="constellation-node" data-delay="400">
-          <div class="node-id">r003 <span class="node-type node-type-factual">factual</span></div>
-          <div class="node-text">pgvector eliminates the need for a separate vector DB</div>
-        </div>
-        <div class="constellation-node" data-delay="600">
-          <div class="node-id">r004 <span class="node-type node-type-risk">risk</span></div>
-          <div class="node-text">No team member has production Postgres experience</div>
-        </div>
-        <div class="constellation-node" data-delay="800">
-          <div class="node-id">r005 <span class="node-type node-type-factual">factual</span></div>
-          <div class="node-text">Current DB license costs $48k/year</div>
-        </div>
-        <div class="constellation-node" data-delay="1000">
-          <div class="node-id">r006 <span class="node-type node-type-rec">recommendation</span></div>
-          <div class="node-text">Migrate with a 90-day parallel-run period</div>
-        </div>
-      </div>
+          <!-- Phase 3: Challenge -->
+          <div class="sprint-challenge" data-phase="3" data-step="10">
+            <span class="c-dim">$</span> <span class="c-gold">/challenge r002</span><br>
+            <span class="c-dim">claim:</span> <span class="c-text">&ldquo;Migration will take 6 weeks.&rdquo;</span><br>
+            <span class="c-dim">evidence:</span> <span class="c-amber">r004 contradicts</span> <span class="c-dim">&mdash; no Postgres experience</span><br>
+            <span class="c-dim">benchmark:</span> <span class="c-text">comparable migrations averaged 11.4 weeks</span><br><br>
+            <span class="c-red">&#10007; REVISED</span> <span class="c-dim">&mdash; r002 updated to</span> <span class="c-white">12 weeks</span>
+          </div>
 
-      <!-- Step 3: The challenge moment — dramatic -->
-      <div class="challenge-moment rv rv-d3" id="challenge-moment">
-        <div class="challenge-label">/challenge r002</div>
-        <div class="before-text">&ldquo;Migration will take 6 weeks.&rdquo;</div>
-        <div class="after-text">The evidence says <strong>12 weeks</strong>&thinsp;&mdash;&thinsp;your team has zero Postgres experience.</div>
-      </div>
+          <!-- Phase 4: Compile -->
+          <div class="sprint-line" data-phase="4" data-step="11" style="margin-top: 12px;">
+            <span class="c-dim">$</span> <span class="c-white">wheat compile</span>
+          </div>
+          <div class="sprint-line" data-phase="4" data-step="12">
+            <span class="c-dim">sprint:</span> <span class="c-white">postgres-migration</span>
+          </div>
+          <div class="sprint-line" data-phase="4" data-step="13">
+            <span class="c-dim">claims:</span> <span class="c-green">6 compiled</span> <span class="c-dim">| 1 revised | 0 retired</span>
+          </div>
+          <div class="sprint-line" data-phase="4" data-step="14" style="margin-top: 8px;">
+            <span class="c-white">Coverage:</span>
+          </div>
+          <div class="sprint-line" data-phase="4" data-step="15">
+            <div class="bar-row"><span class="bar-label">query-perf</span><div class="bar-track"><div class="bar-fill high" data-w="92" style="--target-w:92%"></div></div><span class="bar-pct c-green">92%</span></div>
+          </div>
+          <div class="sprint-line" data-phase="4" data-step="16">
+            <div class="bar-row"><span class="bar-label">migration</span><div class="bar-track"><div class="bar-fill high" data-w="87" style="--target-w:87%"></div></div><span class="bar-pct c-green">87%</span></div>
+          </div>
+          <div class="sprint-line" data-phase="4" data-step="17">
+            <div class="bar-row"><span class="bar-label">ops-risk</span><div class="bar-track"><div class="bar-fill high" data-w="94" style="--target-w:94%"></div></div><span class="bar-pct c-green">94%</span></div>
+          </div>
+          <div class="sprint-line" data-phase="4" data-step="18">
+            <div class="bar-row"><span class="bar-label">team-skill</span><div class="bar-track"><div class="bar-fill mid" data-w="71" style="--target-w:71%"></div></div><span class="bar-pct c-amber">71%</span></div>
+          </div>
 
-      <!-- Step 4: The compile result -->
-      <div class="compile-result rv rv-d4" id="compile-result">
-        <div class="cr-bar" aria-hidden="true">
-          <div class="dot r"></div>
-          <div class="dot y"></div>
-          <div class="dot g"></div>
-          <div class="cr-title">wheat compile</div>
-        </div>
-        <div class="cr-body" aria-hidden="true">
-<span class="c-dim">sprint:</span>  <span class="c-white">postgres-migration</span>
-<span class="c-dim">claims:</span>  <span class="c-green">6 compiled</span> <span class="c-dim">| 1 revised | 0 retired</span>
-
-<span class="c-white">Coverage:</span>
-<div class="bar-row"><span class="bar-label">query-perf</span><div class="bar-track"><div class="bar-fill high" data-w="92" style="--target-w:92%"></div></div><span class="bar-pct c-green">92%</span></div>
-<div class="bar-row"><span class="bar-label">migration</span><div class="bar-track"><div class="bar-fill high" data-w="87" style="--target-w:87%"></div></div><span class="bar-pct c-green">87%</span></div>
-<div class="bar-row"><span class="bar-label">ops-risk</span><div class="bar-track"><div class="bar-fill high" data-w="94" style="--target-w:94%"></div></div><span class="bar-pct c-green">94%</span></div>
-<div class="bar-row"><span class="bar-label">team-skill</span><div class="bar-track"><div class="bar-fill mid" data-w="71" style="--target-w:71%"></div></div><span class="bar-pct c-amber">71%</span></div>
-
-<span class="term-pass">&#10003; PASS</span> <span class="c-dim">&mdash; all gates met. Brief ready.</span>
-<span class="c-dim">&#8594;</span> <span class="c-text">output/postgres-migration-brief.html</span>
+          <!-- Phase 5: PASS -->
+          <div class="sprint-pass" data-phase="5" data-step="19" style="margin-top: 12px;">
+            <span class="term-pass">&#10003; PASS</span> <span class="c-dim">&mdash; all gates met. Brief ready.</span><br>
+            <span class="c-dim">&#8594;</span> <span class="c-text">output/postgres-migration-brief.html</span>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<div class="archway" aria-hidden="true"></div>
-
-<!-- ===== BEFORE / AFTER — Visceral comparison ===== -->
-<section class="transform-section rv" id="transform" aria-label="Before and after comparison">
-  <div class="container">
-    <div class="section-label" style="text-align:center">The difference</div>
-    <h2 class="transform-headline">Same question. Different process.</h2>
-    <p class="transform-sub">One side is how your team researches today. The other is what ships.</p>
-
-    <div class="transform-compare">
-      <!-- BEFORE: the mess -->
-      <div class="before-mess rv rv-d1">
-        <div class="corner-label">Without Grainulator</div>
-        <div class="fake-tabs">
-          <div class="fake-tab active">postgres vs mysql &mdash; re&hellip;</div>
-          <div class="fake-tab">Stack Overflow: pgbo&hellip;</div>
-          <div class="fake-tab">HN: Why we left Pos&hellip;</div>
-          <div class="fake-tab">postgres pricing cal&hellip;</div>
-          <div class="fake-tab">reddit r/database mi&hellip;</div>
-          <div class="fake-tab">AWS RDS docs</div>
-          <div class="fake-tab">migration horror sto&hellip;</div>
-          <div class="fake-tab">pgvector benchmark&hellip;</div>
+<!-- ===== SECTION 5: THE BRIEF ===== -->
+<section class="scroll-section s-brief" aria-label="The compiled brief">
+  <div class="s-brief-sticky">
+    <div class="brief-container" id="brief-container">
+      <div class="brief-document">
+        <div class="brief-header">
+          <div class="brief-title">Postgres Migration Brief</div>
+          <div class="brief-meta">6 claims &middot; 4 topics &middot; compiled 2 min ago</div>
         </div>
-        <div class="fake-slack">
-          <div class="slack-msg">
-            <div class="slack-avatar"></div>
-            <div class="slack-content">
-              <span class="slack-name">Sarah</span>
-              <div class="slack-text">I think Postgres is the way to go. <em>My last company used it and it was fine.</em></div>
-            </div>
-          </div>
-          <div class="slack-msg">
-            <div class="slack-avatar"></div>
-            <div class="slack-content">
-              <span class="slack-name">Jake</span>
-              <div class="slack-text">IDK, migration could take like 4&ndash;6 weeks? Maybe less?</div>
-            </div>
-          </div>
-          <div class="slack-msg">
-            <div class="slack-avatar"></div>
-            <div class="slack-content">
-              <span class="slack-name">Priya</span>
-              <div class="slack-text">Has anyone actually benchmarked this? I read a blog post that said&hellip;</div>
-            </div>
-          </div>
-          <div class="slack-msg">
-            <div class="slack-avatar"></div>
-            <div class="slack-content">
-              <span class="slack-name">Jake</span>
-              <div class="slack-text">Let&rsquo;s just go with our gut. Meeting is in 2 hours.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- AFTER: the compiled brief -->
-      <div class="after-brief rv rv-d2">
-        <div class="corner-label">With Grainulator</div>
-        <div class="mini-brief">
-          <div class="mini-brief-title">Postgres Migration Brief</div>
-          <div class="mini-brief-meta">6 claims &middot; 4 topics &middot; compiled 2 min ago</div>
-
-          <div class="mini-brief-section">
+        <div class="brief-body">
+          <div class="brief-section" data-brief-step="0">
             <h4>Recommendation</h4>
             <p>Proceed with migration using a 90-day parallel-run. Projected savings of $48k/year in licensing with comparable performance at current scale. <span class="evidence-pill evidence-tested">tested</span></p>
           </div>
-
-          <div class="mini-brief-section">
+          <div class="brief-section" data-brief-step="1">
             <h4>Timeline</h4>
             <p>12 weeks, not 6. Team lacks production Postgres experience&thinsp;&mdash;&thinsp;original estimate was revised after adversarial challenge. <span class="evidence-pill evidence-documented">documented</span></p>
           </div>
-
-          <div class="mini-brief-section">
+          <div class="brief-section" data-brief-step="2">
             <h4>Key Finding</h4>
             <p>pgvector eliminates separate vector DB dependency, reducing infra complexity by ~40%. <span class="evidence-pill evidence-web">web</span></p>
           </div>
-
-          <div class="mini-brief-risks">
+          <div class="brief-section brief-risks" data-brief-step="3">
             <h4>3 risks your team would have missed</h4>
             <p>No Postgres production experience on team &middot; ORM compatibility gaps with existing queries &middot; Backup strategy requires complete redesign</p>
           </div>
         </div>
       </div>
-    </div>
-  </div>
-</section>
 
-<div class="archway" aria-hidden="true"></div>
-
-<!-- ===== SOCIAL PROOF — Artifact cards, not logos ===== -->
-<section class="artifacts-section rv" id="artifacts" aria-label="Teams shipping better decisions">
-  <div class="container">
-    <div class="section-label" style="text-align:center">Shipped decisions</div>
-    <h2 class="artifacts-headline">Teams don&rsquo;t share logos. They share briefs.</h2>
-
-    <div class="artifact-cards">
-      <div class="artifact-card rv rv-d1">
-        <div class="artifact-card-header">
-          <div class="ac-icon">K</div>
-          <div class="ac-meta">
-            <div class="ac-title">Kubernetes vs ECS</div>
-            <div class="ac-team">Infrastructure &middot; Series B startup</div>
-          </div>
+      <!-- Stats that count up -->
+      <div class="brief-stats" id="brief-stats">
+        <div class="brief-stat" data-brief-step="4">
+          <div class="stat-number" data-count-to="47">0</div>
+          <div class="stat-label">claims</div>
         </div>
-        <div class="artifact-card-body">
-          <div class="ac-stat"><span class="label">Claims</span><span class="value">31</span></div>
-          <div class="ac-stat"><span class="label">Challenges</span><span class="value">4 revised</span></div>
-          <div class="ac-stat"><span class="label">Time</span><span class="value">8 min</span></div>
-          <div class="ac-stat"><span class="label">Gate</span><span class="value pass">PASS</span></div>
+        <div class="brief-stat" data-brief-step="5">
+          <div class="stat-number" data-count-to="12">0</div>
+          <div class="stat-label">topics</div>
         </div>
-      </div>
-
-      <div class="artifact-card rv rv-d2">
-        <div class="artifact-card-header">
-          <div class="ac-icon">V</div>
-          <div class="ac-meta">
-            <div class="ac-title">Vendor Selection: Auth0 vs Clerk</div>
-            <div class="ac-team">Platform &middot; Growth-stage SaaS</div>
-          </div>
+        <div class="brief-stat" data-brief-step="6">
+          <div class="stat-number" data-count-to="3">0</div>
+          <div class="stat-label">risks caught</div>
         </div>
-        <div class="artifact-card-body">
-          <div class="ac-stat"><span class="label">Claims</span><span class="value">22</span></div>
-          <div class="ac-stat"><span class="label">Challenges</span><span class="value">2 revised</span></div>
-          <div class="ac-stat"><span class="label">Time</span><span class="value">5 min</span></div>
-          <div class="ac-stat"><span class="label">Gate</span><span class="value pass">PASS</span></div>
-        </div>
-      </div>
-
-      <div class="artifact-card rv rv-d3">
-        <div class="artifact-card-header">
-          <div class="ac-icon">M</div>
-          <div class="ac-meta">
-            <div class="ac-title">Monorepo Migration Path</div>
-            <div class="ac-team">DevEx &middot; Enterprise</div>
-          </div>
-        </div>
-        <div class="artifact-card-body">
-          <div class="ac-stat"><span class="label">Claims</span><span class="value">47</span></div>
-          <div class="ac-stat"><span class="label">Challenges</span><span class="value">7 revised</span></div>
-          <div class="ac-stat"><span class="label">Time</span><span class="value">12 min</span></div>
-          <div class="ac-stat"><span class="label">Gate</span><span class="value pass">PASS</span></div>
+        <div class="brief-stat" data-brief-step="7">
+          <div class="stat-number" data-count-to="4" data-suffix=" min">0</div>
+          <div class="stat-label">total time</div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<div class="archway" aria-hidden="true"></div>
-
-<!-- ===== PRICING ===== -->
-<section class="pricing rv" id="pricing" aria-label="Pricing">
-  <div class="container">
-    <div class="section-label">Pricing</div>
-    <h2 class="pricing-headline">One sprint. One cup of coffee.</h2>
-    <p class="pricing-sub">The plugin is free forever. You pay Anthropic for compute.</p>
-
-    <div class="price-visual rv rv-d1">
-      <div class="price-big">$8</div>
-      <div class="price-context">Average cost per compiled brief</div>
-      <div class="price-breakdown">
-        <div class="price-line"><span class="what">Grainulator plugin</span><span class="val val-gold">Free (MIT)</span></div>
-        <div class="price-line"><span class="what">Claude Code compute</span><span class="val">$6&thinsp;&ndash;&thinsp;$12</span></div>
-        <div class="price-line"><span class="what">Dependencies</span><span class="val val-gold">Zero</span></div>
-        <div class="price-line"><span class="what">Time to first brief</span><span class="val">~5 minutes</span></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== FINAL CTA ===== -->
-<section class="final-cta rv" id="install" aria-label="Get started">
-  <div class="container">
-    <h2>Your next decision<br>deserves evidence.</h2>
-    <p class="cta-sub">Five minutes from now, you&rsquo;ll have a compiled brief.</p>
-    <div class="cta-install">
-      <div class="cta-cmd" role="button" tabindex="0" aria-label="Copy install command" onclick="copyCmd(this,'/plugin install grainulator')">
+<!-- ===== SECTION 6: THE CLOSE ===== -->
+<section class="scroll-section s-close" id="install" aria-label="Get started">
+  <div class="close-inner">
+    <h2 class="close-headline" id="close-headline">Your next decision<br>deserves evidence.</h2>
+    <div class="close-install" id="close-install">
+      <div class="close-cmd" role="button" tabindex="0" aria-label="Copy install command" onclick="copyCmd(this)">
         <span class="prompt">/</span>plugin install grainulator
-        <button class="cta-copy" onclick="event.stopPropagation();copyCmd(this.parentElement,'/plugin install grainulator');" aria-label="Copy to clipboard">Copy</button>
+        <button class="close-copy" onclick="event.stopPropagation();copyCmd(this.parentElement);" aria-label="Copy to clipboard">Copy</button>
       </div>
     </div>
-    <div class="cta-links">
+    <div class="close-links" id="close-links">
       <a href="https://github.com/grainulation/grainulator">GitHub</a>
+      <span class="sep" aria-hidden="true">&middot;</span>
       <a href="https://grainulation.com/docs">Docs</a>
-      <a href="https://grainulation.com">Grainulation</a>
+      <span class="sep" aria-hidden="true">&middot;</span>
+      <a href="https://grainulation.com">grainulation.com</a>
     </div>
   </div>
 </section>
 
 </main>
 
-<footer>
-  <div class="container">
-    <div class="footer-links">
-      <a href="https://github.com/grainulation/grainulator">GitHub</a>
-      <span class="footer-sep" aria-hidden="true">&middot;</span>
-      <a href="https://grainulation.com/docs">Docs</a>
-      <span class="footer-sep" aria-hidden="true">&middot;</span>
-      <a href="https://grainulation.com">Grainulation</a>
-      <span class="footer-sep" aria-hidden="true">&middot;</span>
-      <span>MIT</span>
-    </div>
-  </div>
-</footer>
-</div>
-
-<!-- Mobile sticky CTA -->
-<div class="mobile-cta" aria-label="Install Grainulator">
-  <a href="#install" class="btn-mobile">Get Started</a>
-</div>
-
 <script>
 /* ======================================================
-   HERO SPRINT ANIMATION
-   Shows the product working in fast-forward:
-   question -> claims appear -> challenge -> compile -> PASS
+   GRAINULATOR — Scroll-Driven Experience Engine
+   60fps, GPU-accelerated, no libraries.
    ====================================================== */
 (function () {
-  var body = document.getElementById('sprint-body');
-  var titleEl = document.getElementById('stage-title');
-  if (!body) return;
+  'use strict';
 
   var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // If reduced motion, show final state immediately
-  if (prefersReduced) {
-    titleEl.textContent = 'sprint complete';
-    body.innerHTML =
-      '<span class="c-dim">$</span> <span class="c-white">wheat compile</span>\n' +
-      '<span class="c-dim">sprint:</span>  <span class="c-white">postgres-migration</span>\n' +
-      '<span class="c-dim">claims:</span>  <span class="c-green">6 compiled</span> <span class="c-dim">| 1 revised</span>\n\n' +
-      '<span class="term-pass">&#10003; PASS</span> <span class="c-dim">&mdash; brief ready.</span>\n' +
-      '<span class="c-dim">&#8594;</span> <span class="c-text">output/postgres-migration-brief.html</span>';
-    return;
+  /* --- Utility: clamp --- */
+  function clamp(val, min, max) {
+    return Math.max(min, Math.min(max, val));
   }
 
-  var steps = [
-    { delay: 800, title: 'researching', html: '<span class="c-dim">$</span> <span class="c-gold">wheat init</span> <span class="c-dim">"Should we migrate to Postgres?"</span>' },
-    { delay: 1400, title: 'researching', html: '<span class="c-dim">$</span> <span class="c-gold">wheat init</span> <span class="c-dim">"Should we migrate to Postgres?"</span>\n\n<span class="c-dim">extracting parameters...</span>\n<span class="c-dim">audience:</span> <span class="c-text">engineering leadership</span>\n<span class="c-dim">constraint:</span> <span class="c-text">Q2 deadline, $50k budget</span>' },
-    { delay: 2400, title: 'gathering claims', html: '<span class="c-dim">$</span> <span class="c-gold">/research</span> <span class="c-dim">postgres migration feasibility</span>\n\n<span class="claim-line" style="animation-delay:0s"><span class="tag tag-factual">factual</span> <span class="c-text">r001: Postgres handles 12k TPS on comparable hardware</span></span>\n<span class="claim-line" style="animation-delay:0.2s"><span class="tag tag-estimate">estimate</span> <span class="c-text">r002: Migration will take 6 weeks</span></span>\n<span class="claim-line" style="animation-delay:0.4s"><span class="tag tag-factual">factual</span> <span class="c-text">r003: pgvector eliminates separate vector DB</span></span>\n<span class="claim-line" style="animation-delay:0.6s"><span class="tag tag-risk">risk</span> <span class="c-text">r004: No team member has Postgres experience</span></span>\n<span class="claim-line" style="animation-delay:0.8s"><span class="tag tag-rec">rec</span> <span class="c-text">r006: 90-day parallel-run period</span></span>' },
-    { delay: 4600, title: 'challenging', html: '<span class="c-dim">$</span> <span class="c-gold">/challenge r002</span>\n\n<span class="c-dim">claim:</span> <span class="c-text">"Migration will take 6 weeks"</span>\n<span class="c-dim">evidence:</span> <span class="c-amber">r004 contradicts</span> <span class="c-dim">&mdash; no Postgres experience on team</span>\n<span class="c-dim">benchmark:</span> <span class="c-text">comparable migrations averaged 11.4 weeks</span>\n\n<span class="c-red">&#10007; REVISED</span> <span class="c-dim">&mdash; r002 updated to</span> <span class="c-white">12 weeks</span>' },
-    { delay: 6600, title: 'compiling', html: '<span class="c-dim">$</span> <span class="c-white">wheat compile</span>\n\n<span class="c-dim">sprint:</span>  <span class="c-white">postgres-migration</span>\n<span class="c-dim">claims:</span>  <span class="c-green">6 compiled</span> <span class="c-dim">| 1 revised | 0 retired</span>\n\n<div class="bar-row"><span class="bar-label">query-perf</span><div class="bar-track"><div class="bar-fill high" style="width:92%"></div></div><span class="bar-pct c-green">92%</span></div>\n<div class="bar-row"><span class="bar-label">migration</span><div class="bar-track"><div class="bar-fill high" style="width:87%"></div></div><span class="bar-pct c-green">87%</span></div>\n<div class="bar-row"><span class="bar-label">ops-risk</span><div class="bar-track"><div class="bar-fill high" style="width:94%"></div></div><span class="bar-pct c-green">94%</span></div>\n<div class="bar-row"><span class="bar-label">team-skill</span><div class="bar-track"><div class="bar-fill mid" style="width:71%"></div></div><span class="bar-pct c-amber">71%</span></div>\n\n<span class="term-pass">&#10003; PASS</span> <span class="c-dim">&mdash; all gates met. Brief ready.</span>\n<span class="c-dim">&#8594;</span> <span class="c-text">output/postgres-migration-brief.html</span>' },
-  ];
+  /* --- Utility: get scroll progress within a section --- */
+  function sectionProgress(section) {
+    var rect = section.getBoundingClientRect();
+    var sectionHeight = section.offsetHeight;
+    var viewportHeight = window.innerHeight;
+    /* 0 = section top at viewport bottom, 1 = section bottom at viewport top */
+    var scrolled = -rect.top;
+    var total = sectionHeight - viewportHeight;
+    return clamp(scrolled / total, 0, 1);
+  }
 
-  var i = 0;
-  function runStep() {
-    if (i >= steps.length) return;
-    var s = steps[i];
-    titleEl.textContent = s.title;
-    body.innerHTML = s.html;
-    i++;
-    if (i < steps.length) {
-      setTimeout(runStep, steps[i].delay - s.delay);
-    } else {
-      // Loop after a pause
-      setTimeout(function () {
-        titleEl.textContent = 'grainulator \u2014 sprint complete';
-      }, 1000);
-      setTimeout(function () { i = 0; runStep(); }, 8000);
+  /* ======================================================
+     SECTION 1: THE QUESTION — typewriter on scroll
+     ====================================================== */
+  var questionEl = document.getElementById('question-text');
+  var questionChars = [];
+  var questionText = '\u201CShould we migrate to Postgres?\u201D';
+  var cursorEl = null;
+
+  (function initQuestion() {
+    questionEl.innerHTML = '';
+    for (var i = 0; i < questionText.length; i++) {
+      var span = document.createElement('span');
+      span.className = 'char';
+      span.textContent = questionText[i];
+      questionEl.appendChild(span);
+      questionChars.push(span);
+    }
+    cursorEl = document.createElement('span');
+    cursorEl.className = 'cursor-blink';
+    questionEl.appendChild(cursorEl);
+
+    if (prefersReduced) {
+      questionChars.forEach(function (c) { c.classList.add('visible'); });
+    }
+  })();
+
+  function updateQuestion(progress) {
+    /* 0-0.5: type the question. 0.5-0.8: hold. 0.8-1.0: fade out. */
+    var typeProgress = clamp(progress / 0.5, 0, 1);
+    var visibleCount = Math.floor(typeProgress * questionChars.length);
+    for (var i = 0; i < questionChars.length; i++) {
+      if (i < visibleCount) {
+        questionChars[i].classList.add('visible');
+      } else {
+        questionChars[i].classList.remove('visible');
+      }
+    }
+
+    /* Fade out */
+    var fadeProgress = clamp((progress - 0.7) / 0.3, 0, 1);
+    var stickyEl = questionEl.parentElement;
+    stickyEl.style.opacity = 1 - fadeProgress;
+
+    /* Show cursor only while typing */
+    if (cursorEl) {
+      cursorEl.style.opacity = (progress < 0.5 && progress > 0.02) ? '1' : '0';
     }
   }
-  // Start after hero fades in
-  setTimeout(runStep, 1200);
-})();
 
-/* ======================================================
-   REVEAL ON SCROLL
-   ====================================================== */
-(function () {
-  var obs = new IntersectionObserver(function (entries) {
-    entries.forEach(function (e) {
-      if (e.isIntersecting) { e.target.classList.add('vis'); obs.unobserve(e.target); }
-    });
-  }, { threshold: 0.06, rootMargin: '0px 0px -60px 0px' });
-  document.querySelectorAll('.rv').forEach(function (el) { obs.observe(el); });
-})();
+  /* ======================================================
+     SECTION 2: THE CHAOS — elements appear then dissolve
+     ====================================================== */
+  var chaosContainer = document.getElementById('chaos-container');
+  var chaosTabs = chaosContainer.querySelectorAll('.chaos-tab');
+  var chaosSlacks = chaosContainer.querySelectorAll('.chaos-slack');
+  var chaosElements = [];
+  chaosTabs.forEach(function (el, i) { chaosElements.push({ el: el, threshold: i * 0.04 }); });
+  chaosSlacks.forEach(function (el, i) { chaosElements.push({ el: el, threshold: 0.15 + i * 0.05 }); });
 
-/* ======================================================
-   CONSTELLATION NODES — staggered reveal
-   ====================================================== */
-(function () {
-  var constellationObs = new IntersectionObserver(function (entries) {
-    entries.forEach(function (e) {
-      if (e.isIntersecting) {
-        var nodes = e.target.querySelectorAll('.constellation-node');
-        nodes.forEach(function (node, idx) {
-          setTimeout(function () { node.classList.add('vis'); }, idx * 180);
-        });
+  function updateChaos(progress) {
+    /* 0-0.5: elements appear staggered. 0.5-0.7: hold with slight drift. 0.7-1.0: dissolve. */
+    var dissolveProgress = clamp((progress - 0.65) / 0.35, 0, 1);
 
-        // After all nodes visible, trigger challenge on r002
-        setTimeout(function () {
-          var r002 = nodes[1];
-          if (r002) r002.classList.add('challenged');
-        }, nodes.length * 180 + 800);
+    if (dissolveProgress > 0) {
+      chaosContainer.classList.add('dissolving');
+    } else {
+      chaosContainer.classList.remove('dissolving');
+    }
 
-        // Then show the replaced version
-        setTimeout(function () {
-          var r002 = nodes[1];
-          if (r002) {
-            r002.classList.remove('challenged');
-            r002.classList.add('replaced');
-            var textEl = r002.querySelector('.node-text');
-            if (textEl) textEl.textContent = 'Migration will take 12 weeks (revised from 6)';
-            var typeEl = r002.querySelector('.node-type');
-            if (typeEl) {
-              typeEl.className = 'node-type node-type-estimate';
-              typeEl.textContent = 'revised';
-            }
-          }
-        }, nodes.length * 180 + 2400);
-
-        constellationObs.unobserve(e.target);
+    var appearProgress = clamp(progress / 0.5, 0, 1);
+    chaosElements.forEach(function (item) {
+      if (appearProgress > item.threshold) {
+        item.el.classList.add('visible');
+      } else {
+        item.el.classList.remove('visible');
       }
     });
-  }, { threshold: 0.15 });
-  var c = document.getElementById('claim-constellation');
-  if (c) constellationObs.observe(c);
-})();
+  }
 
-/* ======================================================
-   BAR FILLS — animate when visible
-   ====================================================== */
-(function () {
-  var barObs = new IntersectionObserver(function (entries) {
-    entries.forEach(function (e) {
-      if (e.isIntersecting) {
-        var fills = e.target.querySelectorAll('.bar-fill[data-w]');
-        fills.forEach(function (f, i) {
-          setTimeout(function () { f.style.width = f.getAttribute('data-w') + '%'; }, i * 100);
-        });
-        barObs.unobserve(e.target);
+  /* ======================================================
+     SECTION 3: THE COMMAND — fade in with glow
+     ====================================================== */
+  var commandInner = document.getElementById('command-inner');
+
+  function updateCommand(progress) {
+    /* 0.15-0.5: command fades in. Glow builds. */
+    if (progress > 0.15 && progress < 0.85) {
+      commandInner.classList.add('active');
+    } else {
+      commandInner.classList.remove('active');
+    }
+
+    /* Glow intensity scales with scroll */
+    var glowProgress = clamp((progress - 0.2) / 0.5, 0, 1);
+    var glow = commandInner.querySelector('.command-glow');
+    if (glow && commandInner.classList.contains('active')) {
+      glow.style.opacity = glowProgress;
+      glow.style.transform = 'translate(-50%, -50%) scale(' + (0.8 + glowProgress * 0.4) + ')';
+    }
+  }
+
+  /* ======================================================
+     SECTION 4: THE SPRINT — scroll-driven terminal
+     ====================================================== */
+  var sprintTerminal = document.getElementById('sprint-terminal');
+  var terminalTitle = document.getElementById('terminal-title');
+  var sprintLines = document.querySelectorAll('.sprint-line, .sprint-challenge, .sprint-pass');
+  var totalSteps = 20;
+  var barsFilled = false;
+  var claimR002 = document.getElementById('claim-r002');
+  var r002Struck = false;
+
+  var phaseNames = {
+    1: 'researching',
+    2: 'gathering claims',
+    3: 'challenging',
+    4: 'compiling',
+    5: 'sprint complete'
+  };
+
+  function updateSprint(progress) {
+    /* 0-0.08: terminal appears. 0.08-0.95: steps reveal. */
+    if (progress > 0.04) {
+      sprintTerminal.classList.add('visible');
+    } else {
+      sprintTerminal.classList.remove('visible');
+    }
+
+    var stepProgress = clamp((progress - 0.08) / 0.82, 0, 1);
+    var currentStep = Math.floor(stepProgress * totalSteps);
+    var currentPhase = 1;
+
+    sprintLines.forEach(function (line) {
+      var step = parseInt(line.getAttribute('data-step'));
+      var phase = parseInt(line.getAttribute('data-phase'));
+      if (step <= currentStep) {
+        line.classList.add('visible');
+        if (phase > currentPhase) currentPhase = phase;
+      } else {
+        line.classList.remove('visible');
       }
     });
-  }, { threshold: 0.2 });
-  var cr = document.getElementById('compile-result');
-  if (cr) barObs.observe(cr);
-})();
 
-/* ======================================================
-   CLIPBOARD HELPER
-   ====================================================== */
-function copyToClipboard(text) {
-  if (navigator.clipboard && navigator.clipboard.writeText) { return navigator.clipboard.writeText(text); }
-  return new Promise(function (resolve, reject) {
-    var ta = document.createElement('textarea');
-    ta.value = text; ta.style.position = 'fixed'; ta.style.left = '-9999px';
-    document.body.appendChild(ta); ta.select();
-    try { document.execCommand('copy'); resolve(); } catch (e) { reject(e); }
-    finally { document.body.removeChild(ta); }
-  });
-}
-function copyCmd(el, text) {
-  var btn = el.querySelector('.install-copy') || el.querySelector('.cta-copy');
-  copyToClipboard(text).then(function () {
+    /* Update terminal title */
+    if (terminalTitle) {
+      terminalTitle.textContent = phaseNames[currentPhase] || 'wheat';
+    }
+
+    /* Strike through r002 when challenge appears */
+    if (currentStep >= 10 && !r002Struck && claimR002) {
+      claimR002.style.textDecoration = 'line-through';
+      claimR002.style.opacity = '0.5';
+      r002Struck = true;
+    } else if (currentStep < 10 && r002Struck && claimR002) {
+      claimR002.style.textDecoration = 'none';
+      claimR002.style.opacity = '';
+      r002Struck = false;
+    }
+
+    /* Fill bars when they appear */
+    if (currentStep >= 15 && !barsFilled) {
+      barsFilled = true;
+      var fills = sprintTerminal.querySelectorAll('.bar-fill[data-w]');
+      fills.forEach(function (f, i) {
+        setTimeout(function () { f.style.width = f.getAttribute('data-w') + '%'; }, i * 100);
+      });
+    } else if (currentStep < 15 && barsFilled) {
+      barsFilled = false;
+      var fills = sprintTerminal.querySelectorAll('.bar-fill[data-w]');
+      fills.forEach(function (f) { f.style.width = '0'; });
+    }
+  }
+
+  /* ======================================================
+     SECTION 5: THE BRIEF — document materializes
+     ====================================================== */
+  var briefContainer = document.getElementById('brief-container');
+  var briefSections = document.querySelectorAll('[data-brief-step]');
+  var countersStarted = false;
+
+  function animateCounter(el) {
+    var target = parseInt(el.getAttribute('data-count-to'));
+    var suffix = el.getAttribute('data-suffix') || '';
+    var duration = 1200;
+    var start = performance.now();
+
+    function tick(now) {
+      var elapsed = now - start;
+      var t = clamp(elapsed / duration, 0, 1);
+      /* Ease out */
+      t = 1 - Math.pow(1 - t, 3);
+      var current = Math.round(t * target);
+      el.textContent = current + suffix;
+      if (elapsed < duration) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function updateBrief(progress) {
+    /* 0-0.1: document fades in. 0.1-0.8: sections reveal. */
+    if (progress > 0.05) {
+      briefContainer.classList.add('visible');
+    } else {
+      briefContainer.classList.remove('visible');
+    }
+
+    var sectionProgress = clamp((progress - 0.1) / 0.7, 0, 1);
+    var totalSections = briefSections.length;
+
+    briefSections.forEach(function (section) {
+      var step = parseInt(section.getAttribute('data-brief-step'));
+      var threshold = step / totalSections;
+      if (sectionProgress > threshold) {
+        section.classList.add('visible');
+      } else {
+        section.classList.remove('visible');
+      }
+    });
+
+    /* Start counters when stats become visible */
+    if (sectionProgress > 0.5 && !countersStarted) {
+      countersStarted = true;
+      var counters = document.querySelectorAll('[data-count-to]');
+      counters.forEach(function (c, i) {
+        setTimeout(function () { animateCounter(c); }, i * 150);
+      });
+    }
+  }
+
+  /* ======================================================
+     SECTION 6: THE CLOSE — simple reveal
+     ====================================================== */
+  var closeHeadline = document.getElementById('close-headline');
+  var closeInstall = document.getElementById('close-install');
+  var closeLinks = document.getElementById('close-links');
+  var closeRevealed = false;
+
+  var closeObs = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting && !closeRevealed) {
+        closeRevealed = true;
+        closeHeadline.classList.add('visible');
+        closeInstall.classList.add('visible');
+        closeLinks.classList.add('visible');
+        closeObs.disconnect();
+      }
+    });
+  }, { threshold: 0.3 });
+  closeObs.observe(document.querySelector('.s-close'));
+
+  /* ======================================================
+     SCROLL ENGINE — rAF throttled
+     ====================================================== */
+  var sQuestion = document.querySelector('.s-question');
+  var sChaos = document.querySelector('.s-chaos');
+  var sCommand = document.querySelector('.s-command');
+  var sSprint = document.querySelector('.s-sprint');
+  var sBrief = document.querySelector('.s-brief');
+
+  var ticking = false;
+
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function () {
+      ticking = false;
+      if (prefersReduced) return;
+
+      updateQuestion(sectionProgress(sQuestion));
+      updateChaos(sectionProgress(sChaos));
+      updateCommand(sectionProgress(sCommand));
+      updateSprint(sectionProgress(sSprint));
+      updateBrief(sectionProgress(sBrief));
+    });
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* Initial paint */
+  onScroll();
+
+  /* ======================================================
+     CLIPBOARD
+     ====================================================== */
+  window.copyCmd = function (el) {
+    var text = '/plugin install grainulator';
+    var btn = el.querySelector('.close-copy');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text);
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
+    }
     if (btn) { btn.textContent = 'Copied'; btn.classList.add('copied'); }
     setTimeout(function () { if (btn) { btn.textContent = 'Copy'; btn.classList.remove('copied'); } }, 1800);
-  });
-}
+  };
 
-/* Keyboard support for install commands */
-document.querySelectorAll('.install-cmd,.cta-cmd').forEach(function (el) {
-  el.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); }
+  /* Keyboard support */
+  document.querySelectorAll('.close-cmd').forEach(function (el) {
+    el.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); }
+    });
   });
-});
+
+})();
 </script>
 </body>
 </html>
