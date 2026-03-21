@@ -65,7 +65,7 @@
   --border-light: #2A2A30;
   --text: #F0F0F0;
   --text-dim: #9A9A9A;
-  --text-faint: #707070; /* bumped from #666 to pass 4:1 for small UI text */
+  --text-faint: #8A8A8A; /* bumped from #707070 to pass 4.5:1 on all bg surfaces */
   --coral: #FF6B6B;
   --coral-dim: rgba(255, 107, 107, 0.12);
   --green: #4ADE80;
@@ -85,6 +85,7 @@ html {
   scroll-snap-type: y proximity;
   scroll-behavior: smooth;
   scroll-padding-top: 72px;
+  overflow-y: scroll;
 }
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -96,7 +97,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.6;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 a { color: var(--lime); text-decoration: none; }
@@ -137,9 +138,10 @@ code, pre { font-family: var(--mono); }
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
   transform: translateY(-100%);
-  transition: transform 0.4s var(--ease);
+  visibility: hidden;
+  transition: transform 0.4s var(--ease), visibility 0.4s;
 }
-.sticky-nav.nav-visible { transform: translateY(0); }
+.sticky-nav.nav-visible { transform: translateY(0); visibility: visible; }
 .sticky-nav-brand {
   font-family: var(--sans);
   font-size: 1rem;
@@ -157,6 +159,10 @@ code, pre { font-family: var(--mono); }
   display: flex;
   align-items: center;
   gap: 24px;
+  list-style: none;
+}
+.sticky-nav-links li {
+  display: contents;
 }
 .sticky-nav-links a {
   font-family: var(--mono);
@@ -167,12 +173,14 @@ code, pre { font-family: var(--mono); }
   text-transform: uppercase;
   min-height: 44px;
   min-width: 44px;
+  padding: 8px 12px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: color 0.2s;
 }
-.sticky-nav-links a:hover { color: var(--lime); text-decoration: none; }
+.sticky-nav-links a:hover,
+.sticky-nav-links a.nav-active { color: var(--lime); text-decoration: none; }
 .sticky-nav-cta {
   font-family: var(--mono);
   font-size: 0.75rem;
@@ -187,7 +195,8 @@ code, pre { font-family: var(--mono); }
   display: flex;
   align-items: center;
 }
-.sticky-nav-cta:hover {
+.sticky-nav-cta:hover,
+.sticky-nav-cta:focus-visible {
   background: var(--lime-bright);
   transform: scale(0.97);
   text-decoration: none;
@@ -197,6 +206,7 @@ code, pre { font-family: var(--mono); }
 /* ===== SECTION 1: HERO ===== */
 .s-hero {
   min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -222,7 +232,7 @@ code, pre { font-family: var(--mono); }
   animation: fadeUp 0.8s var(--ease) 0.2s forwards;
 }
 .hero-badge .badge-dot {
-  width: 6px; height: 6px;
+  width: 0.375rem; height: 0.375rem;
   border-radius: 50%;
   background: var(--lime);
   animation: pulse-dot 2s ease infinite;
@@ -290,7 +300,8 @@ code, pre { font-family: var(--mono); }
   border: none;
   min-height: 52px;
 }
-.btn-primary:hover {
+.btn-primary:hover,
+.btn-primary:focus-visible {
   background: var(--lime-bright);
   transform: scale(0.97);
   text-decoration: none;
@@ -307,7 +318,8 @@ code, pre { font-family: var(--mono); }
   display: inline-flex;
   align-items: center;
 }
-.btn-ghost:hover { color: var(--lime); text-decoration: none; }
+.btn-ghost:hover,
+.btn-ghost:focus-visible { color: var(--lime); text-decoration: none; }
 
 /* Floating terminal preview */
 .hero-terminal-float {
@@ -330,9 +342,12 @@ code, pre { font-family: var(--mono); }
 
 /* ===== SECTION 2: THE PROBLEM ===== */
 .s-problem {
+  min-height: 100vh;
   padding: 100px 32px;
   position: relative;
   scroll-snap-align: start;
+  display: flex;
+  align-items: center;
 }
 .problem-grid {
   display: grid;
@@ -385,7 +400,8 @@ code, pre { font-family: var(--mono); }
   transition: transform 0.4s var(--ease-bounce);
   cursor: default;
 }
-.chaos-card:hover {
+.chaos-card:hover,
+.chaos-card:focus-within {
   transform: var(--hover-transform) !important;
   z-index: 10;
 }
@@ -398,9 +414,15 @@ code, pre { font-family: var(--mono); }
 
 /* ===== SECTION 3: THE COMMAND ===== */
 .s-command {
+  min-height: 100vh;
   padding: 160px 32px;
   text-align: center;
   position: relative;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 .command-glow {
   position: absolute;
@@ -439,6 +461,7 @@ code, pre { font-family: var(--mono); }
 
 /* ===== SECTION 4: THE SPRINT ===== */
 .s-sprint {
+  min-height: 100vh;
   padding: 100px 32px;
   position: relative;
   scroll-snap-align: start;
@@ -506,27 +529,27 @@ code, pre { font-family: var(--mono); }
 .terminal-dots {
   display: flex; gap: 7px;
 }
-.terminal-dots .dot { width: 9px; height: 9px; border-radius: 50%; }
+.terminal-dots .dot { width: 0.5625rem; height: 0.5625rem; border-radius: 50%; }
 .dot-r { background: #FF6B6B; }
 .dot-y { background: #FBBF24; }
 .dot-g { background: #4ADE80; }
 .terminal-title {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 0.625rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-faint);
 }
 .terminal-status {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 0.625rem;
   color: var(--lime);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 0.375rem;
 }
 .terminal-status .status-dot {
-  width: 6px; height: 6px;
+  width: 0.375rem; height: 0.375rem;
   border-radius: 50%;
   background: var(--lime);
   animation: pulse-dot 1.5s ease infinite;
@@ -534,7 +557,7 @@ code, pre { font-family: var(--mono); }
 .terminal-body {
   padding: 24px;
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 2;
   min-height: 420px;
   position: relative;
@@ -553,7 +576,7 @@ code, pre { font-family: var(--mono); }
 .tag {
   display: inline-block;
   padding: 2px 8px;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -591,7 +614,7 @@ code, pre { font-family: var(--mono); }
   align-items: center;
   justify-content: center;
   font-weight: 900;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: var(--coral);
   background: var(--bg);
   border: 2px solid var(--coral);
@@ -600,7 +623,7 @@ code, pre { font-family: var(--mono); }
 
 /* Progress bars */
 .bar-row { display: flex; align-items: center; gap: 12px; margin: 4px 0; }
-.bar-label { width: 100px; text-align: right; color: var(--text-dim); font-size: 11px; font-weight: 600; }
+.bar-label { width: 100px; text-align: right; color: var(--text-dim); font-size: 0.6875rem; font-weight: 600; }
 .bar-track {
   flex: 1; max-width: 300px; height: 8px;
   background: rgba(255,255,255,0.04);
@@ -622,7 +645,7 @@ code, pre { font-family: var(--mono); }
 }
 .bar-fill.high { background: var(--lime); }
 .bar-fill.mid { background: var(--amber); }
-.bar-pct { width: 40px; font-size: 11px; font-weight: 700; }
+.bar-pct { width: 40px; font-size: 0.6875rem; font-weight: 700; }
 
 /* PASS */
 .sprint-pass {
@@ -634,13 +657,14 @@ code, pre { font-family: var(--mono); }
 .term-pass {
   color: var(--lime);
   font-weight: 900;
-  font-size: 16px;
+  font-size: 1rem;
   text-shadow: 0 0 40px rgba(191, 255, 0, 0.5);
   letter-spacing: 0.1em;
 }
 
 /* ===== SECTION 5: THE BRIEF ===== */
 .s-brief {
+  min-height: 100vh;
   padding: 100px 32px;
   position: relative;
   scroll-snap-align: start;
@@ -804,6 +828,7 @@ code, pre { font-family: var(--mono); }
 
 /* ===== SECTION 6: SARAH MOMENT ===== */
 .s-sarah {
+  min-height: 100vh;
   padding: 80px 32px;
   display: flex;
   align-items: center;
@@ -846,7 +871,7 @@ code, pre { font-family: var(--mono); }
 }
 .sarah-container.visible .sarah-typing { opacity: 1; }
 .typing-dot {
-  width: 6px; height: 6px;
+  width: 0.375rem; height: 0.375rem;
   border-radius: 50%;
   background: var(--text-faint);
   animation: typing-pulse 1.4s 3 forwards;
@@ -937,7 +962,8 @@ code, pre { font-family: var(--mono); }
   box-shadow: 0 0 40px var(--lime-glow);
   overflow: visible;
 }
-.close-cmd:hover {
+.close-cmd:hover,
+.close-cmd:focus-visible {
   background: rgba(191, 255, 0, 0.04);
   box-shadow: 0 0 80px rgba(191, 255, 0, 0.08);
 }
@@ -992,7 +1018,8 @@ code, pre { font-family: var(--mono); }
   justify-content: center;
   transition: color 0.2s;
 }
-.close-links a:hover { color: var(--lime); text-decoration: none; }
+.close-links a:hover,
+.close-links a:focus-visible { color: var(--lime); text-decoration: none; }
 .close-links .sep { color: var(--border-light); }
 
 /* ===== FOOTER ===== */
@@ -1006,6 +1033,30 @@ code, pre { font-family: var(--mono); }
   letter-spacing: 0.04em;
   line-height: 2;
 }
+
+
+/* ===== ANIMATION SKIP BUTTON (motor a11y) ===== */
+.terminal-skip-btn {
+  display: block;
+  margin: 12px auto 0;
+  padding: 10px 20px;
+  min-height: 44px;
+  min-width: 44px;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-light);
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+.terminal-skip-btn:hover,
+.terminal-skip-btn:focus-visible {
+  color: var(--lime);
+  border-color: var(--lime);
+}
+.terminal-skip-btn[hidden] { display: none; }
 
 /* ===== SCROLL REVEAL ===== */
 .reveal {
@@ -1056,7 +1107,7 @@ code, pre { font-family: var(--mono); }
   .chaos-card:nth-child(n+5) { display: none; }
   .sticky-nav { padding: 12px 20px; }
   .sticky-nav-links { display: none; }
-  .terminal-body { padding: 16px; font-size: 11px; }
+  .terminal-body { padding: 16px; font-size: 0.6875rem; }
   .game-terminal { border-radius: 8px; }
   .close-links { gap: 20px; flex-wrap: wrap; }
   .close-links a { min-height: 48px; min-width: 48px; }
@@ -1065,6 +1116,7 @@ code, pre { font-family: var(--mono); }
 
 /* ===== REDUCED MOTION ===== */
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
@@ -1079,7 +1131,8 @@ code, pre { font-family: var(--mono); }
     transform: none !important;
   }
   .bar-fill { width: var(--target-w) !important; }
-  .sticky-nav { transform: none !important; }
+  .sticky-nav { transform: none !important; visibility: visible !important; }
+  .terminal-skip-btn { display: none; }
 }
 
 /* ===== PRINT ===== */
@@ -1110,12 +1163,12 @@ code, pre { font-family: var(--mono); }
 <!-- Sticky nav -->
 <nav class="sticky-nav" id="sticky-nav" aria-label="Main navigation">
   <a href="/" class="sticky-nav-brand">Grainulator</a>
-  <div class="sticky-nav-links" role="list">
-    <a href="#problem" role="listitem">Problem</a>
-    <a href="#sprint" role="listitem">How it works</a>
-    <a href="#brief" role="listitem">Output</a>
-    <a href="#install" role="listitem">Install</a>
-  </div>
+  <ul class="sticky-nav-links">
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#sprint">How it works</a></li>
+    <li><a href="#brief">Output</a></li>
+    <li><a href="#install">Install</a></li>
+  </ul>
   <a href="#install" class="sticky-nav-cta">Get Started</a>
 </nav>
 
@@ -1125,7 +1178,7 @@ code, pre { font-family: var(--mono); }
 <main id="main">
 
 <!-- ===== HERO ===== -->
-<section class="s-hero" aria-labelledby="hero-heading">
+<section class="s-hero" data-section="hero" tabindex="-1" aria-labelledby="hero-heading">
   <div class="hero-badge"><span class="badge-dot" aria-hidden="true"></span> Open source &middot; MIT &middot; $6&#8211;12 per sprint</div>
   <h1 id="hero-heading" class="hero-headline">
     Stop <span class="lime">vibing</span><br>
@@ -1146,10 +1199,10 @@ code, pre { font-family: var(--mono); }
         <div class="terminal-title">grainulator</div>
         <div class="terminal-status"><span class="status-dot"></span> live</div>
       </div>
-      <div class="terminal-body" style="min-height:180px;font-size:11px;line-height:1.8;padding:16px;">
+      <div class="terminal-body" style="min-height:180px;font-size:0.6875rem;line-height:1.8;padding:16px;">
         <div><span class="c-dim">$</span> <span class="c-lime">grainulator init</span></div>
-        <div><span class="tag tag-factual" style="font-size:9px;">factual</span> <span class="c-text">r001: proven at scale</span></div>
-        <div><span class="tag tag-risk" style="font-size:9px;">risk</span> <span class="c-text">r004: team gap identified</span></div>
+        <div><span class="tag tag-factual" style="font-size:0.5625rem;">factual</span> <span class="c-text">r001: proven at scale</span></div>
+        <div><span class="tag tag-risk" style="font-size:0.5625rem;">risk</span> <span class="c-text">r004: team gap identified</span></div>
         <div><span class="c-lime" style="font-weight:700;">&#10003; PASS</span> <span class="c-dim">&#8212; brief ready</span></div>
       </div>
     </div>
@@ -1157,7 +1210,7 @@ code, pre { font-family: var(--mono); }
 </section>
 
 <!-- ===== THE PROBLEM ===== -->
-<section class="s-problem" id="problem" aria-labelledby="problem-heading">
+<section class="s-problem" id="problem" data-section="problem" tabindex="-1" aria-labelledby="problem-heading">
   <div class="problem-grid">
     <div class="problem-left reveal">
       <div class="problem-label">The problem</div>
@@ -1195,7 +1248,7 @@ code, pre { font-family: var(--mono); }
 </section>
 
 <!-- ===== THE COMMAND ===== -->
-<section class="s-command reveal" aria-labelledby="command-heading">
+<section class="s-command reveal" data-section="command" tabindex="-1" aria-labelledby="command-heading">
   <div class="command-glow" aria-hidden="true"></div>
   <h2 id="command-heading" class="sr-only">How to start a research sprint</h2>
   <div class="command-label">In Claude Code, type:</div>
@@ -1204,14 +1257,15 @@ code, pre { font-family: var(--mono); }
 </section>
 
 <!-- ===== THE SPRINT ===== -->
-<section class="s-sprint" id="sprint" aria-labelledby="sprint-heading">
+<section class="s-sprint" id="sprint" data-section="sprint" tabindex="-1" aria-labelledby="sprint-heading">
   <div class="sprint-layout">
     <div class="sprint-text reveal">
       <div class="sprint-label">How it works</div>
       <h2 id="sprint-heading" class="sprint-headline">It researches like you would&#8202;&#8212;&#8202;if you had 4&nbsp;hours and zero ego.</h2>
       <p class="sprint-desc">Grainulator gathers findings, grades each one by confidence level, and then challenges its own assumptions. That 6&#8209;week migration estimate? It is actually 12. You would rather know now.</p>
     </div>
-    <div class="game-terminal reveal" id="game-terminal">
+    <div class="sr-only" id="terminal-sr-description">Grainulator demo: The tool initializes a sprint asking "Should we migrate to Postgres?" for engineering leadership. It researches postgres migration feasibility and gathers 6 findings: Postgres handles 12k TPS (factual), migration estimated at 6 weeks (estimate), pgvector eliminates separate vector DB (factual), no team Postgres experience (risk), current DB license costs $48k per year (factual), and recommends a 90-day parallel-run. The tool then challenges its own estimate, finding the 6-week timeline contradicts the team experience gap and industry benchmarks of 11.4 weeks, revising to 12 weeks. Finally it compiles a brief with coverage scores: query performance 92%, migration 87%, operations risk 94%, team skill 71%. Result: PASS, brief ready.</div>
+    <div class="game-terminal reveal" id="game-terminal" aria-describedby="terminal-sr-description">
       <div class="terminal-bar">
         <div class="terminal-dots">
           <div class="dot dot-r" aria-hidden="true"></div>
@@ -1254,7 +1308,7 @@ code, pre { font-family: var(--mono); }
         </div>
 
         <!-- Phase 3: Challenge &#8212; the tool questions its own work -->
-        <div class="sprint-challenge" data-step="9">
+        <div class="sprint-challenge" data-step="9" role="alert">
           <span class="c-dim">$</span> <span class="c-lime">/challenge r002</span><br>
           <span class="c-dim">finding:</span> <span class="c-text">&ldquo;Migration will take 6 weeks.&rdquo;</span><br>
           <span class="c-dim">contradicting evidence:</span> <span class="c-amber">r004</span> <span class="c-dim">&#8212; no Postgres experience on team</span><br>
@@ -1276,16 +1330,16 @@ code, pre { font-family: var(--mono); }
           <span class="c-white">Coverage:</span>
         </div>
         <div class="sprint-line" data-step="14">
-          <div class="bar-row"><span class="bar-label">query-perf</span><div class="bar-track" role="progressbar" aria-valuenow="92" aria-valuemin="0" aria-valuemax="100" aria-label="Query performance coverage: 92%"><div class="bar-fill high" data-w="92" style="--target-w:92%"></div></div><span class="bar-pct c-green">92%</span></div>
+          <div class="bar-row"><span class="bar-label">query-perf</span><div class="bar-track" role="progressbar" aria-valuenow="92" aria-valuemin="0" aria-valuemax="100" aria-label="Query performance coverage: 92%"><div class="bar-fill high" data-w="92" style="--target-w:92%"></div></div><span class="bar-pct c-green" aria-hidden="true">92%</span></div>
         </div>
         <div class="sprint-line" data-step="15">
-          <div class="bar-row"><span class="bar-label">migration</span><div class="bar-track" role="progressbar" aria-valuenow="87" aria-valuemin="0" aria-valuemax="100" aria-label="Migration coverage: 87%"><div class="bar-fill high" data-w="87" style="--target-w:87%"></div></div><span class="bar-pct c-green">87%</span></div>
+          <div class="bar-row"><span class="bar-label">migration</span><div class="bar-track" role="progressbar" aria-valuenow="87" aria-valuemin="0" aria-valuemax="100" aria-label="Migration coverage: 87%"><div class="bar-fill high" data-w="87" style="--target-w:87%"></div></div><span class="bar-pct c-green" aria-hidden="true">87%</span></div>
         </div>
         <div class="sprint-line" data-step="16">
-          <div class="bar-row"><span class="bar-label">ops-risk</span><div class="bar-track" role="progressbar" aria-valuenow="94" aria-valuemin="0" aria-valuemax="100" aria-label="Operations risk coverage: 94%"><div class="bar-fill high" data-w="94" style="--target-w:94%"></div></div><span class="bar-pct c-green">94%</span></div>
+          <div class="bar-row"><span class="bar-label">ops-risk</span><div class="bar-track" role="progressbar" aria-valuenow="94" aria-valuemin="0" aria-valuemax="100" aria-label="Operations risk coverage: 94%"><div class="bar-fill high" data-w="94" style="--target-w:94%"></div></div><span class="bar-pct c-green" aria-hidden="true">94%</span></div>
         </div>
         <div class="sprint-line" data-step="17">
-          <div class="bar-row"><span class="bar-label">team-skill</span><div class="bar-track" role="progressbar" aria-valuenow="71" aria-valuemin="0" aria-valuemax="100" aria-label="Team skill coverage: 71%"><div class="bar-fill mid" data-w="71" style="--target-w:71%"></div></div><span class="bar-pct c-amber">71%</span></div>
+          <div class="bar-row"><span class="bar-label">team-skill</span><div class="bar-track" role="progressbar" aria-valuenow="71" aria-valuemin="0" aria-valuemax="100" aria-label="Team skill coverage: 71%"><div class="bar-fill mid" data-w="71" style="--target-w:71%"></div></div><span class="bar-pct c-amber" aria-hidden="true">71%</span></div>
         </div>
 
         <!-- Phase 5: PASS -->
@@ -1294,12 +1348,13 @@ code, pre { font-family: var(--mono); }
           <span class="c-dim">&#8594;</span> <span class="c-text">output/postgres-migration-brief.html</span>
         </div>
       </div>
+      <button class="terminal-skip-btn" id="terminal-skip-btn" type="button" aria-label="Skip animation and show all terminal steps">Show all steps</button>
     </div>
   </div>
 </section>
 
 <!-- ===== THE BRIEF ===== -->
-<section class="s-brief" id="brief" aria-labelledby="brief-heading">
+<section class="s-brief" id="brief" data-section="brief" tabindex="-1" aria-labelledby="brief-heading">
   <div class="brief-layout">
     <div class="brief-header-section reveal">
       <div class="brief-label">The output</div>
@@ -1309,25 +1364,25 @@ code, pre { font-family: var(--mono); }
 
     <div class="brief-card" id="brief-card">
       <div class="brief-card-header">
-        <div class="brief-card-title">Postgres Migration Brief</div>
+        <h3 class="brief-card-title">Postgres Migration Brief</h3>
         <div class="brief-card-meta">6 findings &middot; 4 topics &middot; generated 2 min ago</div>
       </div>
       <div class="brief-card-body">
         <div class="brief-section" data-brief-step="0">
           <h4>Recommendation</h4>
-          <p>Proceed with migration using a 90-day parallel-run. Projected savings of $48k/year in licensing with comparable performance at current scale. <span class="evidence-pill evidence-tested" title="Confidence: High &#8212; verified via prototype or benchmark">tested</span></p>
+          <p>Proceed with migration using a 90-day parallel-run. Projected savings of $48k/year in licensing with comparable performance at current scale. <span class="evidence-pill evidence-tested" role="note" aria-label="Confidence: High, verified via prototype or benchmark">tested</span></p>
         </div>
         <div class="brief-section" data-brief-step="1">
           <h4>Timeline</h4>
-          <p>12 weeks, not 6. The team lacks production Postgres experience&#8202;&#8212;&#8202;the original estimate was revised after the tool challenged it against industry benchmarks. <span class="evidence-pill evidence-documented" title="Confidence: High &#8212; verified in official docs or source code">documented</span></p>
+          <p>12 weeks, not 6. The team lacks production Postgres experience&#8202;&#8212;&#8202;the original estimate was revised after the tool challenged it against industry benchmarks. <span class="evidence-pill evidence-documented" role="note" aria-label="Confidence: High, verified in official docs or source code">documented</span></p>
         </div>
         <div class="brief-section" data-brief-step="2">
           <h4>Key finding</h4>
-          <p>pgvector eliminates the need for a separate vector database, reducing infrastructure complexity by ~40%. <span class="evidence-pill evidence-web" title="Confidence: Medium &#8212; found online, not independently verified">web</span></p>
+          <p>pgvector eliminates the need for a separate vector database, reducing infrastructure complexity by ~40%. <span class="evidence-pill evidence-web" role="note" aria-label="Confidence: Medium, found online, not independently verified">web</span></p>
         </div>
         <div class="brief-section" data-brief-step="3">
           <h4>Surprise</h4>
-          <p>Your current ORM generates 14 queries that rely on vendor-specific syntax&#8202;&#8212;&#8202;each needs manual migration. No automated tool covers them all. <span class="evidence-pill evidence-tested" title="Confidence: High &#8212; verified via prototype or benchmark">tested</span></p>
+          <p>Your current ORM generates 14 queries that rely on vendor-specific syntax&#8202;&#8212;&#8202;each needs manual migration. No automated tool covers them all. <span class="evidence-pill evidence-tested" role="note" aria-label="Confidence: High, verified via prototype or benchmark">tested</span></p>
         </div>
         <div class="brief-section brief-risks" data-brief-step="4">
           <h4>3 risks your team would have missed</h4>
@@ -1338,22 +1393,22 @@ code, pre { font-family: var(--mono); }
 
     <div class="brief-stats" id="brief-stats" role="list" aria-label="Sprint statistics">
       <div class="brief-stat" data-brief-step="5" role="listitem">
-        <div class="stat-number" data-count-to="47">0</div>
+        <div class="stat-number" data-count-to="47" aria-hidden="true">0</div><span class="sr-only">47</span>
         <div class="stat-label">Findings</div>
         <div class="stat-context">each tracked and challenged</div>
       </div>
       <div class="brief-stat" data-brief-step="6" role="listitem">
-        <div class="stat-number" data-count-to="12">0</div>
+        <div class="stat-number" data-count-to="12" aria-hidden="true">0</div><span class="sr-only">12</span>
         <div class="stat-label">Topics</div>
         <div class="stat-context">cross-referenced for blind spots</div>
       </div>
       <div class="brief-stat" data-brief-step="7" role="listitem">
-        <div class="stat-number" data-count-to="3">0</div>
+        <div class="stat-number" data-count-to="3" aria-hidden="true">0</div><span class="sr-only">3</span>
         <div class="stat-label">Risks caught</div>
         <div class="stat-context">before they became surprises</div>
       </div>
       <div class="brief-stat" data-brief-step="8" role="listitem">
-        <div class="stat-number" data-count-to="4" data-suffix=" min">0</div>
+        <div class="stat-number" data-count-to="4" data-suffix=" min" aria-hidden="true">0</div><span class="sr-only">4 min</span>
         <div class="stat-label">Total time</div>
         <div class="stat-context">not 4 hours. 4 minutes.</div>
       </div>
@@ -1362,11 +1417,11 @@ code, pre { font-family: var(--mono); }
 </section>
 
 <!-- ===== SARAH MOMENT ===== -->
-<section class="s-sarah" aria-label="What it feels like to use Grainulator">
+<section class="s-sarah" data-section="sarah" tabindex="-1" aria-label="What it feels like to use Grainulator">
   <div class="sarah-container" id="sarah-container">
     <div class="sarah-message">
       <div class="sarah-name">Sarah</div>
-      <div class="sarah-text">&ldquo;We almost shipped with a 6-week estimate.&rdquo;</div>
+      <blockquote class="sarah-text">&ldquo;We almost shipped with a 6-week estimate.&rdquo;</blockquote>
     </div>
     <div class="sarah-typing" aria-label="Typing indicator">
       <div class="typing-dot" aria-hidden="true"></div>
@@ -1377,7 +1432,7 @@ code, pre { font-family: var(--mono); }
 </section>
 
 <!-- ===== THE CLOSE ===== -->
-<section class="s-close" id="install" aria-labelledby="close-heading">
+<section class="s-close" id="install" data-section="install" tabindex="-1" aria-labelledby="close-heading">
   <div class="close-inner">
     <h2 id="close-heading" class="close-headline">Your next decision<br>deserves <span class="lime">evidence.</span></h2>
     <p class="close-fomo" id="close-fomo">Someone on the other side of the table already has the numbers.</p>
@@ -1420,7 +1475,7 @@ code, pre { font-family: var(--mono); }
     .sticky-nav { transform: none !important; }
   </style>
   <div style="background:#0A0A0B;color:#F0F0F0;text-align:center;padding:40px 20px;font-family:system-ui,sans-serif;">
-    <h1 style="color:#BFFF00;font-size:2rem;margin-bottom:16px;">Grainulator</h1>
+    <h2 style="color:#BFFF00;font-size:2rem;margin-bottom:16px;">Grainulator</h2>
     <p style="font-size:1.2rem;max-width:600px;margin:0 auto 24px;">Type a question, get a decision-ready brief in 4 minutes. Research sprint tool for Claude Code.</p>
     <p style="font-family:monospace;color:#BFFF00;">/plugin install grainulator</p>
   </div>
@@ -1529,6 +1584,41 @@ code, pre { font-family: var(--mono); }
         setTimeout(function () { f.style.width = f.getAttribute('data-w') + '%'; }, i * 120);
       });
     }
+  }
+
+
+  /* ======================================================
+     SKIP ANIMATION BUTTON (motor a11y)
+     ====================================================== */
+  var terminalSkipBtn = document.getElementById('terminal-skip-btn');
+  if (terminalSkipBtn) {
+    if (prefersReduced) {
+      terminalSkipBtn.hidden = true;
+    }
+    terminalSkipBtn.addEventListener('click', function () {
+      // Reveal all terminal lines immediately
+      sprintLines.forEach(function (line) {
+        line.classList.add('visible');
+      });
+      // Fill bars
+      if (!barsFilled) {
+        barsFilled = true;
+        document.querySelectorAll('.bar-fill[data-w]').forEach(function (f) {
+          f.style.transition = 'none';
+          f.style.width = f.getAttribute('data-w') + '%';
+        });
+      }
+      // Strike r002
+      if (!r002Struck && claimR002) {
+        claimR002.style.textDecoration = 'line-through';
+        claimR002.style.opacity = '0.4';
+        r002Struck = true;
+      }
+      // Update status
+      if (terminalStatusText) terminalStatusText.textContent = 'complete';
+      // Hide button
+      terminalSkipBtn.hidden = true;
+    });
   }
 
   /* ======================================================
@@ -1711,6 +1801,86 @@ code, pre { font-family: var(--mono); }
         target.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth' });
       }
     });
+  });
+
+  /* ======================================================
+     KEYBOARD NAVIGATION — Arrow keys move between sections
+     ====================================================== */
+  var sections = document.querySelectorAll('[data-section]');
+  var currentSectionIdx = 0;
+
+  function navigateToSection(idx) {
+    currentSectionIdx = idx;
+    var section = sections[currentSectionIdx];
+    var scrollBehavior = prefersReduced ? 'auto' : 'smooth';
+    section.scrollIntoView({ behavior: scrollBehavior });
+    section.focus({ preventScroll: true });
+    updateNavHighlight(section.getAttribute('data-section'));
+  }
+
+  document.addEventListener('keydown', function (e) {
+    var tag = e.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return;
+
+    if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+      e.preventDefault();
+      currentSectionIdx = Math.min(currentSectionIdx + 1, sections.length - 1);
+      navigateToSection(currentSectionIdx);
+    }
+    if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+      e.preventDefault();
+      currentSectionIdx = Math.max(currentSectionIdx - 1, 0);
+      navigateToSection(currentSectionIdx);
+    }
+    if (e.key === 'Home') {
+      e.preventDefault();
+      navigateToSection(0);
+    }
+    if (e.key === 'End') {
+      e.preventDefault();
+      navigateToSection(sections.length - 1);
+    }
+  });
+
+  /* ======================================================
+     NAV HIGHLIGHTING — IntersectionObserver tracks visible section
+     ====================================================== */
+  var navLinks = document.querySelectorAll('.sticky-nav-links a[href^="#"]');
+
+  function updateNavHighlight(sectionName) {
+    var sectionToHref = {
+      'problem': '#problem',
+      'sprint': '#sprint',
+      'brief': '#brief',
+      'install': '#install'
+    };
+    var activeHref = sectionToHref[sectionName] || '';
+    navLinks.forEach(function (link) {
+      if (link.getAttribute('href') === activeHref) {
+        link.classList.add('nav-active');
+      } else {
+        link.classList.remove('nav-active');
+      }
+    });
+  }
+
+  var sectionObserver = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        var sectionName = entry.target.getAttribute('data-section');
+        updateNavHighlight(sectionName);
+        for (var i = 0; i < sections.length; i++) {
+          if (sections[i] === entry.target) {
+            currentSectionIdx = i;
+            break;
+          }
+        }
+      }
+    });
+  }, { threshold: 0.3 });
+
+  sections.forEach(function (section) {
+    sectionObserver.observe(section);
   });
 
 })();
