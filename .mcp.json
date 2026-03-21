@@ -3,7 +3,7 @@
     "wheat": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@grainulator/wheat-mcp"],
+      "args": ["-y", "@grainulation/wheat"],
       "env": {
         "WHEAT_ROOT": ".wheat"
       }
@@ -11,12 +11,12 @@
     "mill": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@grainulator/mill-mcp"]
+      "args": ["-y", "@grainulation/mill"]
     },
     "silo": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@grainulator/silo-mcp"],
+      "args": ["-y", "@grainulation/silo"],
       "env": {
         "SILO_STORE": "${CLAUDE_PLUGIN_DATA}/silo"
       }

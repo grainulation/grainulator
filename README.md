@@ -52,7 +52,7 @@ No slash syntax required. The intent router detects what you want and runs the r
 
 - **Plugin manifest**: `.claude-plugin/plugin.json`
 - **MCP servers**: wheat (claims), mill (output conversion), silo (knowledge store), DeepWiki (codebase research)
-- **Skills**: Prompt-engineered markdown files in `skills/`
+- **Skills**: Prompt-engineered markdown files in `skills/<name>/SKILL.md`
 - **Agent**: Autonomous sprint subagent in `agents/grainulator.md`
 - **Hooks**: Auto-compile on claim mutation, write-guard on `.wheat/`
 
@@ -66,7 +66,7 @@ Three levels of deployment:
 
 ## npm scope
 
-The `@grainulator` npm scope must be claimed before publishing. The hooks in `hooks/hooks.json` use `npx -y @grainulator/wheat-mcp` which auto-installs on first run -- if the scope is unclaimed, this is a supply chain risk. Claim the scope at https://www.npmjs.com/org/create before publishing.
+The MCP servers use the `@grainulation` npm scope (`@grainulation/wheat`, `@grainulation/mill`, `@grainulation/silo`). The hooks in `hooks/hooks.json` use `npx -y @grainulation/wheat` which auto-installs on first run -- if the scope is unclaimed, this is a supply chain risk. Claim the scope at https://www.npmjs.com/org/create before publishing.
 
 ## License
 

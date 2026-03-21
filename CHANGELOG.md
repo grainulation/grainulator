@@ -1,0 +1,28 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.1.0] - 2026-03-21
+
+### Added
+
+- Plugin manifest (`.claude-plugin/plugin.json`) with skills, agents, hooks, and MCP config.
+- 9 skills in subdirectory format (`skills/<name>/SKILL.md`):
+  - `/init` -- start a new research sprint
+  - `/research` -- multi-pass investigation with evidence gathering
+  - `/challenge` -- adversarial testing of a specific claim
+  - `/witness` -- corroborate a claim against an external source
+  - `/brief` -- generate a compiled decision brief
+  - `/status` -- sprint dashboard snapshot
+  - `/present` -- generate a presentation deck
+  - `/blind-spot` -- structural gap analysis
+  - `/router` -- intent detection for plain-language messages
+- Autonomous sprint agent (`agents/grainulator.md`) with Plan-Compile-Execute loop.
+- MCP server configuration for wheat, mill, silo, and DeepWiki.
+- Hooks: auto-compile on claim mutation, write-guard on `.wheat/` directory.
+- Landing page at `site/index.html` for grainulator.app.
+- Smoke tests (`test/smoke.test.js`) validating plugin structure.
+- MIT license.

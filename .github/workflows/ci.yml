@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npx --yes @biomejs/biome check .
+
+  test:
+    name: Smoke tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node --test test/smoke.test.js
+
+  size:
+    name: Package size
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Check package size
+        run: |
+          npm pack --dry-run 2>&1 | tail -1
+          SIZE=$(npm pack --dry-run 2>&1 | grep 'total files' || echo "unknown")
+          echo "Package contents: $SIZE"
+          # Fail if packed size exceeds 500KB
+          BYTES=$(npm pack 2>&1 | xargs -I {} stat -c%s {} 2>/dev/null || echo "0")
+          if [ "$BYTES" -gt 512000 ] 2>/dev/null; then
+            echo "::error::Package exceeds 500KB ($BYTES bytes)"
+            exit 1
+          fi
