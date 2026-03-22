@@ -287,6 +287,14 @@ vec3 getNeonColor(float idx) {
 }
 
 float map(vec3 p) {
+  // viewport bounds in world space (camera at z=3.8, fov factor 1.2)
+  // visible range = z * (1/fov) * aspect
+  float aspect = r.x / r.y;
+  float viewH = 3.8 / 1.2;        // ~3.17 half-height
+  float viewW = viewH * aspect;    // half-width
+  float boundX = viewW - 0.1;      // slight inset
+  float boundY = viewH - 0.1;
+
   float d = 1e10;
 
   for (int i = 0; i < NUM; i++) {
@@ -296,14 +304,15 @@ float map(vec3 p) {
     float h3 = hash(fi * 253.147 + seed * 7.9);
     float h4 = hash(fi * 173.29 + seed * 2.1);
 
-    // random position spread across full viewport
+    // position spread within viewport bounds
     float angle = fi * 2.39996 + seed * 6.28;
-    float radius = 0.8 + h1 * 1.8; // wider spread for bigger blobs
-    float baseX = cos(angle) * radius * (0.7 + h2 * 0.6);
-    float baseY = sin(angle) * radius * (0.7 + h3 * 0.6);
-    float baseZ = (h4 - 0.5) * 0.6;
+    float radX = boundX * 0.7;
+    float radY = boundY * 0.7;
+    float baseX = cos(angle) * radX * (0.5 + h2 * 0.5);
+    float baseY = sin(angle) * radY * (0.5 + h3 * 0.5);
+    float baseZ = (h4 - 0.5) * 0.4;
 
-    // slow organic drift — 3 layered sines per axis
+    // slow organic drift
     float sx = 0.03 + h1 * 0.04;
     float sy = 0.025 + h2 * 0.035;
     float sz = 0.02 + h3 * 0.03;
@@ -315,7 +324,12 @@ float map(vec3 p) {
     float dy = sin(t*sy + py + 0.5)*0.4 + cos(t*sy*0.43 + px + 2.1)*0.25 + sin(t*sy*0.67 + pz + 1.2)*0.15;
     float dz = cos(t*sz + pz + 1.0)*0.2 + sin(t*sz*0.53 + px)*0.1;
 
-    vec3 blobPos = vec3(baseX + dx, baseY + dy, baseZ + dz);
+    // clamp to viewport — blobs stay inside the screen
+    float bx = clamp(baseX + dx, -boundX, boundX);
+    float by = clamp(baseY + dy, -boundY, boundY);
+    float bz = baseZ + dz;
+
+    vec3 blobPos = vec3(bx, by, bz);
 
     // random sizes
     float blobR = 0.3 + h4 * 0.4; // 0.3 to 0.7
@@ -351,9 +365,20 @@ float map(vec3 p) {
       blobD = baseDist - warp * blobR * 0.35;
     }
     float k = 0.3 + 0.1 * sin(fi * 1.7 + t * 0.05);
-    if (blobD < d) g_nearestBlob = fi; // track closest blob for coloring
+    if (blobD < d) g_nearestBlob = fi;
     d = smin(d, blobD, k);
   }
+
+  // viewport boundary walls — blobs flatten against edges
+  float wallL = p.x + boundX;   // distance to left wall
+  float wallR = boundX - p.x;   // distance to right wall
+  float wallT = boundY - p.y;   // distance to top wall
+  float wallB = p.y + boundY;   // distance to bottom wall
+  // intersect: blobs can't extend past walls
+  d = max(d, -wallL);  // clip left
+  d = max(d, -wallR);  // clip right
+  d = max(d, -wallT);  // clip top
+  d = max(d, -wallB);  // clip bottom
 
   return d;
 }
