@@ -341,17 +341,20 @@ float map(vec3 p) {
     vec3 blobCenter = anchor * (sphereRadius + radialOffset);
     vec3 evalP = sp;
 
-    // gentle pixelation on falling blobs only
+    // gentle pixelation on falling blobs — smooth fade in AND out
 #if GLITCH_ON
-    if (isFalling && radialOffset > 0.3 && radialOffset < 1.8) {
-      float fallMid = 1.0 - abs((radialOffset - 1.0) / 1.0);
-      float voxAmt = fallMid * fallMid * 0.35;
-      if (voxAmt > 0.01) {
-        float vs = 0.25;
+    if (isFalling) {
+      // smooth ramps: fade in from surface, peak mid-fall, fade out near pool
+      float fadeIn = smoothstep(0.2, 0.8, radialOffset);   // gentle start
+      float fadeOut = smoothstep(1.9, 1.2, radialOffset);   // gentle end
+      float voxAmt = fadeIn * fadeOut * 0.30; // max 30%, bell curve shape
+      if (voxAmt > 0.005) {
+        float vs = mix(0.35, 0.20, voxAmt / 0.30); // finer voxels at peak
         vec3 toBlob = sp - blobCenter;
-        float nearBlob = smoothstep(1.2, 0.3, length(toBlob));
+        float nearBlob = smoothstep(1.5, 0.2, length(toBlob)); // wider, softer falloff
+        float finalAmt = voxAmt * nearBlob;
         vec3 snapped = floor(sp / vs + 0.5) * vs;
-        evalP = mix(sp, snapped, voxAmt * nearBlob);
+        evalP = mix(sp, snapped, finalAmt);
       }
     }
 #endif
@@ -385,8 +388,9 @@ float map(vec3 p) {
 
     float blobD = sdEllipsoid(localP, blobRad);
 
-    float surfaceProximity = smoothstep(2.0, 0.0, radialOffset);
-    float k = mix(0.4, 0.7, surfaceProximity);
+    // higher k everywhere = smoother merging between all blobs
+    float surfaceProximity = smoothstep(2.5, 0.0, radialOffset);
+    float k = mix(0.6, 0.9, surfaceProximity); // 0.9 near surface, 0.6 far
     d = smin(d, blobD, k);
   }
 
@@ -406,12 +410,12 @@ void main() {
   vec2 uv = (gl_FragCoord.xy - 0.5*r) / min(r.x, r.y);
 
   // camera looking at sphere center
-  vec3 ro = vec3(0.0, 0.0, 5.5);
+  vec3 ro = vec3(0.0, 0.0, 3.8);
   vec3 lookAt = vec3(0.0, 0.0, 0.0);
   vec3 fwd = normalize(lookAt - ro);
   vec3 rgt = normalize(cross(fwd, vec3(0.0, 1.0, 0.0)));
   vec3 up2 = cross(rgt, fwd);
-  vec3 rd = normalize(fwd * 1.5 + rgt * uv.x + up2 * uv.y);
+  vec3 rd = normalize(fwd * 1.2 + rgt * uv.x + up2 * uv.y);
 
   float dist = 0.0;
   float hit = -1.0;
