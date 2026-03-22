@@ -295,12 +295,12 @@ float map(vec3 p) {
   float envelope = pow(smoothstep(0.7, 0.9, sin(t * 0.06)), 3.0) * 0.2;
   float beat = woosh * envelope;
 
-  // core wanders FAR off-center — asymmetric, never in the middle
-  float morphT = t * 0.02;
+  // core wanders off-center — seed offsets all phases so start position is random
+  float morphT = t * 0.02 + seed * 100.0; // seed jumps the timeline
   vec3 corePos = vec3(
-    sin(morphT * 0.7 + seed) * 1.2 + cos(morphT * 0.3) * 0.5,
-    sin(morphT * 0.5 + 1.0) * 0.8 + sin(morphT * 0.9) * 0.3,
-    sin(morphT * 0.6 + 2.0) * 0.6
+    sin(morphT * 0.7) * 0.8 + cos(morphT * 0.3 + 1.5) * 0.4,
+    sin(morphT * 0.5 + 0.8) * 0.6 + sin(morphT * 0.9 + 2.3) * 0.2,
+    sin(morphT * 0.6 + 1.7) * 0.4
   );
   // morph between sphere and ellipsoid shapes
   float stretch = 0.5 + 0.5 * sin(morphT * 0.6);
@@ -342,7 +342,8 @@ float map(vec3 p) {
 
     // lifecycle: 60-120s
     float cycleTime = 60.0 + hash1 * 60.0;
-    float phase = fract(t / cycleTime + fi * 0.27 + seed);
+    // seed * 7.3 spreads blobs across the full cycle on load
+    float phase = fract(t / cycleTime + fi * 0.27 + seed * 7.3 + hash2 * 0.5);
 
     float radialOffset;
     bool isFalling = false;
@@ -466,10 +467,10 @@ void main() {
   // gravitational lensing — Schwarzschild-inspired ray bending
   // the core wanders, so the lens follows it (not screen center)
   // project core 3D position to approximate screen position
-  float morphT2 = t * 0.02;
+  float morphT2 = t * 0.02 + seed * 100.0; // match map() timeline
   vec2 coreScreen = vec2(
-    sin(morphT2 * 0.7 + seed) * 0.35 + cos(morphT2 * 0.3) * 0.15,
-    sin(morphT2 * 0.5 + 1.0) * 0.25
+    sin(morphT2 * 0.7) * 0.25 + cos(morphT2 * 0.3 + 1.5) * 0.12,
+    sin(morphT2 * 0.5 + 0.8) * 0.18
   );
   vec2 toCore2D = coreScreen - uv;
   float r2 = dot(toCore2D, toCore2D);
