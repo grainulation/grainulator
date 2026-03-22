@@ -1,8 +1,8 @@
 /* ============================================================
-   GRAINULATOR — Apple Glass UI
-   visionOS-inspired glassmorphism with lime (#BFFF00) accent.
-   Deep space background, frosted panels, pill shapes.
-   Performance: backdrop-filter only on visible panels.
+   GRAINULATOR — Full Glass UI
+   One continuous frosted glass surface over an animated nebula.
+   The fish pond is a window cut into the glass.
+   Terminal overlay is a second glass layer for depth.
    ============================================================ */
 
 @font-face {
@@ -20,15 +20,15 @@
   --lime-glow: rgba(191, 255, 0, 0.06);
   --lime-mid: rgba(191, 255, 0, 0.25);
   --lime-bright: #d4ff4d;
-  --bg: #050508;
+  --bg: #08070a;
   --bg-warm: #080810;
-  --bg-panel: rgba(255, 255, 255, 0.05);
-  --bg-elevated: rgba(255, 255, 255, 0.07);
-  --border: rgba(255, 255, 255, 0.08);
-  --border-light: rgba(255, 255, 255, 0.12);
-  --text: #f0f0f0;
-  --text-dim: #a0a0a0;
-  --text-faint: #8a8a8a;
+  --bg-panel: rgba(255, 255, 255, 0.04);
+  --bg-elevated: rgba(255, 255, 255, 0.06);
+  --border: rgba(255, 255, 255, 0.06);
+  --border-light: rgba(255, 255, 255, 0.1);
+  --text: rgba(255, 255, 255, 0.9);
+  --text-dim: rgba(255, 255, 255, 0.5);
+  --text-faint: rgba(255, 255, 255, 0.35);
   --coral: #ff6b6b;
   --coral-dim: rgba(255, 107, 107, 0.12);
   --green: #4ade80;
@@ -46,10 +46,15 @@
   --ease-snap: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
   --glass-blur: 40px;
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-highlight: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, transparent 40%);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --glass-bg: rgba(255, 255, 255, 0.04);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-highlight: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    transparent 40%
+  );
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
   --glass-radius: 24px;
 }
 
@@ -65,16 +70,10 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Deep space gradient mesh background */
+/* ===== DEEP SPACE BODY ===== */
 body {
   font-family: var(--sans);
   background: var(--bg);
-  background-image:
-    radial-gradient(ellipse 80% 60% at 20% 30%, rgba(100, 60, 180, 0.08) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 50% at 80% 70%, rgba(40, 100, 160, 0.06) 0%, transparent 70%),
-    radial-gradient(ellipse 70% 40% at 50% 90%, rgba(191, 255, 0, 0.03) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 60% at 70% 20%, rgba(160, 50, 100, 0.05) 0%, transparent 60%);
-  background-attachment: fixed;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -93,6 +92,114 @@ a:hover {
 code,
 pre {
   font-family: var(--mono);
+}
+
+/* ===== ANIMATED NEBULA BACKGROUND ===== */
+.nebula-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.nebula-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  will-change: transform;
+}
+
+.nebula-blob-1 {
+  width: 60vw;
+  height: 60vw;
+  top: -10%;
+  left: -10%;
+  background: radial-gradient(
+    circle,
+    rgba(120, 50, 200, 0.18) 0%,
+    rgba(80, 30, 160, 0.08) 50%,
+    transparent 70%
+  );
+  animation: nebula-drift-1 25s ease-in-out infinite alternate;
+}
+
+.nebula-blob-2 {
+  width: 50vw;
+  height: 50vw;
+  bottom: -5%;
+  right: -10%;
+  background: radial-gradient(
+    circle,
+    rgba(30, 80, 180, 0.15) 0%,
+    rgba(20, 60, 140, 0.06) 50%,
+    transparent 70%
+  );
+  animation: nebula-drift-2 30s ease-in-out infinite alternate;
+}
+
+.nebula-blob-3 {
+  width: 40vw;
+  height: 40vw;
+  top: 40%;
+  left: 30%;
+  background: radial-gradient(
+    circle,
+    rgba(191, 255, 0, 0.04) 0%,
+    rgba(100, 180, 0, 0.02) 50%,
+    transparent 70%
+  );
+  animation: nebula-drift-3 20s ease-in-out infinite alternate;
+}
+
+.nebula-blob-4 {
+  width: 45vw;
+  height: 45vw;
+  top: 10%;
+  right: 20%;
+  background: radial-gradient(
+    circle,
+    rgba(160, 40, 120, 0.1) 0%,
+    rgba(100, 20, 80, 0.04) 50%,
+    transparent 70%
+  );
+  animation: nebula-drift-4 22s ease-in-out infinite alternate;
+}
+
+@keyframes nebula-drift-1 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(8vw, 6vh) scale(1.15);
+  }
+}
+@keyframes nebula-drift-2 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(-6vw, -8vh) scale(1.1);
+  }
+}
+@keyframes nebula-drift-3 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(5vw, -4vh) scale(1.2);
+  }
+}
+@keyframes nebula-drift-4 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(-4vw, 5vh) scale(1.1);
+  }
 }
 
 /* ===== SKIP LINK ===== */
@@ -114,7 +221,7 @@ pre {
   padding: 14px 28px;
   background: var(--lime);
   color: var(--bg);
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.875rem;
   border-radius: 100px;
   text-decoration: none;
@@ -127,56 +234,35 @@ pre {
   outline-offset: 3px;
 }
 
-/* ===== GLASS PANEL MIXIN (applied via class) ===== */
-.glass-panel {
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  background: var(--glass-bg);
-  background-image: var(--glass-highlight);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--glass-radius);
-  box-shadow: var(--glass-shadow);
-}
-
-/* Fallback for browsers without backdrop-filter */
-@supports not (backdrop-filter: blur(1px)) {
-  .glass-panel {
-    background: rgba(18, 18, 24, 0.92);
-  }
-}
-
-/* ===== TOP BAR — pill-shaped floating glass ===== */
+/* ===== TOP BAR — full-width glass ===== */
 .top-bar {
   position: fixed;
-  top: 12px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: 200;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 28px;
+  padding: 0 40px;
+  height: 60px;
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
-  background: rgba(255, 255, 255, 0.04);
-  background-image: var(--glass-highlight);
-  border: 1px solid var(--glass-border);
-  border-radius: 100px;
-  box-shadow: var(--glass-shadow);
-  max-width: 680px;
-  width: calc(100% - 32px);
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
 }
 
 @supports not (backdrop-filter: blur(1px)) {
   .top-bar {
-    background: rgba(18, 18, 24, 0.95);
+    background: rgba(8, 7, 10, 0.95);
   }
 }
 
 .logo-brand {
   font-family: var(--sans);
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 500;
   color: var(--lime);
   text-decoration: none;
   letter-spacing: -0.02em;
@@ -198,12 +284,12 @@ pre {
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 24px;
 }
 .nav-link {
   font-family: var(--mono);
   font-size: 0.75rem;
-  font-weight: 400;
+  font-weight: 300;
   color: var(--text-dim);
   text-decoration: none;
   min-height: 44px;
@@ -219,7 +305,7 @@ pre {
 .get-it-link {
   font-family: var(--mono);
   font-size: 0.8125rem;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--lime);
   text-decoration: none;
   min-height: 44px;
@@ -232,14 +318,72 @@ pre {
   opacity: 0.8;
 }
 
+/* ===== THE ONE BIG GLASS PANEL ===== */
+.glass-surface {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  width: calc(100% - 48px);
+  margin: 80px auto 0;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius) var(--glass-radius) 0 0;
+  box-shadow: var(--glass-shadow);
+  overflow: hidden;
+}
+
+.glass-surface-bottom {
+  border-radius: 0 0 var(--glass-radius) var(--glass-radius);
+  margin-top: 0;
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .glass-surface {
+    background: rgba(12, 11, 16, 0.92);
+  }
+}
+
+/* Specular highlight — subtle top gradient that shifts */
+.glass-specular {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 200px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Glass dividers between sections */
+.glass-divider {
+  width: 80%;
+  max-width: 600px;
+  height: 1px;
+  margin: 0 auto;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.08),
+    transparent
+  );
+}
+
 /* ===== SECTIONS ===== */
 .section {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 100px 28px 60px;
+  padding: 100px 48px 60px;
   position: relative;
+  z-index: 2;
 }
 .section-inner {
   max-width: 1100px;
@@ -264,7 +408,7 @@ pre {
 .hero-headline {
   font-family: var(--sans);
   font-size: clamp(2.5rem, 6vw, 4.5rem);
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.05;
   letter-spacing: -0.03em;
   color: var(--text);
@@ -314,11 +458,9 @@ pre {
 .btn-secondary {
   font-family: var(--sans);
   font-size: 0.9375rem;
-  font-weight: 400;
+  font-weight: 300;
   color: var(--text-dim);
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border-light);
   padding: 14px 32px;
   border-radius: 100px;
@@ -332,26 +474,23 @@ pre {
 .btn-secondary:hover {
   color: var(--lime);
   border-color: var(--lime);
-  background: rgba(191, 255, 0, 0.06);
+  background: rgba(191, 255, 0, 0.04);
   text-decoration: none;
 }
 
-/* Brief mock — glass card */
+/* Brief mock — inset panel within the glass */
 .hero-brief {
   flex: 0 0 420px;
   max-width: 420px;
 }
 .brief-card {
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  background: var(--glass-bg);
-  background-image: var(--glass-highlight);
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--glass-border);
-  border-radius: var(--glass-radius);
+  border-radius: 16px;
   overflow: hidden;
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    0 0 80px rgba(191, 255, 0, 0.03);
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 4px 24px rgba(0, 0, 0, 0.2);
 }
 .brief-bar {
   display: flex;
@@ -396,13 +535,13 @@ pre {
 .brief-title {
   font-family: var(--sans);
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--text);
   margin-bottom: 16px;
   line-height: 1.3;
 }
 .brief-rec {
-  background: rgba(191, 255, 0, 0.04);
+  background: rgba(191, 255, 0, 0.03);
   border-left: 3px solid var(--lime);
   padding: 12px 14px;
   margin-bottom: 16px;
@@ -415,7 +554,7 @@ pre {
   text-transform: uppercase;
   color: var(--lime);
   margin-bottom: 4px;
-  font-weight: 500;
+  font-weight: 400;
 }
 .brief-rec-text {
   font-size: 0.8125rem;
@@ -436,7 +575,7 @@ pre {
 }
 .brief-timeline-value {
   color: var(--amber);
-  font-weight: 500;
+  font-weight: 400;
 }
 .brief-finding {
   font-size: 0.8125rem;
@@ -464,7 +603,7 @@ pre {
   display: inline-block;
   padding: 2px 8px;
   font-size: 0.5625rem;
-  font-weight: 500;
+  font-weight: 400;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   flex-shrink: 0;
@@ -502,12 +641,13 @@ pre {
 }
 .brief-footer-pass {
   color: var(--lime);
-  font-weight: 500;
+  font-weight: 400;
 }
 
 /* ===== SECTION 2: PROOF ===== */
 .proof {
-  background: transparent;
+  min-height: auto;
+  padding: 120px 48px;
 }
 .proof-inner {
   max-width: 720px;
@@ -517,7 +657,7 @@ pre {
 .proof-analogy {
   font-family: var(--sans);
   font-size: clamp(1.5rem, 3.5vw, 2.5rem);
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1.2;
   letter-spacing: -0.02em;
   color: var(--text);
@@ -536,6 +676,10 @@ pre {
 }
 
 /* ===== SECTION 3: HOW IT WORKS ===== */
+#how-section {
+  min-height: auto;
+  padding: 120px 48px;
+}
 .how-inner {
   max-width: 720px;
   margin: 0 auto;
@@ -550,7 +694,7 @@ pre {
 .how-line {
   font-family: var(--sans);
   font-size: clamp(1.25rem, 3vw, 2rem);
-  font-weight: 400;
+  font-weight: 300;
   color: var(--text-dim);
   letter-spacing: -0.01em;
   line-height: 1.3;
@@ -570,7 +714,7 @@ pre {
 .how-line:nth-child(4) {
   animation-delay: 1s;
   color: var(--lime);
-  font-weight: 500;
+  font-weight: 400;
 }
 @keyframes how-reveal {
   to {
@@ -579,48 +723,41 @@ pre {
   }
 }
 
-/* ===== SECTION 4: PLAYGROUND ===== */
-.playground {
-  min-height: 100vh;
-  padding-top: 80px;
-  padding-bottom: 40px;
-}
-.playground-title {
-  font-family: var(--sans);
-  font-size: clamp(1.5rem, 3.5vw, 2.25rem);
-  font-weight: 500;
-  text-align: center;
-  margin-bottom: 8px;
-  letter-spacing: -0.02em;
-}
-.playground-subtitle {
-  text-align: center;
-  font-size: 0.9375rem;
-  font-weight: 300;
-  color: var(--text-dim);
-  margin-bottom: 32px;
+/* ===== SECTION 4: POND OPENING ===== */
+.pond-opening {
+  position: relative;
+  z-index: 1;
+  min-height: auto;
+  padding: 40px 0 0;
+  max-width: 1200px;
+  width: calc(100% - 48px);
+  margin: 0 auto;
 }
 
-/* Pond container — glass panel behind canvas */
+.playground-subtitle {
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 300;
+  color: var(--text-dim);
+  margin-bottom: 24px;
+  padding: 0 24px;
+}
+
+/* Pond container — the window cut in the glass */
 .pond-container {
   position: relative;
   width: 100%;
-  height: calc(100vh - 240px);
+  height: calc(100vh - 200px);
   min-height: 500px;
   max-height: 700px;
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--glass-radius);
+  border-radius: 0;
   overflow: hidden;
-  box-shadow: var(--glass-shadow);
+  /* No glass background here — see through to the nebula */
+  background: transparent;
+  border-top: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--glass-border);
 }
-@supports not (backdrop-filter: blur(1px)) {
-  .pond-container {
-    background: rgba(10, 10, 14, 0.85);
-  }
-}
+
 #pond {
   width: 100%;
   height: 100%;
@@ -667,12 +804,9 @@ pre {
   align-items: center;
   justify-content: center;
   padding: 32px 24px;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  background: var(--glass-bg);
-  background-image: var(--glass-highlight);
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--glass-border);
-  border-radius: var(--glass-radius);
+  border-radius: 16px;
   cursor: pointer;
   transition:
     border-color 0.3s var(--ease),
@@ -681,19 +815,19 @@ pre {
   position: relative;
   -webkit-tap-highlight-color: transparent;
   overflow: hidden;
-  box-shadow: var(--glass-shadow);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 .mobile-slot-card:active {
   transform: scale(0.97);
 }
 .mobile-slot-card.scripted {
   border-color: rgba(191, 255, 0, 0.3);
-  background: rgba(191, 255, 0, 0.04);
+  background: rgba(191, 255, 0, 0.03);
 }
 .mobile-slot-text {
   font-family: var(--sans);
   font-size: 1.125rem;
-  font-weight: 400;
+  font-weight: 300;
   color: var(--text);
   line-height: 1.4;
 }
@@ -731,9 +865,9 @@ pre {
   min-height: 52px;
   cursor: pointer;
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.03);
   color: var(--text-dim);
-  border-radius: 16px;
+  border-radius: 12px;
   transition:
     color 0.2s,
     border-color 0.2s,
@@ -743,15 +877,15 @@ pre {
 }
 .mobile-slot-btn:active {
   transform: scale(0.95);
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.05);
 }
 .mobile-slot-btn.primary {
   color: var(--lime);
   border-color: rgba(191, 255, 0, 0.3);
-  font-weight: 500;
+  font-weight: 400;
 }
 .mobile-slot-btn.primary:active {
-  background: rgba(191, 255, 0, 0.06);
+  background: rgba(191, 255, 0, 0.04);
 }
 .mobile-slot-counter {
   font-family: var(--mono);
@@ -762,12 +896,24 @@ pre {
 }
 
 @keyframes slot-spin-out {
-  0% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(-40px); }
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
 }
 @keyframes slot-spin-in {
-  0% { opacity: 0; transform: translateY(24px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .mobile-slot-card.spin-out .mobile-slot-text {
   animation: slot-spin-out 0.15s var(--ease) forwards;
@@ -778,7 +924,8 @@ pre {
 
 /* ===== SECTION 5: WHO IT'S FOR ===== */
 .who {
-  background: transparent;
+  min-height: auto;
+  padding: 120px 48px;
 }
 .who-inner {
   max-width: 800px;
@@ -795,7 +942,7 @@ pre {
 .who-quote-text {
   font-family: var(--sans);
   font-size: clamp(1.25rem, 3vw, 1.75rem);
-  font-weight: 400;
+  font-weight: 300;
   color: var(--text);
   line-height: 1.3;
   letter-spacing: -0.01em;
@@ -814,7 +961,8 @@ pre {
 
 /* ===== SECTION 6: INSTALL ===== */
 .install-section {
-  min-height: 80vh;
+  min-height: auto;
+  padding: 120px 48px;
 }
 .install-center {
   text-align: center;
@@ -838,21 +986,22 @@ pre {
   color: var(--lime);
   text-align: left;
   cursor: pointer;
-  border: 1px solid rgba(191, 255, 0, 0.3);
+  border: 1px solid rgba(191, 255, 0, 0.2);
   border-radius: 16px;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  background: rgba(191, 255, 0, 0.04);
+  background: rgba(191, 255, 0, 0.03);
   transition: all 0.3s var(--ease);
-  box-shadow: 0 0 60px var(--lime-glow);
+  box-shadow:
+    0 0 60px var(--lime-glow),
+    inset 0 1px 0 rgba(191, 255, 0, 0.04);
   display: block;
   width: 100%;
   margin-bottom: 24px;
 }
 .install-cmd-block:hover,
 .install-cmd-block:focus-visible {
-  background: rgba(191, 255, 0, 0.06);
+  background: rgba(191, 255, 0, 0.05);
   box-shadow: 0 0 80px rgba(191, 255, 0, 0.08);
+  border-color: rgba(191, 255, 0, 0.3);
 }
 .install-cmd-block .prompt {
   color: var(--text-faint);
@@ -899,20 +1048,21 @@ pre {
 }
 .install-time {
   font-size: 0.9375rem;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--text);
   margin-bottom: 0;
 }
 
 /* ===== FOOTER ===== */
 .site-footer {
+  position: relative;
+  z-index: 1;
   text-align: center;
   font-family: var(--mono);
   font-size: 0.6875rem;
   color: var(--text-faint);
   letter-spacing: 0.04em;
   padding: 32px 28px;
-  border-top: 1px solid var(--border);
 }
 .site-footer a {
   color: var(--text-dim);
@@ -923,11 +1073,11 @@ pre {
   text-decoration: none;
 }
 .site-footer .sep {
-  color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.08);
   margin: 0 10px;
 }
 
-/* ===== TERMINAL OVERLAY ===== */
+/* ===== TERMINAL OVERLAY — double glass layer ===== */
 .terminal-overlay {
   position: fixed;
   top: 0;
@@ -953,9 +1103,9 @@ pre {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(5, 5, 8, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(8, 7, 10, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 .terminal-container {
@@ -977,7 +1127,7 @@ pre {
 .selected-prompt {
   font-family: var(--sans);
   font-size: clamp(1rem, 2.5vw, 1.375rem);
-  font-weight: 400;
+  font-weight: 300;
   color: var(--text);
   margin-bottom: 16px;
   padding: 0 4px;
@@ -993,18 +1143,18 @@ pre {
   transform: none;
 }
 
-/* ===== THE TERMINAL — glass panel, slightly more opaque ===== */
+/* ===== THE TERMINAL — glass panel (second layer) ===== */
 .game-terminal {
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.05);
   background-image: var(--glass-highlight);
   border: 1px solid var(--glass-border);
   border-radius: var(--glass-radius);
   overflow: hidden;
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    0 0 120px rgba(191, 255, 0, 0.04);
+    var(--glass-shadow),
+    0 0 120px rgba(191, 255, 0, 0.03);
   position: relative;
   flex: 1;
   min-height: 0;
@@ -1016,20 +1166,20 @@ pre {
 }
 @supports not (backdrop-filter: blur(1px)) {
   .game-terminal {
-    background: rgba(18, 18, 24, 0.95);
+    background: rgba(12, 11, 16, 0.95);
   }
 }
 .game-terminal.victory {
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.3),
+    var(--glass-shadow),
     0 0 80px rgba(191, 255, 0, 0.06);
-  border-color: rgba(191, 255, 0, 0.2);
+  border-color: rgba(191, 255, 0, 0.15);
 }
 .game-terminal.challenge-flash {
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.3),
+    var(--glass-shadow),
     0 0 60px rgba(255, 107, 107, 0.06);
-  border-color: rgba(255, 107, 107, 0.2);
+  border-color: rgba(255, 107, 107, 0.15);
 }
 .game-terminal::before {
   content: "";
@@ -1037,14 +1187,13 @@ pre {
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
+  height: 1px;
   background: linear-gradient(90deg, transparent, var(--lime), transparent);
-  opacity: 0.6;
+  opacity: 0.4;
   transition: opacity 0.3s;
 }
 .game-terminal.victory::before {
-  opacity: 1;
-  height: 2px;
+  opacity: 0.8;
 }
 .terminal-bar {
   display: flex;
@@ -1064,9 +1213,15 @@ pre {
   height: 0.5625rem;
   border-radius: 50%;
 }
-.dot-r { background: #ff6b6b; }
-.dot-y { background: #fbbf24; }
-.dot-g { background: #4ade80; }
+.dot-r {
+  background: #ff6b6b;
+}
+.dot-y {
+  background: #fbbf24;
+}
+.dot-g {
+  background: #4ade80;
+}
 .terminal-title {
   font-family: var(--mono);
   font-size: 0.625rem;
@@ -1090,8 +1245,13 @@ pre {
   animation: pulse-dot 1.5s ease infinite;
 }
 @keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 .terminal-body {
   padding: 24px;
@@ -1116,17 +1276,31 @@ pre {
   animation: claimSlideIn 0.4s var(--ease) both;
 }
 @keyframes claimSlideIn {
-  0% { opacity: 0; transform: translateX(16px); }
-  100% { opacity: 1; transform: translateX(0); }
+  0% {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .t-line.phase-pulse .c-lime {
   animation: phasePulse 0.6s var(--ease);
 }
 @keyframes phasePulse {
-  0% { opacity: 0.4; }
-  50% { opacity: 1; text-shadow: 0 0 10px rgba(191, 255, 0, 0.25); }
-  100% { opacity: 1; text-shadow: none; }
+  0% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+    text-shadow: 0 0 10px rgba(191, 255, 0, 0.25);
+  }
+  100% {
+    opacity: 1;
+    text-shadow: none;
+  }
 }
 
 /* Tags — pill-shaped */
@@ -1134,42 +1308,84 @@ pre {
   display: inline-block;
   padding: 2px 8px;
   font-size: 0.625rem;
-  font-weight: 500;
+  font-weight: 400;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   margin-right: 6px;
   border-radius: 100px;
 }
-.tag-factual { background: var(--green-dim); color: var(--green); }
-.tag-risk { background: var(--coral-dim); color: var(--coral); }
-.tag-estimate { background: var(--amber-dim); color: var(--amber); }
-.tag-rec { background: var(--lime-dim); color: var(--lime); }
-.tag-constraint { background: var(--blue-dim); color: var(--blue); }
+.tag-factual {
+  background: var(--green-dim);
+  color: var(--green);
+}
+.tag-risk {
+  background: var(--coral-dim);
+  color: var(--coral);
+}
+.tag-estimate {
+  background: var(--amber-dim);
+  color: var(--amber);
+}
+.tag-rec {
+  background: var(--lime-dim);
+  color: var(--lime);
+}
+.tag-constraint {
+  background: var(--blue-dim);
+  color: var(--blue);
+}
 
-.c-dim { color: var(--text-faint); }
-.c-text { color: var(--text-dim); }
-.c-white { color: var(--text); font-weight: 500; }
-.c-green { color: var(--green); }
-.c-amber { color: var(--amber); }
-.c-red { color: var(--coral); }
-.c-lime { color: var(--lime); }
+.c-dim {
+  color: var(--text-faint);
+}
+.c-text {
+  color: var(--text-dim);
+}
+.c-white {
+  color: var(--text);
+  font-weight: 400;
+}
+.c-green {
+  color: var(--green);
+}
+.c-amber {
+  color: var(--amber);
+}
+.c-red {
+  color: var(--coral);
+}
+.c-lime {
+  color: var(--lime);
+}
 
-/* Challenge block — glass sub-panel */
+/* Challenge block */
 .t-challenge {
   padding: 12px 16px;
   margin: 8px 0;
   border-left: 3px solid var(--coral);
-  background: rgba(255, 107, 107, 0.04);
+  background: rgba(255, 107, 107, 0.03);
   border-radius: 0 12px 12px 0;
   animation: challengeShake 0.4s var(--ease);
 }
 @keyframes challengeShake {
-  0% { transform: translateX(0); }
-  20% { transform: translateX(-2px); }
-  40% { transform: translateX(1.5px); }
-  60% { transform: translateX(-1px); }
-  80% { transform: translateX(0.5px); }
-  100% { transform: translateX(0); }
+  0% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-2px);
+  }
+  40% {
+    transform: translateX(1.5px);
+  }
+  60% {
+    transform: translateX(-1px);
+  }
+  80% {
+    transform: translateX(0.5px);
+  }
+  100% {
+    transform: translateX(0);
+  }
 }
 
 /* Progress bars */
@@ -1184,13 +1400,13 @@ pre {
   text-align: right;
   color: var(--text-dim);
   font-size: 0.6875rem;
-  font-weight: 400;
+  font-weight: 300;
 }
 .bar-track {
   flex: 1;
   max-width: 300px;
   height: 8px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.03);
   overflow: hidden;
   position: relative;
   border-radius: 4px;
@@ -1211,17 +1427,21 @@ pre {
   width: 20px;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3));
 }
-.bar-fill.high { background: var(--lime); }
-.bar-fill.mid { background: var(--amber); }
+.bar-fill.high {
+  background: var(--lime);
+}
+.bar-fill.mid {
+  background: var(--amber);
+}
 .bar-pct {
   width: 40px;
   font-size: 0.6875rem;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .t-pass {
   color: var(--lime);
-  font-weight: 600;
+  font-weight: 500;
   font-size: 1rem;
   text-shadow: 0 0 24px rgba(191, 255, 0, 0.3);
   letter-spacing: 0.08em;
@@ -1230,8 +1450,14 @@ pre {
   animation: victoryPop 0.5s var(--ease);
 }
 @keyframes victoryPop {
-  0% { transform: scale(0.92); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .cursor {
@@ -1243,8 +1469,13 @@ pre {
   animation: blink 1s step-end infinite;
 }
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
 }
 
 .t-struck {
@@ -1252,7 +1483,7 @@ pre {
   opacity: 0.4;
 }
 
-/* Terminal controls — pill glass buttons */
+/* Terminal controls */
 .terminal-controls {
   display: flex;
   align-items: center;
@@ -1267,7 +1498,7 @@ pre {
   font-size: 0.6875rem;
   letter-spacing: 0.04em;
   color: var(--text-dim);
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border);
   padding: 10px 20px;
   cursor: pointer;
@@ -1284,7 +1515,7 @@ pre {
 .ctrl-btn:focus-visible {
   color: var(--lime);
   border-color: rgba(191, 255, 0, 0.3);
-  background: rgba(191, 255, 0, 0.06);
+  background: rgba(191, 255, 0, 0.04);
 }
 .ctrl-btn:active {
   transform: scale(0.95);
@@ -1311,7 +1542,7 @@ pre {
 .sprint-done-text {
   font-family: var(--sans);
   font-size: 1.125rem;
-  font-weight: 400;
+  font-weight: 300;
   color: var(--text);
   margin-bottom: 10px;
 }
@@ -1360,7 +1591,7 @@ pre {
   z-index: 500;
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.05);
   border: 2px solid var(--lime);
   border-radius: var(--glass-radius);
   padding: 20px;
@@ -1388,7 +1619,7 @@ pre {
 .sr-prompt-btn:focus-visible {
   border-color: var(--lime);
   color: var(--lime);
-  background: rgba(191, 255, 0, 0.04);
+  background: rgba(191, 255, 0, 0.03);
 }
 
 /* Reduced motion grid fallback */
@@ -1407,7 +1638,7 @@ pre {
   font-family: var(--mono);
   font-size: 0.75rem;
   color: var(--text-dim);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border);
   padding: 12px 18px;
   cursor: pointer;
@@ -1422,7 +1653,12 @@ pre {
 .reduced-grid-btn:focus-visible {
   color: var(--lime);
   border-color: rgba(191, 255, 0, 0.3);
-  background: rgba(191, 255, 0, 0.04);
+  background: rgba(191, 255, 0, 0.03);
+}
+
+/* ===== INTERACTIVE GLASS HOVER ===== */
+.glass-surface {
+  transition: background 0.4s var(--ease);
 }
 
 /* ===== MOBILE ===== */
@@ -1431,13 +1667,9 @@ pre {
     --glass-blur: 20px;
   }
 
-  .section {
-    padding: 80px 20px 40px;
-  }
   .top-bar {
-    top: 8px;
-    padding: 10px 20px;
-    max-width: calc(100% - 16px);
+    padding: 0 20px;
+    height: 56px;
   }
   .nav-links {
     gap: 12px;
@@ -1446,8 +1678,27 @@ pre {
     font-size: 0.6875rem;
   }
 
+  .glass-surface {
+    width: calc(100% - 16px);
+    margin-top: 64px;
+    border-radius: 16px 16px 0 0;
+  }
+  .glass-surface-bottom {
+    border-radius: 0 0 16px 16px;
+  }
+
+  .section {
+    padding: 80px 20px 40px;
+  }
+  .proof,
+  .who,
+  .install-section,
+  #how-section {
+    padding: 80px 20px;
+  }
+
   .hero {
-    padding-top: 100px;
+    padding-top: 80px;
   }
   .hero-content {
     flex-direction: column;
@@ -1463,6 +1714,11 @@ pre {
   }
   .who-quotes {
     gap: 36px;
+  }
+
+  .pond-opening {
+    width: calc(100% - 16px);
+    padding: 24px 0 0;
   }
 
   .pond-container {
@@ -1562,6 +1818,9 @@ pre {
   .reduced-grid {
     display: block !important;
   }
+  .nebula-blob {
+    animation: none !important;
+  }
 }
 
 /* ===== PRINT ===== */
@@ -1576,8 +1835,15 @@ pre {
   .site-footer,
   #pond,
   .mobile-slot,
-  .pond-container {
+  .pond-container,
+  .nebula-bg {
     display: none !important;
+  }
+  .glass-surface {
+    backdrop-filter: none !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
   }
   * {
     opacity: 1 !important;

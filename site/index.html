@@ -127,7 +127,15 @@
       role="status"
     ></div>
 
-    <!-- Top bar — pill-shaped floating glass nav -->
+    <!-- Animated nebula background -->
+    <div class="nebula-bg" aria-hidden="true">
+      <div class="nebula-blob nebula-blob-1"></div>
+      <div class="nebula-blob nebula-blob-2"></div>
+      <div class="nebula-blob nebula-blob-3"></div>
+      <div class="nebula-blob nebula-blob-4"></div>
+    </div>
+
+    <!-- Full-width glass header -->
     <nav class="top-bar" aria-label="Main navigation">
       <a href="/" class="logo-brand" aria-label="Grainulator home">
         <svg
@@ -176,142 +184,153 @@
     </div>
 
     <main id="main-content" role="main">
-      <!-- SECTION 1: HERO -->
-      <section class="section hero" id="hero-section" aria-label="Introduction">
-        <div class="section-inner">
-          <div class="hero-content">
-            <div class="hero-text">
-              <h1 class="hero-headline">Research that compiles.</h1>
-              <p class="hero-subtitle">
-                Ask any question. Get a brief backed by evidence. Five minutes.
+      <!-- ONE BIG GLASS PANEL -->
+      <div class="glass-surface">
+        <!-- Specular highlight overlay -->
+        <div class="glass-specular" aria-hidden="true"></div>
+
+        <!-- SECTION 1: HERO -->
+        <section class="section hero" id="hero-section" aria-label="Introduction">
+          <div class="section-inner">
+            <div class="hero-content">
+              <div class="hero-text">
+                <h1 class="hero-headline">Research that compiles.</h1>
+                <p class="hero-subtitle">
+                  Ask any question. Get a brief backed by evidence. Five minutes.
+                </p>
+                <div class="hero-buttons">
+                  <a href="#playground-section" class="btn-primary"
+                    >Try it live &darr;</a
+                  >
+                  <a href="#install-section" class="btn-secondary"
+                    >Get it &rarr;</a
+                  >
+                </div>
+              </div>
+              <div class="hero-brief" aria-label="Example compiled brief">
+                <div class="brief-card">
+                  <div class="brief-bar">
+                    <div class="brief-bar-dots" aria-hidden="true">
+                      <div class="dot dot-r"></div>
+                      <div class="dot dot-y"></div>
+                      <div class="dot dot-g"></div>
+                    </div>
+                    <div class="brief-bar-title">compiled brief</div>
+                    <div class="brief-bar-status">&check; pass</div>
+                  </div>
+                  <div class="brief-body">
+                    <div class="brief-label">Sprint</div>
+                    <div class="brief-title">
+                      &ldquo;Should we use Postgres or MongoDB for the new
+                      service?&rdquo;
+                    </div>
+
+                    <div class="brief-rec">
+                      <div class="brief-rec-label">Recommendation</div>
+                      <div class="brief-rec-text">
+                        Postgres with JSONB columns for flexible fields. Covers
+                        relational queries (80% of workload) without sacrificing
+                        document flexibility.
+                      </div>
+                    </div>
+
+                    <div class="brief-timeline">
+                      <span class="brief-timeline-label">Timeline:</span>
+                      <span class="brief-timeline-value"
+                        >2 weeks (Postgres) vs 9 weeks (MongoDB)</span
+                      >
+                      <span class="pill pill-confidence" style="margin-left: auto"
+                        >91% confidence</span
+                      >
+                    </div>
+
+                    <div class="brief-finding">
+                      <strong>Key finding:</strong> 80% of queries are relational
+                      joins &mdash; MongoDB incurs a significant performance
+                      penalty. pgvector eliminates the need for a separate vector
+                      database.
+                    </div>
+
+                    <div class="brief-risks">
+                      <div class="brief-risk-row">
+                        <span class="pill pill-high">high</span>
+                        <span class="brief-risk-text"
+                          >MongoDB migration effort is 4.5&times; longer than
+                          initially estimated</span
+                        >
+                      </div>
+                      <div class="brief-risk-row">
+                        <span class="pill pill-med">med</span>
+                        <span class="brief-risk-text"
+                          >Ecosystem tooling coverage at 73% &mdash; needs
+                          evaluation</span
+                        >
+                      </div>
+                      <div class="brief-risk-row">
+                        <span class="pill pill-low">low</span>
+                        <span class="brief-risk-text"
+                          >Schema flexibility gap mitigated by JSONB columns</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                  <div class="brief-footer">
+                    <span>6 findings &middot; 1 revised &middot; 0 retired</span>
+                    <span class="brief-footer-pass">&check; All gates met</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Glass divider -->
+        <div class="glass-divider" aria-hidden="true"></div>
+
+        <!-- SECTION 2: PROOF -->
+        <section
+          class="section proof"
+          id="proof-section"
+          aria-label="Why evidence matters"
+        >
+          <div class="section-inner">
+            <div class="proof-inner">
+              <p class="proof-analogy">
+                You wouldn&rsquo;t ship code without tests.<br />Why ship
+                <em>decisions</em> without evidence?
               </p>
-              <div class="hero-buttons">
-                <a href="#playground-section" class="btn-primary"
-                  >Try it live &darr;</a
-                >
-                <a href="#install-section" class="btn-secondary"
-                  >Get it &rarr;</a
-                >
-              </div>
+              <p class="proof-footnote">
+                5 minutes. Every finding tracked and challenged.
+              </p>
             </div>
-            <div class="hero-brief" aria-label="Example compiled brief">
-              <div class="brief-card">
-                <div class="brief-bar">
-                  <div class="brief-bar-dots" aria-hidden="true">
-                    <div class="dot dot-r"></div>
-                    <div class="dot dot-y"></div>
-                    <div class="dot dot-g"></div>
-                  </div>
-                  <div class="brief-bar-title">compiled brief</div>
-                  <div class="brief-bar-status">&check; pass</div>
-                </div>
-                <div class="brief-body">
-                  <div class="brief-label">Sprint</div>
-                  <div class="brief-title">
-                    &ldquo;Should we use Postgres or MongoDB for the new
-                    service?&rdquo;
-                  </div>
+          </div>
+        </section>
 
-                  <div class="brief-rec">
-                    <div class="brief-rec-label">Recommendation</div>
-                    <div class="brief-rec-text">
-                      Postgres with JSONB columns for flexible fields. Covers
-                      relational queries (80% of workload) without sacrificing
-                      document flexibility.
-                    </div>
-                  </div>
+        <!-- Glass divider -->
+        <div class="glass-divider" aria-hidden="true"></div>
 
-                  <div class="brief-timeline">
-                    <span class="brief-timeline-label">Timeline:</span>
-                    <span class="brief-timeline-value"
-                      >2 weeks (Postgres) vs 9 weeks (MongoDB)</span
-                    >
-                    <span class="pill pill-confidence" style="margin-left: auto"
-                      >91% confidence</span
-                    >
-                  </div>
-
-                  <div class="brief-finding">
-                    <strong>Key finding:</strong> 80% of queries are relational
-                    joins &mdash; MongoDB incurs a significant performance
-                    penalty. pgvector eliminates the need for a separate vector
-                    database.
-                  </div>
-
-                  <div class="brief-risks">
-                    <div class="brief-risk-row">
-                      <span class="pill pill-high">high</span>
-                      <span class="brief-risk-text"
-                        >MongoDB migration effort is 4.5&times; longer than
-                        initially estimated</span
-                      >
-                    </div>
-                    <div class="brief-risk-row">
-                      <span class="pill pill-med">med</span>
-                      <span class="brief-risk-text"
-                        >Ecosystem tooling coverage at 73% &mdash; needs
-                        evaluation</span
-                      >
-                    </div>
-                    <div class="brief-risk-row">
-                      <span class="pill pill-low">low</span>
-                      <span class="brief-risk-text"
-                        >Schema flexibility gap mitigated by JSONB columns</span
-                      >
-                    </div>
-                  </div>
-                </div>
-                <div class="brief-footer">
-                  <span>6 findings &middot; 1 revised &middot; 0 retired</span>
-                  <span class="brief-footer-pass">&check; All gates met</span>
-                </div>
+        <!-- SECTION 3: HOW IT WORKS -->
+        <section class="section" id="how-section" aria-label="How it works">
+          <div class="section-inner">
+            <div class="how-inner">
+              <div class="how-conversation">
+                <div class="how-line">You ask.</div>
+                <div class="how-line">It researches.</div>
+                <div class="how-line">It argues with itself.</div>
+                <div class="how-line">You get the answer.</div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div><!-- /.glass-surface (top half) -->
 
-      <!-- SECTION 2: PROOF -->
+      <!-- SECTION 4: POND OPENING — the glass breaks open here -->
       <section
-        class="section proof"
-        id="proof-section"
-        aria-label="Why evidence matters"
-      >
-        <div class="section-inner">
-          <div class="proof-inner">
-            <p class="proof-analogy">
-              You wouldn&rsquo;t ship code without tests.<br />Why ship
-              <em>decisions</em> without evidence?
-            </p>
-            <p class="proof-footnote">
-              5 minutes. Every finding tracked and challenged.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <!-- SECTION 3: HOW IT WORKS -->
-      <section class="section" id="how-section" aria-label="How it works">
-        <div class="section-inner">
-          <div class="how-inner">
-            <div class="how-conversation">
-              <div class="how-line">You ask.</div>
-              <div class="how-line">It researches.</div>
-              <div class="how-line">It argues with itself.</div>
-              <div class="how-line">You get the answer.</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- SECTION 4: PLAYGROUND (Fish Pond) -->
-      <section
-        class="section playground"
+        class="section playground pond-opening"
         id="playground-section"
         aria-label="Interactive demo playground"
       >
         <div class="section-inner">
-          <h2 class="playground-title">See it in action</h2>
           <p class="playground-subtitle">
             Click any question to watch a research sprint
           </p>
@@ -380,85 +399,93 @@
         </div>
       </section>
 
-      <!-- SECTION 5: WHO IT'S FOR -->
-      <section
-        class="section who"
-        id="who-section"
-        aria-label="What Grainulator feels like"
-      >
-        <div class="section-inner">
-          <div class="who-inner">
-            <div class="who-quotes">
-              <div class="who-quote">
-                <p class="who-quote-text">
-                  &ldquo;Spell-check for your <em>strategy</em>.&rdquo;
-                </p>
-                <p class="who-quote-for">everyone who makes decisions</p>
-              </div>
-              <div class="who-quote">
-                <p class="who-quote-text">
-                  &ldquo;A second opinion that <em>never gets tired</em>.&rdquo;
-                </p>
-                <p class="who-quote-for">
-                  managers weighing trade-offs at midnight
-                </p>
-              </div>
-              <div class="who-quote">
-                <p class="who-quote-text">
-                  &ldquo;Peer review for decisions,
-                  <em>not just code</em>.&rdquo;
-                </p>
-                <p class="who-quote-for">
-                  engineers who already know what rigor looks like
-                </p>
-              </div>
-              <div class="who-quote">
-                <p class="who-quote-text">
-                  &ldquo;The research intern who actually
-                  <em>reads everything</em>.&rdquo;
-                </p>
-                <p class="who-quote-for">
-                  execs who need the brief, not the busywork
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <!-- GLASS SURFACE RESUMES (bottom half) -->
+      <div class="glass-surface glass-surface-bottom">
+        <div class="glass-specular" aria-hidden="true"></div>
 
-      <!-- SECTION 6: INSTALL + CLOSE -->
-      <section
-        class="section install-section"
-        id="install-section"
-        aria-label="Install Grainulator"
-      >
-        <div class="section-inner">
-          <div class="install-center">
-            <div class="install-label">In Claude Code, type:</div>
-            <div
-              class="install-cmd-block"
-              id="install-cmd"
-              role="button"
-              tabindex="0"
-              aria-label="Copy install command: /plugin install grainulator"
-            >
-              <span class="prompt" aria-hidden="true">/</span>plugin install
-              grainulator
-              <button
-                class="install-copy"
-                id="install-copy-btn"
-                aria-label="Copy to clipboard"
-              >
-                Copy
-              </button>
+        <!-- SECTION 5: WHO IT'S FOR -->
+        <section
+          class="section who"
+          id="who-section"
+          aria-label="What Grainulator feels like"
+        >
+          <div class="section-inner">
+            <div class="who-inner">
+              <div class="who-quotes">
+                <div class="who-quote">
+                  <p class="who-quote-text">
+                    &ldquo;Spell-check for your <em>strategy</em>.&rdquo;
+                  </p>
+                  <p class="who-quote-for">everyone who makes decisions</p>
+                </div>
+                <div class="who-quote">
+                  <p class="who-quote-text">
+                    &ldquo;A second opinion that <em>never gets tired</em>.&rdquo;
+                  </p>
+                  <p class="who-quote-for">
+                    managers weighing trade-offs at midnight
+                  </p>
+                </div>
+                <div class="who-quote">
+                  <p class="who-quote-text">
+                    &ldquo;Peer review for decisions,
+                    <em>not just code</em>.&rdquo;
+                  </p>
+                  <p class="who-quote-for">
+                    engineers who already know what rigor looks like
+                  </p>
+                </div>
+                <div class="who-quote">
+                  <p class="who-quote-text">
+                    &ldquo;The research intern who actually
+                    <em>reads everything</em>.&rdquo;
+                  </p>
+                  <p class="who-quote-for">
+                    execs who need the brief, not the busywork
+                  </p>
+                </div>
+              </div>
             </div>
-            <p class="install-compat">
-              Works with your existing codebase, Jira, Confluence, Slack.
-            </p>
-            <p class="install-time">In 4 minutes, it will have it.</p>
           </div>
-        </div>
-      </section>
+        </section>
+
+        <!-- Glass divider -->
+        <div class="glass-divider" aria-hidden="true"></div>
+
+        <!-- SECTION 6: INSTALL + CLOSE -->
+        <section
+          class="section install-section"
+          id="install-section"
+          aria-label="Install Grainulator"
+        >
+          <div class="section-inner">
+            <div class="install-center">
+              <div class="install-label">In Claude Code, type:</div>
+              <div
+                class="install-cmd-block"
+                id="install-cmd"
+                role="button"
+                tabindex="0"
+                aria-label="Copy install command: /plugin install grainulator"
+              >
+                <span class="prompt" aria-hidden="true">/</span>plugin install
+                grainulator
+                <button
+                  class="install-copy"
+                  id="install-copy-btn"
+                  aria-label="Copy to clipboard"
+                >
+                  Copy
+                </button>
+              </div>
+              <p class="install-compat">
+                Works with your existing codebase, Jira, Confluence, Slack.
+              </p>
+              <p class="install-time">In 4 minutes, it will have it.</p>
+            </div>
+          </div>
+        </section>
+      </div><!-- /.glass-surface-bottom -->
 
       <!-- Terminal overlay -->
       <div
