@@ -232,7 +232,7 @@ c.addEventListener('webglcontextlost', (e) => { e.preventDefault(); activateFall
 const isMobile = /Mobi|Android/i.test(navigator.userAgent) || innerWidth < 768;
 
 // Perf params — mobile gets lighter workload, desktop unchanged
-const NUM       = isMobile ? 8    : 12;
+const NUM       = isMobile ? 3    : 4;
 const STEPS     = isMobile ? 48   : 96;
 const HIT_THRESH= isMobile ? '0.003' : '0.001';
 const STEP_MULT = isMobile ? '1.0'   : '0.8';
@@ -248,7 +248,6 @@ precision highp float;
 uniform float t;
 uniform vec2 r;
 uniform float seed;
-// tilt removed — device orientation not reliable cross-browser
 
 #define NUM ${NUM}
 #define STEPS ${STEPS}
@@ -257,10 +256,15 @@ uniform float seed;
 #define NORM_EPS ${NORM_EPS}
 #define GLITCH_ON ${GLITCH_ON}
 
-// smooth min — the merge magic (w400: k=0.4 is the sweet spot)
 float smin(float a, float b, float k) {
   float h = clamp(0.5 + 0.5*(b-a)/k, 0.0, 1.0);
   return mix(b, a, h) - k*h*(1.0-h);
+}
+
+float sdEllipsoid(vec3 p, vec3 rad) {
+  float k0 = length(p / rad);
+  float k1 = length(p / (rad * rad));
+  return k0 * (k0 - 1.0) / k1;
 }
 
 float sdSphere(vec3 p, float s) {
@@ -273,15 +277,9 @@ float glitchHash(vec2 p) {
 }
 #endif
 
-// the lava scene — all blobs combined via smooth union
 float map(vec3 p) {
 #if GLITCH_ON
-  // physics-based glitch: lava lamp thermal logic
-  // RISING = hot = smooth HD (wax is fluid)
-  // TOP = cooling = pixelates (wax is stiffening)
-  // FALLING = reheating = self-corrects as it nears heat
-  // only the TOP zone pixelates — above y=1.0
-  float topZone = smoothstep(1.0, 2.5, p.y); // 0 below midpoint, 1 at top
+  float topZone = smoothstep(2.0, 3.5, p.y);
   if (topZone > 0.01) {
     float cellSize = 0.5;
     vec2 cell = floor(p.xy / cellSize);
@@ -296,75 +294,80 @@ float map(vec3 p) {
   }
 #endif
 
-  float d = 100.0;
+  // THE BOTTOM POOL — flat, wide, fills the base (60-80% of wax mass)
+  vec3 poolPos = vec3(0.0, -0.5, 0.0);
+  vec3 poolRad = vec3(2.5, 0.5, 2.0);
+  float d = sdEllipsoid(p - poolPos, poolRad);
 
+  // 3-4 BLOBS following convection cycle
   for (int i = 0; i < NUM; i++) {
     float fi = float(i);
     float hash1 = fract(fi * 412.531 + 0.513 + seed);
     float hash2 = fract(fi * 317.892 + 0.217 + seed * 1.7);
     float hash3 = fract(fi * 253.147 + 0.891 + seed * 2.3);
 
-    // convection cycle speed — all positive, all rising
-    float speed = 0.03 + hash1 * 0.04; // 0.03-0.07, glacially slow
-    float phase = fi * 1.37 + seed * 6.28;
+    // 35-60 second cycle per blob
+    float cycleTime = 35.0 + hash1 * 25.0;
+    float phase = fract(t / cycleTime + fi * 0.27 + seed);
 
-    // heat source direction
-    vec2 heatDir = vec2(0.0, -1.0);
-    float heatLen = length(heatDir);
-    heatDir = heatLen > 0.01 ? heatDir / heatLen : vec2(0.0, -1.0);
+    float y;
+    float shapePhase; // 0=dome, 0.5=teardrop, 1=flat top
 
-    // sawtooth-ish cycle: slow rise, pause at top, faster sink
-    // fract gives 0→1 repeating ramp
-    float cycle = fract(t * speed + phase);
-
-    // reshape: heat(0-0.2), rise(0.2-0.45), cool at top(0.45-0.65), slow fall(0.65-1.0)
-    float travel;
-    if (cycle < 0.2) {
-      // heating at bottom pool — wobbling, barely moving
-      travel = -2.0 + cycle / 0.2 * 0.4;
-    } else if (cycle < 0.45) {
-      // rising — smooth, accelerating then decelerating
-      float r = (cycle - 0.2) / 0.25;
-      travel = -1.6 + r * r * (3.0 - 2.0 * r) * 4.1;
-    } else if (cycle < 0.65) {
-      // cooling at top — lingering, stiffening (pixelation zone)
-      float r = (cycle - 0.45) / 0.2;
-      travel = 2.5 - r * 0.4;
+    if (phase < 0.40) {
+      // DOME FORMING on pool surface (40% of time)
+      float rr = phase / 0.40;
+      float dome = rr * rr * (3.0 - 2.0 * rr);
+      y = 0.0 + dome * 0.8;
+      shapePhase = 0.0;
+    } else if (phase < 0.60) {
+      // RISING as teardrop (20%)
+      float rr = (phase - 0.40) / 0.20;
+      float rise = rr * rr * (3.0 - 2.0 * rr);
+      y = 0.8 + rise * 2.7;
+      shapePhase = 0.5;
+    } else if (phase < 0.75) {
+      // AT TOP cooling (15%)
+      float rr = (phase - 0.60) / 0.15;
+      y = 3.5 - rr * 0.3;
+      shapePhase = 1.0;
     } else {
-      // falling — SLOW descent through the cool zone, then faster near bottom
-      float r = (cycle - 0.65) / 0.35;
-      // cubic ease-in: slow at top, accelerates toward bottom
-      float eased = r * r * r;
-      travel = 2.1 - eased * 4.1;
+      // FALLING — slow at top, accelerating near pool (25%)
+      float rr = (phase - 0.75) / 0.25;
+      float fall = rr * rr * rr;
+      y = 3.2 - fall * 3.2;
+      shapePhase = mix(1.0, 0.0, rr);
     }
 
-    // wider horizontal drift so blobs spread across full viewport
-    vec3 offset;
-    offset.x = -heatDir.x * travel + sin(t * 0.05 * (0.5 + hash2) + phase * 2.1) * 1.2;
-    offset.y = -heatDir.y * travel + sin(t * 0.04 * (0.5 + hash3) + phase * 1.7) * 0.8;
-    offset.z = cos(t * 0.06 * (0.5 + hash3) + phase * 1.7) * 0.5;
+    // minimal horizontal drift — real lava mostly goes straight up/down
+    float xOff = (hash2 - 0.5) * 1.0 + sin(t * 0.03 + fi * 2.1) * 0.15;
+    float zOff = (hash3 - 0.5) * 0.6 + cos(t * 0.025 + fi * 1.7) * 0.1;
 
-    // size: bigger near heat (expanding), smaller when cooled
-    float heatProximity = smoothstep(0.5, -1.0, travel);
-    float size = mix(0.2, 0.55, hash1) * (0.8 + heatProximity * 0.4);
+    vec3 blobPos = vec3(xOff, y, zOff);
 
-    d = smin(d, sdSphere(p - offset, size), 0.45);
+    // shape morphing: dome → teardrop → flat
+    vec3 domeRad     = vec3(0.40, 0.28, 0.40);
+    vec3 teardropRad = vec3(0.28, 0.50, 0.28);
+    vec3 flatRad     = vec3(0.40, 0.28, 0.40);
+
+    vec3 blobRad;
+    if (shapePhase < 0.5) {
+      blobRad = mix(domeRad, teardropRad, shapePhase * 2.0);
+    } else {
+      blobRad = mix(teardropRad, flatRad, (shapePhase - 0.5) * 2.0);
+    }
+    blobRad *= 0.8 + hash1 * 0.4;
+
+    float blobD = sdEllipsoid(p - blobPos, blobRad);
+
+    // HIGH k near pool = visible stretching necks
+    float poolProximity = smoothstep(2.0, 0.0, y);
+    float k = mix(0.5, 0.7, poolProximity);
+    d = smin(d, blobD, k);
   }
-
-  // heat pool — where the heat source is (blobs emerge from here)
-  vec2 hd = vec2(0.0, -1.0);
-  float hl = length(hd);
-  hd = hl > 0.01 ? hd / hl : vec2(0.0, -1.0);
-  vec3 heatPos = vec3(hd.x * 3.0, hd.y * 3.0, 0.0);
-  float pool = sdSphere(p - heatPos, 1.3);
-  d = smin(d, pool, 0.5);
-
-  // no top pool — wax cools and sinks naturally, only collects at heat source
 
   return d;
 }
 
-// normal from SDF
 vec3 calcNormal(vec3 p) {
   vec2 e = vec2(NORM_EPS, 0.0);
   return normalize(vec3(
@@ -377,115 +380,84 @@ vec3 calcNormal(vec3 p) {
 void main() {
   vec2 uv = (gl_FragCoord.xy - 0.5*r) / min(r.x, r.y);
 
-  // glitch is now physics-based in map() — no timed trigger needed
+  // camera: bottom of viewport = bottom of lamp
+  vec3 ro = vec3(0.0, 1.5, 5.0);
+  vec3 lookAt = vec3(0.0, 1.5, 0.0);
+  vec3 fwd = normalize(lookAt - ro);
+  vec3 rgt = normalize(cross(fwd, vec3(0.0, 1.0, 0.0)));
+  vec3 up2 = cross(rgt, fwd);
+  vec3 rd = normalize(fwd * 1.5 + rgt * uv.x + up2 * uv.y);
 
-  // camera — looking at lamp from front
-  vec3 ro = vec3(0.0, 0.0, 4.5);
-  vec3 rd = normalize(vec3(uv, -1.5));
-
-  // raymarch
-  float d = 0.0;
+  float dist = 0.0;
   float hit = -1.0;
-  float lastH = 1.0; // track last SDF distance for edge AA
+  float lastH = 1.0;
   for (int i = 0; i < STEPS; i++) {
-    vec3 p = ro + rd * d;
+    vec3 p = ro + rd * dist;
     float h = map(p);
     lastH = h;
-    if (h < HIT_THRESH) { hit = d; break; }
-    if (d > 20.0) break;
-    d += h * STEP_MULT;
+    if (h < HIT_THRESH) { hit = dist; break; }
+    if (dist > 20.0) break;
+    dist += h * STEP_MULT;
   }
 
-  // liquid background — dark amber, brighter at bottom
+  // liquid background
   float bgY = uv.y * 0.5 + 0.5;
   vec3 col = mix(
-    vec3(0.06, 0.04, 0.015),  // warm amber at bottom (bulb)
-    vec3(0.015, 0.012, 0.008), // dark at top
+    vec3(0.06, 0.04, 0.015),
+    vec3(0.015, 0.012, 0.008),
     bgY
   );
-
-  // bulb hotspot — follows heat source direction
-  vec2 hd2 = vec2(0.0, -1.0);
-  float hl2 = length(hd2);
-  hd2 = hl2 > 0.01 ? hd2 / hl2 : vec2(0.0, -1.0);
-  vec2 bulbPos = hd2 * 0.5;
-  float bulb = exp(-dot(uv - bulbPos, uv - bulbPos) * 4.0);
+  vec2 bulbPos = vec2(0.0, -0.4);
+  float bulb = exp(-dot(uv - bulbPos, uv - bulbPos) * 3.0);
   col += vec3(0.08, 0.05, 0.02) * bulb;
 
-  vec3 bgCol = col; // save liquid color for edge blending
+  vec3 bgCol = col;
   if (hit > 0.0) {
     vec3 p = ro + rd * hit;
     vec3 n = calcNormal(p);
 
-    // light from heat source direction
-    vec2 ld = vec2(0.0, -1.0);
-    float ll = length(ld);
-    ld = ll > 0.01 ? ld / ll : vec2(0.0, -1.0);
-    vec3 lightDir = normalize(vec3(ld.x * 0.5 + 0.2, ld.y, 0.8));
+    vec3 lightDir = normalize(vec3(0.2, -0.8, 0.8));
     float diff = max(dot(n, lightDir), 0.0);
-    diff = sqrt(diff); // soften — wax is translucent (w409)
-
-    // ambient — soft fill
+    diff = sqrt(diff);
     float amb = 0.25 + 0.15 * n.y;
-
-    // rim/fresnel — backlit edges
     float fres = pow(1.0 - max(dot(n, -rd), 0.0), 2.5);
-
-    // subsurface scatter fake
     float sss = max(dot(n, -lightDir), 0.0) * 0.2;
-
-    // specular — very subtle waxy sheen
     vec3 H = normalize(lightDir - rd);
     float spec = pow(max(dot(n, H), 0.0), 16.0) * 0.12;
 
-    // wax color — DARK center, BRIGHT edge (r1700, r1711: inverse of typical metaball)
-    // thick wax = dark olive #2d6b30, thin edges = bright lime #66ff66
-    float heightFade = (p.y + 3.0) / 6.0;
+    float heightFade = (p.y + 1.0) / 5.0;
     vec3 waxDark = mix(
-      vec3(0.20, 0.50, 0.06), // dark olive-green near bulb (warmer)
-      vec3(0.12, 0.38, 0.05), // even darker olive at top (cooler)
+      vec3(0.20, 0.50, 0.06),
+      vec3(0.12, 0.38, 0.05),
       clamp(heightFade, 0.0, 1.0)
     );
-    vec3 waxBright = vec3(0.40, 1.0, 0.25); // bright lime for thin edges
-
-    // fresnel = 1 at glancing angles (thin wax) = where light passes through
-    // the interior is DARK (opaque wax blocks light)
-    // the rim is BRIGHT (backlit, light shines through thin margins)
+    vec3 waxBright = vec3(0.40, 1.0, 0.25);
     vec3 waxCol = mix(waxDark, waxBright, fres * 0.7);
 
-    // bottom lighting heats the underside (r1701, r1710)
     float underLight = max(dot(n, vec3(0.0, -1.0, 0.0)), 0.0);
     waxCol += vec3(0.08, 0.15, 0.02) * underLight;
 
-    // combine — matte, lit by the bulb below
     col = waxCol * (diff * 0.4 + amb + sss * 0.5);
-    // very subtle specular — waxy, not shiny
     col += vec3(0.2, 0.4, 0.1) * spec * 0.5;
 
-    // depth fog — amber-tinted liquid (r1704)
     float fog = exp(-hit * 0.08);
     vec3 fogCol = vec3(0.035, 0.028, 0.012);
     col = mix(fogCol, col, fog);
 
-    // edge AA: smooth SDF-based blend (but preserve rim for blue glow)
     float edgeAA = smoothstep(HIT_THRESH, 0.0, lastH);
     col = mix(bgCol, col, edgeAA);
 
-    // fluorescent blue rim — Bullina lineata iridescence
-    // applied AFTER edge blend so the blue glow survives at the boundary
+    // fluorescent blue rim — after edge blend
     float rimInner = pow(fres, 1.5);
     float rimOuter = pow(fres, 2.5);
     col += waxBright * rimInner * 0.2;
-    col += vec3(0.15, 0.45, 1.0) * rimOuter * 1.5; // stronger neon blue
-    // blue bloom — spills beyond the edge into the liquid
+    col += vec3(0.15, 0.45, 1.0) * rimOuter * 1.5;
     col += vec3(0.08, 0.25, 0.8) * pow(fres, 4.0) * 1.0;
   }
 
-  // vignette — gentle
   float vig = 1.0 - dot(uv * 0.6, uv * 0.6);
   col *= smoothstep(0.0, 0.5, vig);
 
-  // grain
   float grain = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898,78.233)) + t) * 43758.5453);
   col += grain * 0.005 - 0.0025;
 
@@ -541,7 +513,7 @@ const render = (time) => {
   if (Date.now() - lastInteraction > 90000) { paused = true; return; }
   gl.uniform1f(tLoc, time * 0.001);
   gl.uniform2f(rLoc, c.width, c.height);
-  // tilt removed
+  // uniforms set in render loop: t, r
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   requestAnimationFrame(render);
 };
