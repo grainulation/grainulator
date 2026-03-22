@@ -255,10 +255,6 @@ uniform float seed;
 #define NORM_EPS ${NORM_EPS}
 #define GLITCH_ON ${GLITCH_ON}
 
-// ============================================================
-// SPLATTER LAVA — zero-gravity lava lamp with meteor intro
-// ============================================================
-
 float smin(float a, float b, float k) {
   float h = clamp(0.5 + 0.5*(b-a)/k, 0.0, 1.0);
   return mix(b, a, h) - k*h*(1.0-h);
@@ -268,184 +264,78 @@ float sdSphere(vec3 p, float s) {
   return length(p) - s;
 }
 
-vec3 rotY(vec3 p, float a) {
-  float c = cos(a), s = sin(a);
-  return vec3(c*p.x + s*p.z, p.y, -s*p.x + c*p.z);
-}
-
-vec3 rotX(vec3 p, float a) {
-  float c = cos(a), s = sin(a);
-  return vec3(p.x, c*p.y - s*p.z, s*p.y + c*p.z);
-}
-
-// Hash helpers
 float hash(float n) { return fract(sin(n) * 43758.5453); }
-float hash2(float a, float b) { return fract(sin(a * 127.1 + b * 311.7) * 43758.5453); }
 
-// Impact point — the screen IS the collision surface
-// meteor hits somewhere off-center on the viewport plane (z=0)
-vec3 getImpactPos() {
-  float x = (fract(seed * 7.3) - 0.5) * 1.5; // off-center
-  float y = (fract(seed * 13.1) - 0.5) * 1.0;
-  return vec3(x, y, 0.0); // z=0 = the screen plane
-}
-
-// Entry point — comes from deep space BEHIND the screen (positive z = toward camera)
-vec3 getEntryPos() {
-  vec3 ip = getImpactPos();
-  return vec3(ip.x * 0.3, ip.y * 0.3, -8.0); // far behind, slightly aimed at impact
-}
-
-// Each blob's resting float position — spread across entire viewport
-vec3 getFloatPos(int i) {
-  float fi = float(i);
-  float h1 = hash(fi * 412.531 + seed * 3.7);
-  float h2 = hash(fi * 317.892 + seed * 5.1);
-  float h3 = hash(fi * 253.147 + seed * 7.9);
-
-  // Spread blobs across the full viewport range
-  // Use golden-ratio-based distribution for even coverage
-  float angle = fi * 2.39996 + seed * 6.28;
-  float radius = 0.6 + h1 * 1.2; // 0.6 to 1.8 from center
-  float x = cos(angle) * radius * (0.8 + h2 * 0.4);
-  float y = sin(angle) * radius * (0.8 + h3 * 0.4);
-  float z = (h1 - 0.5) * 0.8; // slight depth variation
-
-  return vec3(x, y, z);
-}
-
-// Each blob's radius — varied sizes
-float getBlobRadius(int i) {
-  float fi = float(i);
-  float h = hash(fi * 173.29 + seed * 2.1);
-  return 0.15 + h * 0.20; // 0.15 to 0.35
-}
-
-// Animate a blob's float position with slow sine-wave drift
-vec3 animateFloat(vec3 base, int i, float time) {
-  float fi = float(i);
-  float h1 = hash(fi * 91.3 + seed);
-  float h2 = hash(fi * 147.7 + seed * 1.3);
-  float h3 = hash(fi * 213.1 + seed * 2.7);
-
-  // Each blob has unique speed, phase, and drift amplitude
-  float speedX = 0.03 + h1 * 0.04; // 0.03-0.07
-  float speedY = 0.025 + h2 * 0.035;
-  float speedZ = 0.02 + h3 * 0.03;
-
-  float phaseX = h2 * 6.28;
-  float phaseY = h3 * 6.28;
-  float phaseZ = h1 * 6.28;
-
-  // Layered sine waves for organic, non-repeating drift
-  float dx = sin(time * speedX + phaseX) * 0.5
-           + sin(time * speedX * 0.37 + phaseY + 1.7) * 0.3
-           + cos(time * speedX * 0.71 + phaseZ) * 0.15;
-
-  float dy = sin(time * speedY + phaseY + 0.5) * 0.4
-           + cos(time * speedY * 0.43 + phaseX + 2.1) * 0.25
-           + sin(time * speedY * 0.67 + phaseZ + 1.2) * 0.15;
-
-  float dz = cos(time * speedZ + phaseZ + 1.0) * 0.25
-           + sin(time * speedZ * 0.53 + phaseX) * 0.15;
-
-  return base + vec3(dx, dy, dz);
+// per-blob neon color — each blob gets its own neon hue
+vec3 getNeonColor(float idx) {
+  float h = fract(idx * 0.618 + seed * 3.7); // golden ratio spread
+  // neon palette: cyan, magenta, blue, green, pink, orange
+  vec3 c;
+  if (h < 0.16) c = vec3(0.55, 0.96, 1.0);       // neon cyan #8df6ff
+  else if (h < 0.33) c = vec3(1.0, 0.2, 0.8);     // neon magenta
+  else if (h < 0.5) c = vec3(0.3, 0.5, 1.0);      // neon blue
+  else if (h < 0.66) c = vec3(0.2, 1.0, 0.4);     // neon green
+  else if (h < 0.83) c = vec3(1.0, 0.4, 0.6);     // neon pink
+  else c = vec3(1.0, 0.6, 0.1);                    // neon orange
+  return c;
 }
 
 float map(vec3 p) {
-  vec3 impactPos = getImpactPos();
-  vec3 entryPos = getEntryPos();
-
-  // Intro timing
-  float introT = smoothstep(0.0, 3.0, t);
-  // Meteor arrival: FAST — 0 to 0.4s (lightspeed)
-  float meteorT = smoothstep(0.0, 0.4, t); // arrives in 0.4s
-  // Splatter: 0.4s to 2s
-  float splatterT = smoothstep(0.4, 2.0, t);
-  // Settle: 1.5s to 3s
-  float settleT = smoothstep(1.5, 3.0, t);
-
   float d = 1e10;
 
-  // THE METEOR — massive, arrives at lightspeed, hits the screen
-  float meteorSize = 1.2 * (1.0 - smoothstep(0.3, 0.8, t)); // BIG, shrinks fast on impact
-  if (meteorSize > 0.01) {
-    // exponential approach — starts slow far away, accelerates violently
-    float approach = 1.0 - exp(-t * 8.0); // near-instant arrival
-    vec3 meteorPos = mix(entryPos, impactPos, approach);
-    float meteorD = sdSphere(p - meteorPos, meteorSize);
-    d = min(d, meteorD);
-  }
-
-  // THE BLOBS (emerge from impact after t=0.8s)
   for (int i = 0; i < NUM; i++) {
     float fi = float(i);
     float h1 = hash(fi * 412.531 + seed * 3.7);
+    float h2 = hash(fi * 317.892 + seed * 5.1);
+    float h3 = hash(fi * 253.147 + seed * 7.9);
+    float h4 = hash(fi * 173.29 + seed * 2.1);
 
-    // Each blob's final floating position
-    vec3 floatBase = getFloatPos(i);
-    vec3 floatPos = animateFloat(floatBase, i, t);
-    float blobR = getBlobRadius(i);
+    // random position spread across full viewport
+    float angle = fi * 2.39996 + seed * 6.28;
+    float radius = 0.5 + h1 * 1.3;
+    float baseX = cos(angle) * radius * (0.7 + h2 * 0.6);
+    float baseY = sin(angle) * radius * (0.7 + h3 * 0.6);
+    float baseZ = (h4 - 0.5) * 0.6;
 
-    // Blobs explode from impact — staggered, violent
-    float stagger = fi * 0.03 + h1 * 0.08; // tight stagger
-    float blobIntroT = smoothstep(0.3 + stagger, 1.8 + stagger, t);
+    // slow organic drift — 3 layered sines per axis
+    float sx = 0.03 + h1 * 0.04;
+    float sy = 0.025 + h2 * 0.035;
+    float sz = 0.02 + h3 * 0.03;
+    float px = h2 * 6.28 + seed * 100.0;
+    float py = h3 * 6.28 + seed * 100.0;
+    float pz = h1 * 6.28 + seed * 100.0;
 
-    // Overshoot — blobs fly PAST their target, then settle back
-    float rawT = clamp((t - 0.3 - stagger) / (2.0), 0.0, 1.0);
-    float overshoot = 1.0;
-    if (rawT > 0.0 && rawT < 1.0) {
-      float springT = rawT * 3.14159 * 2.0;
-      overshoot = 1.0 + (1.0 - rawT) * 0.4 * sin(springT) * exp(-rawT * 3.0);
-    }
+    float dx = sin(t*sx + px)*0.5 + sin(t*sx*0.37 + py + 1.7)*0.3 + cos(t*sx*0.71 + pz)*0.15;
+    float dy = sin(t*sy + py + 0.5)*0.4 + cos(t*sy*0.43 + px + 2.1)*0.25 + sin(t*sy*0.67 + pz + 1.2)*0.15;
+    float dz = cos(t*sz + pz + 1.0)*0.2 + sin(t*sz*0.53 + px)*0.1;
 
-    vec3 blobPos = mix(impactPos, floatPos * overshoot, blobIntroT);
+    vec3 blobPos = vec3(baseX + dx, baseY + dy, baseZ + dz);
 
-    // Blob size: explodes into existence
-    float sizeIntro = smoothstep(0.3 + stagger, 0.8 + stagger, t);
-    float currentR = blobR * sizeIntro;
-
-    if (currentR < 0.01) continue;
+    // random sizes
+    float blobR = 0.12 + h4 * 0.25;
 
     vec3 evalP = p;
 
-    // Glitch — per-blob voxelization
+    // glitch — per-blob, rare, artistic
 #if GLITCH_ON
     {
-      float glitchAmt = 0.0;
-
-      // Glitch is more likely during the "tearing" moment — when blobs are
-      // separating (intro overshoot phase) or when two blobs drift apart
-      float tearMoment = 0.0;
-      if (t > 0.3 && t < 3.0) {
-        // During splatter, high glitch chance
-        tearMoment = smoothstep(0.3, 0.6, t) * (1.0 - smoothstep(2.0, 3.0, t));
-      }
-
-      // Random per-blob glitch bursts (rare, artistic)
-      float glitchWave = sin(t * 0.3 + fi * 3.7) * sin(t * 0.13 + fi * 2.1);
-      float glitchBurst = smoothstep(0.6, 0.9, glitchWave); // rare spikes
-      glitchAmt = max(tearMoment * 0.25, glitchBurst * 0.3);
-
-      if (glitchAmt > 0.01) {
-        vec3 toBlob = p - blobPos;
-        float nearBlob = smoothstep(1.5, 0.1, length(toBlob));
-        float finalAmt = glitchAmt * nearBlob;
-        if (finalAmt > 0.005) {
-          // Vary voxel size
-          float vs = mix(0.30, 0.10, fract(sin(fi * 73.1 + floor(t * 2.0)) * 438.5));
-          vec3 snapped = floor(p / vs + 0.5) * vs;
-          evalP = mix(p, snapped, min(finalAmt, 0.30));
+      float gw = sin(t*0.3 + fi*3.7) * sin(t*0.13 + fi*2.1);
+      float burst = smoothstep(0.65, 0.9, gw);
+      if (burst > 0.01) {
+        vec3 toB = p - blobPos;
+        float near = smoothstep(1.5, 0.1, length(toB));
+        float amt = burst * near * 0.28;
+        if (amt > 0.005) {
+          float vs = mix(0.28, 0.10, fract(sin(fi*73.1 + floor(t*2.0))*438.5));
+          vec3 snapped = floor(p/vs + 0.5) * vs;
+          evalP = mix(p, snapped, amt);
         }
       }
     }
 #endif
 
-    float blobD = sdSphere(evalP - blobPos, currentR);
-
-    // Smooth union with k varying by distance between blobs
-    // k = 0.3-0.5 for organic merging
-    float k = 0.35 + 0.1 * sin(fi * 1.7 + t * 0.05);
+    float blobD = sdSphere(evalP - blobPos, blobR);
+    float k = 0.3 + 0.1 * sin(fi * 1.7 + t * 0.05);
     d = smin(d, blobD, k);
   }
 
@@ -464,48 +354,12 @@ vec3 calcNormal(vec3 p) {
 void main() {
   vec2 uv = (gl_FragCoord.xy - 0.5*r) / min(r.x, r.y);
 
-  // === GRAVITATIONAL LENSING ===
-  // Follows the densest cluster of blobs, not a fixed center
-  // Approximate: average the blob positions projected to screen space
-  vec3 clusterCenter = vec3(0.0);
-  float totalWeight = 0.0;
-  float introT = smoothstep(0.0, 3.0, t);
-
-  for (int i = 0; i < NUM; i++) {
-    float fi = float(i);
-    float h1 = hash(fi * 412.531 + seed * 3.7);
-    vec3 floatBase = getFloatPos(i);
-    vec3 floatPos = animateFloat(floatBase, i, t);
-
-    float stagger2 = fi * 0.03 + h1 * 0.08;
-    float blobIntroT2 = smoothstep(0.3 + stagger2, 1.8 + stagger2, t);
-    vec3 impactPos = getImpactPos();
-    vec3 blobPos = mix(impactPos, floatPos, blobIntroT2);
-
-    float blobR = getBlobRadius(i);
-    float w = blobR * blobR; // bigger blobs weigh more
-    clusterCenter += blobPos * w;
-    totalWeight += w;
-  }
-  clusterCenter /= max(totalWeight, 0.001);
-
-  // Project cluster center to screen space (approximate, camera at z=3.8)
-  vec2 lensCenter = clusterCenter.xy / 3.8;
-  vec2 toLens = lensCenter - uv;
-  float r2 = dot(toLens, toLens);
-  float lensMass = 0.15 * introT; // subtle, fades in with intro
-  float deflection = lensMass / (r2 + 0.08);
-  uv += normalize(toLens + 0.001) * deflection * 0.06;
-
-  // Camera
   vec3 ro = vec3(0.0, 0.0, 3.8);
-  vec3 lookAt = vec3(0.0, 0.0, 0.0);
-  vec3 fwd = normalize(lookAt - ro);
-  vec3 rgt = normalize(cross(fwd, vec3(0.0, 1.0, 0.0)));
-  vec3 up2 = cross(rgt, fwd);
+  vec3 fwd = vec3(0.0, 0.0, -1.0);
+  vec3 rgt = vec3(1.0, 0.0, 0.0);
+  vec3 up2 = vec3(0.0, 1.0, 0.0);
   vec3 rd = normalize(fwd * 1.2 + rgt * uv.x + up2 * uv.y);
 
-  // Raymarch
   float dist = 0.0;
   float hit = -1.0;
   float lastH = 1.0;
@@ -514,86 +368,97 @@ void main() {
     float h = map(p);
     lastH = h;
     if (h < HIT_THRESH) { hit = dist; break; }
-    if (dist > 20.0) break;
+    if (dist > 15.0) break;
     dist += h * STEP_MULT;
   }
 
-  // === BACKGROUND ===
-  // Near-black with very subtle warmth
-  float centerDist = length(uv);
-  vec3 col = mix(
-    vec3(0.04, 0.025, 0.01),  // warm center
-    vec3(0.006, 0.004, 0.002), // near-black edges
-    smoothstep(0.0, 1.5, centerDist)
-  );
-
+  // background — near-black
+  vec3 col = vec3(0.005, 0.004, 0.003);
   vec3 bgCol = col;
 
   if (hit > 0.0) {
     vec3 p = ro + rd * hit;
     vec3 n = calcNormal(p);
 
-    // === LIGHTING: ambient + fresnel rim, no single light source ===
-    // View direction
     float NdotV = max(dot(n, -rd), 0.0);
     float fres = pow(1.0 - NdotV, 2.5);
 
-    // Ambient: dark olive core
-    float amb = 0.25;
-
-    // Hemisphere ambient — slight variation based on normal direction
+    // hemisphere ambient
     float hemiAmt = 0.5 + 0.5 * n.y;
-    vec3 hemiUp = vec3(0.12, 0.22, 0.06);   // slight green from above
-    vec3 hemiDown = vec3(0.06, 0.10, 0.03);  // darker below
+    vec3 hemiUp = vec3(0.10, 0.18, 0.05);
+    vec3 hemiDown = vec3(0.05, 0.08, 0.03);
     vec3 hemiAmb = mix(hemiDown, hemiUp, hemiAmt);
 
-    // Subsurface scattering approximation
-    float sss = pow(max(dot(rd, n), 0.0), 2.0) * 0.2;
+    // dark olive wax body
+    vec3 waxDark = vec3(0.12, 0.28, 0.04);
+    vec3 waxBright = vec3(0.30, 0.80, 0.15);
+    vec3 waxCol = mix(waxDark, waxBright, fres * 0.5);
 
-    // Wax colors: dark olive center, bright lime edges
-    vec3 waxDark = vec3(0.15, 0.35, 0.05);  // dark olive
-    vec3 waxBright = vec3(0.35, 0.90, 0.18); // bright lime
-    vec3 waxCol = mix(waxDark, waxBright, fres * 0.7);
+    float sss = pow(max(dot(rd, n), 0.0), 2.0) * 0.15;
+    waxCol += vec3(0.08, 0.04, 0.01) * sss * 2.0;
 
-    // Add subsurface warmth
-    waxCol += vec3(0.10, 0.06, 0.02) * sss * 2.0;
-
-    // Final wax shading
-    col = waxCol * (amb + 0.15) + hemiAmb * 0.3;
+    col = waxCol * 0.35 + hemiAmb * 0.25;
     col += waxCol * sss;
 
-    // Specular — soft, environment-like
-    vec3 refl = reflect(rd, n);
-    float envSpec = pow(max(refl.y * 0.5 + 0.5, 0.0), 8.0) * 0.08;
-    col += vec3(0.2, 0.5, 0.15) * envSpec;
-
-    // Fog
+    // fog
     float fog = exp(-hit * 0.05);
-    vec3 fogCol = vec3(0.015, 0.012, 0.006);
-    col = mix(fogCol, col, fog);
+    col = mix(vec3(0.01, 0.008, 0.004), col, fog);
 
-    // Edge AA
+    // edge AA
     float edgeAA = smoothstep(HIT_THRESH, 0.0, lastH);
     col = mix(bgCol, col, edgeAA);
 
-    // === NEON BLUE RIM — AFTER fog and edge AA so it's NEVER dimmed ===
-    vec3 neonBlue = vec3(0.553, 0.965, 1.0); // #8df6ff
-    float rimInner = pow(fres, 1.5);
-    float rimOuter = pow(fres, 2.0);  // wider than before
-    float rimHard = pow(fres, 3.5);
+    // === NEON RIM — the star, AFTER everything ===
+    // find which blob we hit to get its color
+    // approximate: use hit position to find nearest blob
+    float minD = 1e10;
+    float nearestIdx = 0.0;
+    for (int i = 0; i < NUM; i++) {
+      float fi = float(i);
+      float h1 = hash(fi * 412.531 + seed * 3.7);
+      float h2 = hash(fi * 317.892 + seed * 5.1);
+      float h3 = hash(fi * 253.147 + seed * 7.9);
+      float h4 = hash(fi * 173.29 + seed * 2.1);
 
-    col += waxBright * rimInner * 0.2;
-    col += neonBlue * rimOuter * 1.8;   // cranked up
-    col += neonBlue * rimHard * 1.2;    // cranked up
+      float angle = fi * 2.39996 + seed * 6.28;
+      float radius = 0.5 + h1 * 1.3;
+      float bx = cos(angle)*radius*(0.7+h2*0.6);
+      float by = sin(angle)*radius*(0.7+h3*0.6);
+      float bz = (h4-0.5)*0.6;
+
+      float sx2 = 0.03 + h1*0.04;
+      float sy2 = 0.025 + h2*0.035;
+      float sz2 = 0.02 + h3*0.03;
+      float px2 = h2*6.28 + seed*100.0;
+      float py2 = h3*6.28 + seed*100.0;
+      float pz2 = h1*6.28 + seed*100.0;
+
+      vec3 bp = vec3(
+        bx + sin(t*sx2+px2)*0.5 + sin(t*sx2*0.37+py2+1.7)*0.3 + cos(t*sx2*0.71+pz2)*0.15,
+        by + sin(t*sy2+py2+0.5)*0.4 + cos(t*sy2*0.43+px2+2.1)*0.25 + sin(t*sy2*0.67+pz2+1.2)*0.15,
+        bz + cos(t*sz2+pz2+1.0)*0.2 + sin(t*sz2*0.53+px2)*0.1
+      );
+      float dd = length(p - bp);
+      if (dd < minD) { minD = dd; nearestIdx = fi; }
+    }
+
+    vec3 neon = getNeonColor(nearestIdx);
+    float rimWide = pow(fres, 1.3);
+    float rimTight = pow(fres, 2.2);
+    float rimHot = pow(fres, 3.5);
+
+    col += neon * rimWide * 0.3;
+    col += neon * rimTight * 1.5;
+    col += neon * rimHot * 1.0;
   }
 
-  // Vignette
+  // vignette
   float vig = 1.0 - dot(uv * 0.55, uv * 0.55);
   col *= smoothstep(0.0, 0.5, vig);
 
-  // Film grain
+  // grain
   float grain = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233)) + t) * 43758.5453);
-  col += grain * 0.005 - 0.0025;
+  col += grain * 0.004 - 0.002;
 
   gl_FragColor = vec4(col, 1.0);
 }
