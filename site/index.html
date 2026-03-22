@@ -40,9 +40,9 @@
 </script>
 <style>
 /* ============================================================
-   GRAINULATOR — Gaming UX Swimming Prompts Landing Page
-   Canvas 2D pond with fish AI, particles, caustics.
-   Juicy interactions. 60fps. Full a11y.
+   GRAINULATOR — Landing Page
+   Canvas 2D pond with fish AI, particles.
+   Refined interactions. 60fps. Full a11y.
    ============================================================ */
 
 @font-face {
@@ -250,8 +250,8 @@ code, pre { font-family: var(--mono); }
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - 100px);
-  transform: scale(0.96) translateY(20px);
-  transition: transform 0.5s var(--ease-spring);
+  transform: scale(0.97) translateY(12px);
+  transition: transform 0.5s var(--ease);
 }
 .terminal-overlay.active .terminal-container {
   transform: scale(1) translateY(0);
@@ -292,16 +292,15 @@ code, pre { font-family: var(--mono); }
 }
 .game-terminal.victory {
   box-shadow:
-    0 0 200px rgba(191, 255, 0, 0.15),
-    0 0 60px rgba(191, 255, 0, 0.1),
+    0 0 80px rgba(191, 255, 0, 0.06),
     0 40px 120px rgba(0,0,0,0.5);
-  border-color: rgba(191, 255, 0, 0.3);
+  border-color: rgba(191, 255, 0, 0.2);
 }
 .game-terminal.challenge-flash {
   box-shadow:
-    0 0 100px rgba(255, 107, 107, 0.12),
+    0 0 60px rgba(255, 107, 107, 0.06),
     0 40px 120px rgba(0,0,0,0.5);
-  border-color: rgba(255, 107, 107, 0.3);
+  border-color: rgba(255, 107, 107, 0.2);
 }
 .game-terminal::before {
   content: '';
@@ -314,7 +313,7 @@ code, pre { font-family: var(--mono); }
 }
 .game-terminal.victory::before {
   opacity: 1;
-  height: 3px;
+  height: 2px;
 }
 .terminal-bar {
   display: flex;
@@ -374,13 +373,12 @@ code, pre { font-family: var(--mono); }
 }
 .t-line.t-mt { margin-top: 14px; }
 
-/* Claim slide-in animation */
+/* Claim slide-in animation — precise, no bounce */
 .t-line.slide-in {
-  animation: claimSlideIn 0.35s var(--ease-spring) both;
+  animation: claimSlideIn 0.4s var(--ease) both;
 }
 @keyframes claimSlideIn {
-  0% { opacity: 0; transform: translateX(30px); }
-  70% { transform: translateX(-3px); }
+  0% { opacity: 0; transform: translateX(16px); }
   100% { opacity: 1; transform: translateX(0); }
 }
 
@@ -389,8 +387,8 @@ code, pre { font-family: var(--mono); }
   animation: phasePulse 0.6s var(--ease);
 }
 @keyframes phasePulse {
-  0% { opacity: 0.3; }
-  50% { opacity: 1; text-shadow: 0 0 20px rgba(191, 255, 0, 0.5); }
+  0% { opacity: 0.4; }
+  50% { opacity: 1; text-shadow: 0 0 10px rgba(191, 255, 0, 0.25); }
   100% { opacity: 1; text-shadow: none; }
 }
 
@@ -428,10 +426,10 @@ code, pre { font-family: var(--mono); }
 }
 @keyframes challengeShake {
   0% { transform: translateX(0); }
-  20% { transform: translateX(-4px); }
-  40% { transform: translateX(3px); }
-  60% { transform: translateX(-2px); }
-  80% { transform: translateX(1px); }
+  20% { transform: translateX(-2px); }
+  40% { transform: translateX(1.5px); }
+  60% { transform: translateX(-1px); }
+  80% { transform: translateX(0.5px); }
   100% { transform: translateX(0); }
 }
 
@@ -448,8 +446,8 @@ code, pre { font-family: var(--mono); }
   height: 100%;
   width: 0;
   position: relative;
-  /* Spring overshoot animation */
-  transition: width 1.2s var(--ease-spring);
+  /* Smooth fill animation */
+  transition: width 1s var(--ease);
 }
 .bar-fill::after {
   content: '';
@@ -467,15 +465,14 @@ code, pre { font-family: var(--mono); }
   color: var(--lime);
   font-weight: 900;
   font-size: 1rem;
-  text-shadow: 0 0 40px rgba(191, 255, 0, 0.5);
-  letter-spacing: 0.1em;
+  text-shadow: 0 0 24px rgba(191, 255, 0, 0.3);
+  letter-spacing: 0.08em;
 }
 .t-pass.victory-scale {
-  animation: victoryPop 0.6s var(--ease-spring);
+  animation: victoryPop 0.5s var(--ease);
 }
 @keyframes victoryPop {
-  0% { transform: scale(0.8); opacity: 0; }
-  50% { transform: scale(1.1); }
+  0% { transform: scale(0.92); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
 
@@ -779,27 +776,7 @@ code, pre { font-family: var(--mono); }
   border-color: var(--lime);
   background: rgba(191, 255, 0, 0.03);
 }
-/* Shimmer on scripted cards */
-.mobile-slot-card.scripted::after {
-  content: '';
-  position: absolute;
-  top: -50%; left: -50%;
-  width: 200%; height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent 40%,
-    rgba(191, 255, 0, 0.06) 45%,
-    rgba(191, 255, 0, 0.1) 50%,
-    rgba(191, 255, 0, 0.06) 55%,
-    transparent 60%
-  );
-  animation: shimmer 3s ease-in-out infinite;
-  pointer-events: none;
-}
-@keyframes shimmer {
-  0% { transform: translateX(-100%) translateY(-100%) rotate(0deg); }
-  100% { transform: translateX(100%) translateY(100%) rotate(0deg); }
-}
+/* Scripted card — clean, no shimmer */
 .mobile-slot-text {
   font-family: var(--sans);
   font-size: 1.125rem;
@@ -872,16 +849,14 @@ code, pre { font-family: var(--mono); }
   100% { opacity: 0; transform: translateY(-40px); }
 }
 @keyframes slot-spin-in {
-  0% { opacity: 0; transform: translateY(40px); }
-  60% { opacity: 1; transform: translateY(-4px); }
-  80% { transform: translateY(2px); }
+  0% { opacity: 0; transform: translateY(24px); }
   100% { opacity: 1; transform: translateY(0); }
 }
 .mobile-slot-card.spin-out .mobile-slot-text {
   animation: slot-spin-out 0.15s var(--ease) forwards;
 }
 .mobile-slot-card.spin-in .mobile-slot-text {
-  animation: slot-spin-in 0.4s var(--ease-spring) forwards;
+  animation: slot-spin-in 0.35s var(--ease) forwards;
 }
 
 /* ===== MOBILE ===== */
@@ -1120,9 +1095,9 @@ code, pre { font-family: var(--mono); }
 
 <script>
 /* ======================================================
-   GRAINULATOR — Gaming UX Swimming Prompts + Terminal Demo
-   Canvas 2D fish pond with schooling AI, particles,
-   caustics, juice. Zero libraries. Full a11y. 60fps.
+   GRAINULATOR — Swimming Prompts + Terminal Demo
+   Canvas 2D fish pond with schooling AI.
+   Zero libraries. Full a11y. 60fps.
    ====================================================== */
 (function () {
   'use strict';
@@ -1732,7 +1707,7 @@ code, pre { font-family: var(--mono); }
     for (var i = 0; i < MAX_RIPPLES; i++) {
       var r = ripples[i];
       if (!r.active) continue;
-      r.life -= dt * 1.5;
+      r.life -= dt * 1.0;
       if (r.life <= 0) { r.active = false; continue; }
       r.radius = r.maxRadius * (1 - r.life / r.maxLife);
     }
@@ -1758,7 +1733,7 @@ code, pre { font-family: var(--mono); }
 
   function drawCaustics(t) {
     causticsTime = t * 0.0003;
-    ctx.globalAlpha = 0.025;
+    ctx.globalAlpha = 0.012;
     ctx.fillStyle = '#BFFF00';
 
     // Draw overlapping sine-wave caustic pattern
@@ -1854,7 +1829,7 @@ code, pre { font-family: var(--mono); }
         scatterDecay: 0,
         // Jump animation
         jumpTime: -1,
-        jumpCooldown: 5 + Math.random() * 20,
+        jumpCooldown: 20 + Math.random() * 40,
         // Click animation
         clickScale: 1,
         clickScaleTarget: 1
@@ -1955,7 +1930,7 @@ code, pre { font-family: var(--mono); }
       f.jumpCooldown -= dt;
       if (f.jumpCooldown <= 0 && f.jumpTime < 0) {
         f.jumpTime = 0;
-        f.jumpCooldown = 8 + Math.random() * 25;
+        f.jumpCooldown = 25 + Math.random() * 45;
       }
       if (f.jumpTime >= 0) {
         f.jumpTime += dt * 3;
@@ -2001,8 +1976,8 @@ code, pre { font-family: var(--mono); }
       var jumpY = 0;
       if (f.jumpTime >= 0) {
         var jt = f.jumpTime;
-        jumpScale = 1 + Math.sin(jt * Math.PI) * 0.12;
-        jumpY = -Math.sin(jt * Math.PI) * 8;
+        jumpScale = 1 + Math.sin(jt * Math.PI) * 0.05;
+        jumpY = -Math.sin(jt * Math.PI) * 3;
       }
 
       var totalScale = f.clickScale * jumpScale;
@@ -2218,18 +2193,18 @@ code, pre { font-family: var(--mono); }
     for (var i = fish.length - 1; i >= 0; i--) {
       var f = fish[i];
       if (cx >= f.x && cx <= f.x + f.w && cy >= f.y && cy <= f.y + f.h) {
-        // Satisfying click pop: quick scale down then up
-        f.clickScaleTarget = 0.85;
+        // Click pop: premium timing
+        f.clickScaleTarget = 0.9;
         setTimeout((function(fi) { return function() {
-          fi.clickScaleTarget = 1.1;
-          setTimeout(function() { fi.clickScaleTarget = 1; }, 120);
-        }; })(f), 50);
+          fi.clickScaleTarget = 1.04;
+          setTimeout(function() { fi.clickScaleTarget = 1; }, 200);
+        }; })(f), 80);
 
         // Scatter nearby fish
         scatterFishAround(cx, cy, i);
 
-        // Burst tiny particles at click point
-        burstParticles(cx, cy, 8, 191, 255, 0, 2, 0.6, 2);
+        // Subtle particles at click point
+        burstParticles(cx, cy, 5, 191, 255, 0, 1.5, 0.5, 1.5);
 
         // Start zoom-to-terminal animation
         clickedFishIndex = i;
@@ -2255,7 +2230,7 @@ code, pre { font-family: var(--mono); }
       if (cx >= f.x && cx <= f.x + f.w && cy >= f.y && cy <= f.y + f.h) {
         e.preventDefault();
         scatterFishAround(cx, cy, i);
-        burstParticles(cx, cy, 6, 191, 255, 0, 2, 0.5, 2);
+        burstParticles(cx, cy, 4, 191, 255, 0, 1.5, 0.5, 1.5);
         clickedFishIndex = i;
         clickedFishAnim = 0.01;
         setTimeout((function(key, text) { return function() {
@@ -2462,12 +2437,9 @@ code, pre { font-family: var(--mono); }
       termBody.appendChild(div);
       scrollTerminal();
 
-      // Flash terminal border red for challenge
+      // Flash terminal border red for challenge — no particles, just the border shift
       if (!prefersReduced) {
         gameTerminal.classList.add('challenge-flash');
-        // Red spark particles on canvas
-        var rect = gameTerminal.getBoundingClientRect();
-        burstParticles(rect.left + rect.width / 2, rect.top, 12, 255, 107, 107, 3, 0.8, 2);
         setTimeout(function() {
           gameTerminal.classList.remove('challenge-flash');
         }, 600);
@@ -2513,15 +2485,11 @@ code, pre { font-family: var(--mono); }
       termBody.appendChild(div);
       scrollTerminal();
 
-      // VICTORY state on terminal
+      // VICTORY state on terminal — restrained celebration
       if (!prefersReduced) {
         gameTerminal.classList.add('victory');
-        // Lime particle burst from terminal top
         var rect = gameTerminal.getBoundingClientRect();
-        burstParticles(rect.left + rect.width / 2, rect.top, 30, 191, 255, 0, 4, 1.2, 3);
-        // Additional burst from sides
-        burstParticles(rect.left, rect.top + rect.height / 2, 10, 191, 255, 0, 3, 0.8, 2);
-        burstParticles(rect.right, rect.top + rect.height / 2, 10, 191, 255, 0, 3, 0.8, 2);
+        burstParticles(rect.left + rect.width / 2, rect.top, 12, 191, 255, 0, 2.5, 1, 2);
       }
 
       if (termStatus) termStatus.textContent = 'complete';
@@ -2780,28 +2748,13 @@ code, pre { font-family: var(--mono); }
     mobileCounter.textContent = (mobileSlotIndex + 1) + ' / ' + mobilePrompts.length;
   }
 
-  // Gacha-style spin: roll through 3-4 prompts before settling
+  // Clean single advance — no multi-roll
   function mobileSpinNext() {
     if (mobileSpinning) return;
     mobileSpinning = true;
-
-    var rollCount = 3 + Math.floor(Math.random() * 2); // 3-4 rolls
-    var rollIndex = 0;
-
-    function doRoll() {
-      mobileSlotIndex = (mobileSlotIndex + 1) % mobilePrompts.length;
-      updateMobileSlot(true);
-      rollIndex++;
-      if (rollIndex < rollCount) {
-        // Accelerate, then decelerate
-        var delay = rollIndex < rollCount / 2 ? 180 : 300 + (rollIndex - rollCount / 2) * 100;
-        setTimeout(doRoll, delay);
-      } else {
-        mobileSpinning = false;
-      }
-    }
-
-    doRoll();
+    mobileSlotIndex = (mobileSlotIndex + 1) % mobilePrompts.length;
+    updateMobileSlot(true);
+    setTimeout(function() { mobileSpinning = false; }, 400);
   }
 
   function mobileTryCurrent() {
