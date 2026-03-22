@@ -240,7 +240,7 @@ function drawFish(ctx, gameTerminal, pondContainer) {
     }
 
     ctx.font = "500 " + f.fontSize + "px " + fontFamily;
-    ctx.fillStyle = f.hovered ? "#2997ff" : "rgba(134, 134, 139, " + (0.5 + f.depth * 0.5) + ")";
+    ctx.fillStyle = f.hovered ? "#d4a547" : "rgba(134, 134, 139, " + (0.5 + f.depth * 0.5) + ")";
     ctx.textBaseline = "middle";
 
     var maxTextW = f.w - 20;
@@ -293,7 +293,7 @@ function drawClickedFishAnim(ctx, f, fontFamily, gameTerminal, pondContainer) {
   ctx.fill(); ctx.stroke();
 
   ctx.font = "500 " + f.fontSize + "px " + fontFamily;
-  ctx.fillStyle = "#2997ff";
+  ctx.fillStyle = "#d4a547";
   ctx.textBaseline = "middle";
   ctx.fillText(f.text.length > 30 ? f.text.slice(0, 30) + "\u2026" : f.text, 10, f.h / 2);
   ctx.restore();
