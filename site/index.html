@@ -350,9 +350,15 @@ float map(vec3 p) {
       shapePhase = 3.0; // drip shape
     }
 
-    // minimal horizontal drift
-    float xOff = (hash2 - 0.5) * 1.0 + sin(t * 0.03 + fi * 2.1) * 0.15;
-    float zOff = (hash3 - 0.5) * 0.6 + cos(t * 0.025 + fi * 1.7) * 0.1;
+    // spread blobs across pool width — evenly spaced then wobble
+    // golden angle spacing: each blob gets a unique sector of the pool
+    float angle = fi * 2.39996 + seed * 6.28; // golden angle per blob
+    float radius = 0.6 + hash2 * 0.5; // 0.6-1.1 from center
+    float xBase = cos(angle) * radius;
+    float zBase = sin(angle) * radius * 0.6;
+    // slow drift so emergence point wanders over time
+    float xOff = xBase + sin(t * 0.015 + fi * 2.1) * 0.3;
+    float zOff = zBase + cos(t * 0.012 + fi * 1.7) * 0.2;
 
     vec3 blobPos = vec3(xOff, y, zOff);
 
