@@ -240,6 +240,7 @@ const HIT_THRESH= isMobile ? '0.002' : '0.001';
 const STEP_MULT = isMobile ? '0.85'  : '0.8';
 const NORM_EPS  = isMobile ? '0.003' : '0.002';
 const GLITCH_ON = isMobile ? 0       : 1;
+const IS_MOBILE = isMobile ? 1       : 0;
 
 // 3D raymarched lava lamp based on cineShader-Lava approach (w400-w402)
 // opSmoothUnion on SDF spheres = actual opaque surfaces with normals
@@ -257,6 +258,7 @@ uniform float seed;
 #define STEP_MULT ${STEP_MULT}
 #define NORM_EPS ${NORM_EPS}
 #define GLITCH_ON ${GLITCH_ON}
+#define IS_MOBILE ${IS_MOBILE}
 
 float smin(float a, float b, float k) {
   float h = clamp(0.5 + 0.5*(b-a)/k, 0.0, 1.0);
@@ -320,7 +322,11 @@ float map(vec3 p) {
     vec3 blobPos = vec3(baseX + dx, baseY + dy, baseZ + dz);
 
     // random sizes
-    float blobR = 0.15 + h4 * 0.2; // 0.15 to 0.35
+#if IS_MOBILE
+    float blobR = 0.30 + h4 * 0.40; // mobile: 0.30-0.70
+#else
+    float blobR = 0.17 + h4 * 0.22; // desktop: 0.17-0.39
+#endif
 
     vec3 evalP = p;
 
