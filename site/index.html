@@ -334,7 +334,16 @@ float map(vec3 p) {
     }
 #endif
 
-    float blobD = sdSphere(evalP - blobPos, blobR);
+    // organic blob shape — noise-displaced sphere, unique per blob
+    vec3 localP = evalP - blobPos;
+    float baseDist = length(localP) - blobR;
+    // slow-moving noise deformation — each blob warps differently
+    vec3 noiseCoord = localP * (2.5 + fi * 0.3) + t * 0.06 + fi * 7.0;
+    float warp = sin(noiseCoord.x * 1.7 + noiseCoord.y * 1.3) *
+                 sin(noiseCoord.y * 2.1 + noiseCoord.z * 0.9) *
+                 sin(noiseCoord.z * 1.5 + noiseCoord.x * 1.1);
+    // scale displacement by blob size so small blobs stay coherent
+    float blobD = baseDist - warp * blobR * 0.45;
     float k = 0.3 + 0.1 * sin(fi * 1.7 + t * 0.05);
     d = smin(d, blobD, k);
   }
