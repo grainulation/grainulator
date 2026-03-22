@@ -232,10 +232,10 @@ const isMobile = /Mobi|Android/i.test(navigator.userAgent) || innerWidth < 768;
 
 // Perf params — mobile gets lighter workload, desktop unchanged
 const NUM       = isMobile ? 3    : 4;
-const STEPS     = isMobile ? 48   : 96;
-const HIT_THRESH= isMobile ? '0.003' : '0.001';
-const STEP_MULT = isMobile ? '1.0'   : '0.8';
-const NORM_EPS  = isMobile ? '0.003' : '0.001';
+const STEPS     = isMobile ? 64   : 96;  // bumped mobile (only 3 blobs now, cheaper)
+const HIT_THRESH= isMobile ? '0.002' : '0.001';
+const STEP_MULT = isMobile ? '0.9'   : '0.8';  // tighter steps = smoother surface
+const NORM_EPS  = isMobile ? '0.002' : '0.001';
 const GLITCH_ON = isMobile ? 0       : 1;  // disable glitch on mobile
 
 // 3D raymarched lava lamp based on cineShader-Lava approach (w400-w402)
@@ -333,15 +333,15 @@ float map(vec3 p) {
     vec3 evalP = p; // point to evaluate SDF at
 
 #if GLITCH_ON
-    if (isFalling && y > 0.3) {
-      // how far into the fall — 0 at top, 1 near pool
-      float fallProgress = 1.0 - (y / 3.2);
-      float voxAmt = fallProgress * fallProgress; // stronger near bottom of fall
-      float vs = 0.15 + (1.0 - voxAmt) * 0.2; // voxel size: smaller = more detail
-      // only voxelize space near this blob
-      vec3 toBlob = p - blobPos;
-      float nearBlob = 1.0 - smoothstep(0.0, 1.0, length(toBlob));
-      if (nearBlob > 0.01) {
+    if (isFalling && y > 0.5 && y < 2.8) {
+      // gentle, artistic pixelation — barely there, like a whisper
+      // peaks in the middle of the fall, fades at both ends
+      float fallMid = 1.0 - abs((y - 1.5) / 1.5); // 0 at edges, 1 at y=1.5
+      float voxAmt = fallMid * fallMid * 0.35; // max 35% voxelization — subtle
+      if (voxAmt > 0.01) {
+        float vs = 0.25; // consistent voxel size — not chunky
+        vec3 toBlob = p - blobPos;
+        float nearBlob = smoothstep(1.2, 0.3, length(toBlob)); // soft falloff
         vec3 snapped = floor(p / vs + 0.5) * vs;
         evalP = mix(p, snapped, voxAmt * nearBlob);
       }
