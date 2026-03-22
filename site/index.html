@@ -318,7 +318,12 @@ float map(vec3 p) {
     vec3 blobPos = vec3(baseX + dx, baseY + dy, baseZ + dz);
 
     // random sizes
-    float blobR = 1.0 + h4 * 0.80; // 1.0 to 1.8
+    // fibonacci-ish sizing: 0.1, 0.1, 0.2, 0.3, 0.5, 0.6, 0.8, 1.0
+    float fibSizes[8];
+    fibSizes[0] = 0.1; fibSizes[1] = 0.1; fibSizes[2] = 0.2; fibSizes[3] = 0.3;
+    fibSizes[4] = 0.5; fibSizes[5] = 0.6; fibSizes[6] = 0.8; fibSizes[7] = 1.0;
+    int blobIdx = int(mod(fi, 8.0));
+    float blobR = fibSizes[blobIdx];
 
     vec3 evalP = p;
 
