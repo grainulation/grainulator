@@ -296,10 +296,13 @@ float map(vec3 p) {
     float h3 = hash(fi * 253.147 + seed * 7.9);
     float h4 = hash(fi * 173.29 + seed * 2.1);
 
-    // spread evenly — use hash to scatter across full range, not angle-based
-    // X: -1.2 to +1.2, Y: -1.2 to +1.2 — covers full viewport on any aspect
-    float baseX = (h1 * 2.0 - 1.0) * 1.2;
-    float baseY = (h2 * 2.0 - 1.0) * 1.2;
+    // spread evenly across full viewport
+    // visible range depends on aspect: at z=3.8, fov 1.2
+    // landscape: ~±2.5 x, ~±1.6 y
+    // portrait:  ~±1.0 x, ~±3.4 y
+    // use 3.0 for both axes to cover any orientation
+    float baseX = (h1 * 2.0 - 1.0) * 2.5;
+    float baseY = (h2 * 2.0 - 1.0) * 2.5;
     float baseZ = (h4 - 0.5) * 0.3;
 
     // slow organic drift — constrained
