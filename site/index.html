@@ -1144,21 +1144,6 @@ code, pre { font-family: var(--mono); }
   color: var(--text-faint);
 }
 
-/* Demo soon */
-.demo-soon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  min-height: 300px;
-  text-align: center;
-}
-.demo-soon-inner {
-  color: var(--text-faint);
-  font-family: var(--mono);
-  font-size: 0.8125rem;
-}
-.demo-soon-inner .lime { color: var(--lime); }
 
 /* ===== SR-ONLY ===== */
 .sr-only {
@@ -1645,69 +1630,20 @@ code, pre { font-family: var(--mono); }
      ALL PROMPTS — the fish in the pond
      ====================================================== */
   var allPrompts = [
-    { text: "Which testing framework should I learn \u2014 Jest or Vitest?", key: "jest-vitest", size: 's' },
-    { text: "How do I structure my first PR for the auth service?", key: "first-pr", size: 's' },
-    { text: "What\u2019s the difference between useEffect and useMemo?", key: "react-hooks", size: 's' },
-    { text: "What\u2019s the fastest way to set up my local dev environment?", key: "local-dev", size: 's' },
-    { text: "Should we refactor the notification system or rebuild it?", key: "notif-refactor", size: 'm' },
-    { text: "What\u2019s the best caching strategy for our product catalog API?", key: "caching-strategy", size: 'm' },
     { text: "Should we use Postgres or MongoDB?", key: "postgres-mongo", size: 'm' },
-    { text: "How do competitors handle rate limiting?", key: "rate-limiting", size: 'm' },
-    { text: "How do we migrate 2TB of user data with zero downtime?", key: "data-migration", size: 'l' },
-    { text: "How do we reduce our p95 latency?", key: "p95-latency", size: 'l' },
-    { text: "Should we adopt TypeScript across all services?", key: "typescript", size: 'm' },
-    { text: "Is our API versioning strategy sustainable?", key: "api-versioning", size: 'm' },
-    { text: "Should we adopt gRPC or stick with REST for internal services?", key: "grpc-rest", size: 'l' },
-    { text: "What\u2019s the right service boundary for the payments domain?", key: "payments-boundary", size: 'l' },
-    { text: "Monolith vs microservices for our scale?", key: "monolith-micro", size: 'l' },
-    { text: "What\u2019s our technical debt costing us?", key: "tech-debt", size: 'l' },
-    { text: "Why is our CI pipeline taking 45 minutes?", key: "ci-slow", size: 'm' },
-    { text: "Evaluate Terraform vs Pulumi for our IaC", key: "terraform-pulumi", size: 'm' },
-    { text: "How should we handle secrets rotation across 30 services?", key: "secrets-rotation", size: 'l' },
-    { text: "What\u2019s the cheapest way to run our staging environment?", key: "staging-cost", size: 's' },
-    { text: "Evaluate Datadog vs Grafana for observability", key: "datadog-grafana", size: 'm' },
-    { text: "Should we switch from Figma to Penpot?", key: "figma-penpot", size: 'm' },
-    { text: "What\u2019s the best way to document our design system?", key: "design-system-docs", size: 'm' },
-    { text: "How do other companies handle dark mode in their component library?", key: "dark-mode", size: 's' },
+    { text: "Which testing framework should I learn \u2014 Jest or Vitest?", key: "jest-vitest", size: 's' },
     { text: "Is our onboarding flow losing users at step 3?", key: "onboarding-drop", size: 'l' },
-    { text: "What features should we cut from the v2 roadmap?", key: "v2-cuts", size: 'l' },
-    { text: "How do competitors handle their free-to-paid conversion?", key: "free-to-paid", size: 'm' },
-    { text: "Should we build the analytics dashboard or buy Mixpanel?", key: "build-buy-analytics", size: 'l' },
     { text: "What\u2019s our biggest churn risk this quarter?", key: "churn-risk", size: 'l' },
-    { text: "Is our pricing strategy competitive?", key: "pricing", size: 'l' },
-    { text: "Should we move from Redshift to BigQuery?", key: "redshift-bigquery", size: 'm' },
-    { text: "What\u2019s the best way to set up our event tracking?", key: "event-tracking", size: 's' },
-    { text: "How do we measure feature adoption across segments?", key: "feature-adoption", size: 'm' },
-    { text: "Is our data pipeline reliable enough for real-time dashboards?", key: "data-pipeline", size: 'l' },
-    { text: "Are we ready for the SOC 2 audit next month?", key: "soc2", size: 'l' },
-    { text: "What are the top 5 vulnerabilities in our dependency tree?", key: "dep-vulns", size: 'm' },
-    { text: "How should we handle API key rotation for 200 integrations?", key: "api-key-rotation", size: 'l' },
-    { text: "What\u2019s our blast radius if the admin service gets compromised?", key: "blast-radius", size: 'l' },
-    { text: "Are we GDPR ready?", key: "gdpr", size: 'l' },
     { text: "Why are enterprise customers churning after month 6?", key: "enterprise-churn", size: 'l' },
-    { text: "What\u2019s the fastest way to reduce our ticket resolution time?", key: "ticket-resolution", size: 'm' },
-    { text: "Should we build a knowledge base or use Zendesk Guide?", key: "kb-zendesk", size: 'm' },
-    { text: "How do we improve our NPS from 32 to 50?", key: "nps-improve", size: 'l' },
-    { text: "What\u2019s the best outbound strategy for mid-market SaaS?", key: "outbound-strategy", size: 'm' },
-    { text: "Should we hire SDRs or invest in product-led growth?", key: "sdr-plg", size: 'l' },
-    { text: "How do competitors position against us in enterprise deals?", key: "competitive-positioning", size: 'l' },
-    { text: "What\u2019s our ideal customer profile based on win/loss data?", key: "icp-analysis", size: 'm' },
+    { text: "Is our data pipeline reliable enough for real-time dashboards?", key: "data-pipeline", size: 'l' },
     { text: "How should we structure our engineering levels and comp bands?", key: "eng-levels", size: 'l' },
-    { text: "What\u2019s the best interview process for senior engineers?", key: "eng-hiring", size: 'm' },
-    { text: "Are we competitive on remote work policy vs peers?", key: "remote-policy", size: 'm' },
-    { text: "How do we improve our offer acceptance rate?", key: "offer-acceptance", size: 'm' },
-    { text: "Where are we overspending on SaaS tools?", key: "saas-spend", size: 'm' },
-    { text: "What\u2019s the ROI on our developer experience investments?", key: "dx-roi", size: 'l' },
+    { text: "Is our pricing strategy competitive?", key: "pricing", size: 'l' },
+    { text: "Monolith vs microservices for our scale?", key: "monolith-micro", size: 'l' },
+    { text: "Are we ready for the SOC 2 audit next month?", key: "soc2", size: 'l' },
     { text: "Should we renegotiate our AWS contract or go multi-cloud?", key: "cloud-cost", size: 'l' },
-    { text: "How do we forecast headcount for next year?", key: "headcount-forecast", size: 'm' },
-    { text: "Is our sprint planning process actually effective?", key: "sprint-planning", size: 'm' },
-    { text: "How should we reorganize after the acquisition?", key: "reorg", size: 'l' },
-    { text: "What\u2019s the best way to communicate the layoff plan?", key: "layoff-comms", size: 'l' },
-    { text: "How do other companies run quarterly planning?", key: "quarterly-planning", size: 'm' },
-    { text: "What should I read to understand our architecture?", key: "learn-arch", size: 's' },
-    { text: "How does the deployment pipeline actually work?", key: "learn-deploy", size: 's' },
-    { text: "What are the unwritten rules on this team?", key: "unwritten-rules", size: 's' },
-    { text: "Which codebase should I explore first?", key: "explore-first", size: 's' }
+    { text: "Should we hire SDRs or invest in product-led growth?", key: "sdr-plg", size: 'l' },
+    { text: "Evaluate Datadog vs Grafana for observability", key: "datadog-grafana", size: 'm' },
+    { text: "How should we reorganize after the acquisition?", key: "reorg", size: 'l' }
   ];
 
   /* ======================================================
@@ -2715,25 +2651,7 @@ code, pre { font-family: var(--mono); }
     gameTerminal.classList.remove('victory', 'challenge-flash');
     btnDismiss.hidden = true;
 
-    if (scripts[key]) {
-      runSprint(key);
-    } else {
-      showDemoSoon(text);
-    }
-  }
-
-  function showDemoSoon(text) {
-    termBody.innerHTML = '<div class="demo-soon"><div class="demo-soon-inner">' +
-      '<div style="margin-bottom:12px;"><span class="lime">\u2713</span> This prompt would run a full sprint.</div>' +
-      '<div>In a real Grainulator session, you\u2019d get a decision-ready brief</div>' +
-      '<div>for <span class="lime">\u201c' + escHtml(text) + '\u201d</span> in about 4 minutes.</div>' +
-      '<div style="margin-top:20px;color:var(--text-faint);">Try one of the scripted demos \u2014 click elsewhere or press Escape.</div>' +
-      '</div></div>';
-    if (termStatus) termStatus.textContent = 'ready';
-    btnSkip.hidden = true;
-    btnPause.hidden = true;
-    btnDismiss.hidden = false;
-    finished = true;
+    runSprint(key);
   }
 
   /* ======================================================
@@ -3129,20 +3047,12 @@ code, pre { font-family: var(--mono); }
     mobilePrompts[si] = mobilePrompts[sj];
     mobilePrompts[sj] = tmp;
   }
-  var scriptedMobile = [];
-  var unscriptedMobile = [];
-  for (var mi = 0; mi < mobilePrompts.length; mi++) {
-    if (scripts[mobilePrompts[mi].key]) scriptedMobile.push(mobilePrompts[mi]);
-    else unscriptedMobile.push(mobilePrompts[mi]);
-  }
-  mobilePrompts = scriptedMobile.concat(unscriptedMobile);
 
   var mobileSlotIndex = 0;
   var mobileSpinning = false;
 
   function updateMobileSlot(animate) {
     var p = mobilePrompts[mobileSlotIndex];
-    var isScripted = !!scripts[p.key];
 
     if (animate && !prefersReduced) {
       mobileSlotCard.classList.add('spin-out');
@@ -3151,14 +3061,12 @@ code, pre { font-family: var(--mono); }
         mobileSlotText.textContent = p.text;
         mobileSlotCard.classList.remove('spin-out');
         mobileSlotCard.classList.add('spin-in');
-        if (isScripted) mobileSlotCard.classList.add('scripted');
-        else mobileSlotCard.classList.remove('scripted');
+        mobileSlotCard.classList.add('scripted');
         setTimeout(function () { mobileSlotCard.classList.remove('spin-in'); }, 400);
       }, 150);
     } else {
       mobileSlotText.textContent = p.text;
-      if (isScripted) mobileSlotCard.classList.add('scripted');
-      else mobileSlotCard.classList.remove('scripted');
+      mobileSlotCard.classList.add('scripted');
     }
     mobileCounter.textContent = (mobileSlotIndex + 1) + ' / ' + mobilePrompts.length;
   }
