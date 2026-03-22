@@ -1,9 +1,31 @@
 {
-  "marketplace": "grainulation-marketplace",
-  "displayName": "Grainulation Marketplace",
-  "source": "npm",
-  "registry": "https://registry.npmjs.org",
-  "package": "@grainulation/grainulator",
-  "categories": ["research", "analysis", "documentation"],
-  "tags": ["wheat", "research-sprints", "claims", "evidence", "briefs"]
+  "name": "grainulation-marketplace",
+  "owner": {
+    "name": "Grainulation",
+    "email": "support@grainulation.com"
+  },
+  "metadata": {
+    "description": "Research sprint tools for Claude Code — structured research with claims, evidence tiers, and compiled output",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "grainulator",
+      "source": {
+        "source": "github",
+        "repo": "grainulation/grainulator"
+      },
+      "description": "Research sprint orchestrator for Claude Code",
+      "version": "0.1.0",
+      "author": {
+        "name": "Grainulation"
+      },
+      "homepage": "https://grainulator.app",
+      "repository": "https://github.com/grainulation/grainulator",
+      "license": "MIT",
+      "keywords": ["research", "wheat", "claims", "evidence", "briefs"],
+      "category": "research",
+      "tags": ["research-sprints", "analysis", "documentation", "decision-making"]
+    }
+  ]
 }
