@@ -416,116 +416,60 @@ code, pre { font-family: var(--mono); }
 
 /* ===== SECTION 2: PROOF ===== */
 .proof { background: var(--bg-warm); }
-.proof-title {
-  font-family: var(--sans);
-  font-size: clamp(1.5rem, 3.5vw, 2.25rem);
-  font-weight: 800;
+.proof-inner {
+  max-width: 720px;
+  margin: 0 auto;
   text-align: center;
-  margin-bottom: 48px;
-  letter-spacing: -0.02em;
 }
-.proof-cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-.proof-card {
-  background: var(--bg-panel);
-  border: 1px solid var(--border);
-  padding: 32px 28px;
-}
-.proof-card-label {
-  font-family: var(--mono);
-  font-size: 0.625rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-  margin-bottom: 20px;
-}
-.proof-card-stat {
+.proof-analogy {
   font-family: var(--sans);
-  font-size: 2rem;
-  font-weight: 900;
+  font-size: clamp(1.5rem, 3.5vw, 2.5rem);
+  font-weight: 800;
+  line-height: 1.2;
   letter-spacing: -0.02em;
-  margin-bottom: 4px;
+  color: var(--text);
+  margin-bottom: 32px;
 }
-.proof-card .stat-bad { color: var(--coral); }
-.proof-card .stat-good { color: var(--lime); }
-.proof-card .stat-neutral { color: var(--amber); }
-.proof-card-desc {
-  font-size: 0.875rem;
+.proof-analogy em {
+  font-style: normal;
+  color: var(--lime);
+}
+.proof-footnote {
+  font-family: var(--sans);
+  font-size: 1rem;
   color: var(--text-dim);
   line-height: 1.6;
 }
-.proof-card-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.proof-card-list li {
-  font-size: 0.8125rem;
-  color: var(--text-dim);
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-.proof-card-list .marker {
-  flex-shrink: 0;
-  font-size: 0.75rem;
-}
-.marker-bad { color: var(--coral); }
-.marker-good { color: var(--lime); }
-.marker-neutral { color: var(--amber); }
 
 /* ===== SECTION 3: HOW IT WORKS ===== */
-.how-title {
-  font-family: var(--sans);
-  font-size: clamp(1.5rem, 3.5vw, 2.25rem);
-  font-weight: 800;
-  text-align: center;
-  margin-bottom: 56px;
-  letter-spacing: -0.02em;
-}
-.how-steps {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 40px;
-  text-align: center;
-  max-width: 900px;
+.how-inner {
+  max-width: 720px;
   margin: 0 auto;
+  text-align: center;
 }
-.how-step-number {
-  font-family: var(--mono);
-  font-size: 0.6875rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--lime);
-  margin-bottom: 16px;
-}
-.how-step-icon {
-  font-size: 2.5rem;
-  margin-bottom: 16px;
-  line-height: 1;
-}
-.how-step-title {
-  font-family: var(--sans);
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 8px;
-}
-.how-step-desc {
-  font-size: 0.875rem;
-  color: var(--text-dim);
-  line-height: 1.5;
-}
-.how-arrow {
+.how-conversation {
   display: flex;
+  flex-direction: column;
+  gap: 24px;
   align-items: center;
-  justify-content: center;
-  color: var(--text-faint);
-  font-size: 1.5rem;
+}
+.how-line {
+  font-family: var(--sans);
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  opacity: 0;
+  transform: translateY(12px);
+  animation: how-reveal 0.6s var(--ease) forwards;
+}
+.how-line:nth-child(1) { animation-delay: 0.1s; }
+.how-line:nth-child(2) { animation-delay: 0.4s; }
+.how-line:nth-child(3) { animation-delay: 0.7s; }
+.how-line:nth-child(4) { animation-delay: 1.0s; color: var(--lime); font-weight: 800; }
+@keyframes how-reveal {
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ===== SECTION 4: PLAYGROUND ===== */
@@ -686,38 +630,36 @@ code, pre { font-family: var(--mono); }
 
 /* ===== SECTION 5: WHO IT'S FOR ===== */
 .who { background: var(--bg-warm); }
-.who-title {
-  font-family: var(--sans);
-  font-size: clamp(1.5rem, 3.5vw, 2.25rem);
-  font-weight: 800;
+.who-inner {
+  max-width: 800px;
+  margin: 0 auto;
+}
+.who-quotes {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+.who-quote {
   text-align: center;
-  margin-bottom: 48px;
-  letter-spacing: -0.02em;
 }
-.who-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-}
-.who-card {
-  padding: 20px;
-  background: var(--bg-panel);
-  border: 1px solid var(--border);
-  transition: border-color 0.2s;
-}
-.who-card:hover { border-color: var(--border-light); }
-.who-role {
+.who-quote-text {
   font-family: var(--sans);
-  font-size: 0.875rem;
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
   font-weight: 700;
-  color: var(--lime);
-  margin-bottom: 6px;
+  color: var(--text);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
 }
-.who-example {
+.who-quote-text em {
+  font-style: normal;
+  color: var(--lime);
+}
+.who-quote-for {
   font-family: var(--mono);
-  font-size: 0.6875rem;
-  color: var(--text-dim);
-  line-height: 1.5;
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  letter-spacing: 0.04em;
 }
 
 /* ===== SECTION 6: INSTALL ===== */
@@ -1240,9 +1182,8 @@ code, pre { font-family: var(--mono); }
   .hero-content { flex-direction: column; gap: 40px; }
   .hero-brief { flex: none; max-width: 100%; }
 
-  .proof-cards { grid-template-columns: 1fr; gap: 16px; }
-  .how-steps { grid-template-columns: 1fr; gap: 32px; }
-  .who-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .proof-analogy { font-size: 1.375rem; }
+  .who-quotes { gap: 36px; }
 
   .pond-container { display: none; }
   .mobile-slot { display: flex; }
@@ -1271,7 +1212,7 @@ code, pre { font-family: var(--mono); }
 }
 
 @media (max-width: 480px) {
-  .who-grid { grid-template-columns: 1fr; }
+  .who-quote-text { font-size: 1.125rem; }
 }
 
 /* ===== REDUCED MOTION ===== */
@@ -1399,37 +1340,11 @@ code, pre { font-family: var(--mono); }
 <!-- ============================================================
      SECTION 2: PROOF
      ============================================================ -->
-<section class="section proof" id="proof-section" aria-label="Before and after comparison">
+<section class="section proof" id="proof-section" aria-label="Why evidence matters">
   <div class="section-inner">
-    <h2 class="proof-title">Stop guessing. Start compiling evidence.</h2>
-    <div class="proof-cards">
-      <div class="proof-card">
-        <div class="proof-card-label">Before</div>
-        <ul class="proof-card-list">
-          <li><span class="marker marker-bad" aria-hidden="true">&times;</span> 22 browser tabs</li>
-          <li><span class="marker marker-bad" aria-hidden="true">&times;</span> 3 meetings to align</li>
-          <li><span class="marker marker-bad" aria-hidden="true">&times;</span> 2 weeks of back-and-forth</li>
-          <li><span class="marker marker-bad" aria-hidden="true">&times;</span> Gut feeling disguised as strategy</li>
-        </ul>
-      </div>
-      <div class="proof-card">
-        <div class="proof-card-label">After</div>
-        <ul class="proof-card-list">
-          <li><span class="marker marker-good" aria-hidden="true">&check;</span> 47 findings, tracked and typed</li>
-          <li><span class="marker marker-good" aria-hidden="true">&check;</span> Adversarially stress-tested</li>
-          <li><span class="marker marker-good" aria-hidden="true">&check;</span> 5 minutes, start to brief</li>
-          <li><span class="marker marker-good" aria-hidden="true">&check;</span> Compiled with confidence scores</li>
-        </ul>
-      </div>
-      <div class="proof-card">
-        <div class="proof-card-label">Cost</div>
-        <ul class="proof-card-list">
-          <li><span class="marker marker-neutral" aria-hidden="true">&dollar;</span> $6&ndash;12 per sprint</li>
-          <li><span class="marker marker-neutral" aria-hidden="true">&crarr;</span> Your Claude API key</li>
-          <li><span class="marker marker-neutral" aria-hidden="true">&check;</span> Open source, MIT license</li>
-          <li><span class="marker marker-neutral" aria-hidden="true">&empty;</span> Zero dependencies</li>
-        </ul>
-      </div>
+    <div class="proof-inner">
+      <p class="proof-analogy">You wouldn&rsquo;t ship code without tests.<br>Why ship <em>decisions</em> without evidence?</p>
+      <p class="proof-footnote">5 minutes. $8. Every finding tracked and challenged.</p>
     </div>
   </div>
 </section>
@@ -1439,25 +1354,12 @@ code, pre { font-family: var(--mono); }
      ============================================================ -->
 <section class="section" id="how-section" aria-label="How it works">
   <div class="section-inner">
-    <h2 class="how-title">Ask &rarr; Research &amp; Challenge &rarr; Compile</h2>
-    <div class="how-steps">
-      <div>
-        <div class="how-step-number">Step 1</div>
-        <div class="how-step-icon" aria-hidden="true">?</div>
-        <div class="how-step-title">Ask</div>
-        <div class="how-step-desc">Type your question in Claude Code. Any question, any domain.</div>
-      </div>
-      <div>
-        <div class="how-step-number">Step 2</div>
-        <div class="how-step-icon" aria-hidden="true">&hArr;</div>
-        <div class="how-step-title">Research &amp; Challenge</div>
-        <div class="how-step-desc">Grainulator researches, then stress-tests its own findings. Estimates get revised. Weak claims get retired.</div>
-      </div>
-      <div>
-        <div class="how-step-number">Step 3</div>
-        <div class="how-step-icon" aria-hidden="true">&check;</div>
-        <div class="how-step-title">Compile</div>
-        <div class="how-step-desc">You get a compiled brief with evidence tiers, confidence scores, and risks. Decision-ready.</div>
+    <div class="how-inner">
+      <div class="how-conversation">
+        <div class="how-line">You ask.</div>
+        <div class="how-line">It researches.</div>
+        <div class="how-line">It argues with itself.</div>
+        <div class="how-line">You get the answer.</div>
       </div>
     </div>
   </div>
@@ -1502,41 +1404,26 @@ code, pre { font-family: var(--mono); }
 <!-- ============================================================
      SECTION 5: WHO IT'S FOR
      ============================================================ -->
-<section class="section who" id="who-section" aria-label="Who Grainulator is for">
+<section class="section who" id="who-section" aria-label="What Grainulator feels like">
   <div class="section-inner">
-    <h2 class="who-title">For anyone making decisions</h2>
-    <div class="who-grid">
-      <div class="who-card">
-        <div class="who-role">Engineers</div>
-        <div class="who-example">&ldquo;Should we adopt gRPC or stick with REST?&rdquo;</div>
-      </div>
-      <div class="who-card">
-        <div class="who-role">Product Managers</div>
-        <div class="who-example">&ldquo;What features should we cut from the v2 roadmap?&rdquo;</div>
-      </div>
-      <div class="who-card">
-        <div class="who-role">Analysts</div>
-        <div class="who-example">&ldquo;What&rsquo;s our biggest churn risk this quarter?&rdquo;</div>
-      </div>
-      <div class="who-card">
-        <div class="who-role">Designers</div>
-        <div class="who-example">&ldquo;How do other companies handle dark mode in their component library?&rdquo;</div>
-      </div>
-      <div class="who-card">
-        <div class="who-role">Executives</div>
-        <div class="who-example">&ldquo;Should we renegotiate our AWS contract or go multi-cloud?&rdquo;</div>
-      </div>
-      <div class="who-card">
-        <div class="who-role">Support</div>
-        <div class="who-example">&ldquo;What&rsquo;s the fastest way to reduce our ticket resolution time?&rdquo;</div>
-      </div>
-      <div class="who-card">
-        <div class="who-role">Sales</div>
-        <div class="who-example">&ldquo;How do competitors position against us in enterprise deals?&rdquo;</div>
-      </div>
-      <div class="who-card">
-        <div class="who-role">HR</div>
-        <div class="who-example">&ldquo;How should we structure our engineering levels and comp bands?&rdquo;</div>
+    <div class="who-inner">
+      <div class="who-quotes">
+        <div class="who-quote">
+          <p class="who-quote-text">&ldquo;Spell-check for your <em>strategy</em>.&rdquo;</p>
+          <p class="who-quote-for">everyone who makes decisions</p>
+        </div>
+        <div class="who-quote">
+          <p class="who-quote-text">&ldquo;A second opinion that <em>never gets tired</em>.&rdquo;</p>
+          <p class="who-quote-for">managers weighing trade-offs at midnight</p>
+        </div>
+        <div class="who-quote">
+          <p class="who-quote-text">&ldquo;Peer review for decisions, <em>not just code</em>.&rdquo;</p>
+          <p class="who-quote-for">engineers who already know what rigour looks like</p>
+        </div>
+        <div class="who-quote">
+          <p class="who-quote-text">&ldquo;The research intern who actually <em>reads everything</em>.&rdquo;</p>
+          <p class="who-quote-for">execs who need the brief, not the busywork</p>
+        </div>
       </div>
     </div>
   </div>
