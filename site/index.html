@@ -303,39 +303,47 @@ float map(vec3 p) {
     float hash2 = fract(fi * 317.892 + 0.217 + seed * 1.7);
     float hash3 = fract(fi * 253.147 + 0.891 + seed * 2.3);
 
-    // vertical convection: each blob rises and falls
-    float speed = (hash1 - 0.5) * 0.4;
+    // convection cycle speed — all positive, all rising
+    float speed = 0.12 + hash1 * 0.15; // 0.12-0.27, always forward
     float phase = fi * 1.37 + seed * 6.28;
 
-    // heat source direction — on desktop heat is at bottom (0,-1,0)
-    // on mobile, tilt rotates where the heat source is
-    vec2 heatDir = vec2(-tilt.x, -1.0 + tilt.y); // default: heat below
+    // heat source direction
+    vec2 heatDir = vec2(-tilt.x, -1.0 + tilt.y);
     float heatLen = length(heatDir);
     heatDir = heatLen > 0.01 ? heatDir / heatLen : vec2(0.0, -1.0);
 
-    // each blob has a thermal cycle:
-    // 1. sits near heat source (bottom), warms up
-    // 2. rises away from heat (upward)
-    // 3. cools at the top, sinks back toward heat
-    float cycle = sin(t * speed + phase); // -1 to 1
-    float rising = cycle * 0.5 + 0.5;    // 0 = near heat, 1 = far from heat
+    // sawtooth-ish cycle: slow rise, pause at top, faster sink
+    // fract gives 0→1 repeating ramp
+    float cycle = fract(t * speed + phase);
 
-    // quadratic easing: blobs linger near bottom (heating) then rise faster
-    float eased = rising < 0.5
-      ? 2.0 * rising * rising
-      : 1.0 - 2.0 * (1.0 - rising) * (1.0 - rising);
+    // reshape: slow at bottom (0-0.3), fast rise (0.3-0.7), slow at top (0.7-0.85), sink (0.85-1.0)
+    float travel;
+    if (cycle < 0.3) {
+      // heating at bottom — barely moving, wobbling
+      travel = -1.0 + cycle / 0.3 * 0.3; // -1.0 to -0.7
+    } else if (cycle < 0.7) {
+      // rising — accelerating then decelerating
+      float r = (cycle - 0.3) / 0.4; // 0 to 1
+      travel = -0.7 + r * r * (3.0 - 2.0 * r) * 2.2; // smooth rise to +1.5
+    } else if (cycle < 0.85) {
+      // cooling at top — lingering
+      float r = (cycle - 0.7) / 0.15;
+      travel = 1.5 - r * 0.3; // 1.5 to 1.2, slowly sinking
+    } else {
+      // sinking back down — faster return
+      float r = (cycle - 0.85) / 0.15;
+      travel = 1.2 - r * 2.2; // 1.2 back to -1.0
+    }
 
-    // position along heat axis (rise away from heat source)
-    float travel = eased * 2.4 - 1.2; // -1.2 to +1.2
-
-    // blobs move OPPOSITE to heat direction (float away from heat)
+    // position: travel along heat axis + gentle horizontal drift
     vec3 offset;
-    offset.x = -heatDir.x * travel + sin(t * 0.08 * (0.5 + hash2) + phase * 2.1) * 0.5;
-    offset.y = -heatDir.y * travel + sin(t * 0.07 * (0.5 + hash3) + phase * 1.7) * 0.3;
-    offset.z = cos(t * 0.1 * (0.5 + hash3) + phase * 1.7) * 0.3;
+    offset.x = -heatDir.x * travel + sin(t * 0.08 * (0.5 + hash2) + phase * 2.1) * 0.4;
+    offset.y = -heatDir.y * travel + sin(t * 0.07 * (0.5 + hash3) + phase * 1.7) * 0.25;
+    offset.z = cos(t * 0.1 * (0.5 + hash3) + phase * 1.7) * 0.25;
 
-    // smaller blobs — more room to dance
-    float size = mix(0.25, 0.55, hash1);
+    // size: bigger near heat (expanding), smaller when cooled
+    float heatProximity = smoothstep(0.5, -1.0, travel);
+    float size = mix(0.2, 0.55, hash1) * (0.8 + heatProximity * 0.4);
 
     d = smin(d, sdSphere(p - offset, size), 0.45);
   }
@@ -348,10 +356,7 @@ float map(vec3 p) {
   float pool = sdSphere(p - heatPos, 1.0);
   d = smin(d, pool, 0.5);
 
-  // cool pool — opposite side where blobs collect before sinking
-  vec3 coolPos = -heatPos * 0.9;
-  float topPool = sdSphere(p - coolPos, 0.7);
-  d = smin(d, topPool, 0.4);
+  // no top pool — wax cools and sinks naturally, only collects at heat source
 
   return d;
 }
@@ -593,6 +598,11 @@ cmd.addEventListener('click', (e) => {
 cmd.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cmd.click(); }
 });
+
+// register service worker for PWA install
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
 
 // easter egg: type "grain" anywhere
 let kb = '';
