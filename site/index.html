@@ -297,11 +297,12 @@ float map(vec3 p) {
     float h3 = hash(fi * 253.147 + seed * 7.9);
     float h4 = hash(fi * 173.29 + seed * 2.1);
 
-    // spread wide across viewport
+    // spread wide but within bounds
     float angle = fi * 2.39996 + seed * 6.28;
-    float spread = 0.8 + h1 * 1.2; // 0.8 to 2.0
-    float baseX = cos(angle) * spread * (0.6 + h2 * 0.4);
-    float baseY = sin(angle) * spread * (0.6 + h3 * 0.4);
+    float spreadX = (bounds.x - blobR) * 0.85;
+    float spreadY = (bounds.y - blobR) * 0.85;
+    float baseX = cos(angle) * spreadX * (0.4 + h2 * 0.6);
+    float baseY = sin(angle) * spreadY * (0.4 + h3 * 0.6);
     float baseZ = (h4 - 0.5) * 0.4;
 
     // slow organic drift — constrained
@@ -316,7 +317,12 @@ float map(vec3 p) {
     float dy = sin(t*sy + py + 0.5)*0.3 + cos(t*sy*0.43 + px + 2.1)*0.2;
     float dz = cos(t*sz + pz + 1.0)*0.15;
 
-    vec3 blobPos = vec3(baseX + dx, baseY + dy, baseZ + dz);
+    // keep entire blob on screen — center clamped so center+radius < bounds
+    float maxX = bounds.x - blobR;
+    float maxY = bounds.y - blobR;
+    float bx = clamp(baseX + dx, -maxX, maxX);
+    float by = clamp(baseY + dy, -maxY, maxY);
+    vec3 blobPos = vec3(bx, by, baseZ + dz);
 
     // random sizes
     float blobR = 0.15 + h4 * 0.2; // 0.15 to 0.35
@@ -355,12 +361,6 @@ float map(vec3 p) {
     if (blobD < d) g_nearestBlob = fi;
     d = smin(d, blobD, k);
   }
-
-  // viewport walls — blobs flatten against screen edges
-  d = max(d, -(p.x + bounds.x));  // left
-  d = max(d, -(bounds.x - p.x));  // right
-  d = max(d, -(bounds.y - p.y));  // top
-  d = max(d, -(p.y + bounds.y));  // bottom
 
   return d;
 }
