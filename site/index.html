@@ -58,7 +58,8 @@
 <meta name="msapplication-TileColor" content="#000000">
 
 <!-- Adaptive favicon (r1307) — SVG with media query for light/dark -->
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cstyle%3E rect %7B fill: %23000 %7D ellipse %7B fill: %2339FF14 %7D @media (prefers-color-scheme: light) %7B rect %7B fill: %23fff %7D %7D%3C/style%3E%3Crect width='64' height='64' rx='14'/%3E%3Cellipse cx='32' cy='30' rx='12' ry='22' transform='rotate(-8 32 30)'/%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3CradialGradient id='g' cx='50%25' cy='45%25' r='50%25'%3E%3Cstop offset='0%25' stop-color='%232d6b30'/%3E%3Cstop offset='70%25' stop-color='%2366ff66'/%3E%3Cstop offset='100%25' stop-color='%238df6ff'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='%23060606'/%3E%3Cellipse cx='32' cy='30' rx='12' ry='22' fill='url(%23g)' stroke='%238df6ff' stroke-width='1.5' transform='rotate(-8 32 30)'/%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.json">
 
@@ -275,22 +276,22 @@ float glitchHash(vec2 p) {
 // the lava scene — all blobs combined via smooth union
 float map(vec3 p) {
 #if GLITCH_ON
-  // physics-based glitch: wax pixelates as it cools (rises away from heat)
-  // smooth at bottom (heat source), increasingly voxelized higher up
-  // self-corrects when blobs sink back to pool
-  float heatY = -2.2; // heat source Y position (bottom)
-  float coolDist = max(0.0, -(p.y - heatY) - 1.0) / 3.0; // 0 near heat, 1 far away
-  coolDist = coolDist * coolDist; // ease in — only noticeable far from heat
+  // physics-based glitch: HD near heat, pixelates as wax cools (rises)
+  // self-corrects when sinking back toward heat pool
+  float heatY = -3.0; // heat source Y position (bottom)
+  // how far above the heat pool — starts pixelating almost immediately
+  float coolDist = max(0.0, p.y - heatY - 0.5) / 4.0; // 0 near heat, ~1 at top
+  coolDist = min(coolDist, 1.0);
 
-  if (coolDist > 0.02) {
+  if (coolDist > 0.01) {
     // patchy: cells decide independently
-    float cellSize = 0.6 + (1.0 - coolDist) * 0.4;
+    float cellSize = 0.5 + (1.0 - coolDist) * 0.5;
     vec2 cell = floor(p.xy / cellSize);
     float cellRand = glitchHash(cell + seed);
-    float cellOn = step(0.5, cellRand); // 50% of cells pixelate
-    float localAmount = coolDist * cellOn;
-    if (localAmount > 0.02) {
-      float vs = localAmount * 0.3;
+    float cellOn = step(0.4, cellRand); // 60% of cells pixelate
+    float localAmount = coolDist * coolDist * cellOn; // quadratic ramp
+    if (localAmount > 0.01) {
+      float vs = localAmount * 0.4;
       vec3 snapped = floor(p / vs + 0.5) * vs;
       p = mix(p, snapped, localAmount);
     }
@@ -306,7 +307,7 @@ float map(vec3 p) {
     float hash3 = fract(fi * 253.147 + 0.891 + seed * 2.3);
 
     // convection cycle speed — all positive, all rising
-    float speed = 0.06 + hash1 * 0.08; // 0.06-0.14, slow and lazy
+    float speed = 0.03 + hash1 * 0.04; // 0.03-0.07, glacially slow
     float phase = fi * 1.37 + seed * 6.28;
 
     // heat source direction
@@ -321,27 +322,23 @@ float map(vec3 p) {
     // reshape: slow at bottom (0-0.3), fast rise (0.3-0.7), slow at top (0.7-0.85), sink (0.85-1.0)
     float travel;
     if (cycle < 0.3) {
-      // heating at bottom — barely moving, wobbling
-      travel = -1.0 + cycle / 0.3 * 0.3; // -1.0 to -0.7
+      travel = -2.0 + cycle / 0.3 * 0.5; // -2.0 to -1.5 (pool area)
     } else if (cycle < 0.7) {
-      // rising — accelerating then decelerating
-      float r = (cycle - 0.3) / 0.4; // 0 to 1
-      travel = -0.7 + r * r * (3.0 - 2.0 * r) * 2.2; // smooth rise to +1.5
+      float r = (cycle - 0.3) / 0.4;
+      travel = -1.5 + r * r * (3.0 - 2.0 * r) * 4.0; // smooth rise to +2.5
     } else if (cycle < 0.85) {
-      // cooling at top — lingering
       float r = (cycle - 0.7) / 0.15;
-      travel = 1.5 - r * 0.3; // 1.5 to 1.2, slowly sinking
+      travel = 2.5 - r * 0.5; // 2.5 to 2.0, slowly sinking
     } else {
-      // sinking back down — faster return
       float r = (cycle - 0.85) / 0.15;
-      travel = 1.2 - r * 2.2; // 1.2 back to -1.0
+      travel = 2.0 - r * 4.0; // 2.0 back to -2.0
     }
 
-    // position: travel along heat axis + gentle horizontal drift
+    // wider horizontal drift so blobs spread across full viewport
     vec3 offset;
-    offset.x = -heatDir.x * travel + sin(t * 0.08 * (0.5 + hash2) + phase * 2.1) * 0.4;
-    offset.y = -heatDir.y * travel + sin(t * 0.07 * (0.5 + hash3) + phase * 1.7) * 0.25;
-    offset.z = cos(t * 0.1 * (0.5 + hash3) + phase * 1.7) * 0.25;
+    offset.x = -heatDir.x * travel + sin(t * 0.05 * (0.5 + hash2) + phase * 2.1) * 1.2;
+    offset.y = -heatDir.y * travel + sin(t * 0.04 * (0.5 + hash3) + phase * 1.7) * 0.8;
+    offset.z = cos(t * 0.06 * (0.5 + hash3) + phase * 1.7) * 0.5;
 
     // size: bigger near heat (expanding), smaller when cooled
     float heatProximity = smoothstep(0.5, -1.0, travel);
@@ -354,8 +351,8 @@ float map(vec3 p) {
   vec2 hd = vec2(0.0, -1.0);
   float hl = length(hd);
   hd = hl > 0.01 ? hd / hl : vec2(0.0, -1.0);
-  vec3 heatPos = vec3(hd.x * 2.2, hd.y * 2.2, 0.0);
-  float pool = sdSphere(p - heatPos, 1.0);
+  vec3 heatPos = vec3(hd.x * 3.0, hd.y * 3.0, 0.0);
+  float pool = sdSphere(p - heatPos, 1.3);
   d = smin(d, pool, 0.5);
 
   // no top pool — wax cools and sinks naturally, only collects at heat source
