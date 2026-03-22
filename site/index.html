@@ -2149,12 +2149,12 @@ code, pre { font-family: var(--mono); }
       fish.push({
         text: p.text,
         key: p.key,
-        x: Math.random() * (W - bw),
-        y: Math.random() * (H - bh),
+        x: 20 + Math.random() * (W - bw - 40),
+        y: 20 + Math.random() * (H - bh - 40),
         w: bw,
         h: bh,
         fontSize: baseFontSize,
-        radius: Math.sqrt(bw * bw + bh * bh) / 2,
+        radius: Math.max(bw, bh) / 2 * 0.6,
         vx: (Math.random() - 0.5) * 0.5,
         vy: (Math.random() - 0.5) * 0.3,
         wobblePhase: Math.random() * Math.PI * 2,
@@ -2278,16 +2278,16 @@ code, pre { font-family: var(--mono); }
           var overlap = minDist - dist;
           var nx = dx / dist;
           var ny = dy / dist;
-          /* push apart */
-          a.x -= nx * overlap * 0.5;
-          a.y -= ny * overlap * 0.5;
-          b.x += nx * overlap * 0.5;
-          b.y += ny * overlap * 0.5;
-          /* reflect velocities */
-          a.vx -= nx * 0.5;
-          a.vy -= ny * 0.5;
-          b.vx += nx * 0.5;
-          b.vy += ny * 0.5;
+          /* push apart gently */
+          a.x -= nx * overlap * 0.25;
+          a.y -= ny * overlap * 0.25;
+          b.x += nx * overlap * 0.25;
+          b.y += ny * overlap * 0.25;
+          /* soft velocity nudge */
+          a.vx -= nx * 0.15;
+          a.vy -= ny * 0.15;
+          b.vx += nx * 0.15;
+          b.vy += ny * 0.15;
         }
       }
     }
