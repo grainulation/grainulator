@@ -116,6 +116,14 @@ canvas{position:fixed;inset:0;width:100%;height:100%}
 .site-footer a:hover,.site-footer a:focus-visible{color:rgba(255,255,255,0.4);outline:none}
 .site-footer span{color:rgba(255,255,255,0.2);font-size:0.6rem;margin:0 0.3rem}
 
+/* Mobile: slim button, push UI above bottom nav bar */
+@media(max-width:768px){
+  .ui{bottom:calc(12vh + env(safe-area-inset-bottom,0px))}
+  .ui-cmd{padding:0.5rem 1rem;min-height:44px;font-size:0.7rem}
+  .site-footer{bottom:calc(3vh + env(safe-area-inset-bottom,0px))}
+  .site-footer a{min-height:44px;padding:0.4rem 0.5rem;font-size:0.55rem}
+}
+
 /* Reduced motion: no canvas, instant UI, centered */
 @media(prefers-reduced-motion:reduce){
   canvas{display:none}
