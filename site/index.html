@@ -101,6 +101,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%}
 
 /* UI overlay — fades in after 2s */
 .ui{position:fixed;bottom:6vh;left:50%;transform:translateX(-50%);z-index:10;text-align:center;opacity:0;animation:appear 1s ease 0.5s forwards;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace}
+.ui-logo{width:clamp(60px,15vw,120px);height:auto;margin-bottom:0.8rem;opacity:0.9;filter:drop-shadow(0 0 12px rgba(141,246,255,0.3))}
 .ui-title{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:clamp(0.7rem,1.5vw,0.9rem);font-weight:700;color:#8df6ff;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:0.6rem;user-select:text;text-shadow:0 0 7px #8df6ff,0 0 20px rgba(141,246,255,0.6),0 0 40px rgba(141,246,255,0.3),0 0 80px rgba(141,246,255,0.15)}
 .ui-cmd{font-size:clamp(0.65rem,1.2vw,0.8rem);color:rgba(141,246,255,0.65);cursor:pointer;padding:0.75rem 1.2rem;min-height:48px;border:1px solid rgba(141,246,255,0.15);border-radius:3px;transition:all 0.4s;display:inline-block;text-decoration:none;user-select:all;background:none}
 .ui-cmd:hover,.ui-cmd:focus-visible{color:#8df6ff;border-color:rgba(141,246,255,0.4);box-shadow:0 0 30px rgba(141,246,255,0.15);outline:none;text-shadow:0 0 7px #8df6ff,0 0 20px rgba(141,246,255,0.4)}
@@ -176,6 +177,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%}
 
 <main id="main-content">
   <div class="ui" role="region" aria-label="Product information">
+    <img src="glitchy.png" alt="Glitchy mascot" class="ui-logo">
     <h1 class="ui-title">grainulator</h1>
     <h2 class="sr-only">Research that compiles</h2>
     <p class="sr-only">Evidence-tracked research sprints for Claude Code. Ask any question, get a decision-ready brief. Open source, zero dependencies, MIT licensed.</p>
@@ -233,9 +235,9 @@ const isMobile = /Mobi|Android/i.test(navigator.userAgent) || innerWidth < 768;
 
 // Perf params — mobile gets lighter workload, desktop unchanged
 const NUM       = isMobile ? 4    : 6;
-const STEPS     = isMobile ? 32   : 48;
-const HIT_THRESH= isMobile ? '0.005' : '0.003';
-const STEP_MULT = isMobile ? '1.0'   : '0.9';
+const STEPS     = isMobile ? 48   : 64;
+const HIT_THRESH= isMobile ? '0.003' : '0.002';
+const STEP_MULT = isMobile ? '0.9'   : '0.85';
 const NORM_EPS  = isMobile ? '0.005' : '0.003';
 const GLITCH_ON = isMobile ? 0       : 1;  // disable glitch on mobile
 
@@ -318,7 +320,7 @@ float map(vec3 p) {
     vec3 blobPos = vec3(baseX + dx, baseY + dy, baseZ + dz);
 
     // random sizes
-    float blobR = 0.12 + h4 * 0.25;
+    float blobR = 0.20 + h4 * 0.30; // bigger blobs
 
     vec3 evalP = p;
 
