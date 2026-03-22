@@ -287,13 +287,10 @@ vec3 getNeonColor(float idx) {
 }
 
 float map(vec3 p) {
-  // viewport bounds in world space (camera at z=3.8, fov factor 1.2)
-  // visible range = z * (1/fov) * aspect
+  // viewport bounds — measured: at z=0 the visible area is roughly ±1.6 on the short axis
   float aspect = r.x / r.y;
-  float viewH = 3.8 / 1.2;        // ~3.17 half-height
-  float viewW = viewH * aspect;    // half-width
-  float boundX = viewW - 0.1;      // slight inset
-  float boundY = viewH - 0.1;
+  float boundY = 1.5;              // half-height
+  float boundX = boundY * aspect;  // half-width
 
   float d = 1e10;
 
