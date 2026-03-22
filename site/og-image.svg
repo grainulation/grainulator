@@ -1,37 +1,63 @@
 <!-- OG Image — rsvg-convert -w 1200 -h 630 og-image.svg -o og-image.png -->
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <defs>
-    <filter id="g"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-    <filter id="tg"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-    <filter id="sg"><feGaussianBlur stdDeviation="20"/></filter>
+    <linearGradient id="g1" x1="281" y1="250" x2="548" y2="190" gradientUnits="userSpaceOnUse" gradientTransform="translate(280,60) scale(0.55)">
+      <stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#f43f5e"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="548" y1="190" x2="771" y2="342" gradientUnits="userSpaceOnUse" gradientTransform="translate(280,60) scale(0.55)">
+      <stop offset="0%" stop-color="#f43f5e"/><stop offset="100%" stop-color="#22c55e"/>
+    </linearGradient>
+    <linearGradient id="g3" x1="771" y1="342" x2="803" y2="569" gradientUnits="userSpaceOnUse" gradientTransform="translate(280,60) scale(0.55)">
+      <stop offset="0%" stop-color="#22c55e"/><stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <linearGradient id="g4" x1="803" y1="569" x2="747" y2="782" gradientUnits="userSpaceOnUse" gradientTransform="translate(280,60) scale(0.55)">
+      <stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#a78bfa"/>
+    </linearGradient>
+    <linearGradient id="g5" x1="747" y1="782" x2="430" y2="804" gradientUnits="userSpaceOnUse" gradientTransform="translate(280,60) scale(0.55)">
+      <stop offset="0%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#fb923c"/>
+    </linearGradient>
+    <linearGradient id="g6" x1="430" y1="804" x2="150" y2="692" gradientUnits="userSpaceOnUse" gradientTransform="translate(280,60) scale(0.55)">
+      <stop offset="0%" stop-color="#fb923c"/><stop offset="100%" stop-color="#22d3ee"/>
+    </linearGradient>
+    <linearGradient id="g7" x1="150" y1="692" x2="272" y2="411" gradientUnits="userSpaceOnUse" gradientTransform="translate(280,60) scale(0.55)">
+      <stop offset="0%" stop-color="#22d3ee"/><stop offset="100%" stop-color="#9ca3af"/>
+    </linearGradient>
+    <linearGradient id="g8" x1="272" y1="411" x2="281" y2="250" gradientUnits="userSpaceOnUse" gradientTransform="translate(280,60) scale(0.55)">
+      <stop offset="0%" stop-color="#9ca3af"/><stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="tg"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
   </defs>
+
   <rect width="1200" height="630" fill="#050505"/>
   <rect width="1200" height="630" fill="none" stroke="#1a1a1f" stroke-width="2"/>
-  <!-- ambient -->
-  <ellipse cx="380" cy="240" rx="200" ry="180" fill="#fbbf24" opacity="0.02" filter="url(#sg)"/>
-  <ellipse cx="760" cy="340" rx="180" ry="150" fill="#f43f5e" opacity="0.02" filter="url(#sg)"/>
-  <!-- wheat -->
-  <ellipse cx="320" cy="200" rx="85" ry="105" fill="#1a1505" transform="rotate(-8 320 200)"/>
-  <ellipse cx="320" cy="200" rx="85" ry="105" fill="none" stroke="#fbbf24" stroke-width="3" transform="rotate(-8 320 200)" filter="url(#g)"/>
-  <!-- barn -->
-  <ellipse cx="680" cy="260" rx="60" ry="75" fill="#1a0508" transform="rotate(12 680 260)"/>
-  <ellipse cx="680" cy="260" rx="60" ry="75" fill="none" stroke="#f43f5e" stroke-width="3" transform="rotate(12 680 260)" filter="url(#g)"/>
-  <!-- mill -->
-  <ellipse cx="520" cy="150" rx="45" ry="58" fill="#050a1a" transform="rotate(-5 520 150)"/>
-  <ellipse cx="520" cy="150" rx="45" ry="58" fill="none" stroke="#3b82f6" stroke-width="2.5" transform="rotate(-5 520 150)" filter="url(#g)"/>
-  <!-- farmer -->
-  <ellipse cx="460" cy="360" rx="38" ry="48" fill="#051a0a" transform="rotate(15 460 360)"/>
-  <ellipse cx="460" cy="360" rx="38" ry="48" fill="none" stroke="#22c55e" stroke-width="2" transform="rotate(15 460 360)" filter="url(#g)"/>
-  <!-- silo -->
-  <ellipse cx="830" cy="170" rx="32" ry="40" fill="#0f0a1a" transform="rotate(-10 830 170)"/>
-  <ellipse cx="830" cy="170" rx="32" ry="40" fill="none" stroke="#a78bfa" stroke-width="2" transform="rotate(-10 830 170)" filter="url(#g)"/>
-  <!-- harvest -->
-  <circle cx="260" cy="370" r="28" fill="#1a0f05"/>
-  <circle cx="260" cy="370" r="28" fill="none" stroke="#fb923c" stroke-width="2" filter="url(#g)"/>
-  <!-- orchard -->
-  <circle cx="780" cy="380" r="22" fill="#051515"/>
-  <circle cx="780" cy="380" r="22" fill="none" stroke="#22d3ee" stroke-width="1.5" filter="url(#g)"/>
-  <!-- title -->
-  <text x="600" y="490" text-anchor="middle" font-family="Inter,'Helvetica Neue',Arial,sans-serif" font-size="58" font-weight="700" letter-spacing="3" fill="#8df6ff" opacity="0.7" filter="url(#tg)">grainulator</text>
-  <text x="600" y="530" text-anchor="middle" font-family="'SF Mono','Fira Code',monospace" font-size="18" fill="#8df6ff" opacity="0.35">/plugin install grainulator</text>
+
+  <!-- Glitchy mascot — centered, scaled to fit -->
+  <g transform="translate(280,60) scale(0.55)">
+    <!-- body -->
+    <path d="M281 250 C324 215, 390 246, 432 224 C483 197, 505 164, 548 190 C600 223, 642 189, 690 210 C739 232, 745 298, 771 342 C798 388, 864 403, 846 467 C835 507, 794 531, 803 569 C815 620, 874 660, 870 723 C866 793, 815 807, 747 782 C699 765, 648 792, 596 804 C534 818, 489 835, 430 804 C380 778, 335 747, 286 754 C233 762, 174 738, 150 692 C127 647, 150 595, 186 547 C218 505, 255 469, 272 411 C286 362, 251 325, 263 279 C266 267, 272 258, 281 250Z" fill="#0a0a0a"/>
+    <!-- outline -->
+    <g fill="none" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
+      <path d="M281 250 C324 215, 390 246, 432 224 C483 197, 505 164, 548 190" stroke="url(#g1)"/>
+      <path d="M548 190 C600 223, 642 189, 690 210 C739 232, 745 298, 771 342" stroke="url(#g2)"/>
+      <path d="M771 342 C798 388, 864 403, 846 467 C835 507, 794 531, 803 569" stroke="url(#g3)"/>
+      <path d="M803 569 C815 620, 874 660, 870 723 C866 793, 815 807, 747 782" stroke="url(#g4)"/>
+      <path d="M747 782 C699 765, 648 792, 596 804 C534 818, 489 835, 430 804" stroke="url(#g5)"/>
+      <path d="M430 804 C380 778, 335 747, 286 754 C233 762, 174 738, 150 692" stroke="url(#g6)"/>
+      <path d="M150 692 C127 647, 150 595, 186 547 C218 505, 255 469, 272 411" stroke="url(#g7)"/>
+      <path d="M272 411 C286 362, 251 325, 263 279 C266 267, 272 258, 281 250" stroke="url(#g8)"/>
+    </g>
+    <!-- face -->
+    <circle cx="466" cy="285" r="8" fill="#8df6ff"/>
+    <circle cx="582" cy="307" r="8" fill="#8df6ff"/>
+    <path d="M457 314 C484 333, 539 342, 591 339" stroke="#8df6ff" stroke-width="12" stroke-linecap="round" fill="none"/>
+    <!-- glitch blocks -->
+    <rect x="620" y="380" width="60" height="35" fill="#f43f5e" opacity="0.3" rx="4"/>
+    <rect x="300" y="520" width="45" height="50" fill="#3b82f6" opacity="0.25" rx="4"/>
+    <rect x="700" y="580" width="40" height="25" fill="#fbbf24" opacity="0.2" rx="4"/>
+  </g>
+
+  <!-- Title -->
+  <text x="600" y="540" text-anchor="middle" font-family="Inter,'Helvetica Neue',Arial,sans-serif" font-size="52" font-weight="700" letter-spacing="3" fill="#8df6ff" opacity="0.7" filter="url(#tg)">grainulator</text>
+  <text x="600" y="580" text-anchor="middle" font-family="'SF Mono','Fira Code',monospace" font-size="16" fill="#8df6ff" opacity="0.35">/plugin install grainulator</text>
 </svg>

@@ -1,20 +1,92 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<svg width="64" height="64" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
   <defs>
+    <linearGradient id="g1" x1="281" y1="250" x2="548" y2="190" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f43f5e"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="548" y1="190" x2="771" y2="342" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#f43f5e"/>
+      <stop offset="100%" stop-color="#22c55e"/>
+    </linearGradient>
+    <linearGradient id="g3" x1="771" y1="342" x2="803" y2="569" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#22c55e"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <linearGradient id="g4" x1="803" y1="569" x2="747" y2="782" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#a78bfa"/>
+    </linearGradient>
+    <linearGradient id="g5" x1="747" y1="782" x2="430" y2="804" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#fb923c"/>
+    </linearGradient>
+    <linearGradient id="g6" x1="430" y1="804" x2="150" y2="692" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fb923c"/>
+      <stop offset="100%" stop-color="#22d3ee"/>
+    </linearGradient>
+    <linearGradient id="g7" x1="150" y1="692" x2="272" y2="411" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#9ca3af"/>
+    </linearGradient>
+    <linearGradient id="g8" x1="272" y1="411" x2="281" y2="250" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#9ca3af"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
     <filter id="glow">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur"/>
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   </defs>
-  <style>.bg{fill:#050505}@media(prefers-color-scheme:light){.bg{fill:#111}}</style>
-  <rect class="bg" width="64" height="64" rx="14"/>
-  <!-- wheat (amber) -->
-  <ellipse cx="20" cy="18" rx="9" ry="11" fill="#1a1505" stroke="#fbbf24" stroke-width="1.5" filter="url(#glow)" transform="rotate(-10 20 18)"/>
-  <!-- barn (rose) -->
-  <ellipse cx="44" cy="36" rx="8" ry="10" fill="#1a0508" stroke="#f43f5e" stroke-width="1.5" filter="url(#glow)" transform="rotate(8 44 36)"/>
-  <!-- mill (blue) -->
-  <circle cx="40" cy="16" r="5" fill="#050a1a" stroke="#3b82f6" stroke-width="1.2" filter="url(#glow)"/>
-  <!-- farmer (green) -->
-  <circle cx="18" cy="44" r="6" fill="#051a0a" stroke="#22c55e" stroke-width="1.2" filter="url(#glow)"/>
-  <!-- orchard (cyan, tiny) -->
-  <circle cx="34" cy="48" r="4" fill="#051515" stroke="#22d3ee" stroke-width="1" filter="url(#glow)"/>
+
+  <style>
+    .bg { fill: #050505; }
+    @media (prefers-color-scheme: light) { .bg { fill: #f5f5f5; } }
+  </style>
+
+  <rect class="bg" width="1024" height="1024" rx="180"/>
+
+  <!-- body — dark fill -->
+  <path
+    d="M281 250
+       C324 215, 390 246, 432 224
+       C483 197, 505 164, 548 190
+       C600 223, 642 189, 690 210
+       C739 232, 745 298, 771 342
+       C798 388, 864 403, 846 467
+       C835 507, 794 531, 803 569
+       C815 620, 874 660, 870 723
+       C866 793, 815 807, 747 782
+       C699 765, 648 792, 596 804
+       C534 818, 489 835, 430 804
+       C380 778, 335 747, 286 754
+       C233 762, 174 738, 150 692
+       C127 647, 150 595, 186 547
+       C218 505, 255 469, 272 411
+       C286 362, 251 325, 263 279
+       C266 267, 272 258, 281 250Z"
+    fill="#0a0a0a"/>
+
+  <!-- gradient outline — each segment a different product color -->
+  <g fill="none" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
+    <path d="M281 250 C324 215, 390 246, 432 224 C483 197, 505 164, 548 190" stroke="url(#g1)"/>
+    <path d="M548 190 C600 223, 642 189, 690 210 C739 232, 745 298, 771 342" stroke="url(#g2)"/>
+    <path d="M771 342 C798 388, 864 403, 846 467 C835 507, 794 531, 803 569" stroke="url(#g3)"/>
+    <path d="M803 569 C815 620, 874 660, 870 723 C866 793, 815 807, 747 782" stroke="url(#g4)"/>
+    <path d="M747 782 C699 765, 648 792, 596 804 C534 818, 489 835, 430 804" stroke="url(#g5)"/>
+    <path d="M430 804 C380 778, 335 747, 286 754 C233 762, 174 738, 150 692" stroke="url(#g6)"/>
+    <path d="M150 692 C127 647, 150 595, 186 547 C218 505, 255 469, 272 411" stroke="url(#g7)"/>
+    <path d="M272 411 C286 362, 251 325, 263 279 C266 267, 272 258, 281 250" stroke="url(#g8)"/>
+  </g>
+
+  <!-- face -->
+  <circle cx="466" cy="285" r="8" fill="#8df6ff"/>
+  <circle cx="582" cy="307" r="8" fill="#8df6ff"/>
+  <path d="M457 314 C484 333, 539 342, 591 339" stroke="#8df6ff" stroke-width="14" stroke-linecap="round" fill="none"/>
+
+  <!-- glitch blocks — digital corruption patches -->
+  <rect x="620" y="380" width="60" height="35" fill="#f43f5e" opacity="0.35" rx="4"/>
+  <rect x="300" y="520" width="45" height="50" fill="#3b82f6" opacity="0.3" rx="4"/>
+  <rect x="500" y="680" width="70" height="30" fill="#a78bfa" opacity="0.25" rx="4"/>
+  <rect x="200" y="400" width="35" height="45" fill="#22d3ee" opacity="0.3" rx="4"/>
+  <rect x="700" y="580" width="40" height="25" fill="#fbbf24" opacity="0.25" rx="4"/>
 </svg>
