@@ -489,7 +489,7 @@ const seedLoc = gl.getUniformLocation(prog, 'seed');
 const seedVal = Math.random();
 gl.uniform1f(seedLoc, seedVal);
 // Resolution: reduce DPR on mobile for fewer fragment shader invocations
-const dpr = isMobile ? Math.min(devicePixelRatio, 1.0) : Math.min(devicePixelRatio, 1.5);
+const dpr = isMobile ? Math.min(devicePixelRatio, 1.0) : Math.min(devicePixelRatio, 1.0);
 
 const resize = () => {
   c.width = innerWidth * dpr;
@@ -499,14 +499,19 @@ const resize = () => {
 resize();
 addEventListener('resize', resize);
 
-// idle timeout — pause after 90s to save battery (w713)
+// idle timeout — pause after 15s to save GPU
 let lastInteraction = Date.now();
 let paused = false;
+let lastFrame = 0;
 document.addEventListener('mousemove', () => { lastInteraction = Date.now(); if (paused) { paused = false; requestAnimationFrame(render); } });
 document.addEventListener('touchstart', () => { lastInteraction = Date.now(); if (paused) { paused = false; requestAnimationFrame(render); } });
+document.addEventListener('click', () => { lastInteraction = Date.now(); if (paused) { paused = false; requestAnimationFrame(render); } });
 
 const render = (time) => {
-  if (Date.now() - lastInteraction > 90000) { paused = true; return; }
+  if (Date.now() - lastInteraction > 15000) { paused = true; return; }
+  // throttle to 30fps — lava moves slow, no need for 60
+  if (time - lastFrame < 33) { requestAnimationFrame(render); return; }
+  lastFrame = time;
   gl.uniform1f(tLoc, time * 0.001);
   gl.uniform2f(rLoc, c.width, c.height);
   // uniforms set in render loop: t, r
