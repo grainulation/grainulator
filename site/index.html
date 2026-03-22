@@ -307,10 +307,16 @@ float map(vec3 p) {
     float baseY = (h2 * 2.0 - 1.0) * 2.5;
     float baseZ = (h4 - 0.5) * 0.3;
 
-    // slow organic drift — constrained
+    // drift speed — faster on mobile
+#if IS_MOBILE
+    float sx = 0.06 + h1 * 0.08;
+    float sy = 0.05 + h2 * 0.07;
+    float sz = 0.04 + h3 * 0.06;
+#else
     float sx = 0.03 + h1 * 0.04;
     float sy = 0.025 + h2 * 0.035;
     float sz = 0.02 + h3 * 0.03;
+#endif
     float px = h2 * 6.28 + seed * 100.0;
     float py = h3 * 6.28 + seed * 100.0;
     float pz = h1 * 6.28 + seed * 100.0;
@@ -323,7 +329,7 @@ float map(vec3 p) {
 
     // random sizes
 #if IS_MOBILE
-    float blobR = 0.30 + h4 * 0.40; // mobile: 0.30-0.70
+    float blobR = 1.5 + h4 * 2.0; // mobile: 1.5-3.5
 #else
     float blobR = 0.17 + h4 * 0.22; // desktop: 0.17-0.39
 #endif
