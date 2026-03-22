@@ -76,7 +76,7 @@
     pointer-events: none;
   }
 
-  /* -- Animation timeline: 5s loop -- */
+  /* -- Animation timeline: 10s loop (slower, more breathing room) -- */
   /* Phase 1 (0-1s): kernel + brand fade in */
   /* Phase 2 (1-2s): question types in */
   /* Phase 3 (2-3s): terminal lines appear */
@@ -88,7 +88,7 @@
   /* Kernel */
   .kernel {
     opacity: 0;
-    animation: fadeIn 0.6s ease 0.2s forwards, loopReset 5s linear 0s infinite;
+    animation: fadeIn 0.6s ease 0.2s forwards, loopReset 10s linear 0s infinite;
   }
   @keyframes fadeIn { to { opacity: 1; } }
   @keyframes loopReset {
@@ -108,7 +108,7 @@
     color: #F0F0F0;
     margin-top: 24px;
     opacity: 0;
-    animation: brandAnim 5s linear 0s infinite;
+    animation: brandAnim 10s linear 0s infinite;
   }
   @keyframes brandAnim {
     0%   { opacity: 0; }
@@ -128,14 +128,14 @@
     height: 30px;
     overflow: hidden;
     opacity: 0;
-    animation: questionAnim 5s linear 0s infinite;
+    animation: questionAnim 10s linear 0s infinite;
   }
   .question-inner {
     display: inline-block;
     white-space: nowrap;
     overflow: hidden;
     border-right: 2px solid #BFFF00;
-    animation: typing 0.8s steps(40) 1.2s forwards, blink 0.4s step-end 1.2s 3, typingLoop 5s linear 0s infinite;
+    animation: typing 0.8s steps(40) 1.2s forwards, blink 0.4s step-end 1.2s 3, typingLoop 10s linear 0s infinite;
     width: 0;
   }
   @keyframes questionAnim {
@@ -162,7 +162,7 @@
     text-align: left;
     line-height: 1.8;
     opacity: 0;
-    animation: terminalAnim 5s linear 0s infinite;
+    animation: terminalAnim 10s linear 0s infinite;
   }
   @keyframes terminalAnim {
     0%   { opacity: 0; }
@@ -175,7 +175,7 @@
 
   .term-line {
     opacity: 0;
-    animation: termLineAnim 5s linear 0s infinite;
+    animation: termLineAnim 10s linear 0s infinite;
   }
   .term-line:nth-child(1) { animation-name: termLine1; }
   .term-line:nth-child(2) { animation-name: termLine2; }
@@ -217,7 +217,7 @@
     flex-direction: column;
     align-items: center;
     opacity: 0;
-    animation: resultAnim 5s linear 0s infinite;
+    animation: resultAnim 10s linear 0s infinite;
   }
   @keyframes resultAnim {
     0%   { opacity: 0; }
@@ -243,7 +243,7 @@
     color: #666;
     margin-top: 16px;
     opacity: 0;
-    animation: statsAnim 5s linear 0s infinite;
+    animation: statsAnim 10s linear 0s infinite;
   }
   @keyframes statsAnim {
     0%   { opacity: 0; }
@@ -261,7 +261,7 @@
     flex-direction: column;
     align-items: center;
     opacity: 0;
-    animation: finaleAnim 5s linear 0s infinite;
+    animation: finaleAnim 10s linear 0s infinite;
   }
   @keyframes finaleAnim {
     0%   { opacity: 0; }
