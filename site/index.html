@@ -282,28 +282,18 @@ vec3 rotX(vec3 p, float a) {
 float hash(float n) { return fract(sin(n) * 43758.5453); }
 float hash2(float a, float b) { return fract(sin(a * 127.1 + b * 311.7) * 43758.5453); }
 
-// Impact point — enters from a random screen edge based on seed
+// Impact point — the screen IS the collision surface
+// meteor hits somewhere off-center on the viewport plane (z=0)
 vec3 getImpactPos() {
-  float side = floor(seed * 4.0); // 0=left, 1=right, 2=top, 3=bottom
-  float along = fract(seed * 7.3) * 2.0 - 1.0; // -1 to 1 along that edge
-  vec3 ip;
-  if (side < 1.0) {
-    ip = vec3(-2.5, along * 1.2, 0.0);
-  } else if (side < 2.0) {
-    ip = vec3(2.5, along * 1.2, 0.0);
-  } else if (side < 3.0) {
-    ip = vec3(along * 1.8, 1.8, 0.0);
-  } else {
-    ip = vec3(along * 1.8, -1.8, 0.0);
-  }
-  return ip;
+  float x = (fract(seed * 7.3) - 0.5) * 1.5; // off-center
+  float y = (fract(seed * 13.1) - 0.5) * 1.0;
+  return vec3(x, y, 0.0); // z=0 = the screen plane
 }
 
-// Entry point — where the meteor comes from (further off-screen)
+// Entry point — comes from deep space BEHIND the screen (positive z = toward camera)
 vec3 getEntryPos() {
   vec3 ip = getImpactPos();
-  // come from further in the same direction
-  return ip * 2.5;
+  return vec3(ip.x * 0.3, ip.y * 0.3, -8.0); // far behind, slightly aimed at impact
 }
 
 // Each blob's resting float position — spread across entire viewport
@@ -368,20 +358,21 @@ float map(vec3 p) {
 
   // Intro timing
   float introT = smoothstep(0.0, 3.0, t);
-  // Meteor streak: 0 to 1s
-  float meteorT = smoothstep(0.0, 1.0, t);
-  // Splatter: 1s to 2.5s
-  float splatterT = smoothstep(1.0, 2.5, t);
-  // Settle: 2s to 3.5s
-  float settleT = smoothstep(2.0, 3.5, t);
+  // Meteor arrival: FAST — 0 to 0.4s (lightspeed)
+  float meteorT = smoothstep(0.0, 0.4, t); // arrives in 0.4s
+  // Splatter: 0.4s to 2s
+  float splatterT = smoothstep(0.4, 2.0, t);
+  // Settle: 1.5s to 3s
+  float settleT = smoothstep(1.5, 3.0, t);
 
   float d = 1e10;
 
-  // THE METEOR (visible for first ~1.5s)
-  // Large mass streaking from entry to impact
-  float meteorSize = 0.5 * (1.0 - smoothstep(0.8, 1.8, t)); // shrinks as it splatters
+  // THE METEOR — massive, arrives at lightspeed, hits the screen
+  float meteorSize = 1.2 * (1.0 - smoothstep(0.3, 0.8, t)); // BIG, shrinks fast on impact
   if (meteorSize > 0.01) {
-    vec3 meteorPos = mix(entryPos, impactPos, meteorT);
+    // exponential approach — starts slow far away, accelerates violently
+    float approach = 1.0 - exp(-t * 8.0); // near-instant arrival
+    vec3 meteorPos = mix(entryPos, impactPos, approach);
     float meteorD = sdSphere(p - meteorPos, meteorSize);
     d = min(d, meteorD);
   }
@@ -396,14 +387,12 @@ float map(vec3 p) {
     vec3 floatPos = animateFloat(floatBase, i, t);
     float blobR = getBlobRadius(i);
 
-    // Intro animation: blobs fly from impact to float positions
-    // Stagger: each blob launches slightly after the previous
-    float stagger = fi * 0.05 + h1 * 0.1; // 0 to ~0.6s stagger
-    float blobIntroT = smoothstep(0.8 + stagger, 2.5 + stagger, t);
+    // Blobs explode from impact — staggered, violent
+    float stagger = fi * 0.03 + h1 * 0.08; // tight stagger
+    float blobIntroT = smoothstep(0.3 + stagger, 1.8 + stagger, t);
 
     // Overshoot — blobs fly PAST their target, then settle back
-    // Damped oscillation
-    float rawT = clamp((t - 0.8 - stagger) / (2.5), 0.0, 1.0);
+    float rawT = clamp((t - 0.3 - stagger) / (2.0), 0.0, 1.0);
     float overshoot = 1.0;
     if (rawT > 0.0 && rawT < 1.0) {
       float springT = rawT * 3.14159 * 2.0;
@@ -412,8 +401,8 @@ float map(vec3 p) {
 
     vec3 blobPos = mix(impactPos, floatPos * overshoot, blobIntroT);
 
-    // Blob size: starts small, reaches full at settle
-    float sizeIntro = smoothstep(0.8 + stagger, 1.5 + stagger, t);
+    // Blob size: explodes into existence
+    float sizeIntro = smoothstep(0.3 + stagger, 0.8 + stagger, t);
     float currentR = blobR * sizeIntro;
 
     if (currentR < 0.01) continue;
@@ -428,9 +417,9 @@ float map(vec3 p) {
       // Glitch is more likely during the "tearing" moment — when blobs are
       // separating (intro overshoot phase) or when two blobs drift apart
       float tearMoment = 0.0;
-      if (t > 1.0 && t < 4.0) {
+      if (t > 0.3 && t < 3.0) {
         // During splatter, high glitch chance
-        tearMoment = smoothstep(1.0, 1.5, t) * (1.0 - smoothstep(3.0, 4.0, t));
+        tearMoment = smoothstep(0.3, 0.6, t) * (1.0 - smoothstep(2.0, 3.0, t));
       }
 
       // Random per-blob glitch bursts (rare, artistic)
@@ -488,10 +477,10 @@ void main() {
     vec3 floatBase = getFloatPos(i);
     vec3 floatPos = animateFloat(floatBase, i, t);
 
-    float stagger = fi * 0.05 + h1 * 0.1;
-    float blobIntroT = smoothstep(0.8 + stagger, 2.5 + stagger, t);
+    float stagger2 = fi * 0.03 + h1 * 0.08;
+    float blobIntroT2 = smoothstep(0.3 + stagger2, 1.8 + stagger2, t);
     vec3 impactPos = getImpactPos();
-    vec3 blobPos = mix(impactPos, floatPos, blobIntroT);
+    vec3 blobPos = mix(impactPos, floatPos, blobIntroT2);
 
     float blobR = getBlobRadius(i);
     float w = blobR * blobR; // bigger blobs weigh more
@@ -578,18 +567,6 @@ void main() {
     float envSpec = pow(max(refl.y * 0.5 + 0.5, 0.0), 8.0) * 0.08;
     col += vec3(0.2, 0.5, 0.15) * envSpec;
 
-    // === NEON BLUE RIM — #8df6ff on ALL blob edges ===
-    float rimInner = pow(fres, 1.5);
-    float rimOuter = pow(fres, 2.5);
-    float rimHard = pow(fres, 4.0);
-
-    // #8df6ff = rgb(141/255, 246/255, 255/255) = vec3(0.553, 0.965, 1.0)
-    vec3 neonBlue = vec3(0.553, 0.965, 1.0);
-
-    col += waxBright * rimInner * 0.15;        // lime inner glow
-    col += neonBlue * rimOuter * 1.2;          // strong blue rim
-    col += neonBlue * rimHard * 0.8;           // tight blue edge
-
     // Fog
     float fog = exp(-hit * 0.05);
     vec3 fogCol = vec3(0.015, 0.012, 0.006);
@@ -598,6 +575,16 @@ void main() {
     // Edge AA
     float edgeAA = smoothstep(HIT_THRESH, 0.0, lastH);
     col = mix(bgCol, col, edgeAA);
+
+    // === NEON BLUE RIM — AFTER fog and edge AA so it's NEVER dimmed ===
+    vec3 neonBlue = vec3(0.553, 0.965, 1.0); // #8df6ff
+    float rimInner = pow(fres, 1.5);
+    float rimOuter = pow(fres, 2.0);  // wider than before
+    float rimHard = pow(fres, 3.5);
+
+    col += waxBright * rimInner * 0.2;
+    col += neonBlue * rimOuter * 1.8;   // cranked up
+    col += neonBlue * rimHard * 1.2;    // cranked up
   }
 
   // Vignette
