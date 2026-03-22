@@ -4,8 +4,8 @@
    ====================================================== */
 
 var allPrompts = [
-  { text: "Should we use Postgres or MongoDB?", key: "postgres-mongo", size: "m" },
-  { text: "Which testing framework should I learn \u2014 Jest or Vitest?", key: "jest-vitest", size: "s" },
+  { text: "Which database fits our workload best?", key: "postgres-mongo", size: "m" },
+  { text: "Which testing framework should I learn first?", key: "jest-vitest", size: "s" },
   { text: "Is our onboarding flow losing users at step 3?", key: "onboarding-drop", size: "l" },
   { text: "What\u2019s our biggest churn risk this quarter?", key: "churn-risk", size: "l" },
   { text: "Why are enterprise customers churning after month 6?", key: "enterprise-churn", size: "l" },
@@ -16,7 +16,7 @@ var allPrompts = [
   { text: "Are we ready for the SOC 2 audit next month?", key: "soc2", size: "l" },
   { text: "Should we renegotiate our AWS contract or go multi-cloud?", key: "cloud-cost", size: "l" },
   { text: "Should we hire SDRs or invest in product-led growth?", key: "sdr-plg", size: "l" },
-  { text: "Evaluate Datadog vs Grafana for observability", key: "datadog-grafana", size: "m" },
+  { text: "Which observability stack fits our budget?", key: "datadog-grafana", size: "m" },
   { text: "How should we reorganize after the acquisition?", key: "reorg", size: "l" },
 ];
 
