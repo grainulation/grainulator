@@ -233,8 +233,8 @@ c.addEventListener('webglcontextlost', (e) => { e.preventDefault(); activateFall
 // Mobile detection
 const isMobile = /Mobi|Android/i.test(navigator.userAgent) || innerWidth < 768;
 
-// 8 blobs ALWAYS — one per product in the ecosystem
-const NUM       = 8;
+// 80 blobs — 10 copies of each product color, 2D metaballs
+const NUM       = 80;
 const STEPS     = isMobile ? 56   : 72;
 const HIT_THRESH= isMobile ? '0.002' : '0.001';
 const STEP_MULT = isMobile ? '0.85'  : '0.8';
@@ -252,205 +252,100 @@ uniform float t;
 uniform vec2 r;
 uniform float seed;
 
-#define NUM ${NUM}
-#define STEPS ${STEPS}
-#define HIT_THRESH ${HIT_THRESH}
-#define STEP_MULT ${STEP_MULT}
-#define NORM_EPS ${NORM_EPS}
-#define GLITCH_ON ${GLITCH_ON}
-#define IS_MOBILE ${IS_MOBILE}
-
-float smin(float a, float b, float k) {
-  float h = clamp(0.5 + 0.5*(b-a)/k, 0.0, 1.0);
-  return mix(b, a, h) - k*h*(1.0-h);
-}
-
-float sdSphere(vec3 p, float s) {
-  return length(p) - s;
-}
+#define NUM 80
 
 float hash(float n) { return fract(sin(n) * 43758.5453); }
 
-// global: nearest blob index (set in map, read in main for coloring)
-float g_nearestBlob = 0.0;
-
-// per-blob neon color — each blob gets its own neon hue
-vec3 getNeonColor(float idx) {
-  // 8 blobs = 8 products, direct mapping
-  int i = int(mod(idx, 8.0));
-  if (i == 0) return vec3(0.984, 0.749, 0.141);      // wheat   #fbbf24
-  if (i == 1) return vec3(0.957, 0.247, 0.369);      // barn    #f43f5e
-  if (i == 2) return vec3(0.133, 0.773, 0.369);      // farmer  #22c55e
-  if (i == 3) return vec3(0.231, 0.510, 0.965);      // mill    #3b82f6
-  if (i == 4) return vec3(0.655, 0.545, 0.980);      // silo    #a78bfa
-  if (i == 5) return vec3(0.984, 0.573, 0.235);      // harvest #fb923c
-  if (i == 6) return vec3(0.133, 0.827, 0.933);      // orchard #22d3ee
-  return vec3(0.612, 0.639, 0.686);                   // grain   #9ca3af
+vec3 getNeonColor(int i) {
+  int c = int(mod(float(i), 8.0));
+  if (c == 0) return vec3(0.984, 0.749, 0.141);
+  if (c == 1) return vec3(0.957, 0.247, 0.369);
+  if (c == 2) return vec3(0.133, 0.773, 0.369);
+  if (c == 3) return vec3(0.231, 0.510, 0.965);
+  if (c == 4) return vec3(0.655, 0.545, 0.980);
+  if (c == 5) return vec3(0.984, 0.573, 0.235);
+  if (c == 6) return vec3(0.133, 0.827, 0.933);
+  return vec3(0.612, 0.639, 0.686);
 }
 
-float map(vec3 p) {
-  float d = 1e10;
+void main() {
+  vec2 uv = gl_FragCoord.xy / r;
+  float aspect = r.x / r.y;
+
+  // accumulate metaball field + color
+  float field = 0.0;
+  vec3 colorSum = vec3(0.0);
 
   for (int i = 0; i < NUM; i++) {
     float fi = float(i);
     float h1 = hash(fi * 412.531 + seed * 3.7);
     float h2 = hash(fi * 317.892 + seed * 5.1);
     float h3 = hash(fi * 253.147 + seed * 7.9);
-    float h4 = hash(fi * 173.29 + seed * 2.1);
 
-    // spread evenly across full viewport
-    // visible range depends on aspect: at z=3.8, fov 1.2
-    // landscape: ~±2.5 x, ~±1.6 y
-    // portrait:  ~±1.0 x, ~±3.4 y
-    // use 3.0 for both axes to cover any orientation
-    float baseX = (h1 * 2.0 - 1.0) * 2.5;
-    float baseY = (h2 * 2.0 - 1.0) * 2.5;
-    float baseZ = (h4 - 0.5) * 0.3;
+    // radius: 0.01 to 0.04
+    float radius = 0.01 + h3 * 0.03;
 
-    // drift speed — faster on mobile
-#if IS_MOBILE
-    float sx = 0.06 + h1 * 0.08;
-    float sy = 0.05 + h2 * 0.07;
-    float sz = 0.04 + h3 * 0.06;
-#else
-    float sx = 0.03 + h1 * 0.04;
-    float sy = 0.025 + h2 * 0.035;
-    float sz = 0.02 + h3 * 0.03;
-#endif
+    // position: scattered across viewport
+    float baseX = h1;
+    float baseY = h2;
+
+    // drift
+    float sx = 0.02 + h1 * 0.03;
+    float sy = 0.015 + h2 * 0.025;
     float px = h2 * 6.28 + seed * 100.0;
     float py = h3 * 6.28 + seed * 100.0;
-    float pz = h1 * 6.28 + seed * 100.0;
 
-    float dx = sin(t*sx + px)*0.35 + sin(t*sx*0.37 + py + 1.7)*0.2;
-    float dy = sin(t*sy + py + 0.5)*0.3 + cos(t*sy*0.43 + px + 2.1)*0.2;
-    float dz = cos(t*sz + pz + 1.0)*0.15;
+    float dx = sin(t*sx + px)*0.08 + sin(t*sx*0.37 + py + 1.7)*0.05;
+    float dy = sin(t*sy + py + 0.5)*0.08 + cos(t*sy*0.43 + px + 2.1)*0.05;
 
-    vec3 blobPos = vec3(baseX + dx, baseY + dy, baseZ + dz);
+    vec2 blobPos = vec2(baseX + dx, baseY + dy);
+    vec2 d = uv - blobPos;
+    d.x *= aspect;
 
-    // random sizes
-#if IS_MOBILE
-    float blobR = 1.5 + h4 * 2.0; // mobile: 1.5-3.5
-#else
-    float blobR = 0.34 + h4 * 0.44; // desktop: 0.34-0.78
-#endif
+    float dist = length(d);
+    float contribution = radius / max(dist, 0.001);
+    field += contribution;
 
-    vec3 evalP = p;
-
-    // glitch — per-blob, rare, artistic
-#if GLITCH_ON
-    {
-      float gw = sin(t*0.3 + fi*3.7) * sin(t*0.13 + fi*2.1);
-      float burst = smoothstep(0.65, 0.9, gw);
-      if (burst > 0.01) {
-        vec3 toB = p - blobPos;
-        float near = smoothstep(1.5, 0.1, length(toB));
-        float amt = burst * near * 0.28;
-        if (amt > 0.005) {
-          float vs = mix(0.28, 0.10, fract(sin(fi*73.1 + floor(t*2.0))*438.5));
-          vec3 snapped = floor(p/vs + 0.5) * vs;
-          evalP = mix(p, snapped, amt);
-        }
-      }
-    }
-#endif
-
-    // organic blob shape — cheap displacement, skip if far away
-    vec3 localP = evalP - blobPos;
-    float baseDist = length(localP) - blobR;
-    float blobD = baseDist;
-    // only compute noise near the surface (saves ~80% of sin calls)
-    if (baseDist < blobR * 1.5) {
-      vec3 nc = localP * (2.5 + fi * 0.3) + t * 0.06 + fi * 7.0;
-      float warp = sin(nc.x * 1.7 + nc.y * 1.3) * sin(nc.y * 2.1 + nc.z * 0.9);
-      blobD = baseDist - warp * blobR * 0.35;
-    }
-    float k = 0.3 + 0.1 * sin(fi * 1.7 + t * 0.05);
-    if (blobD < d) g_nearestBlob = fi;
-    d = smin(d, blobD, k);
+    vec3 blobCol = getNeonColor(i);
+    colorSum += blobCol * contribution;
   }
 
-  return d;
-}
+  // normalize color
+  vec3 neon = colorSum / max(field, 0.001);
 
-vec3 calcNormal(vec3 p) {
-  vec2 e = vec2(NORM_EPS, 0.0);
-  return normalize(vec3(
-    map(p+e.xyy) - map(p-e.xyy),
-    map(p+e.yxy) - map(p-e.yxy),
-    map(p+e.yyx) - map(p-e.yyx)
-  ));
-}
+  // blob threshold with soft edge
+  float blob = smoothstep(0.85, 1.3, field);
+  float inner = smoothstep(1.3, 4.0, field);
 
-void main() {
-  vec2 uv = (gl_FragCoord.xy - 0.5*r) / min(r.x, r.y);
-
-  vec3 ro = vec3(0.0, 0.0, 3.8);
-  vec3 fwd = vec3(0.0, 0.0, -1.0);
-  vec3 rgt = vec3(1.0, 0.0, 0.0);
-  vec3 up2 = vec3(0.0, 1.0, 0.0);
-  vec3 rd = normalize(fwd * 1.2 + rgt * uv.x + up2 * uv.y);
-
-  float dist = 0.0;
-  float hit = -1.0;
-  float lastH = 1.0;
-  for (int i = 0; i < STEPS; i++) {
-    vec3 p = ro + rd * dist;
-    float h = map(p);
-    lastH = h;
-    if (h < HIT_THRESH) { hit = dist; break; }
-    if (dist > 15.0) break;
-    dist += h * STEP_MULT;
-  }
-
-  // background — near-black with subtle grid
+  // background with grid
   vec3 col = vec3(0.005, 0.004, 0.003);
-  // grid in same color as footer text rgba(255,255,255,0.045)
   vec2 gridUV = gl_FragCoord.xy;
   float gridSize = 40.0;
-  float lineW = 1.0;
   float gx = abs(mod(gridUV.x, gridSize) - gridSize * 0.5);
   float gy = abs(mod(gridUV.y, gridSize) - gridSize * 0.5);
-  float gridLine = 1.0 - smoothstep(0.0, lineW, min(gx, gy));
+  float gridLine = 1.0 - smoothstep(0.0, 1.0, min(gx, gy));
   col += vec3(1.0) * gridLine * 0.035;
-  vec3 bgCol = col;
 
-  if (hit > 0.0) {
-    vec3 p = ro + rd * hit;
-    vec3 n = calcNormal(p);
+  if (blob > 0.0) {
+    // dark body tinted by neon
+    vec3 waxDark = neon * 0.06;
+    vec3 waxMid = neon * 0.18;
+    float edge = blob * (1.0 - inner);
+    vec3 waxCol = mix(waxDark, waxMid, edge);
+    col = mix(col, waxCol, blob);
 
-    float NdotV = max(dot(n, -rd), 0.0);
-    float fres = pow(1.0 - NdotV, 2.5);
+    // neon rim at the blob boundary
+    float rim = blob * (1.0 - smoothstep(0.0, 0.5, blob));
+    col += neon * rim * 2.5;
 
-    // neon color from nearest blob (tracked in map(), no second loop)
-    vec3 neon = getNeonColor(g_nearestBlob);
-
-    // wax body MATCHES the neon color — dark inside, bright edges
-    vec3 waxCol = neon * mix(0.06, 0.18, fres * 0.5);
-    float hemiAmt = 0.5 + 0.5 * n.y;
-    vec3 hemiAmb = neon * mix(0.02, 0.05, hemiAmt);
-    float sss = pow(max(dot(rd, n), 0.0), 2.0) * 0.15;
-    col = waxCol + hemiAmb + neon * sss * 0.12;
-
-    // fog
-    float fog = exp(-hit * 0.05);
-    col = mix(vec3(0.006, 0.005, 0.003), col, fog);
-
-    // edge AA
-    float edgeAA = smoothstep(HIT_THRESH, 0.0, lastH);
-    col = mix(bgCol, col, edgeAA);
-
-    // === NEON RIM — AFTER fog/AA, matching body color ===
-    float rimWide = pow(fres, 1.3);
-    float rimTight = pow(fres, 2.0);
-    float rimHot = pow(fres, 3.5);
-    col += neon * rimWide * 0.35;
-    col += neon * rimTight * 1.8;
-    col += neon * rimHot * 1.2;
-
+    // tight edge glow
+    float tightRim = blob * (1.0 - smoothstep(0.0, 0.2, blob));
+    col += neon * tightRim * 1.5;
   }
 
   // vignette
-  float vig = 1.0 - dot(uv * 0.55, uv * 0.55);
+  vec2 vc = uv - 0.5;
+  float vig = 1.0 - dot(vc * 1.1, vc * 1.1);
   col *= smoothstep(0.0, 0.5, vig);
 
   // grain
