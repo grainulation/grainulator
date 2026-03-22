@@ -250,6 +250,7 @@ precision highp float;
 uniform float t;
 uniform vec2 r;
 uniform float seed;
+uniform vec2 bounds; // viewport half-extents in world space, computed in JS
 
 #define NUM ${NUM}
 #define STEPS ${STEPS}
@@ -296,11 +297,11 @@ float map(vec3 p) {
     float h3 = hash(fi * 253.147 + seed * 7.9);
     float h4 = hash(fi * 173.29 + seed * 2.1);
 
-    // spread across viewport — keep within ±1.2 so blobs stay on screen
+    // spread wide across viewport
     float angle = fi * 2.39996 + seed * 6.28;
-    float spread = 0.4 + h1 * 0.7;
-    float baseX = cos(angle) * spread * (0.5 + h2 * 0.5);
-    float baseY = sin(angle) * spread * (0.5 + h3 * 0.5);
+    float spread = 0.8 + h1 * 1.2; // 0.8 to 2.0
+    float baseX = cos(angle) * spread * (0.6 + h2 * 0.4);
+    float baseY = sin(angle) * spread * (0.6 + h3 * 0.4);
     float baseZ = (h4 - 0.5) * 0.4;
 
     // slow organic drift — constrained
@@ -318,7 +319,7 @@ float map(vec3 p) {
     vec3 blobPos = vec3(baseX + dx, baseY + dy, baseZ + dz);
 
     // random sizes
-    float blobR = 0.3 + h4 * 0.4; // 0.3 to 0.7
+    float blobR = 0.15 + h4 * 0.2; // 0.15 to 0.35
 
     vec3 evalP = p;
 
@@ -354,6 +355,12 @@ float map(vec3 p) {
     if (blobD < d) g_nearestBlob = fi;
     d = smin(d, blobD, k);
   }
+
+  // viewport walls — blobs flatten against screen edges
+  d = max(d, -(p.x + bounds.x));  // left
+  d = max(d, -(bounds.x - p.x));  // right
+  d = max(d, -(bounds.y - p.y));  // top
+  d = max(d, -(p.y + bounds.y));  // bottom
 
   return d;
 }
@@ -466,6 +473,7 @@ const rLoc = gl.getUniformLocation(prog, 'r');
 const seedLoc = gl.getUniformLocation(prog, 'seed');
 const seedVal = Math.random();
 gl.uniform1f(seedLoc, seedVal);
+const boundsLoc = gl.getUniformLocation(prog, 'bounds');
 // Resolution: reduce DPR on mobile for fewer fragment shader invocations
 const dpr = isMobile ? Math.min(devicePixelRatio, 1.0) : Math.min(devicePixelRatio, 1.5);
 
@@ -487,6 +495,11 @@ const render = (time) => {
   if (Date.now() - lastInteraction > 90000) { paused = true; return; }
   gl.uniform1f(tLoc, time * 0.001);
   gl.uniform2f(rLoc, c.width, c.height);
+  // bounds: visible world-space half-extents at z=0
+  // camera at z=3.8, fov factor 1.2 → half-height ≈ 3.8/1.2/2 ≈ 1.58
+  const bH = 1.55;
+  const bW = bH * (c.width / c.height);
+  gl.uniform2f(boundsLoc, bW, bH);
   // uniforms set in render loop: t, r
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   requestAnimationFrame(render);
