@@ -2134,6 +2134,7 @@ code, pre { font-family: var(--mono); }
     fish = [];
     var baseFontSize = W < 768 ? 11 : 13;
     var fontFamily = getComputedStyle(document.body).fontFamily;
+    var scale = 1.0;
 
     for (var i = 0; i < allPrompts.length; i++) {
       var p = allPrompts[i];
@@ -2143,16 +2144,7 @@ code, pre { font-family: var(--mono); }
       var bw = tw + padX * 2;
       var bh = baseFontSize + padY * 2;
 
-      var sizeMap = { s: 0.7, m: 0.9, l: 1.1 };
-      var baseScale = sizeMap[p.size] || 0.9;
-      var scale = baseScale + (Math.random() - 0.5) * 0.15;
-      bw *= scale;
-      bh *= scale;
-      var fontSize = baseFontSize * scale;
-
-      var depth = p.size === 'l' ? DEPTH_NEAR : (p.size === 'm' ? DEPTH_MID : DEPTH_FAR);
-      depth += (Math.random() - 0.5) * 0.15;
-      depth = Math.max(0.3, Math.min(1.0, depth));
+      var depth = DEPTH_NEAR;
 
       fish.push({
         text: p.text,
@@ -2161,14 +2153,15 @@ code, pre { font-family: var(--mono); }
         y: Math.random() * (H - bh),
         w: bw,
         h: bh,
-        fontSize: fontSize,
+        fontSize: baseFontSize,
+        radius: Math.sqrt(bw * bw + bh * bh) / 2,
         vx: (Math.random() - 0.5) * 0.5,
         vy: (Math.random() - 0.5) * 0.3,
         wobblePhase: Math.random() * Math.PI * 2,
         wobbleSpeed: 0.3 + Math.random() * 0.4,
         rotation: 0,
-        opacity: 0.15 + depth * 0.45,
-        baseOpacity: 0.15 + depth * 0.45,
+        opacity: 0.55,
+        baseOpacity: 0.55,
         hovered: false,
         scale: scale,
         depth: depth,
@@ -2178,11 +2171,12 @@ code, pre { font-family: var(--mono); }
         clickScale: 1, clickScaleTarget: 1
       });
     }
-    fish.sort(function(a, b) { return a.depth - b.depth; });
   }
 
   function updateFish(dt) {
     var cursorInfluenceRadius = 200;
+    var wallPad = 4;
+    var collisionPad = 6;
 
     for (var i = 0; i < fish.length; i++) {
       var f = fish[i];
@@ -2197,17 +2191,18 @@ code, pre { font-family: var(--mono); }
         if (f.scatterDecay < 0) f.scatterDecay = 0;
       }
 
+      /* --- schooling (loose flocking) --- */
       var avgVx = 0, avgVy = 0, neighbors = 0;
       for (var j = 0; j < fish.length; j++) {
         if (i === j) continue;
         var dx = fish[j].x - f.x;
         var dy = fish[j].y - f.y;
         var dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 250 && Math.abs(fish[j].depth - f.depth) < 0.2) {
+        if (dist < 250) {
           avgVx += fish[j].vx;
           avgVy += fish[j].vy;
           neighbors++;
-          if (dist < 100) {
+          if (dist < 100 && dist > 0) {
             f.vx -= dx / dist * 0.005;
             f.vy -= dy / dist * 0.005;
           }
@@ -2219,6 +2214,7 @@ code, pre { font-family: var(--mono); }
         f.vy += (avgVy - f.vy) * 0.002;
       }
 
+      /* --- cursor flee --- */
       var mdx = f.x + f.w / 2 - mouseX;
       var mdy = f.y + f.h / 2 - mouseY;
       var mDist = Math.sqrt(mdx * mdx + mdy * mdy);
@@ -2228,6 +2224,7 @@ code, pre { font-family: var(--mono); }
         f.vy += (mdy / mDist) * fleeFactor;
       }
 
+      /* --- integrate position --- */
       var sx = f.vx + f.scatterVx * f.scatterDecay;
       var sy = f.vy + f.scatterVy * f.scatterDecay;
       var wobbleX = Math.sin(f.wobblePhase) * 0.12;
@@ -2240,10 +2237,11 @@ code, pre { font-family: var(--mono); }
       if (speed > 1.5) { f.vx *= 1.5 / speed; f.vy *= 1.5 / speed; }
       f.vx *= 0.999; f.vy *= 0.999;
 
-      if (f.x < 0) { f.x = 0; f.vx = Math.abs(f.vx) * 0.5; }
-      if (f.x + f.w > W) { f.x = W - f.w; f.vx = -Math.abs(f.vx) * 0.5; }
-      if (f.y < 0) { f.y = 0; f.vy = Math.abs(f.vy) * 0.5; }
-      if (f.y + f.h > H) { f.y = H - f.h; f.vy = -Math.abs(f.vy) * 0.5; }
+      /* --- wall bounce (edges of pond container) --- */
+      if (f.x < wallPad) { f.x = wallPad; f.vx = Math.abs(f.vx) * 0.5; }
+      if (f.x + f.w > W - wallPad) { f.x = W - f.w - wallPad; f.vx = -Math.abs(f.vx) * 0.5; }
+      if (f.y < wallPad) { f.y = wallPad; f.vy = Math.abs(f.vy) * 0.5; }
+      if (f.y + f.h > H - wallPad) { f.y = H - f.h - wallPad; f.vy = -Math.abs(f.vy) * 0.5; }
 
       f.jumpCooldown -= dt;
       if (f.jumpCooldown <= 0 && f.jumpTime < 0) {
@@ -2259,6 +2257,39 @@ code, pre { font-family: var(--mono); }
       f.hovered = (mouseX >= f.x && mouseX <= f.x + f.w && mouseY >= f.y && mouseY <= f.y + f.h);
       var targetOpacity = f.hovered ? Math.min(f.baseOpacity + 0.4, 1) : f.baseOpacity;
       f.opacity += (targetOpacity - f.opacity) * 0.15;
+    }
+
+    /* --- fish-fish collision (circle-circle using radius) --- */
+    for (var i = 0; i < fish.length; i++) {
+      if (clickedFishIndex === i && clickedFishAnim > 0) continue;
+      var a = fish[i];
+      var aCx = a.x + a.w / 2;
+      var aCy = a.y + a.h / 2;
+      for (var j = i + 1; j < fish.length; j++) {
+        if (clickedFishIndex === j && clickedFishAnim > 0) continue;
+        var b = fish[j];
+        var bCx = b.x + b.w / 2;
+        var bCy = b.y + b.h / 2;
+        var dx = bCx - aCx;
+        var dy = bCy - aCy;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        var minDist = a.radius + b.radius + collisionPad;
+        if (dist < minDist && dist > 0.001) {
+          var overlap = minDist - dist;
+          var nx = dx / dist;
+          var ny = dy / dist;
+          /* push apart */
+          a.x -= nx * overlap * 0.5;
+          a.y -= ny * overlap * 0.5;
+          b.x += nx * overlap * 0.5;
+          b.y += ny * overlap * 0.5;
+          /* reflect velocities */
+          a.vx -= nx * 0.5;
+          a.vy -= ny * 0.5;
+          b.vx += nx * 0.5;
+          b.vy += ny * 0.5;
+        }
+      }
     }
   }
 
@@ -3015,8 +3046,10 @@ code, pre { font-family: var(--mono); }
     window.addEventListener('resize', function () {
       resize();
       for (var i = 0; i < fish.length; i++) {
-        if (fish[i].x + fish[i].w > W) fish[i].x = W - fish[i].w - 10;
-        if (fish[i].y + fish[i].h > H) fish[i].y = H - fish[i].h - 10;
+        if (fish[i].x + fish[i].w > W - 4) fish[i].x = W - fish[i].w - 4;
+        if (fish[i].y + fish[i].h > H - 4) fish[i].y = H - fish[i].h - 4;
+        if (fish[i].x < 4) fish[i].x = 4;
+        if (fish[i].y < 4) fish[i].y = 4;
       }
     });
     requestAnimationFrame(animate);
