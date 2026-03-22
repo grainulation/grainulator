@@ -1,29 +1,29 @@
 {
-  "mcpServers": {
-    "wheat": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@grainulation/wheat"],
-      "env": {
-        "WHEAT_ROOT": ".wheat"
-      }
-    },
-    "mill": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@grainulation/mill"]
-    },
-    "silo": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@grainulation/silo"],
-      "env": {
-        "SILO_STORE": "${CLAUDE_PLUGIN_DATA}/silo"
-      }
-    },
-    "deepwiki": {
-      "type": "http",
-      "url": "https://mcp.deepwiki.com/mcp"
-    }
-  }
+	"mcpServers": {
+		"wheat": {
+			"type": "stdio",
+			"command": "npx",
+			"args": ["-y", "@grainulation/wheat"],
+			"env": {
+				"WHEAT_ROOT": ".wheat"
+			}
+		},
+		"mill": {
+			"type": "stdio",
+			"command": "npx",
+			"args": ["-y", "@grainulation/mill"]
+		},
+		"silo": {
+			"type": "stdio",
+			"command": "npx",
+			"args": ["-y", "@grainulation/silo"],
+			"env": {
+				"SILO_STORE": "${CLAUDE_PLUGIN_DATA}/silo"
+			}
+		},
+		"deepwiki": {
+			"type": "http",
+			"url": "https://mcp.deepwiki.com/mcp"
+		}
+	}
 }

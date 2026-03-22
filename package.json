@@ -1,35 +1,35 @@
 {
-  "name": "@grainulation/grainulator",
-  "version": "1.0.0",
-  "description": "Research sprint orchestrator for Claude Code",
-  "type": "module",
-  "license": "MIT",
-  "homepage": "https://grainulator.app",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/grainulation/grainulator.git"
-  },
-  "keywords": [
-    "claude-code",
-    "plugin",
-    "research",
-    "wheat",
-    "claims",
-    "evidence"
-  ],
-  "files": [
-    ".claude-plugin/",
-    ".mcp.json",
-    "skills/",
-    "agents/",
-    "hooks/",
-    "lib/"
-  ],
-  "author": "grainulation contributors",
-  "bugs": {
-    "url": "https://github.com/grainulation/grainulator/issues"
-  },
-  "engines": {
-    "node": ">=20"
-  }
+	"name": "@grainulation/grainulator",
+	"version": "1.0.0",
+	"description": "Research sprint orchestrator for Claude Code",
+	"type": "module",
+	"license": "MIT",
+	"homepage": "https://grainulator.app",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/grainulation/grainulator.git"
+	},
+	"keywords": [
+		"claude-code",
+		"plugin",
+		"research",
+		"wheat",
+		"claims",
+		"evidence"
+	],
+	"files": [
+		".claude-plugin/",
+		".mcp.json",
+		"skills/",
+		"agents/",
+		"hooks/",
+		"lib/"
+	],
+	"author": "grainulation contributors",
+	"bugs": {
+		"url": "https://github.com/grainulation/grainulator/issues"
+	},
+	"engines": {
+		"node": ">=20"
+	}
 }

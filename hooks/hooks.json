@@ -1,19 +1,19 @@
 {
-  "hooks": [
-    {
-      "type": "PostToolUse",
-      "matcher": {
-        "tool_name": "mcp__wheat__wheat_add-claim"
-      },
-      "script": "node -e \"process.stdout.write('--- Auto-compiling after claim mutation ---\\n')\" && npx -y @grainulation/wheat compile"
-    },
-    {
-      "type": "PreToolUse",
-      "matcher": {
-        "tool_name": "Write",
-        "path_pattern": ".wheat/**"
-      },
-      "script": "node -e \"process.stderr.write('BLOCKED: Direct writes to .wheat/ are not allowed. Use wheat MCP tools (wheat_add-claim, wheat_compile) to modify sprint data.\\n'); process.exit(1)\""
-    }
-  ]
+	"hooks": [
+		{
+			"type": "PostToolUse",
+			"matcher": {
+				"tool_name": "mcp__wheat__wheat_add-claim"
+			},
+			"script": "node -e \"process.stdout.write('--- Auto-compiling after claim mutation ---\\n')\" && npx -y @grainulation/wheat compile"
+		},
+		{
+			"type": "PreToolUse",
+			"matcher": {
+				"tool_name": "Write",
+				"path_pattern": ".wheat/**"
+			},
+			"script": "node -e \"process.stderr.write('BLOCKED: Direct writes to .wheat/ are not allowed. Use wheat MCP tools (wheat_add-claim, wheat_compile) to modify sprint data.\\n'); process.exit(1)\""
+		}
+	]
 }

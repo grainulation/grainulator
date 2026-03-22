@@ -118,18 +118,18 @@ h3{font-size:1.1rem;font-weight:700;margin-bottom:8px}
 
 <script>
 /* IntersectionObserver for slide transitions -- announces current slide */
-(function() {
+(() => {
   var announcer = document.getElementById('slide-announcer');
   var slides = document.querySelectorAll('[aria-roledescription="slide"]');
-  var observer = new IntersectionObserver(function(entries) {
-    entries.forEach(function(entry) {
+  var observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
       if (entry.isIntersecting) {
         var label = entry.target.getAttribute('aria-label') || '';
         announcer.textContent = label;
       }
     });
   }, { threshold: 0.5 });
-  slides.forEach(function(slide) { observer.observe(slide); });
+  slides.forEach((slide) => { observer.observe(slide); });
 })();
 </script>
 </body>

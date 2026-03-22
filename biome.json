@@ -1,10 +1,21 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
-  "linter": {
-    "rules": {
-      "complexity": {
-        "noImportantStyles": "off"
-      }
-    }
-  }
+	"$schema": "https://biomejs.dev/schemas/2.4.8/schema.json",
+	"files": {
+		"includes": [
+			"lib/**",
+			"site/**",
+			"test/**",
+			".claude-plugin/**",
+			".mcp.json",
+			"hooks/**",
+			"package.json"
+		]
+	},
+	"linter": {
+		"rules": {
+			"complexity": {
+				"noImportantStyles": "off"
+			}
+		}
+	}
 }

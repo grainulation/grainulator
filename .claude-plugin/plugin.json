@@ -1,13 +1,13 @@
 {
-  "name": "grainulator",
-  "version": "1.0.0",
-  "description": "Research sprint orchestrator for Claude Code. Structured research with claims, evidence tiers, and compiled output.",
-  "author": {
-    "name": "Grainulation"
-  },
-  "homepage": "https://grainulator.app",
-  "skills": "skills/",
-  "agents": "agents/",
-  "hooks": "hooks/hooks.json",
-  "mcpConfig": ".mcp.json"
+	"name": "grainulator",
+	"version": "1.0.0",
+	"description": "Research sprint orchestrator for Claude Code. Structured research with claims, evidence tiers, and compiled output.",
+	"author": {
+		"name": "Grainulation"
+	},
+	"homepage": "https://grainulator.app",
+	"skills": "skills/",
+	"agents": "agents/",
+	"hooks": "hooks/hooks.json",
+	"mcpConfig": ".mcp.json"
 }
