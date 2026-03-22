@@ -303,13 +303,18 @@ float map(vec3 p) {
     sin(morphT * 0.6 + 1.7) * 0.4
   );
   // morph between sphere and ellipsoid shapes
+  // BIG BANG — everything starts from a singularity
+  // first 3 seconds: rapid inflation from zero
+  float inflation = smoothstep(0.0, 3.0, t); // 0→1 over 3 seconds
+  float inflateEase = inflation * inflation * (3.0 - 2.0 * inflation); // smooth S
+
   float stretch = 0.5 + 0.5 * sin(morphT * 0.6);
   vec3 coreRad = vec3(
     0.4 + stretch * 0.15 + beat * 0.03,
     0.45 - stretch * 0.1 + beat * 0.03,
     0.4 + stretch * 0.08 * sin(morphT * 1.3) + beat * 0.03
-  );
-  float sphereRadius = 0.45; // small core — blobs are the show
+  ) * inflateEase; // starts at 0, inflates to full size
+  float sphereRadius = 0.45 * inflateEase;
   float d = sdEllipsoid(sp - corePos, coreRad);
 
   // surface noise — "a million tiny bumps" emerging from the core
@@ -373,7 +378,8 @@ float map(vec3 p) {
     }
 
     // blob emerges from core surface, not from origin
-    vec3 blobCenter = corePos + anchor * (sphereRadius + radialOffset);
+    // blobs expand with the big bang
+    vec3 blobCenter = corePos + anchor * (sphereRadius + radialOffset * inflateEase);
     vec3 evalP = sp;
 
     // glitch — the star of the show
