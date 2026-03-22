@@ -232,10 +232,10 @@ const isMobile = /Mobi|Android/i.test(navigator.userAgent) || innerWidth < 768;
 
 // Perf params — mobile gets lighter workload, desktop unchanged
 const NUM       = isMobile ? 6    : 10;
-const STEPS     = isMobile ? 64   : 96;  // bumped mobile (only 3 blobs now, cheaper)
-const HIT_THRESH= isMobile ? '0.002' : '0.001';
-const STEP_MULT = isMobile ? '0.9'   : '0.8';  // tighter steps = smoother surface
-const NORM_EPS  = isMobile ? '0.002' : '0.001';
+const STEPS     = isMobile ? 72   : 112;  // more steps = smoother surfaces
+const HIT_THRESH= isMobile ? '0.0015': '0.0008';
+const STEP_MULT = isMobile ? '0.85'  : '0.7';  // tighter = less surface overshoot
+const NORM_EPS  = isMobile ? '0.0015': '0.0008';
 const GLITCH_ON = isMobile ? 0       : 1;  // disable glitch on mobile
 
 // 3D raymarched lava lamp based on cineShader-Lava approach (w400-w402)
@@ -303,10 +303,12 @@ float map(vec3 p) {
     sin(morphT * 0.6 + 1.7) * 0.4
   );
   // morph between sphere and ellipsoid shapes
-  // BIG BANG — everything starts from a singularity
-  // first 3 seconds: rapid inflation from zero
-  float inflation = smoothstep(0.0, 3.0, t); // 0→1 over 3 seconds
-  float inflateEase = inflation * inflation * (3.0 - 2.0 * inflation); // smooth S
+  // BIG BANG — violent explosion, nothing stays where it started
+  // 0-0.5s: singularity, 0.5-2s: explosion overshoot, 2-5s: settle
+  float bangT = t;
+  float explosion = 1.0 - exp(-bangT * 3.0); // fast exponential burst
+  float overshoot = 1.0 + exp(-bangT * 1.5) * sin(bangT * 4.0) * 0.3; // ring/bounce
+  float inflateEase = explosion * overshoot;
 
   float stretch = 0.5 + 0.5 * sin(morphT * 0.6);
   vec3 coreRad = vec3(
@@ -480,10 +482,10 @@ void main() {
   );
   vec2 toCore2D = coreScreen - uv;
   float r2 = dot(toCore2D, toCore2D);
-  // mass pulses with the beat — gravitational waves
-  float lensMass = 0.12 + beatShade * 0.08;
-  float deflection = lensMass / (r2 + 0.08);
-  uv += normalize(toCore2D + 0.001) * deflection * 0.04;
+  // Schwarzschild lensing — stronger, mass pulses with woosh
+  float lensMass = 0.25 + beatShade * 0.1;
+  float deflection = lensMass / (r2 + 0.05);
+  uv += normalize(toCore2D + 0.001) * deflection * 0.08;
 
   // camera looking at sphere center
   vec3 ro = vec3(0.0, 0.0, 3.8);
@@ -514,6 +516,31 @@ void main() {
   );
   float coreGlow = exp(-centerDist * 2.5);
   col += vec3(0.06, 0.035, 0.01) * coreGlow * (1.0 + beatShade * 0.5);
+
+  // === PHOTON RING — glow at 1.5x core radius (r2102) ===
+  // analytical: no extra marching, just screen-space distance from core
+  float photonRadius = 1.5 * 0.45 * inflateEase / 3.8; // core radius projected to screen
+  float ringDist = abs(length(uv - coreScreen) - photonRadius);
+  float ringGlow = smoothstep(0.08, 0.0, ringDist) * 0.3 * inflateEase;
+  col += vec3(0.55, 0.96, 1.0) * ringGlow; // #8df6ff blue
+
+  // === ACCRETION DISK — swirling ring in the equatorial plane (r2103) ===
+  // check if ray crosses y=corePos.y plane during march
+  float diskY = coreScreen.y;
+  float diskDist = abs(uv.y - diskY);
+  float diskR = length(uv - coreScreen);
+  // ring from 1.5x to 4x core screen radius
+  float diskInner = photonRadius * 1.5;
+  float diskOuter = photonRadius * 5.0;
+  float inDisk = smoothstep(diskOuter, diskInner, diskR) * smoothstep(diskInner * 0.5, diskInner, diskR);
+  float diskThickness = smoothstep(0.05, 0.0, diskDist); // thin band
+  float disk = inDisk * diskThickness * 0.15 * inflateEase;
+  // Keplerian swirl — angle + speed varies with radius
+  float swirl = atan(uv.y - diskY, uv.x - coreScreen.x) + t * 0.3 / max(diskR, 0.01);
+  float swirlPattern = sin(swirl * 6.0) * 0.5 + 0.5;
+  disk *= 0.6 + swirlPattern * 0.4;
+  col += vec3(0.4, 0.85, 1.0) * disk; // blue-cyan accretion
+  col += vec3(0.15, 0.45, 0.2) * disk * 0.5; // faint green from wax
 
   vec3 bgCol = col;
   if (hit > 0.0) {
