@@ -231,7 +231,7 @@ c.addEventListener('webglcontextlost', (e) => { e.preventDefault(); activateFall
 const isMobile = /Mobi|Android/i.test(navigator.userAgent) || innerWidth < 768;
 
 // Perf params — mobile gets lighter workload, desktop unchanged
-const NUM       = isMobile ? 3    : 4;
+const NUM       = isMobile ? 4    : 5;
 const STEPS     = isMobile ? 64   : 96;  // bumped mobile (only 3 blobs now, cheaper)
 const HIT_THRESH= isMobile ? '0.002' : '0.001';
 const STEP_MULT = isMobile ? '0.9'   : '0.8';  // tighter steps = smoother surface
@@ -270,89 +270,97 @@ float sdSphere(vec3 p, float s) {
   return length(p) - s;
 }
 
-#if GLITCH_ON
-float glitchHash(vec2 p) {
-  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+vec3 rotY(vec3 p, float a) {
+  float c = cos(a), s = sin(a);
+  return vec3(c*p.x + s*p.z, p.y, -s*p.x + c*p.z);
 }
-#endif
+
+vec3 rotX(vec3 p, float a) {
+  float c = cos(a), s = sin(a);
+  return vec3(p.x, c*p.y - s*p.z, s*p.y + c*p.z);
+}
 
 float map(vec3 p) {
-  // THE BOTTOM POOL — covers FULL width of viewport bottom
-  vec3 poolPos = vec3(0.0, -0.8, 0.0);
-  vec3 poolRad = vec3(4.0, 0.7, 3.0); // wide enough to fill viewport
-  float d = sdEllipsoid(p - poolPos, poolRad);
+  // sphere rotates slowly
+  float sphereRot = t * 0.05;
+  float wobble = sin(t * 0.023) * 0.08;
+  vec3 sp = rotX(rotY(p, -sphereRot), -wobble);
 
-  // 3-4 BLOBS following convection cycle
+  float sphereRadius = 1.5;
+  float d = sdSphere(sp, sphereRadius);
+
+  // blobs emerge radially from sphere surface
   for (int i = 0; i < NUM; i++) {
     float fi = float(i);
     float hash1 = fract(fi * 412.531 + 0.513 + seed);
     float hash2 = fract(fi * 317.892 + 0.217 + seed * 1.7);
     float hash3 = fract(fi * 253.147 + 0.891 + seed * 2.3);
 
-    // 60-120s full cycle
+    // anchor point on sphere — golden angle + polar spread
+    float theta = fi * 2.39996 + seed * 6.28;
+    float phi = acos(1.0 - 2.0 * hash2);
+    vec3 anchor = vec3(sin(phi)*cos(theta), cos(phi), sin(phi)*sin(theta));
+    // slow drift
+    float driftA = sin(t * 0.01 + fi * 2.1) * 0.15;
+    float driftB = cos(t * 0.008 + fi * 1.7) * 0.15;
+    anchor = normalize(anchor + vec3(driftA, driftB * 0.5, -driftA * 0.7));
+
+    vec3 radialDir = anchor;
+
+    // lifecycle: 60-120s
     float cycleTime = 60.0 + hash1 * 60.0;
     float phase = fract(t / cycleTime + fi * 0.27 + seed);
 
-    float y;
+    float radialOffset;
     bool isFalling = false;
-    // shape: 0=dome, 1=teardrop, 2=flat top, 3=drip
     float shapePhase;
 
-    if (phase < 0.45) {
-      // DOME on pool (45%)
-      float rr = phase / 0.45;
-      y = rr * rr * (3.0 - 2.0 * rr) * 0.8;
+    if (phase < 0.40) {
+      // dome forming on surface
+      float rr = phase / 0.40;
+      radialOffset = rr * rr * (3.0 - 2.0 * rr) * 0.6;
       shapePhase = 0.0;
-    } else if (phase < 0.70) {
-      // RISING — smooth, fluid, HD (25%)
-      float rr = (phase - 0.45) / 0.25;
-      y = 0.8 + rr * rr * (3.0 - 2.0 * rr) * 2.7;
+    } else if (phase < 0.65) {
+      // rising outward — smooth HD
+      float rr = (phase - 0.40) / 0.25;
+      radialOffset = 0.6 + rr * rr * (3.0 - 2.0 * rr) * 1.8;
       shapePhase = 1.0;
     } else if (phase < 0.80) {
-      // TOP — cooling (10%)
-      float rr = (phase - 0.70) / 0.10;
-      y = 3.5 - rr * 0.3;
+      // at max distance — cooling
+      float rr = (phase - 0.65) / 0.15;
+      radialOffset = 2.4 - rr * 0.2;
       shapePhase = 2.0;
     } else {
-      // FALLING — pixelates (20%)
+      // falling back to sphere
       float rr = (phase - 0.80) / 0.20;
-      y = 3.2 - rr * rr * 3.2;
+      radialOffset = 2.2 - rr * rr * 2.2;
       shapePhase = 3.0;
       isFalling = true;
     }
 
-    // spread across full pool width
-    float ang = fi * 2.39996 + seed * 6.28;
-    float rad = 0.8 + hash2 * 0.8;
-    float xOff = cos(ang) * rad + sin(t * 0.015 + fi * 2.1) * 0.3;
-    float zOff = sin(ang) * rad * 0.5 + cos(t * 0.012 + fi * 1.7) * 0.2;
+    vec3 blobCenter = anchor * (sphereRadius + radialOffset);
+    vec3 evalP = sp;
 
-    // GLITCH: voxelize the BLOB position when falling
-    // the blob itself becomes blocky, not the whole scene
-    vec3 blobPos = vec3(xOff, y, zOff);
-    vec3 evalP = p; // point to evaluate SDF at
-
+    // gentle pixelation on falling blobs only
 #if GLITCH_ON
-    if (isFalling && y > 0.5 && y < 2.8) {
-      // gentle, artistic pixelation — barely there, like a whisper
-      // peaks in the middle of the fall, fades at both ends
-      float fallMid = 1.0 - abs((y - 1.5) / 1.5); // 0 at edges, 1 at y=1.5
-      float voxAmt = fallMid * fallMid * 0.35; // max 35% voxelization — subtle
+    if (isFalling && radialOffset > 0.3 && radialOffset < 1.8) {
+      float fallMid = 1.0 - abs((radialOffset - 1.0) / 1.0);
+      float voxAmt = fallMid * fallMid * 0.35;
       if (voxAmt > 0.01) {
-        float vs = 0.25; // consistent voxel size — not chunky
-        vec3 toBlob = p - blobPos;
-        float nearBlob = smoothstep(1.2, 0.3, length(toBlob)); // soft falloff
-        vec3 snapped = floor(p / vs + 0.5) * vs;
-        evalP = mix(p, snapped, voxAmt * nearBlob);
+        float vs = 0.25;
+        vec3 toBlob = sp - blobCenter;
+        float nearBlob = smoothstep(1.2, 0.3, length(toBlob));
+        vec3 snapped = floor(sp / vs + 0.5) * vs;
+        evalP = mix(sp, snapped, voxAmt * nearBlob);
       }
     }
 #endif
 
-    // shape morphing
+    // shape morphing oriented along radial direction
     vec3 domeRad     = vec3(0.45, 0.25, 0.45);
     vec3 teardropRad = vec3(0.28, 0.50, 0.28);
     vec3 flatRad     = vec3(0.48, 0.25, 0.48);
-    vec3 dripRad     = vec3(0.22, 0.55, 0.22);
+    vec3 dripRad     = vec3(0.22, 0.50, 0.22);
 
     vec3 blobRad;
     if (shapePhase < 1.0) {
@@ -366,11 +374,19 @@ float map(vec3 p) {
     }
     blobRad *= 0.8 + hash1 * 0.4;
 
-    float blobD = sdEllipsoid(evalP - blobPos, blobRad);
+    // orient ellipsoid along radial direction
+    vec3 up = radialDir;
+    vec3 ref = abs(up.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+    vec3 tangentX = normalize(cross(up, ref));
+    vec3 tangentZ = cross(tangentX, up);
 
-    // high k near pool for stretchy necks
-    float poolProximity = smoothstep(2.0, 0.0, y);
-    float k = mix(0.5, 0.7, poolProximity);
+    vec3 toP = evalP - blobCenter;
+    vec3 localP = vec3(dot(toP, tangentX), dot(toP, up), dot(toP, tangentZ));
+
+    float blobD = sdEllipsoid(localP, blobRad);
+
+    float surfaceProximity = smoothstep(2.0, 0.0, radialOffset);
+    float k = mix(0.4, 0.7, surfaceProximity);
     d = smin(d, blobD, k);
   }
 
@@ -389,9 +405,9 @@ vec3 calcNormal(vec3 p) {
 void main() {
   vec2 uv = (gl_FragCoord.xy - 0.5*r) / min(r.x, r.y);
 
-  // camera: bottom of viewport = bottom of lamp
-  vec3 ro = vec3(0.0, 1.5, 5.0);
-  vec3 lookAt = vec3(0.0, 1.5, 0.0);
+  // camera looking at sphere center
+  vec3 ro = vec3(0.0, 0.0, 5.5);
+  vec3 lookAt = vec3(0.0, 0.0, 0.0);
   vec3 fwd = normalize(lookAt - ro);
   vec3 rgt = normalize(cross(fwd, vec3(0.0, 1.0, 0.0)));
   vec3 up2 = cross(rgt, fwd);
@@ -409,55 +425,57 @@ void main() {
     dist += h * STEP_MULT;
   }
 
-  // liquid background — entire bottom is the heat/light source
-  float bgY = uv.y * 0.5 + 0.5; // 0 at bottom, 1 at top
+  // background — dark space with warm core glow
+  float centerDist = length(uv);
   vec3 col = mix(
-    vec3(0.08, 0.05, 0.02),   // warm amber across entire bottom
-    vec3(0.012, 0.010, 0.006), // dark at top
-    smoothstep(0.0, 0.6, bgY)
+    vec3(0.06, 0.04, 0.015),
+    vec3(0.008, 0.006, 0.003),
+    smoothstep(0.0, 1.2, centerDist)
   );
-  // bottom-wide glow — not a point, the whole bottom edge glows
-  float bottomGlow = exp(-bgY * 3.0); // strongest at very bottom, fades up
-  col += vec3(0.10, 0.06, 0.02) * bottomGlow;
+  float coreGlow = exp(-centerDist * 2.5);
+  col += vec3(0.06, 0.035, 0.01) * coreGlow;
 
   vec3 bgCol = col;
   if (hit > 0.0) {
     vec3 p = ro + rd * hit;
     vec3 n = calcNormal(p);
 
-    // light from BELOW — entire bottom of lamp is the heat plate
-    vec3 lightDir = normalize(vec3(0.0, -1.0, 0.3));
-    float diff = max(dot(n, lightDir), 0.0);
+    // light from sphere core
+    vec3 toCore = normalize(-p);
+    float diff = max(dot(n, toCore), 0.0);
     diff = sqrt(diff);
-    float amb = 0.25 + 0.15 * n.y;
+    float amb = 0.20 + 0.10 * (1.0 - max(dot(n, toCore), 0.0));
     float fres = pow(1.0 - max(dot(n, -rd), 0.0), 2.5);
-    float sss = max(dot(n, -lightDir), 0.0) * 0.2;
-    vec3 H = normalize(lightDir - rd);
-    float spec = pow(max(dot(n, H), 0.0), 16.0) * 0.12;
+    float sss = max(dot(n, -toCore), 0.0) * 0.25;
+    vec3 H = normalize(toCore - rd);
+    float spec = pow(max(dot(n, H), 0.0), 16.0) * 0.15;
 
-    float heightFade = (p.y + 1.0) / 5.0;
-    vec3 waxDark = mix(
-      vec3(0.20, 0.50, 0.06),
-      vec3(0.12, 0.38, 0.05),
-      clamp(heightFade, 0.0, 1.0)
-    );
+    float distFromCenter = length(p);
+    float proximityToSurface = 1.0 - smoothstep(1.5, 4.0, distFromCenter);
+
+    vec3 waxWarm = vec3(0.25, 0.60, 0.08);
+    vec3 waxCool = vec3(0.10, 0.32, 0.04);
+    vec3 waxBase = mix(waxCool, waxWarm, proximityToSurface);
     vec3 waxBright = vec3(0.40, 1.0, 0.25);
-    vec3 waxCol = mix(waxDark, waxBright, fres * 0.7);
+    vec3 waxCol = mix(waxBase, waxBright, fres * 0.6);
 
-    float underLight = max(dot(n, vec3(0.0, -1.0, 0.0)), 0.0);
-    waxCol += vec3(0.08, 0.15, 0.02) * underLight;
+    float coreLight = max(dot(n, toCore), 0.0);
+    waxCol += vec3(0.10, 0.18, 0.03) * coreLight * proximityToSurface;
 
-    col = waxCol * (diff * 0.4 + amb + sss * 0.5);
+    float innerGlow = (1.0 - proximityToSurface) * sss;
+    waxCol += vec3(0.15, 0.08, 0.02) * innerGlow * 2.0;
+
+    col = waxCol * (diff * 0.45 + amb + sss * 0.5);
     col += vec3(0.2, 0.4, 0.1) * spec * 0.5;
 
-    float fog = exp(-hit * 0.08);
-    vec3 fogCol = vec3(0.035, 0.028, 0.012);
+    float fog = exp(-hit * 0.06);
+    vec3 fogCol = vec3(0.025, 0.018, 0.008);
     col = mix(fogCol, col, fog);
 
     float edgeAA = smoothstep(HIT_THRESH, 0.0, lastH);
     col = mix(bgCol, col, edgeAA);
 
-    // fluorescent blue rim — after edge blend
+    // neon blue rim
     float rimInner = pow(fres, 1.5);
     float rimOuter = pow(fres, 2.5);
     col += waxBright * rimInner * 0.2;
