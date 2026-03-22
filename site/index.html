@@ -247,7 +247,7 @@ precision highp float;
 uniform float t;
 uniform vec2 r;
 uniform float seed;
-uniform vec2 tilt; // device orientation: x=gamma(left/right), y=beta(front/back)
+// tilt removed — device orientation not reliable cross-browser
 
 #define NUM ${NUM}
 #define STEPS ${STEPS}
@@ -266,11 +266,7 @@ float sdSphere(vec3 p, float s) {
   return length(p) - s;
 }
 
-// glitch state
-float glitchAmount = 0.0; // 1.0 = full 8-bit, 0.0 = HD
 #if GLITCH_ON
-float glitchSeed = 0.0;
-
 float glitchHash(vec2 p) {
   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
 }
@@ -279,16 +275,22 @@ float glitchHash(vec2 p) {
 // the lava scene — all blobs combined via smooth union
 float map(vec3 p) {
 #if GLITCH_ON
-  // patchy glitch: cell-based voxelization, each cell triggers independently
-  if (glitchAmount > 0.01) {
-    float cellSize = 0.8;
+  // physics-based glitch: wax pixelates as it cools (rises away from heat)
+  // smooth at bottom (heat source), increasingly voxelized higher up
+  // self-corrects when blobs sink back to pool
+  float heatY = -2.2; // heat source Y position (bottom)
+  float coolDist = max(0.0, -(p.y - heatY) - 1.0) / 3.0; // 0 near heat, 1 far away
+  coolDist = coolDist * coolDist; // ease in — only noticeable far from heat
+
+  if (coolDist > 0.02) {
+    // patchy: cells decide independently
+    float cellSize = 0.6 + (1.0 - coolDist) * 0.4;
     vec2 cell = floor(p.xy / cellSize);
-    float cellRand = glitchHash(cell + glitchSeed);
-    float cellOn = step(0.6, cellRand);
-    float cellPhase = cellRand * 0.4;
-    float localAmount = clamp(glitchAmount - cellPhase, 0.0, 1.0) * cellOn;
-    if (localAmount > 0.01) {
-      float vs = localAmount * 0.35;
+    float cellRand = glitchHash(cell + seed);
+    float cellOn = step(0.5, cellRand); // 50% of cells pixelate
+    float localAmount = coolDist * cellOn;
+    if (localAmount > 0.02) {
+      float vs = localAmount * 0.3;
       vec3 snapped = floor(p / vs + 0.5) * vs;
       p = mix(p, snapped, localAmount);
     }
@@ -304,11 +306,11 @@ float map(vec3 p) {
     float hash3 = fract(fi * 253.147 + 0.891 + seed * 2.3);
 
     // convection cycle speed — all positive, all rising
-    float speed = 0.12 + hash1 * 0.15; // 0.12-0.27, always forward
+    float speed = 0.06 + hash1 * 0.08; // 0.06-0.14, slow and lazy
     float phase = fi * 1.37 + seed * 6.28;
 
     // heat source direction
-    vec2 heatDir = vec2(-tilt.x, -1.0 + tilt.y);
+    vec2 heatDir = vec2(0.0, -1.0);
     float heatLen = length(heatDir);
     heatDir = heatLen > 0.01 ? heatDir / heatLen : vec2(0.0, -1.0);
 
@@ -349,7 +351,7 @@ float map(vec3 p) {
   }
 
   // heat pool — where the heat source is (blobs emerge from here)
-  vec2 hd = vec2(-tilt.x, -1.0 + tilt.y);
+  vec2 hd = vec2(0.0, -1.0);
   float hl = length(hd);
   hd = hl > 0.01 ? hd / hl : vec2(0.0, -1.0);
   vec3 heatPos = vec3(hd.x * 2.2, hd.y * 2.2, 0.0);
@@ -374,26 +376,11 @@ vec3 calcNormal(vec3 p) {
 void main() {
   vec2 uv = (gl_FragCoord.xy - 0.5*r) / min(r.x, r.y);
 
-#if GLITCH_ON
-  // glitch: progressive 8-bit -> HD self-correction
-  float glitchCycle = 8.0;
-  float glitchDuration = 1.5;
-  float cyclePos = mod(t, glitchCycle);
-  float cycleSeed = floor(t / glitchCycle);
-  float triggerPoint = 2.0 + fract(sin(cycleSeed * 73.17) * 4378.5) * 4.0;
-  float glitchProgress = (cyclePos - triggerPoint) / glitchDuration;
-  if (glitchProgress > 0.0 && glitchProgress < 1.0) {
-    glitchAmount = 1.0 - glitchProgress;
-    glitchAmount = glitchAmount * glitchAmount;
-    glitchSeed = cycleSeed;
-  } else {
-    glitchAmount = 0.0;
-  }
-#endif
+  // glitch is now physics-based in map() — no timed trigger needed
 
   // camera — looking at lamp from front
-  vec3 ro = vec3(0.0, 0.0, 6.0);
-  vec3 rd = normalize(vec3(uv, -2.0));
+  vec3 ro = vec3(0.0, 0.0, 4.5);
+  vec3 rd = normalize(vec3(uv, -1.5));
 
   // raymarch
   float d = 0.0;
@@ -417,7 +404,7 @@ void main() {
   );
 
   // bulb hotspot — follows heat source direction
-  vec2 hd2 = vec2(-tilt.x, -1.0 + tilt.y);
+  vec2 hd2 = vec2(0.0, -1.0);
   float hl2 = length(hd2);
   hd2 = hl2 > 0.01 ? hd2 / hl2 : vec2(0.0, -1.0);
   vec2 bulbPos = hd2 * 0.5;
@@ -430,7 +417,7 @@ void main() {
     vec3 n = calcNormal(p);
 
     // light from heat source direction
-    vec2 ld = vec2(-tilt.x, -1.0 + tilt.y);
+    vec2 ld = vec2(0.0, -1.0);
     float ll = length(ld);
     ld = ll > 0.01 ? ld / ll : vec2(0.0, -1.0);
     vec3 lightDir = normalize(vec3(ld.x * 0.5 + 0.2, ld.y, 0.8));
@@ -471,14 +458,6 @@ void main() {
 
     // combine — matte, lit by the bulb below
     col = waxCol * (diff * 0.4 + amb + sss * 0.5);
-    // fluorescent blue rim — Bullina lineata iridescence
-    // inner rim: bright green, outer rim: electric blue glow
-    float rimInner = pow(fres, 1.5);  // wider green halo
-    float rimOuter = pow(fres, 3.0);  // tight blue edge
-    col += waxBright * rimInner * 0.25;
-    col += vec3(0.1, 0.35, 1.0) * rimOuter * 1.2; // strong fluorescent blue
-    // blue bloom — spills slightly beyond the edge
-    col += vec3(0.05, 0.15, 0.6) * pow(fres, 5.0) * 0.8;
     // very subtle specular — waxy, not shiny
     col += vec3(0.2, 0.4, 0.1) * spec * 0.5;
 
@@ -487,12 +466,18 @@ void main() {
     vec3 fogCol = vec3(0.035, 0.028, 0.012);
     col = mix(fogCol, col, fog);
 
-    // edge AA: blend wax into liquid at surface boundary
-    // SDF-based: confidence of hit (smaller lastH = sharper surface)
+    // edge AA: smooth SDF-based blend (but preserve rim for blue glow)
     float edgeAA = smoothstep(HIT_THRESH, 0.0, lastH);
-    // fresnel-based: fade at extreme glancing angles
-    float edgeFade = 1.0 - pow(fres, 6.0) * 0.35;
-    col = mix(bgCol, col, edgeAA * edgeFade);
+    col = mix(bgCol, col, edgeAA);
+
+    // fluorescent blue rim — Bullina lineata iridescence
+    // applied AFTER edge blend so the blue glow survives at the boundary
+    float rimInner = pow(fres, 1.5);
+    float rimOuter = pow(fres, 2.5);
+    col += waxBright * rimInner * 0.2;
+    col += vec3(0.15, 0.45, 1.0) * rimOuter * 1.5; // stronger neon blue
+    // blue bloom — spills beyond the edge into the liquid
+    col += vec3(0.08, 0.25, 0.8) * pow(fres, 4.0) * 1.0;
   }
 
   // vignette — gentle
@@ -534,27 +519,6 @@ const rLoc = gl.getUniformLocation(prog, 'r');
 const seedLoc = gl.getUniformLocation(prog, 'seed');
 const seedVal = Math.random();
 gl.uniform1f(seedLoc, seedVal);
-const tiltLoc = gl.getUniformLocation(prog, 'tilt');
-
-// device orientation — phone tilt moves the lava
-let tiltX = 0, tiltY = 0;
-const handleOrientation = (e) => {
-  tiltX = (e.gamma || 0) / 90.0;
-  tiltY = ((e.beta || 0) - 45) / 90.0;
-  tiltX = Math.max(-1, Math.min(1, tiltX));
-  tiltY = Math.max(-1, Math.min(1, tiltY));
-};
-window.addEventListener('deviceorientation', handleOrientation);
-// iOS 13+ needs permission
-if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-  document.body.addEventListener('click', function once() {
-    DeviceOrientationEvent.requestPermission().then((s) => {
-      if (s === 'granted') window.addEventListener('deviceorientation', handleOrientation);
-    }).catch(()=> {});
-    document.body.removeEventListener('click', once);
-  });
-}
-
 // Resolution: reduce DPR on mobile for fewer fragment shader invocations
 const dpr = isMobile ? Math.min(devicePixelRatio, 2.0) : devicePixelRatio;
 
@@ -576,7 +540,7 @@ const render = (time) => {
   if (Date.now() - lastInteraction > 90000) { paused = true; return; }
   gl.uniform1f(tLoc, time * 0.001);
   gl.uniform2f(rLoc, c.width, c.height);
-  gl.uniform2f(tiltLoc, tiltX, tiltY);
+  // tilt removed
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   requestAnimationFrame(render);
 };
