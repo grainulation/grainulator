@@ -1,46 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <defs>
-    <radialGradient id="kernelGrad" cx="50%" cy="45%" r="50%">
-      <stop offset="0%" stop-color="#2d6b30"/>
-      <stop offset="70%" stop-color="#44aa44"/>
-      <stop offset="100%" stop-color="#66ff66"/>
-    </radialGradient>
-    <filter id="blueGlow">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
-      <feColorMatrix in="blur" type="matrix"
-        values="0 0 0 0 0.553
-                0 0 0 0 0.965
-                0 0 0 0 1
-                0 0 0 0.6 0" result="cyan"/>
+    <filter id="glow">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
       <feMerge>
-        <feMergeNode in="cyan"/>
+        <feMergeNode in="blur"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
   </defs>
 
   <style>
-    .bg { fill: #060606; }
+    .bg { fill: #050505; }
     @media (prefers-color-scheme: light) {
       .bg { fill: #111; }
     }
   </style>
 
-  <!-- Rounded background -->
+  <!-- Background -->
   <rect class="bg" width="64" height="64" rx="14"/>
 
-  <!-- Blue ambient glow behind kernel -->
-  <ellipse cx="32" cy="30" rx="16" ry="24" fill="#8df6ff" opacity="0.08"/>
-
-  <!-- Wheat kernel with glow filter -->
-  <g filter="url(#blueGlow)">
-    <!-- Kernel body: radial gradient olive->green -->
-    <ellipse cx="32" cy="30" rx="12" ry="22" fill="url(#kernelGrad)"
-             transform="rotate(-8 32 30)" stroke="#8df6ff" stroke-width="1.5"/>
-  </g>
-
-  <!-- Subtle crease line -->
-  <line x1="32" y1="12" x2="32" y2="48" stroke="#2d6b30"
-        stroke-width="1" stroke-linecap="round" opacity="0.5"
-        transform="rotate(-8 32 30)"/>
+  <!-- Neon blobs — matching the landing page multi-color aesthetic -->
+  <!-- Cyan blob -->
+  <ellipse cx="22" cy="20" rx="10" ry="12" fill="#0a2a2b" stroke="#8df6ff" stroke-width="1.5" filter="url(#glow)" transform="rotate(-12 22 20)"/>
+  <!-- Magenta blob -->
+  <ellipse cx="42" cy="38" rx="8" ry="10" fill="#2a0a20" stroke="#ff33cc" stroke-width="1.5" filter="url(#glow)" transform="rotate(8 42 38)"/>
+  <!-- Blue blob (small) -->
+  <circle cx="38" cy="18" r="5" fill="#0a0a2a" stroke="#4d80ff" stroke-width="1.2" filter="url(#glow)"/>
+  <!-- Green blob (small) -->
+  <circle cx="20" cy="44" r="6" fill="#0a1a0a" stroke="#33ff66" stroke-width="1.2" filter="url(#glow)"/>
 </svg>
