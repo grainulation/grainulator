@@ -40,8 +40,9 @@
 </script>
 <style>
 /* ============================================================
-   GRAINULATOR — Swimming Prompts Landing Page
-   One viewport. Prompts swim like fish. Click to demo.
+   GRAINULATOR — Gaming UX Swimming Prompts Landing Page
+   Canvas 2D pond with fish AI, particles, caustics.
+   Juicy interactions. 60fps. Full a11y.
    ============================================================ */
 
 @font-face {
@@ -79,6 +80,7 @@
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-snap: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -248,6 +250,11 @@ code, pre { font-family: var(--mono); }
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - 100px);
+  transform: scale(0.96) translateY(20px);
+  transition: transform 0.5s var(--ease-spring);
+}
+.terminal-overlay.active .terminal-container {
+  transform: scale(1) translateY(0);
 }
 
 /* ===== SELECTED PROMPT DISPLAY ===== */
@@ -281,6 +288,20 @@ code, pre { font-family: var(--mono); }
   min-height: 0;
   display: flex;
   flex-direction: column;
+  transition: box-shadow 0.5s var(--ease), border-color 0.3s var(--ease);
+}
+.game-terminal.victory {
+  box-shadow:
+    0 0 200px rgba(191, 255, 0, 0.15),
+    0 0 60px rgba(191, 255, 0, 0.1),
+    0 40px 120px rgba(0,0,0,0.5);
+  border-color: rgba(191, 255, 0, 0.3);
+}
+.game-terminal.challenge-flash {
+  box-shadow:
+    0 0 100px rgba(255, 107, 107, 0.12),
+    0 40px 120px rgba(0,0,0,0.5);
+  border-color: rgba(255, 107, 107, 0.3);
 }
 .game-terminal::before {
   content: '';
@@ -289,6 +310,11 @@ code, pre { font-family: var(--mono); }
   height: 2px;
   background: linear-gradient(90deg, transparent, var(--lime), transparent);
   opacity: 0.6;
+  transition: opacity 0.3s;
+}
+.game-terminal.victory::before {
+  opacity: 1;
+  height: 3px;
 }
 .terminal-bar {
   display: flex;
@@ -348,6 +374,26 @@ code, pre { font-family: var(--mono); }
 }
 .t-line.t-mt { margin-top: 14px; }
 
+/* Claim slide-in animation */
+.t-line.slide-in {
+  animation: claimSlideIn 0.35s var(--ease-spring) both;
+}
+@keyframes claimSlideIn {
+  0% { opacity: 0; transform: translateX(30px); }
+  70% { transform: translateX(-3px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+/* Phase transition pulse */
+.t-line.phase-pulse .c-lime {
+  animation: phasePulse 0.6s var(--ease);
+}
+@keyframes phasePulse {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; text-shadow: 0 0 20px rgba(191, 255, 0, 0.5); }
+  100% { opacity: 1; text-shadow: none; }
+}
+
 /* Tags */
 .tag {
   display: inline-block;
@@ -378,6 +424,15 @@ code, pre { font-family: var(--mono); }
   margin: 8px 0;
   border-left: 3px solid var(--coral);
   background: rgba(255, 107, 107, 0.04);
+  animation: challengeShake 0.4s var(--ease);
+}
+@keyframes challengeShake {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(3px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(1px); }
+  100% { transform: translateX(0); }
 }
 
 /* Progress bars */
@@ -391,9 +446,10 @@ code, pre { font-family: var(--mono); }
 }
 .bar-fill {
   height: 100%;
-  transition: width 1.5s var(--ease-snap);
   width: 0;
   position: relative;
+  /* Spring overshoot animation */
+  transition: width 1.2s var(--ease-spring);
 }
 .bar-fill::after {
   content: '';
@@ -413,6 +469,14 @@ code, pre { font-family: var(--mono); }
   font-size: 1rem;
   text-shadow: 0 0 40px rgba(191, 255, 0, 0.5);
   letter-spacing: 0.1em;
+}
+.t-pass.victory-scale {
+  animation: victoryPop 0.6s var(--ease-spring);
+}
+@keyframes victoryPop {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 /* Blinking cursor */
@@ -456,12 +520,15 @@ code, pre { font-family: var(--mono); }
   cursor: pointer;
   min-height: 44px;
   min-width: 44px;
-  transition: color 0.2s, border-color 0.2s;
+  transition: color 0.2s, border-color 0.2s, transform 0.1s;
 }
 .ctrl-btn:hover,
 .ctrl-btn:focus-visible {
   color: var(--lime);
   border-color: var(--lime);
+}
+.ctrl-btn:active {
+  transform: scale(0.95);
 }
 .ctrl-btn[hidden] { display: none; }
 
@@ -703,6 +770,7 @@ code, pre { font-family: var(--mono); }
   transition: border-color 0.3s var(--ease), background 0.3s var(--ease), transform 0.15s var(--ease);
   position: relative;
   -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
 }
 .mobile-slot-card:active {
   transform: scale(0.97);
@@ -710,6 +778,27 @@ code, pre { font-family: var(--mono); }
 .mobile-slot-card.scripted {
   border-color: var(--lime);
   background: rgba(191, 255, 0, 0.03);
+}
+/* Shimmer on scripted cards */
+.mobile-slot-card.scripted::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 40%,
+    rgba(191, 255, 0, 0.06) 45%,
+    rgba(191, 255, 0, 0.1) 50%,
+    rgba(191, 255, 0, 0.06) 55%,
+    transparent 60%
+  );
+  animation: shimmer 3s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes shimmer {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(0deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(0deg); }
 }
 .mobile-slot-text {
   font-family: var(--sans);
@@ -753,10 +842,11 @@ code, pre { font-family: var(--mono); }
   border: 1px solid var(--border);
   background: var(--bg-elevated);
   color: var(--text-dim);
-  transition: color 0.2s, border-color 0.2s, background 0.2s;
+  transition: color 0.2s, border-color 0.2s, background 0.2s, transform 0.1s;
   -webkit-tap-highlight-color: transparent;
 }
 .mobile-slot-btn:active {
+  transform: scale(0.95);
   background: rgba(255, 255, 255, 0.04);
 }
 .mobile-slot-btn.primary {
@@ -766,6 +856,7 @@ code, pre { font-family: var(--mono); }
 }
 .mobile-slot-btn.primary:active {
   background: rgba(191, 255, 0, 0.06);
+  transform: scale(0.95);
 }
 .mobile-slot-counter {
   font-family: var(--mono);
@@ -775,20 +866,22 @@ code, pre { font-family: var(--mono); }
   opacity: 0.6;
 }
 
-/* Slot spin animation */
+/* Slot spin animation — gacha-style roll through multiple prompts */
 @keyframes slot-spin-out {
   0% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(-30px); }
+  100% { opacity: 0; transform: translateY(-40px); }
 }
 @keyframes slot-spin-in {
-  0% { opacity: 0; transform: translateY(30px); }
+  0% { opacity: 0; transform: translateY(40px); }
+  60% { opacity: 1; transform: translateY(-4px); }
+  80% { transform: translateY(2px); }
   100% { opacity: 1; transform: translateY(0); }
 }
 .mobile-slot-card.spin-out .mobile-slot-text {
-  animation: slot-spin-out 0.2s var(--ease) forwards;
+  animation: slot-spin-out 0.15s var(--ease) forwards;
 }
 .mobile-slot-card.spin-in .mobile-slot-text {
-  animation: slot-spin-in 0.25s var(--ease) forwards;
+  animation: slot-spin-in 0.4s var(--ease-spring) forwards;
 }
 
 /* ===== MOBILE ===== */
@@ -927,7 +1020,7 @@ code, pre { font-family: var(--mono); }
   <a href="#" class="get-it-link" id="get-it-link" role="button">Get it &rarr;</a>
 </nav>
 
-<!-- Canvas for swimming prompts -->
+<!-- Canvas for swimming prompts + particles + caustics -->
 <canvas id="pond" aria-hidden="true"></canvas>
 
 <!-- Screen reader accessible prompt list -->
@@ -1027,9 +1120,9 @@ code, pre { font-family: var(--mono); }
 
 <script>
 /* ======================================================
-   GRAINULATOR — Swimming Prompts + Terminal Demo
-   Canvas 2D fish pond. Click a prompt, watch a sprint.
-   Zero libraries. Full a11y.
+   GRAINULATOR — Gaming UX Swimming Prompts + Terminal Demo
+   Canvas 2D fish pond with schooling AI, particles,
+   caustics, juice. Zero libraries. Full a11y. 60fps.
    ====================================================== */
 (function () {
   'use strict';
@@ -1039,96 +1132,66 @@ code, pre { font-family: var(--mono); }
   /* ======================================================
      ALL PROMPTS — the fish in the pond
      ====================================================== */
-  // size: 's' = casual/junior, 'm' = standard, 'l' = weighty/strategic
   var allPrompts = [
-    // === ENGINEERING: Junior ===
     { text: "Which testing framework should I learn \u2014 Jest or Vitest?", key: "jest-vitest", size: 's' },
     { text: "How do I structure my first PR for the auth service?", key: "first-pr", size: 's' },
     { text: "What\u2019s the difference between useEffect and useMemo?", key: "react-hooks", size: 's' },
     { text: "What\u2019s the fastest way to set up my local dev environment?", key: "local-dev", size: 's' },
-
-    // === ENGINEERING: Mid ===
     { text: "Should we refactor the notification system or rebuild it?", key: "notif-refactor", size: 'm' },
     { text: "What\u2019s the best caching strategy for our product catalog API?", key: "caching-strategy", size: 'm' },
     { text: "Should we use Postgres or MongoDB?", key: "postgres-mongo", size: 'm' },
     { text: "How do competitors handle rate limiting?", key: "rate-limiting", size: 'm' },
-
-    // === ENGINEERING: Senior ===
     { text: "How do we migrate 2TB of user data with zero downtime?", key: "data-migration", size: 'l' },
     { text: "How do we reduce our p95 latency?", key: "p95-latency", size: 'l' },
     { text: "Should we adopt TypeScript across all services?", key: "typescript", size: 'm' },
     { text: "Is our API versioning strategy sustainable?", key: "api-versioning", size: 'm' },
-
-    // === ENGINEERING: Staff / Principal ===
     { text: "Should we adopt gRPC or stick with REST for internal services?", key: "grpc-rest", size: 'l' },
     { text: "What\u2019s the right service boundary for the payments domain?", key: "payments-boundary", size: 'l' },
     { text: "Monolith vs microservices for our scale?", key: "monolith-micro", size: 'l' },
     { text: "What\u2019s our technical debt costing us?", key: "tech-debt", size: 'l' },
-
-    // === DEVOPS / PLATFORM ===
     { text: "Why is our CI pipeline taking 45 minutes?", key: "ci-slow", size: 'm' },
     { text: "Evaluate Terraform vs Pulumi for our IaC", key: "terraform-pulumi", size: 'm' },
     { text: "How should we handle secrets rotation across 30 services?", key: "secrets-rotation", size: 'l' },
     { text: "What\u2019s the cheapest way to run our staging environment?", key: "staging-cost", size: 's' },
     { text: "Evaluate Datadog vs Grafana for observability", key: "datadog-grafana", size: 'm' },
-
-    // === DESIGN ===
     { text: "Should we switch from Figma to Penpot?", key: "figma-penpot", size: 'm' },
     { text: "What\u2019s the best way to document our design system?", key: "design-system-docs", size: 'm' },
     { text: "How do other companies handle dark mode in their component library?", key: "dark-mode", size: 's' },
     { text: "Is our onboarding flow losing users at step 3?", key: "onboarding-drop", size: 'l' },
-
-    // === PRODUCT ===
     { text: "What features should we cut from the v2 roadmap?", key: "v2-cuts", size: 'l' },
     { text: "How do competitors handle their free-to-paid conversion?", key: "free-to-paid", size: 'm' },
     { text: "Should we build the analytics dashboard or buy Mixpanel?", key: "build-buy-analytics", size: 'l' },
     { text: "What\u2019s our biggest churn risk this quarter?", key: "churn-risk", size: 'l' },
     { text: "Is our pricing strategy competitive?", key: "pricing", size: 'l' },
-
-    // === DATA / ANALYTICS ===
     { text: "Should we move from Redshift to BigQuery?", key: "redshift-bigquery", size: 'm' },
     { text: "What\u2019s the best way to set up our event tracking?", key: "event-tracking", size: 's' },
     { text: "How do we measure feature adoption across segments?", key: "feature-adoption", size: 'm' },
     { text: "Is our data pipeline reliable enough for real-time dashboards?", key: "data-pipeline", size: 'l' },
-
-    // === SECURITY ===
     { text: "Are we ready for the SOC 2 audit next month?", key: "soc2", size: 'l' },
     { text: "What are the top 5 vulnerabilities in our dependency tree?", key: "dep-vulns", size: 'm' },
     { text: "How should we handle API key rotation for 200 integrations?", key: "api-key-rotation", size: 'l' },
     { text: "What\u2019s our blast radius if the admin service gets compromised?", key: "blast-radius", size: 'l' },
     { text: "Are we GDPR ready?", key: "gdpr", size: 'l' },
-
-    // === SUPPORT / SUCCESS ===
     { text: "Why are enterprise customers churning after month 6?", key: "enterprise-churn", size: 'l' },
     { text: "What\u2019s the fastest way to reduce our ticket resolution time?", key: "ticket-resolution", size: 'm' },
     { text: "Should we build a knowledge base or use Zendesk Guide?", key: "kb-zendesk", size: 'm' },
     { text: "How do we improve our NPS from 32 to 50?", key: "nps-improve", size: 'l' },
-
-    // === SALES / GROWTH ===
     { text: "What\u2019s the best outbound strategy for mid-market SaaS?", key: "outbound-strategy", size: 'm' },
     { text: "Should we hire SDRs or invest in product-led growth?", key: "sdr-plg", size: 'l' },
     { text: "How do competitors position against us in enterprise deals?", key: "competitive-positioning", size: 'l' },
     { text: "What\u2019s our ideal customer profile based on win/loss data?", key: "icp-analysis", size: 'm' },
-
-    // === HR / PEOPLE ===
     { text: "How should we structure our engineering levels and comp bands?", key: "eng-levels", size: 'l' },
     { text: "What\u2019s the best interview process for senior engineers?", key: "eng-hiring", size: 'm' },
     { text: "Are we competitive on remote work policy vs peers?", key: "remote-policy", size: 'm' },
     { text: "How do we improve our offer acceptance rate?", key: "offer-acceptance", size: 'm' },
-
-    // === FINANCE / OPS ===
     { text: "Where are we overspending on SaaS tools?", key: "saas-spend", size: 'm' },
     { text: "What\u2019s the ROI on our developer experience investments?", key: "dx-roi", size: 'l' },
     { text: "Should we renegotiate our AWS contract or go multi-cloud?", key: "cloud-cost", size: 'l' },
     { text: "How do we forecast headcount for next year?", key: "headcount-forecast", size: 'm' },
-
-    // === MANAGEMENT ===
     { text: "Is our sprint planning process actually effective?", key: "sprint-planning", size: 'm' },
     { text: "How should we reorganize after the acquisition?", key: "reorg", size: 'l' },
     { text: "What\u2019s the best way to communicate the layoff plan?", key: "layoff-comms", size: 'l' },
     { text: "How do other companies run quarterly planning?", key: "quarterly-planning", size: 'm' },
-
-    // === INTERN / NEW HIRE ===
     { text: "What should I read to understand our architecture?", key: "learn-arch", size: 's' },
     { text: "How does the deployment pipeline actually work?", key: "learn-deploy", size: 's' },
     { text: "What are the unwritten rules on this team?", key: "unwritten-rules", size: 's' },
@@ -1139,7 +1202,6 @@ code, pre { font-family: var(--mono); }
      SPRINT SCRIPTS — pre-written demo sequences
      ====================================================== */
   var scripts = {
-    // === ENGINEERING: Mid-level (database decision) ===
     "postgres-mongo": [
       { type: 'cmd', text: 'grainulator init "Should we use Postgres or MongoDB?"', delay: 50 },
       { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">engineering leadership</span>', delay: 350 },
@@ -1166,7 +1228,6 @@ code, pre { font-family: var(--mono); }
       { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
       { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/postgres-vs-mongo-brief.html</span>', delay: 250 }
     ],
-    // === ENGINEERING: Junior (first PR) ===
     "jest-vitest": [
       { type: 'cmd', text: 'grainulator init "Which testing framework should I learn \u2014 Jest or Vitest?"', delay: 50 },
       { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">me (junior engineer, week 3)</span>', delay: 350 },
@@ -1193,7 +1254,6 @@ code, pre { font-family: var(--mono); }
       { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
       { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/jest-vs-vitest-brief.html</span>', delay: 250 }
     ],
-    // === DESIGN (onboarding flow) ===
     "onboarding-drop": [
       { type: 'cmd', text: 'grainulator init "Is our onboarding flow losing users at step 3?"', delay: 50 },
       { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">design lead + product manager</span>', delay: 350 },
@@ -1220,7 +1280,6 @@ code, pre { font-family: var(--mono); }
       { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
       { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/onboarding-dropoff-brief.html</span>', delay: 250 }
     ],
-    // === PRODUCT (churn risk) ===
     "churn-risk": [
       { type: 'cmd', text: 'grainulator init "What\u2019s our biggest churn risk this quarter?"', delay: 50 },
       { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">head of product + CEO</span>', delay: 350 },
@@ -1247,7 +1306,6 @@ code, pre { font-family: var(--mono); }
       { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
       { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/churn-risk-q1-brief.html</span>', delay: 250 }
     ],
-    // === SUPPORT / SUCCESS (ticket resolution) ===
     "enterprise-churn": [
       { type: 'cmd', text: 'grainulator init "Why are enterprise customers churning after month 6?"', delay: 50 },
       { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">head of customer success</span>', delay: 350 },
@@ -1274,7 +1332,6 @@ code, pre { font-family: var(--mono); }
       { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
       { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/enterprise-churn-analysis-brief.html</span>', delay: 250 }
     ],
-    // === DATA / ANALYTICS (pipeline reliability) ===
     "data-pipeline": [
       { type: 'cmd', text: 'grainulator init "Is our data pipeline reliable enough for real-time dashboards?"', delay: 50 },
       { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">data engineering lead + VP product</span>', delay: 350 },
@@ -1301,7 +1358,6 @@ code, pre { font-family: var(--mono); }
       { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
       { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/pipeline-reliability-brief.html</span>', delay: 250 }
     ],
-    // === HR / PEOPLE (eng levels) ===
     "eng-levels": [
       { type: 'cmd', text: 'grainulator init "How should we structure our engineering levels and comp bands?"', delay: 50 },
       { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">VP People + CTO</span>', delay: 350 },
@@ -1328,7 +1384,6 @@ code, pre { font-family: var(--mono); }
       { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
       { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/eng-levels-comp-brief.html</span>', delay: 250 }
     ],
-    // === PRODUCT (pricing) ===
     "pricing": [
       { type: 'cmd', text: 'grainulator init "Is our pricing strategy competitive?"', delay: 50 },
       { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">CEO + head of product</span>', delay: 350 },
@@ -1355,7 +1410,6 @@ code, pre { font-family: var(--mono); }
       { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
       { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/pricing-analysis-brief.html</span>', delay: 250 }
     ],
-    // === ENGINEERING: Staff (architecture) ===
     "monolith-micro": [
       { type: 'cmd', text: 'grainulator init "Monolith vs microservices for our scale?"', delay: 50 },
       { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">platform engineering team</span>', delay: 350 },
@@ -1382,7 +1436,6 @@ code, pre { font-family: var(--mono); }
       { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
       { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/architecture-decision-brief.html</span>', delay: 250 }
     ],
-    // === SECURITY (SOC 2) ===
     "soc2": [
       { type: 'cmd', text: 'grainulator init "Are we ready for the SOC 2 audit next month?"', delay: 50 },
       { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">CTO + compliance lead</span>', delay: 350 },
@@ -1409,7 +1462,6 @@ code, pre { font-family: var(--mono); }
       { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
       { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/soc2-readiness-brief.html</span>', delay: 250 }
     ],
-    // === FINANCE / OPS (cloud cost) ===
     "cloud-cost": [
       { type: 'cmd', text: 'grainulator init "Should we renegotiate our AWS contract or go multi-cloud?"', delay: 50 },
       { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">VP Engineering + finance</span>', delay: 350 },
@@ -1436,7 +1488,6 @@ code, pre { font-family: var(--mono); }
       { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
       { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/cloud-cost-audit-brief.html</span>', delay: 250 }
     ],
-    // === SALES / GROWTH (SDR vs PLG) ===
     "sdr-plg": [
       { type: 'cmd', text: 'grainulator init "Should we hire SDRs or invest in product-led growth?"', delay: 50 },
       { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">VP Sales + CEO</span>', delay: 350 },
@@ -1463,7 +1514,6 @@ code, pre { font-family: var(--mono); }
       { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
       { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/growth-strategy-brief.html</span>', delay: 250 }
     ],
-    // === DEVOPS (Datadog vs Grafana) ===
     "datadog-grafana": [
       { type: 'cmd', text: 'grainulator init "Evaluate Datadog vs Grafana for observability"', delay: 50 },
       { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">SRE team + engineering management</span>', delay: 350 },
@@ -1490,7 +1540,6 @@ code, pre { font-family: var(--mono); }
       { type: 'pass', text: '\u2713 PASS \u2014 all gates met. Brief ready.', delay: 500 },
       { type: 'line', html: '<span class="c-dim">\u2192</span> <span class="c-text">output/observability-eval-brief.html</span>', delay: 250 }
     ],
-    // === MANAGEMENT (reorg) ===
     "reorg": [
       { type: 'cmd', text: 'grainulator init "How should we reorganize after the acquisition?"', delay: 50 },
       { type: 'line', html: '<span class="c-dim">audience:</span> <span class="c-text">CEO + VP Engineering + VP People</span>', delay: 350 },
@@ -1519,7 +1568,6 @@ code, pre { font-family: var(--mono); }
     ]
   };
 
-  /* Keys that have full scripts */
   var scriptedKeys = Object.keys(scripts);
 
   /* ======================================================
@@ -1532,6 +1580,7 @@ code, pre { font-family: var(--mono); }
   var termBody = document.getElementById('terminal-body');
   var termStatus = document.getElementById('terminal-status-text');
   var selectedPromptEl = document.getElementById('selected-prompt');
+  var gameTerminal = document.getElementById('game-terminal');
   var btnSkip = document.getElementById('btn-skip');
   var btnPause = document.getElementById('btn-pause');
   var btnDismiss = document.getElementById('btn-dismiss');
@@ -1556,13 +1605,195 @@ code, pre { font-family: var(--mono); }
   var isMobile = window.matchMedia('(max-width: 768px)').matches;
 
   /* ======================================================
-     FISH / PROMPT BUBBLES
+     PARTICLE SYSTEM — object-pooled for 60fps
+     ====================================================== */
+  var MAX_PARTICLES = 200;
+  var particles = [];
+  var activeParticles = 0;
+
+  // Pre-allocate particle pool
+  for (var pi = 0; pi < MAX_PARTICLES; pi++) {
+    particles.push({
+      active: false,
+      x: 0, y: 0, vx: 0, vy: 0,
+      life: 0, maxLife: 0,
+      r: 0, g: 0, b: 0, a: 1,
+      size: 2,
+      type: 'dot' // 'dot' | 'spark'
+    });
+  }
+
+  function spawnParticle(x, y, vx, vy, life, r, g, b, size, type) {
+    for (var i = 0; i < MAX_PARTICLES; i++) {
+      if (!particles[i].active) {
+        var p = particles[i];
+        p.active = true;
+        p.x = x; p.y = y;
+        p.vx = vx; p.vy = vy;
+        p.life = life; p.maxLife = life;
+        p.r = r; p.g = g; p.b = b; p.a = 1;
+        p.size = size || 2;
+        p.type = type || 'dot';
+        activeParticles++;
+        return;
+      }
+    }
+  }
+
+  function burstParticles(x, y, count, r, g, b, speed, life, size) {
+    for (var i = 0; i < count; i++) {
+      var angle = Math.random() * Math.PI * 2;
+      var spd = speed * (0.3 + Math.random() * 0.7);
+      spawnParticle(
+        x + (Math.random() - 0.5) * 10,
+        y + (Math.random() - 0.5) * 10,
+        Math.cos(angle) * spd,
+        Math.sin(angle) * spd,
+        life * (0.5 + Math.random() * 0.5),
+        r, g, b,
+        size || (1 + Math.random() * 3),
+        'dot'
+      );
+    }
+  }
+
+  function updateParticles(dt) {
+    activeParticles = 0;
+    for (var i = 0; i < MAX_PARTICLES; i++) {
+      var p = particles[i];
+      if (!p.active) continue;
+      activeParticles++;
+
+      p.life -= dt;
+      if (p.life <= 0) {
+        p.active = false;
+        continue;
+      }
+
+      p.x += p.vx * dt * 60;
+      p.y += p.vy * dt * 60;
+      p.vy += 0.02 * dt * 60; // gentle gravity
+      p.vx *= 0.98;
+      p.vy *= 0.98;
+      p.a = Math.max(0, p.life / p.maxLife);
+    }
+  }
+
+  function drawParticles() {
+    for (var i = 0; i < MAX_PARTICLES; i++) {
+      var p = particles[i];
+      if (!p.active) continue;
+
+      ctx.globalAlpha = p.a * 0.8;
+      ctx.fillStyle = 'rgb(' + p.r + ',' + p.g + ',' + p.b + ')';
+
+      if (p.type === 'spark') {
+        // Elongated spark
+        ctx.save();
+        var angle = Math.atan2(p.vy, p.vx);
+        ctx.translate(p.x, p.y);
+        ctx.rotate(angle);
+        ctx.fillRect(-p.size * 2, -p.size * 0.3, p.size * 4, p.size * 0.6);
+        ctx.restore();
+      } else {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * p.a, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* ======================================================
+     RIPPLE SYSTEM
+     ====================================================== */
+  var MAX_RIPPLES = 10;
+  var ripples = [];
+  for (var ri = 0; ri < MAX_RIPPLES; ri++) {
+    ripples.push({ active: false, x: 0, y: 0, radius: 0, maxRadius: 0, life: 0, maxLife: 0 });
+  }
+
+  function spawnRipple(x, y, maxRadius) {
+    for (var i = 0; i < MAX_RIPPLES; i++) {
+      if (!ripples[i].active) {
+        ripples[i].active = true;
+        ripples[i].x = x;
+        ripples[i].y = y;
+        ripples[i].radius = 0;
+        ripples[i].maxRadius = maxRadius || 120;
+        ripples[i].life = 1;
+        ripples[i].maxLife = 1;
+        return;
+      }
+    }
+  }
+
+  function updateRipples(dt) {
+    for (var i = 0; i < MAX_RIPPLES; i++) {
+      var r = ripples[i];
+      if (!r.active) continue;
+      r.life -= dt * 1.5;
+      if (r.life <= 0) { r.active = false; continue; }
+      r.radius = r.maxRadius * (1 - r.life / r.maxLife);
+    }
+  }
+
+  function drawRipples() {
+    for (var i = 0; i < MAX_RIPPLES; i++) {
+      var r = ripples[i];
+      if (!r.active) continue;
+      var alpha = r.life * 0.3;
+      ctx.strokeStyle = 'rgba(191, 255, 0, ' + alpha + ')';
+      ctx.lineWidth = 1.5 * r.life;
+      ctx.beginPath();
+      ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+
+  /* ======================================================
+     CAUSTICS — underwater light patterns
+     ====================================================== */
+  var causticsTime = 0;
+
+  function drawCaustics(t) {
+    causticsTime = t * 0.0003;
+    ctx.globalAlpha = 0.025;
+    ctx.fillStyle = '#BFFF00';
+
+    // Draw overlapping sine-wave caustic pattern
+    for (var cx = 0; cx < W; cx += 80) {
+      for (var cy = 0; cy < H; cy += 80) {
+        var v = Math.sin(cx * 0.01 + causticsTime * 2) *
+                Math.cos(cy * 0.012 + causticsTime * 1.5) *
+                Math.sin((cx + cy) * 0.008 + causticsTime);
+        if (v > 0.3) {
+          var s = v * 40;
+          ctx.beginPath();
+          ctx.arc(cx + Math.sin(causticsTime + cy * 0.01) * 20,
+                  cy + Math.cos(causticsTime + cx * 0.01) * 20,
+                  s, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* ======================================================
+     FISH / PROMPT BUBBLES — with schooling AI
      ====================================================== */
   var fish = [];
   var W, H;
   var dpr = window.devicePixelRatio || 1;
-  var hoveredFish = null;
   var mouseX = -1000, mouseY = -1000;
+  var clickedFishIndex = -1;
+  var clickedFishAnim = 0; // 0-1 for zoom-to-terminal animation
+
+  // Fish depth layers for parallax
+  var DEPTH_NEAR = 1.0;
+  var DEPTH_MID = 0.7;
+  var DEPTH_FAR = 0.45;
 
   function resize() {
     W = window.innerWidth;
@@ -1577,16 +1808,16 @@ code, pre { font-family: var(--mono); }
   function initFish() {
     fish = [];
     var baseFontSize = W < 768 ? 11 : 13;
+    var fontFamily = getComputedStyle(document.body).fontFamily;
+
     for (var i = 0; i < allPrompts.length; i++) {
       var p = allPrompts[i];
-      // Measure text width
-      ctx.font = '600 ' + baseFontSize + 'px ' + getComputedStyle(document.body).fontFamily;
+      ctx.font = '600 ' + baseFontSize + 'px ' + fontFamily;
       var tw = ctx.measureText(p.text).width;
       var padX = 24, padY = 16;
       var bw = tw + padX * 2;
       var bh = baseFontSize + padY * 2;
 
-      // Size variation based on prompt weight
       var sizeMap = { s: 0.7, m: 0.9, l: 1.1 };
       var baseScale = sizeMap[p.size] || 0.9;
       var scale = baseScale + (Math.random() - 0.5) * 0.15;
@@ -1594,45 +1825,154 @@ code, pre { font-family: var(--mono); }
       bh *= scale;
       var fontSize = baseFontSize * scale;
 
+      // Assign depth layer based on size
+      var depth = p.size === 'l' ? DEPTH_NEAR : (p.size === 'm' ? DEPTH_MID : DEPTH_FAR);
+      depth += (Math.random() - 0.5) * 0.15;
+      depth = Math.max(0.3, Math.min(1.0, depth));
+
       fish.push({
         text: p.text,
         key: p.key,
         x: Math.random() * (W - bw),
-        y: Math.random() * (H - bh),
+        y: 60 + Math.random() * (H - bh - 100),
         w: bw,
         h: bh,
         fontSize: fontSize,
-        vx: (Math.random() - 0.5) * 0.4,
+        vx: (Math.random() - 0.5) * 0.5,
         vy: (Math.random() - 0.5) * 0.3,
         wobblePhase: Math.random() * Math.PI * 2,
         wobbleSpeed: 0.3 + Math.random() * 0.4,
-        opacity: 0.25 + Math.random() * 0.35,
+        rotation: 0,
+        opacity: 0.15 + depth * 0.45,
+        baseOpacity: 0.15 + depth * 0.45,
         hovered: false,
-        scale: scale
+        scale: scale,
+        depth: depth,
+        // Scatter state
+        scatterVx: 0,
+        scatterVy: 0,
+        scatterDecay: 0,
+        // Jump animation
+        jumpTime: -1,
+        jumpCooldown: 5 + Math.random() * 20,
+        // Click animation
+        clickScale: 1,
+        clickScaleTarget: 1
       });
     }
+
+    // Sort by depth so far fish render first
+    fish.sort(function(a, b) { return a.depth - b.depth; });
   }
 
   function updateFish(dt) {
+    var cursorInfluenceRadius = 200;
+    var scatterRadius = 300;
+
     for (var i = 0; i < fish.length; i++) {
       var f = fish[i];
 
-      // Wobble
-      f.wobblePhase += f.wobbleSpeed * dt;
-      var wobbleX = Math.sin(f.wobblePhase) * 0.15;
-      var wobbleY = Math.cos(f.wobblePhase * 0.7) * 0.1;
+      // Skip fish being animated to terminal
+      if (clickedFishIndex === i && clickedFishAnim > 0) continue;
 
-      f.x += (f.vx + wobbleX) * dt * 60;
-      f.y += (f.vy + wobbleY) * dt * 60;
+      // Body wiggle (sine wave on rotation)
+      f.wobblePhase += f.wobbleSpeed * dt;
+      var wiggle = Math.sin(f.wobblePhase * 2) * 0.02;
+      f.rotation = f.rotation * 0.9 + (wiggle + f.vx * 0.03) * 0.1;
+
+      // Scatter decay
+      if (f.scatterDecay > 0) {
+        f.scatterDecay -= dt * 2;
+        if (f.scatterDecay < 0) f.scatterDecay = 0;
+      }
+
+      // Schooling: loosely align with nearby fish
+      var avgVx = 0, avgVy = 0, neighbors = 0;
+      for (var j = 0; j < fish.length; j++) {
+        if (i === j) continue;
+        var dx = fish[j].x - f.x;
+        var dy = fish[j].y - f.y;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 250 && Math.abs(fish[j].depth - f.depth) < 0.2) {
+          avgVx += fish[j].vx;
+          avgVy += fish[j].vy;
+          neighbors++;
+
+          // Separation: avoid overlapping
+          if (dist < 100) {
+            f.vx -= dx / dist * 0.005;
+            f.vy -= dy / dist * 0.005;
+          }
+        }
+      }
+      if (neighbors > 0) {
+        avgVx /= neighbors;
+        avgVy /= neighbors;
+        // Align with school (gentle)
+        f.vx += (avgVx - f.vx) * 0.002;
+        f.vy += (avgVy - f.vy) * 0.002;
+      }
+
+      // Mouse flee behavior — fish near cursor speed away
+      var mdx = f.x + f.w / 2 - mouseX;
+      var mdy = f.y + f.h / 2 - mouseY;
+      var mDist = Math.sqrt(mdx * mdx + mdy * mdy);
+      if (mDist < cursorInfluenceRadius && mDist > 0) {
+        var fleeFactor = (1 - mDist / cursorInfluenceRadius) * 0.15 * f.depth;
+        f.vx += (mdx / mDist) * fleeFactor;
+        f.vy += (mdy / mDist) * fleeFactor;
+      }
+
+      // Apply scatter force
+      var sx = f.vx + f.scatterVx * f.scatterDecay;
+      var sy = f.vy + f.scatterVy * f.scatterDecay;
+
+      // Wobble movement
+      var wobbleX = Math.sin(f.wobblePhase) * 0.12;
+      var wobbleY = Math.cos(f.wobblePhase * 0.7) * 0.08;
+
+      f.x += (sx + wobbleX) * dt * 60;
+      f.y += (sy + wobbleY) * dt * 60;
+
+      // Speed limit
+      var speed = Math.sqrt(f.vx * f.vx + f.vy * f.vy);
+      if (speed > 1.5) {
+        f.vx *= 1.5 / speed;
+        f.vy *= 1.5 / speed;
+      }
+
+      // Gentle friction
+      f.vx *= 0.999;
+      f.vy *= 0.999;
 
       // Bounce off edges
-      if (f.x < 0) { f.x = 0; f.vx = Math.abs(f.vx); }
-      if (f.x + f.w > W) { f.x = W - f.w; f.vx = -Math.abs(f.vx); }
-      if (f.y < 50) { f.y = 50; f.vy = Math.abs(f.vy); }
-      if (f.y + f.h > H - 40) { f.y = H - 40 - f.h; f.vy = -Math.abs(f.vy); }
+      if (f.x < 0) { f.x = 0; f.vx = Math.abs(f.vx) * 0.5; }
+      if (f.x + f.w > W) { f.x = W - f.w; f.vx = -Math.abs(f.vx) * 0.5; }
+      if (f.y < 50) { f.y = 50; f.vy = Math.abs(f.vy) * 0.5; }
+      if (f.y + f.h > H - 40) { f.y = H - 40 - f.h; f.vy = -Math.abs(f.vy) * 0.5; }
+
+      // Jump animation (random)
+      f.jumpCooldown -= dt;
+      if (f.jumpCooldown <= 0 && f.jumpTime < 0) {
+        f.jumpTime = 0;
+        f.jumpCooldown = 8 + Math.random() * 25;
+      }
+      if (f.jumpTime >= 0) {
+        f.jumpTime += dt * 3;
+        if (f.jumpTime >= 1) {
+          f.jumpTime = -1;
+        }
+      }
+
+      // Click scale animation (spring)
+      f.clickScale += (f.clickScaleTarget - f.clickScale) * 0.2;
 
       // Hit test for hover
       f.hovered = (mouseX >= f.x && mouseX <= f.x + f.w && mouseY >= f.y && mouseY <= f.y + f.h);
+
+      // Smooth opacity
+      var targetOpacity = f.hovered ? Math.min(f.baseOpacity + 0.4, 1) : f.baseOpacity;
+      f.opacity += (targetOpacity - f.opacity) * 0.15;
     }
   }
 
@@ -1640,26 +1980,58 @@ code, pre { font-family: var(--mono); }
     ctx.clearRect(0, 0, W, H);
     var fontFamily = getComputedStyle(document.body).fontFamily;
 
+    // Draw caustics first (background layer)
+    drawCaustics(performance.now());
+
+    // Draw ripples
+    drawRipples();
+
+    // Draw fish sorted by depth (far to near)
     for (var i = 0; i < fish.length; i++) {
       var f = fish[i];
-      var opacity = f.hovered ? Math.min(f.opacity + 0.35, 1) : f.opacity;
-      var borderColor = f.hovered ? 'rgba(191, 255, 0, 0.6)' : 'rgba(255, 255, 255, 0.06)';
-      var bgColor = f.hovered ? 'rgba(191, 255, 0, 0.08)' : 'rgba(255, 255, 255, 0.02)';
 
-      ctx.globalAlpha = opacity;
+      // Skip if animating to terminal
+      if (clickedFishIndex === i && clickedFishAnim > 0) {
+        drawClickedFishAnim(f, fontFamily);
+        continue;
+      }
+
+      // Jump scale
+      var jumpScale = 1;
+      var jumpY = 0;
+      if (f.jumpTime >= 0) {
+        var jt = f.jumpTime;
+        jumpScale = 1 + Math.sin(jt * Math.PI) * 0.12;
+        jumpY = -Math.sin(jt * Math.PI) * 8;
+      }
+
+      var totalScale = f.clickScale * jumpScale;
+      var drawX = f.x + f.w / 2;
+      var drawY = f.y + f.h / 2 + jumpY;
+
+      ctx.save();
+      ctx.translate(drawX, drawY);
+      ctx.rotate(f.rotation);
+      ctx.scale(totalScale, totalScale);
+      ctx.translate(-f.w / 2, -f.h / 2);
+
+      ctx.globalAlpha = f.opacity;
+
+      var borderColor = f.hovered ? 'rgba(191, 255, 0, 0.6)' : 'rgba(255, 255, 255, ' + (0.03 + f.depth * 0.04) + ')';
+      var bgColor = f.hovered ? 'rgba(191, 255, 0, 0.08)' : 'rgba(255, 255, 255, ' + (0.01 + f.depth * 0.02) + ')';
 
       // Rounded rect
       var r = 6;
       ctx.beginPath();
-      ctx.moveTo(f.x + r, f.y);
-      ctx.lineTo(f.x + f.w - r, f.y);
-      ctx.quadraticCurveTo(f.x + f.w, f.y, f.x + f.w, f.y + r);
-      ctx.lineTo(f.x + f.w, f.y + f.h - r);
-      ctx.quadraticCurveTo(f.x + f.w, f.y + f.h, f.x + f.w - r, f.y + f.h);
-      ctx.lineTo(f.x + r, f.y + f.h);
-      ctx.quadraticCurveTo(f.x, f.y + f.h, f.x, f.y + f.h - r);
-      ctx.lineTo(f.x, f.y + r);
-      ctx.quadraticCurveTo(f.x, f.y, f.x + r, f.y);
+      ctx.moveTo(r, 0);
+      ctx.lineTo(f.w - r, 0);
+      ctx.quadraticCurveTo(f.w, 0, f.w, r);
+      ctx.lineTo(f.w, f.h - r);
+      ctx.quadraticCurveTo(f.w, f.h, f.w - r, f.h);
+      ctx.lineTo(r, f.h);
+      ctx.quadraticCurveTo(0, f.h, 0, f.h - r);
+      ctx.lineTo(0, r);
+      ctx.quadraticCurveTo(0, 0, r, 0);
       ctx.closePath();
 
       ctx.fillStyle = bgColor;
@@ -1668,12 +2040,19 @@ code, pre { font-family: var(--mono); }
       ctx.lineWidth = f.hovered ? 1.5 : 0.5;
       ctx.stroke();
 
+      // Scripted indicator — subtle lime dot
+      if (scripts[f.key] && !f.hovered) {
+        ctx.fillStyle = 'rgba(191, 255, 0, 0.3)';
+        ctx.beginPath();
+        ctx.arc(f.w - 8, 8, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
       // Text
       ctx.font = '600 ' + f.fontSize + 'px ' + fontFamily;
-      ctx.fillStyle = f.hovered ? '#BFFF00' : '#9A9A9A';
+      ctx.fillStyle = f.hovered ? '#BFFF00' : ('rgba(154, 154, 154, ' + (0.5 + f.depth * 0.5) + ')');
       ctx.textBaseline = 'middle';
 
-      // Truncate text to fit
       var maxTextW = f.w - 20;
       var displayText = f.text;
       if (ctx.measureText(displayText).width > maxTextW) {
@@ -1682,10 +2061,98 @@ code, pre { font-family: var(--mono); }
         }
         displayText += '\u2026';
       }
-      ctx.fillText(displayText, f.x + 10, f.y + f.h / 2);
+      ctx.fillText(displayText, 10, f.h / 2);
+
+      ctx.restore();
     }
 
+    // Draw particles on top
+    drawParticles();
+
     ctx.globalAlpha = 1;
+  }
+
+  // Animate clicked fish zooming toward terminal
+  function drawClickedFishAnim(f, fontFamily) {
+    var t = clickedFishAnim;
+    var termRect = gameTerminal.getBoundingClientRect();
+    var targetX = termRect.left + termRect.width / 2;
+    var targetY = termRect.top + termRect.height / 2;
+
+    var startX = f.x + f.w / 2;
+    var startY = f.y + f.h / 2;
+
+    // Ease-in-out with skew for "whoosh"
+    var eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    var cx = startX + (targetX - startX) * eased;
+    var cy = startY + (targetY - startY) * eased;
+    var scale = 1 - t * 0.6;
+    var alpha = 1 - t;
+    var skewX = Math.sin(t * Math.PI) * 0.15 * (targetX > startX ? 1 : -1);
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(cx, cy);
+    ctx.transform(1, 0, skewX, 1, 0, 0); // motion blur skew
+    ctx.scale(scale, scale);
+    ctx.translate(-f.w / 2, -f.h / 2);
+
+    // Draw trail particles
+    if (t > 0.1 && t < 0.8) {
+      spawnParticle(
+        cx + (Math.random() - 0.5) * 20,
+        cy + (Math.random() - 0.5) * 10,
+        (Math.random() - 0.5) * 2,
+        (Math.random() - 0.5) * 2,
+        0.3 + Math.random() * 0.3,
+        191, 255, 0, 2, 'dot'
+      );
+    }
+
+    // Simplified fish body
+    ctx.fillStyle = 'rgba(191, 255, 0, 0.15)';
+    ctx.strokeStyle = 'rgba(191, 255, 0, 0.5)';
+    ctx.lineWidth = 1;
+    var r = 6;
+    ctx.beginPath();
+    ctx.moveTo(r, 0);
+    ctx.lineTo(f.w - r, 0);
+    ctx.quadraticCurveTo(f.w, 0, f.w, r);
+    ctx.lineTo(f.w, f.h - r);
+    ctx.quadraticCurveTo(f.w, f.h, f.w - r, f.h);
+    ctx.lineTo(r, f.h);
+    ctx.quadraticCurveTo(0, f.h, 0, f.h - r);
+    ctx.lineTo(0, r);
+    ctx.quadraticCurveTo(0, 0, r, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.font = '600 ' + f.fontSize + 'px ' + fontFamily;
+    ctx.fillStyle = '#BFFF00';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(f.text.length > 30 ? f.text.slice(0, 30) + '\u2026' : f.text, 10, f.h / 2);
+
+    ctx.restore();
+  }
+
+  /* ======================================================
+     SCATTER NEARBY FISH
+     ====================================================== */
+  function scatterFishAround(cx, cy, excludeIndex) {
+    for (var i = 0; i < fish.length; i++) {
+      if (i === excludeIndex) continue;
+      var f = fish[i];
+      var dx = (f.x + f.w / 2) - cx;
+      var dy = (f.y + f.h / 2) - cy;
+      var dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 300 && dist > 0) {
+        var force = (1 - dist / 300) * 3;
+        f.scatterVx = (dx / dist) * force;
+        f.scatterVy = (dy / dist) * force;
+        f.scatterDecay = 1;
+      }
+    }
   }
 
   /* ======================================================
@@ -1699,9 +2166,25 @@ code, pre { font-family: var(--mono); }
     var dt = lastTime ? Math.min((time - lastTime) / 1000, 0.1) : 0.016;
     lastTime = time;
 
-    if (!terminalActive) {
+    updateParticles(dt);
+    updateRipples(dt);
+
+    if (!terminalActive || clickedFishAnim > 0) {
       updateFish(dt);
       drawFish();
+    } else {
+      // Still draw particles even when terminal is open
+      ctx.clearRect(0, 0, W, H);
+      drawParticles();
+    }
+
+    // Update clicked fish animation
+    if (clickedFishAnim > 0 && clickedFishAnim < 1) {
+      clickedFishAnim += dt * 2.5;
+      if (clickedFishAnim >= 1) {
+        clickedFishAnim = 0;
+        clickedFishIndex = -1;
+      }
     }
 
     requestAnimationFrame(animate);
@@ -1727,26 +2210,57 @@ code, pre { font-family: var(--mono); }
 
   canvas.addEventListener('click', function (e) {
     var cx = e.clientX, cy = e.clientY;
-    // Find topmost hit fish
+
+    // Spawn ripple at click location
+    spawnRipple(cx, cy, 120);
+
+    // Find topmost hit fish (iterate from end = near fish first)
     for (var i = fish.length - 1; i >= 0; i--) {
       var f = fish[i];
       if (cx >= f.x && cx <= f.x + f.w && cy >= f.y && cy <= f.y + f.h) {
-        selectPrompt(f.key, f.text);
+        // Satisfying click pop: quick scale down then up
+        f.clickScaleTarget = 0.85;
+        setTimeout((function(fi) { return function() {
+          fi.clickScaleTarget = 1.1;
+          setTimeout(function() { fi.clickScaleTarget = 1; }, 120);
+        }; })(f), 50);
+
+        // Scatter nearby fish
+        scatterFishAround(cx, cy, i);
+
+        // Burst tiny particles at click point
+        burstParticles(cx, cy, 8, 191, 255, 0, 2, 0.6, 2);
+
+        // Start zoom-to-terminal animation
+        clickedFishIndex = i;
+        clickedFishAnim = 0.01;
+
+        // Delay the terminal opening until fish arrives
+        setTimeout((function(key, text) { return function() {
+          selectPrompt(key, text);
+        }; })(f.key, f.text), 350);
+
         return;
       }
     }
   });
 
-  // Touch support
   canvas.addEventListener('touchend', function (e) {
     if (e.changedTouches.length === 0) return;
     var t = e.changedTouches[0];
     var cx = t.clientX, cy = t.clientY;
+    spawnRipple(cx, cy, 100);
     for (var i = fish.length - 1; i >= 0; i--) {
       var f = fish[i];
       if (cx >= f.x && cx <= f.x + f.w && cy >= f.y && cy <= f.y + f.h) {
         e.preventDefault();
-        selectPrompt(f.key, f.text);
+        scatterFishAround(cx, cy, i);
+        burstParticles(cx, cy, 6, 191, 255, 0, 2, 0.5, 2);
+        clickedFishIndex = i;
+        clickedFishAnim = 0.01;
+        setTimeout((function(key, text) { return function() {
+          selectPrompt(key, text);
+        }; })(f.key, f.text), 350);
         return;
       }
     }
@@ -1759,7 +2273,6 @@ code, pre { font-family: var(--mono); }
     terminalActive = true;
 
     if (isMobile) {
-      // Hide mobile slot machine
       var ms = document.getElementById('mobile-slot');
       if (ms) ms.style.display = 'none';
     } else {
@@ -1767,14 +2280,13 @@ code, pre { font-family: var(--mono); }
       hintEl.classList.add('hidden');
     }
 
-    // Show overlay
     termOverlay.classList.add('active');
     selectedPromptEl.textContent = '\u201c' + text + '\u201d';
     setTimeout(function () { selectedPromptEl.classList.add('visible'); }, 50);
 
-    // Clear previous state
     termBody.innerHTML = '';
     sprintDone.classList.remove('visible');
+    gameTerminal.classList.remove('victory', 'challenge-flash');
     btnDismiss.hidden = true;
 
     if (scripts[key]) {
@@ -1807,12 +2319,14 @@ code, pre { font-family: var(--mono); }
     finished = true;
     paused = false;
     currentScript = null;
+    clickedFishIndex = -1;
+    clickedFishAnim = 0;
+    gameTerminal.classList.remove('victory', 'challenge-flash');
 
     termOverlay.classList.remove('active');
     selectedPromptEl.classList.remove('visible');
 
     if (isMobile) {
-      // On mobile, just restore slot machine visibility
       var ms = document.getElementById('mobile-slot');
       if (ms) ms.style.display = 'flex';
     } else {
@@ -1829,12 +2343,8 @@ code, pre { font-family: var(--mono); }
   /* ======================================================
      INSTALL OVERLAY
      ====================================================== */
-  function showInstall() {
-    installOverlay.classList.add('active');
-  }
-  function hideInstall() {
-    installOverlay.classList.remove('active');
-  }
+  function showInstall() { installOverlay.classList.add('active'); }
+  function hideInstall() { installOverlay.classList.remove('active'); }
 
   getItLink.addEventListener('click', function (e) { e.preventDefault(); showInstall(); });
   btnGetItCta.addEventListener('click', showInstall);
@@ -1899,7 +2409,7 @@ code, pre { font-family: var(--mono); }
   }
 
   /* ======================================================
-     RENDER A STEP
+     RENDER A STEP — with gaming juice
      ====================================================== */
   function renderStep(step, callback) {
     var div = document.createElement('div');
@@ -1913,7 +2423,7 @@ code, pre { font-family: var(--mono); }
     }
 
     if (step.type === 'cmd') {
-      div.classList.add('t-mt');
+      div.classList.add('t-mt', 'phase-pulse');
       var promptSpan = document.createElement('span');
       promptSpan.className = 'c-dim';
       promptSpan.textContent = '$ ';
@@ -1929,6 +2439,10 @@ code, pre { font-family: var(--mono); }
     }
 
     if (step.type === 'line') {
+      // Slide-in animation for claim lines
+      if (!prefersReduced && step.html.indexOf('tag ') !== -1) {
+        div.classList.add('slide-in');
+      }
       div.innerHTML = step.html;
       termBody.appendChild(div);
       scrollTerminal();
@@ -1947,6 +2461,18 @@ code, pre { font-family: var(--mono); }
       div.setAttribute('role', 'alert');
       termBody.appendChild(div);
       scrollTerminal();
+
+      // Flash terminal border red for challenge
+      if (!prefersReduced) {
+        gameTerminal.classList.add('challenge-flash');
+        // Red spark particles on canvas
+        var rect = gameTerminal.getBoundingClientRect();
+        burstParticles(rect.left + rect.width / 2, rect.top, 12, 255, 107, 107, 3, 0.8, 2);
+        setTimeout(function() {
+          gameTerminal.classList.remove('challenge-flash');
+        }, 600);
+      }
+
       if (step.strikeId) {
         var el = document.getElementById(step.strikeId);
         if (el) el.classList.add('t-struck');
@@ -1983,9 +2509,21 @@ code, pre { font-family: var(--mono); }
 
     if (step.type === 'pass') {
       div.classList.add('t-mt');
-      div.innerHTML = '<span class="t-pass">' + step.text + '</span>';
+      div.innerHTML = '<span class="t-pass victory-scale">' + step.text + '</span>';
       termBody.appendChild(div);
       scrollTerminal();
+
+      // VICTORY state on terminal
+      if (!prefersReduced) {
+        gameTerminal.classList.add('victory');
+        // Lime particle burst from terminal top
+        var rect = gameTerminal.getBoundingClientRect();
+        burstParticles(rect.left + rect.width / 2, rect.top, 30, 191, 255, 0, 4, 1.2, 3);
+        // Additional burst from sides
+        burstParticles(rect.left, rect.top + rect.height / 2, 10, 191, 255, 0, 3, 0.8, 2);
+        burstParticles(rect.right, rect.top + rect.height / 2, 10, 191, 255, 0, 3, 0.8, 2);
+      }
+
       if (termStatus) termStatus.textContent = 'complete';
       if (terminalLive) terminalLive.textContent = 'Sprint complete. Brief ready.';
       timeoutId = setTimeout(callback, prefersReduced ? 0 : step.delay);
@@ -2058,7 +2596,6 @@ code, pre { font-family: var(--mono); }
       }, 400);
     }
 
-    // After 2 demos, auto-show install
     if (demosWatched >= 2) {
       setTimeout(showInstall, 1500);
     }
@@ -2109,6 +2646,7 @@ code, pre { font-family: var(--mono); }
 
     scrollTerminal();
     if (termStatus) termStatus.textContent = 'complete';
+    gameTerminal.classList.add('victory');
     onSprintComplete();
   }
 
@@ -2139,7 +2677,6 @@ code, pre { font-family: var(--mono); }
     var tag = e.target.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return;
 
-    // Escape: dismiss terminal or install overlay
     if (e.key === 'Escape') {
       if (installOverlay.classList.contains('active')) {
         hideInstall();
@@ -2152,7 +2689,6 @@ code, pre { font-family: var(--mono); }
       }
     }
 
-    // Space to pause/resume during sprint
     if (e.key === ' ' && terminalActive && currentScript && !finished && e.target === document.body) {
       e.preventDefault();
       togglePause();
@@ -2166,7 +2702,6 @@ code, pre { font-family: var(--mono); }
   var reducedGridInner = document.getElementById('reduced-grid-inner');
 
   allPrompts.forEach(function (p) {
-    // SR list
     var btn = document.createElement('button');
     btn.className = 'sr-prompt-btn';
     btn.textContent = p.text;
@@ -2174,7 +2709,6 @@ code, pre { font-family: var(--mono); }
     btn.addEventListener('click', function () { selectPrompt(p.key, p.text); });
     srList.appendChild(btn);
 
-    // Reduced motion grid
     var gbtn = document.createElement('button');
     gbtn.className = 'reduced-grid-btn';
     gbtn.textContent = p.text;
@@ -2184,7 +2718,7 @@ code, pre { font-family: var(--mono); }
   });
 
   /* ======================================================
-     MOBILE SLOT MACHINE
+     MOBILE SLOT MACHINE — gacha-style
      ====================================================== */
   var mobileSlot = document.getElementById('mobile-slot');
   var mobileSlotCard = document.getElementById('mobile-slot-card');
@@ -2193,16 +2727,13 @@ code, pre { font-family: var(--mono); }
   var mobileTryBtn = document.getElementById('mobile-try-btn');
   var mobileCounter = document.getElementById('mobile-slot-counter');
 
-  // Shuffle array for mobile display order, prioritize scripted prompts first
   var mobilePrompts = allPrompts.slice();
-  // Fisher-Yates shuffle
   for (var si = mobilePrompts.length - 1; si > 0; si--) {
     var sj = Math.floor(Math.random() * (si + 1));
     var tmp = mobilePrompts[si];
     mobilePrompts[si] = mobilePrompts[sj];
     mobilePrompts[sj] = tmp;
   }
-  // Move scripted prompts to the front so first spins are interactive
   var scriptedMobile = [];
   var unscriptedMobile = [];
   for (var mi = 0; mi < mobilePrompts.length; mi++) {
@@ -2215,6 +2746,7 @@ code, pre { font-family: var(--mono); }
   mobilePrompts = scriptedMobile.concat(unscriptedMobile);
 
   var mobileSlotIndex = 0;
+  var mobileSpinning = false;
 
   function updateMobileSlot(animate) {
     var p = mobilePrompts[mobileSlotIndex];
@@ -2234,8 +2766,8 @@ code, pre { font-family: var(--mono); }
         }
         setTimeout(function () {
           mobileSlotCard.classList.remove('spin-in');
-        }, 250);
-      }, 200);
+        }, 400);
+      }, 150);
     } else {
       mobileSlotText.textContent = p.text;
       if (isScripted) {
@@ -2248,9 +2780,28 @@ code, pre { font-family: var(--mono); }
     mobileCounter.textContent = (mobileSlotIndex + 1) + ' / ' + mobilePrompts.length;
   }
 
+  // Gacha-style spin: roll through 3-4 prompts before settling
   function mobileSpinNext() {
-    mobileSlotIndex = (mobileSlotIndex + 1) % mobilePrompts.length;
-    updateMobileSlot(true);
+    if (mobileSpinning) return;
+    mobileSpinning = true;
+
+    var rollCount = 3 + Math.floor(Math.random() * 2); // 3-4 rolls
+    var rollIndex = 0;
+
+    function doRoll() {
+      mobileSlotIndex = (mobileSlotIndex + 1) % mobilePrompts.length;
+      updateMobileSlot(true);
+      rollIndex++;
+      if (rollIndex < rollCount) {
+        // Accelerate, then decelerate
+        var delay = rollIndex < rollCount / 2 ? 180 : 300 + (rollIndex - rollCount / 2) * 100;
+        setTimeout(doRoll, delay);
+      } else {
+        mobileSpinning = false;
+      }
+    }
+
+    doRoll();
   }
 
   function mobileTryCurrent() {
@@ -2258,7 +2809,6 @@ code, pre { font-family: var(--mono); }
     selectPrompt(p.key, p.text);
   }
 
-  // Wire up mobile slot events
   if (mobileSpinBtn) {
     mobileSpinBtn.addEventListener('click', mobileSpinNext);
   }
@@ -2275,7 +2825,7 @@ code, pre { font-family: var(--mono); }
     });
   }
 
-  // Swipe support on the card
+  // Swipe support
   var touchStartX = 0;
   var touchStartY = 0;
   if (mobileSlotCard) {
@@ -2286,14 +2836,11 @@ code, pre { font-family: var(--mono); }
     mobileSlotCard.addEventListener('touchend', function (e) {
       var dx = e.changedTouches[0].clientX - touchStartX;
       var dy = e.changedTouches[0].clientY - touchStartY;
-      // Horizontal swipe > 50px and more horizontal than vertical
       if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
         e.preventDefault();
         if (dx < 0) {
-          // Swipe left: next
           mobileSpinNext();
         } else {
-          // Swipe right: previous
           mobileSlotIndex = (mobileSlotIndex - 1 + mobilePrompts.length) % mobilePrompts.length;
           updateMobileSlot(true);
         }
@@ -2301,7 +2848,6 @@ code, pre { font-family: var(--mono); }
     }, { passive: false });
   }
 
-  // Initialize the first slot prompt
   if (isMobile && !prefersReduced) {
     updateMobileSlot(false);
   }
@@ -2315,7 +2861,6 @@ code, pre { font-family: var(--mono); }
       initFish();
       window.addEventListener('resize', function () {
         resize();
-        // Reposition fish that are out of bounds
         for (var i = 0; i < fish.length; i++) {
           if (fish[i].x + fish[i].w > W) fish[i].x = W - fish[i].w - 10;
           if (fish[i].y + fish[i].h > H) fish[i].y = H - fish[i].h - 10;
