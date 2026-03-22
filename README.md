@@ -4,6 +4,8 @@ Research sprint orchestrator for [Claude Code](https://claude.com/claude-code). 
 
 **https://grainulator.app**
 
+[![Explore on DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/grainulation/grainulator)
+
 ## What it does
 
 Grainulator turns Claude Code into a research workstation. Say "research how auth works in our repo" and it runs a structured sprint: gathering evidence, tracking claims with evidence tiers, detecting conflicts, and compiling polished briefs.

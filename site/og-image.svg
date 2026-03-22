@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0A0A0B"/>
+  <!-- Subtle grid lines -->
+  <g stroke="#1E1E22" stroke-width="0.5" opacity="0.5">
+    <line x1="0" y1="157" x2="1200" y2="157"/>
+    <line x1="0" y1="315" x2="1200" y2="315"/>
+    <line x1="0" y1="473" x2="1200" y2="473"/>
+    <line x1="300" y1="0" x2="300" y2="630"/>
+    <line x1="600" y1="0" x2="600" y2="630"/>
+    <line x1="900" y1="0" x2="900" y2="630"/>
+  </g>
+  <!-- Lime glow behind kernel -->
+  <ellipse cx="600" cy="260" rx="80" ry="100" fill="#BFFF00" opacity="0.04"/>
+  <!-- Kernel -->
+  <ellipse cx="600" cy="260" rx="28" ry="52" fill="#BFFF00" transform="rotate(-8 600 260)"/>
+  <line x1="600" y1="212" x2="600" y2="320" stroke="#99CC00" stroke-width="2" stroke-linecap="round"/>
+  <!-- Title -->
+  <text x="600" y="400" text-anchor="middle" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="56" font-weight="800" fill="#F0F0F0" letter-spacing="-1">Grainulator</text>
+  <!-- Subtitle -->
+  <text x="600" y="445" text-anchor="middle" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="22" font-weight="400" fill="#9A9A9A">Research that compiles.</text>
+  <!-- Bottom tagline -->
+  <text x="600" y="560" text-anchor="middle" font-family="monospace" font-size="14" fill="#555">AI research sprints for Claude Code</text>
+</svg>
