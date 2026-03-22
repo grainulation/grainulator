@@ -271,15 +271,17 @@ float g_nearestBlob = 0.0;
 
 // per-blob neon color — each blob gets its own neon hue
 vec3 getNeonColor(float idx) {
-  float h = fract(idx * 0.618 + seed * 3.7); // golden ratio spread
-  // neon palette: cyan, magenta, blue, green, pink, orange
+  // grainulation ecosystem product colors
+  float h = fract(idx * 0.618 + seed * 3.7);
   vec3 c;
-  if (h < 0.16) c = vec3(0.55, 0.96, 1.0);       // neon cyan #8df6ff
-  else if (h < 0.33) c = vec3(1.0, 0.2, 0.8);     // neon magenta
-  else if (h < 0.5) c = vec3(0.3, 0.5, 1.0);      // neon blue
-  else if (h < 0.66) c = vec3(0.2, 1.0, 0.4);     // neon green
-  else if (h < 0.83) c = vec3(1.0, 0.4, 0.6);     // neon pink
-  else c = vec3(1.0, 0.6, 0.1);                    // neon orange
+  if (h < 0.125) c = vec3(0.984, 0.749, 0.141);      // wheat   #fbbf24
+  else if (h < 0.25) c = vec3(0.957, 0.247, 0.369);   // barn    #f43f5e
+  else if (h < 0.375) c = vec3(0.133, 0.773, 0.369);  // farmer  #22c55e
+  else if (h < 0.5) c = vec3(0.231, 0.510, 0.965);    // mill    #3b82f6
+  else if (h < 0.625) c = vec3(0.655, 0.545, 0.980);  // silo    #a78bfa
+  else if (h < 0.75) c = vec3(0.984, 0.573, 0.235);   // harvest #fb923c
+  else if (h < 0.875) c = vec3(0.133, 0.827, 0.933);  // orchard #22d3ee
+  else c = vec3(0.612, 0.639, 0.686);                  // grain   #9ca3af
   return c;
 }
 

@@ -1,67 +1,37 @@
-<!-- OG Image for grainulator.app — 1200x630
-     Convert to PNG: rsvg-convert -w 1200 -h 630 og-image.svg -o og-image.png -->
+<!-- OG Image — rsvg-convert -w 1200 -h 630 og-image.svg -o og-image.png -->
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <defs>
-    <filter id="neonGlow">
-      <feGaussianBlur stdDeviation="8" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-    <filter id="textGlow">
-      <feGaussianBlur stdDeviation="4" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-    <filter id="softGlow">
-      <feGaussianBlur stdDeviation="20"/>
-    </filter>
+    <filter id="g"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="tg"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="sg"><feGaussianBlur stdDeviation="20"/></filter>
   </defs>
-
-  <!-- Dark background with border -->
   <rect width="1200" height="630" fill="#050505"/>
-  <rect x="0" y="0" width="1200" height="630" fill="none" stroke="#1a1a1f" stroke-width="2"/>
-
-  <!-- Ambient glow -->
-  <ellipse cx="400" cy="250" rx="200" ry="180" fill="#8df6ff" opacity="0.03" filter="url(#softGlow)"/>
-  <ellipse cx="750" cy="350" rx="180" ry="150" fill="#ff33cc" opacity="0.025" filter="url(#softGlow)"/>
-
-  <!-- Cyan blob (large) -->
-  <ellipse cx="350" cy="220" rx="90" ry="110" fill="#0a2a2b" opacity="0.9" transform="rotate(-8 350 220)"/>
-  <ellipse cx="350" cy="220" rx="90" ry="110" fill="none" stroke="#8df6ff" stroke-width="3" opacity="0.9" transform="rotate(-8 350 220)" filter="url(#neonGlow)"/>
-
-  <!-- Magenta blob -->
-  <ellipse cx="700" cy="280" rx="65" ry="80" fill="#2a0a20" opacity="0.85" transform="rotate(12 700 280)"/>
-  <ellipse cx="700" cy="280" rx="65" ry="80" fill="none" stroke="#ff33cc" stroke-width="3" opacity="0.85" transform="rotate(12 700 280)" filter="url(#neonGlow)"/>
-
-  <!-- Blue blob -->
-  <ellipse cx="550" cy="160" rx="50" ry="65" fill="#0a0a2a" opacity="0.8" transform="rotate(-5 550 160)"/>
-  <ellipse cx="550" cy="160" rx="50" ry="65" fill="none" stroke="#4d80ff" stroke-width="2.5" opacity="0.8" transform="rotate(-5 550 160)" filter="url(#neonGlow)"/>
-
-  <!-- Green blob -->
-  <ellipse cx="480" cy="370" rx="40" ry="50" fill="#0a1a0a" opacity="0.8" transform="rotate(15 480 370)"/>
-  <ellipse cx="480" cy="370" rx="40" ry="50" fill="none" stroke="#33ff66" stroke-width="2" opacity="0.8" transform="rotate(15 480 370)" filter="url(#neonGlow)"/>
-
-  <!-- Orange blob -->
-  <ellipse cx="830" cy="180" rx="35" ry="42" fill="#1a0f00" opacity="0.75" transform="rotate(-10 830 180)"/>
-  <ellipse cx="830" cy="180" rx="35" ry="42" fill="none" stroke="#ff9a1a" stroke-width="2" opacity="0.75" transform="rotate(-10 830 180)" filter="url(#neonGlow)"/>
-
-  <!-- Pink blob -->
-  <circle cx="280" cy="380" r="25" fill="#1a0510" opacity="0.7"/>
-  <circle cx="280" cy="380" r="25" fill="none" stroke="#ff6699" stroke-width="2" opacity="0.7" filter="url(#neonGlow)"/>
-
-  <!-- Title -->
-  <text x="600" y="490" text-anchor="middle"
-        font-family="Inter, 'Helvetica Neue', Arial, sans-serif"
-        font-size="58" font-weight="700" letter-spacing="3"
-        fill="#8df6ff" opacity="0.7" filter="url(#textGlow)">grainulator</text>
-
-  <!-- Install command -->
-  <text x="600" y="530" text-anchor="middle"
-        font-family="'SF Mono', 'Fira Code', monospace"
-        font-size="18" font-weight="400"
-        fill="#8df6ff" opacity="0.35">/plugin install grainulator</text>
+  <rect width="1200" height="630" fill="none" stroke="#1a1a1f" stroke-width="2"/>
+  <!-- ambient -->
+  <ellipse cx="380" cy="240" rx="200" ry="180" fill="#fbbf24" opacity="0.02" filter="url(#sg)"/>
+  <ellipse cx="760" cy="340" rx="180" ry="150" fill="#f43f5e" opacity="0.02" filter="url(#sg)"/>
+  <!-- wheat -->
+  <ellipse cx="320" cy="200" rx="85" ry="105" fill="#1a1505" transform="rotate(-8 320 200)"/>
+  <ellipse cx="320" cy="200" rx="85" ry="105" fill="none" stroke="#fbbf24" stroke-width="3" transform="rotate(-8 320 200)" filter="url(#g)"/>
+  <!-- barn -->
+  <ellipse cx="680" cy="260" rx="60" ry="75" fill="#1a0508" transform="rotate(12 680 260)"/>
+  <ellipse cx="680" cy="260" rx="60" ry="75" fill="none" stroke="#f43f5e" stroke-width="3" transform="rotate(12 680 260)" filter="url(#g)"/>
+  <!-- mill -->
+  <ellipse cx="520" cy="150" rx="45" ry="58" fill="#050a1a" transform="rotate(-5 520 150)"/>
+  <ellipse cx="520" cy="150" rx="45" ry="58" fill="none" stroke="#3b82f6" stroke-width="2.5" transform="rotate(-5 520 150)" filter="url(#g)"/>
+  <!-- farmer -->
+  <ellipse cx="460" cy="360" rx="38" ry="48" fill="#051a0a" transform="rotate(15 460 360)"/>
+  <ellipse cx="460" cy="360" rx="38" ry="48" fill="none" stroke="#22c55e" stroke-width="2" transform="rotate(15 460 360)" filter="url(#g)"/>
+  <!-- silo -->
+  <ellipse cx="830" cy="170" rx="32" ry="40" fill="#0f0a1a" transform="rotate(-10 830 170)"/>
+  <ellipse cx="830" cy="170" rx="32" ry="40" fill="none" stroke="#a78bfa" stroke-width="2" transform="rotate(-10 830 170)" filter="url(#g)"/>
+  <!-- harvest -->
+  <circle cx="260" cy="370" r="28" fill="#1a0f05"/>
+  <circle cx="260" cy="370" r="28" fill="none" stroke="#fb923c" stroke-width="2" filter="url(#g)"/>
+  <!-- orchard -->
+  <circle cx="780" cy="380" r="22" fill="#051515"/>
+  <circle cx="780" cy="380" r="22" fill="none" stroke="#22d3ee" stroke-width="1.5" filter="url(#g)"/>
+  <!-- title -->
+  <text x="600" y="490" text-anchor="middle" font-family="Inter,'Helvetica Neue',Arial,sans-serif" font-size="58" font-weight="700" letter-spacing="3" fill="#8df6ff" opacity="0.7" filter="url(#tg)">grainulator</text>
+  <text x="600" y="530" text-anchor="middle" font-family="'SF Mono','Fira Code',monospace" font-size="18" fill="#8df6ff" opacity="0.35">/plugin install grainulator</text>
 </svg>
