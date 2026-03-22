@@ -233,13 +233,13 @@ c.addEventListener('webglcontextlost', (e) => { e.preventDefault(); activateFall
 // Mobile detection
 const isMobile = /Mobi|Android/i.test(navigator.userAgent) || innerWidth < 768;
 
-// Perf params — mobile gets lighter workload, desktop unchanged
-const NUM       = isMobile ? 4    : 6;
-const STEPS     = isMobile ? 48   : 64;
-const HIT_THRESH= isMobile ? '0.003' : '0.002';
-const STEP_MULT = isMobile ? '0.9'   : '0.85';
-const NORM_EPS  = isMobile ? '0.005' : '0.003';
-const GLITCH_ON = isMobile ? 0       : 1;  // disable glitch on mobile
+// 8 blobs ALWAYS — one per product in the ecosystem
+const NUM       = 8;
+const STEPS     = isMobile ? 56   : 72;
+const HIT_THRESH= isMobile ? '0.002' : '0.001';
+const STEP_MULT = isMobile ? '0.85'  : '0.8';
+const NORM_EPS  = isMobile ? '0.003' : '0.002';
+const GLITCH_ON = isMobile ? 0       : 1;
 
 // 3D raymarched lava lamp based on cineShader-Lava approach (w400-w402)
 // opSmoothUnion on SDF spheres = actual opaque surfaces with normals
@@ -274,18 +274,16 @@ float g_nearestBlob = 0.0;
 
 // per-blob neon color — each blob gets its own neon hue
 vec3 getNeonColor(float idx) {
-  // grainulation ecosystem product colors
-  float h = fract(idx * 0.618 + seed * 3.7);
-  vec3 c;
-  if (h < 0.125) c = vec3(0.984, 0.749, 0.141);      // wheat   #fbbf24
-  else if (h < 0.25) c = vec3(0.957, 0.247, 0.369);   // barn    #f43f5e
-  else if (h < 0.375) c = vec3(0.133, 0.773, 0.369);  // farmer  #22c55e
-  else if (h < 0.5) c = vec3(0.231, 0.510, 0.965);    // mill    #3b82f6
-  else if (h < 0.625) c = vec3(0.655, 0.545, 0.980);  // silo    #a78bfa
-  else if (h < 0.75) c = vec3(0.984, 0.573, 0.235);   // harvest #fb923c
-  else if (h < 0.875) c = vec3(0.133, 0.827, 0.933);  // orchard #22d3ee
-  else c = vec3(0.612, 0.639, 0.686);                  // grain   #9ca3af
-  return c;
+  // 8 blobs = 8 products, direct mapping
+  int i = int(mod(idx, 8.0));
+  if (i == 0) return vec3(0.984, 0.749, 0.141);      // wheat   #fbbf24
+  if (i == 1) return vec3(0.957, 0.247, 0.369);      // barn    #f43f5e
+  if (i == 2) return vec3(0.133, 0.773, 0.369);      // farmer  #22c55e
+  if (i == 3) return vec3(0.231, 0.510, 0.965);      // mill    #3b82f6
+  if (i == 4) return vec3(0.655, 0.545, 0.980);      // silo    #a78bfa
+  if (i == 5) return vec3(0.984, 0.573, 0.235);      // harvest #fb923c
+  if (i == 6) return vec3(0.133, 0.827, 0.933);      // orchard #22d3ee
+  return vec3(0.612, 0.639, 0.686);                   // grain   #9ca3af
 }
 
 float map(vec3 p) {
@@ -300,7 +298,7 @@ float map(vec3 p) {
 
     // random position spread across full viewport
     float angle = fi * 2.39996 + seed * 6.28;
-    float radius = 0.5 + h1 * 1.3;
+    float radius = 0.8 + h1 * 1.8; // wider spread for bigger blobs
     float baseX = cos(angle) * radius * (0.7 + h2 * 0.6);
     float baseY = sin(angle) * radius * (0.7 + h3 * 0.6);
     float baseZ = (h4 - 0.5) * 0.6;
@@ -320,7 +318,7 @@ float map(vec3 p) {
     vec3 blobPos = vec3(baseX + dx, baseY + dy, baseZ + dz);
 
     // random sizes
-    float blobR = 0.20 + h4 * 0.30; // bigger blobs
+    float blobR = 0.50 + h4 * 0.40; // 3x bigger — 0.50 to 0.90
 
     vec3 evalP = p;
 
