@@ -231,7 +231,7 @@ c.addEventListener('webglcontextlost', (e) => { e.preventDefault(); activateFall
 const isMobile = /Mobi|Android/i.test(navigator.userAgent) || innerWidth < 768;
 
 // Perf params — mobile gets lighter workload, desktop unchanged
-const NUM       = isMobile ? 5    : 7;
+const NUM       = isMobile ? 6    : 10;
 const STEPS     = isMobile ? 64   : 96;  // bumped mobile (only 3 blobs now, cheaper)
 const HIT_THRESH= isMobile ? '0.002' : '0.001';
 const STEP_MULT = isMobile ? '0.9'   : '0.8';  // tighter steps = smoother surface
@@ -287,11 +287,13 @@ float map(vec3 p) {
   vec3 sp = rotX(rotY(p, -sphereRot), -wobble);
 
   // techno pulse — not constant, arrives in waves like gravitational radiation
-  float beatRaw = fract(t * 130.0 / 60.0);
-  float beatHit = pow(max(1.0 - beatRaw, 0.0), 5.0);
-  // wave envelope: beat is strong for ~8 beats then quiet for ~12
-  float envelope = smoothstep(0.4, 0.6, sin(t * 0.15)) * 0.7;
-  float beat = beatHit * envelope; // 0 most of the time, pulses in bursts
+  // techno as a WOOSH — slow swell, not a sharp hit
+  // like a wave passing through, not a kick drum
+  float wooshPhase = fract(t * 130.0 / 60.0 / 4.0); // every 4 beats
+  float woosh = sin(wooshPhase * 3.14159) * sin(wooshPhase * 3.14159); // smooth arc
+  // only appears every ~30 seconds
+  float envelope = pow(smoothstep(0.7, 0.9, sin(t * 0.06)), 3.0) * 0.2;
+  float beat = woosh * envelope;
 
   // core wanders FAR off-center — asymmetric, never in the middle
   float morphT = t * 0.02;
@@ -373,29 +375,44 @@ float map(vec3 p) {
     vec3 blobCenter = corePos + anchor * (sphereRadius + radialOffset);
     vec3 evalP = sp;
 
-    // gentle pixelation on falling blobs — smooth fade in AND out
+    // glitch — the star of the show
+    // falling blobs always glitch + random patches appear across surface
 #if GLITCH_ON
-    if (isFalling) {
-      // smooth ramps: fade in from surface, peak mid-fall, fade out near pool
-      float fadeIn = smoothstep(0.2, 0.8, radialOffset);   // gentle start
-      float fadeOut = smoothstep(1.9, 1.2, radialOffset);   // gentle end
-      float voxAmt = fadeIn * fadeOut * 0.30; // max 30%, bell curve shape
-      if (voxAmt > 0.005) {
-        float vs = mix(0.35, 0.20, voxAmt / 0.30); // finer voxels at peak
+    {
+      float glitchAmt = 0.0;
+
+      // falling blobs glitch (cooling = stiffening = digital breakdown)
+      if (isFalling) {
+        float fadeIn = smoothstep(0.2, 0.8, radialOffset);
+        float fadeOut = smoothstep(2.0, 1.0, radialOffset);
+        glitchAmt = fadeIn * fadeOut * 0.45; // stronger than before
+      }
+
+      // random glitch patches across ALL blobs — not just falling
+      // these come and go like data corruption
+      float glitchWave = sin(t * 0.3 + fi * 3.7) * sin(t * 0.13 + fi * 2.1);
+      float glitchBurst = smoothstep(0.6, 0.9, glitchWave); // rare spikes
+      glitchAmt = max(glitchAmt, glitchBurst * 0.35);
+
+      if (glitchAmt > 0.01) {
         vec3 toBlob = sp - blobCenter;
-        float nearBlob = smoothstep(1.8, 0.2, length(toBlob)); // wider, softer falloff
-        float finalAmt = voxAmt * nearBlob;
-        vec3 snapped = floor(sp / vs + 0.5) * vs;
-        evalP = mix(sp, snapped, finalAmt);
+        float nearBlob = smoothstep(2.0, 0.2, length(toBlob));
+        float finalAmt = glitchAmt * nearBlob;
+        if (finalAmt > 0.005) {
+          // vary voxel size — sometimes coarse (8-bit), sometimes fine
+          float vs = mix(0.35, 0.12, fract(sin(fi * 73.1 + floor(t * 2.0)) * 438.5));
+          vec3 snapped = floor(sp / vs + 0.5) * vs;
+          evalP = mix(sp, snapped, finalAmt);
+        }
       }
     }
 #endif
 
-    // shape morphing oriented along radial direction
-    vec3 domeRad     = vec3(0.45, 0.25, 0.45);
-    vec3 teardropRad = vec3(0.28, 0.50, 0.28);
-    vec3 flatRad     = vec3(0.48, 0.25, 0.48);
-    vec3 dripRad     = vec3(0.22, 0.50, 0.22);
+    // smaller blobs — many small ones, not few jumbo ones
+    vec3 domeRad     = vec3(0.20, 0.12, 0.20);
+    vec3 teardropRad = vec3(0.14, 0.25, 0.14);
+    vec3 flatRad     = vec3(0.22, 0.12, 0.22);
+    vec3 dripRad     = vec3(0.11, 0.25, 0.11);
 
     vec3 blobRad;
     if (shapePhase < 1.0) {
@@ -407,7 +424,7 @@ float map(vec3 p) {
     } else {
       blobRad = dripRad;
     }
-    blobRad *= (0.8 + hash1 * 0.4) * (1.0 + beat * 0.08);
+    blobRad *= (0.6 + hash1 * 0.5) * (1.0 + beat * 0.04);
 
     // orient ellipsoid along radial direction
     vec3 up = radialDir;
@@ -420,9 +437,9 @@ float map(vec3 p) {
 
     float blobD = sdEllipsoid(localP, blobRad);
 
-    // higher k everywhere = smoother merging between all blobs
-    float surfaceProximity = smoothstep(2.5, 0.0, radialOffset);
-    float k = mix(0.6, 0.9, surfaceProximity); // 0.9 near surface, 0.6 far
+    // lower k = blobs stay individual, only merge when very close
+    float surfaceProximity = smoothstep(1.5, 0.0, radialOffset);
+    float k = mix(0.25, 0.5, surfaceProximity); // 0.5 near surface, 0.25 far
     d = smin(d, blobD, k);
   }
 
@@ -442,10 +459,9 @@ void main() {
   vec2 uv = (gl_FragCoord.xy - 0.5*r) / min(r.x, r.y);
 
   // beat for shading + lensing
-  float beatShade = pow(max(1.0 - fract(t * 130.0 / 60.0), 0.0), 5.0);
-  // wave envelope — beat comes and goes
-  float shadeEnvelope = smoothstep(0.4, 0.6, sin(t * 0.15)) * 0.7;
-  beatShade *= shadeEnvelope;
+  float wooshShade = fract(t * 130.0 / 60.0 / 4.0);
+  float beatShade = sin(wooshShade * 3.14159) * sin(wooshShade * 3.14159);
+  beatShade *= pow(smoothstep(0.7, 0.9, sin(t * 0.06)), 3.0) * 0.2;
 
   // gravitational lensing — Schwarzschild-inspired ray bending
   // the core wanders, so the lens follows it (not screen center)
