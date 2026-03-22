@@ -287,11 +287,6 @@ vec3 getNeonColor(float idx) {
 }
 
 float map(vec3 p) {
-  // viewport bounds — measured: at z=0 the visible area is roughly ±1.6 on the short axis
-  float aspect = r.x / r.y;
-  float boundY = 1.5;              // half-height
-  float boundX = boundY * aspect;  // half-width
-
   float d = 1e10;
 
   for (int i = 0; i < NUM; i++) {
@@ -301,15 +296,14 @@ float map(vec3 p) {
     float h3 = hash(fi * 253.147 + seed * 7.9);
     float h4 = hash(fi * 173.29 + seed * 2.1);
 
-    // position spread — use bounds but ensure safe zone is never negative
+    // spread across viewport — keep within ±1.2 so blobs stay on screen
     float angle = fi * 2.39996 + seed * 6.28;
-    float safeX = max(boundX - blobR, 0.1);
-    float safeY = max(boundY - blobR, 0.1);
-    float baseX = cos(angle) * safeX * (0.3 + h2 * 0.6);
-    float baseY = sin(angle) * safeY * (0.3 + h3 * 0.6);
+    float spread = 0.4 + h1 * 0.7;
+    float baseX = cos(angle) * spread * (0.5 + h2 * 0.5);
+    float baseY = sin(angle) * spread * (0.5 + h3 * 0.5);
     float baseZ = (h4 - 0.5) * 0.4;
 
-    // slow organic drift
+    // slow organic drift — constrained
     float sx = 0.03 + h1 * 0.04;
     float sy = 0.025 + h2 * 0.035;
     float sz = 0.02 + h3 * 0.03;
@@ -317,17 +311,11 @@ float map(vec3 p) {
     float py = h3 * 6.28 + seed * 100.0;
     float pz = h1 * 6.28 + seed * 100.0;
 
-    float dx = sin(t*sx + px)*0.5 + sin(t*sx*0.37 + py + 1.7)*0.3 + cos(t*sx*0.71 + pz)*0.15;
-    float dy = sin(t*sy + py + 0.5)*0.4 + cos(t*sy*0.43 + px + 2.1)*0.25 + sin(t*sy*0.67 + pz + 1.2)*0.15;
-    float dz = cos(t*sz + pz + 1.0)*0.2 + sin(t*sz*0.53 + px)*0.1;
+    float dx = sin(t*sx + px)*0.35 + sin(t*sx*0.37 + py + 1.7)*0.2;
+    float dy = sin(t*sy + py + 0.5)*0.3 + cos(t*sy*0.43 + px + 2.1)*0.2;
+    float dz = cos(t*sz + pz + 1.0)*0.15;
 
-    float clampX = max(boundX - blobR, 0.1);
-    float clampY = max(boundY - blobR, 0.1);
-    float bx = clamp(baseX + dx, -clampX, clampX);
-    float by = clamp(baseY + dy, -clampY, clampY);
-    float bz = baseZ + dz;
-
-    vec3 blobPos = vec3(bx, by, bz);
+    vec3 blobPos = vec3(baseX + dx, baseY + dy, baseZ + dz);
 
     // random sizes
     float blobR = 0.3 + h4 * 0.4; // 0.3 to 0.7
