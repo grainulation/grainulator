@@ -301,10 +301,10 @@ float map(vec3 p) {
     float h3 = hash(fi * 253.147 + seed * 7.9);
     float h4 = hash(fi * 173.29 + seed * 2.1);
 
-    // position spread within viewport bounds minus blob radius
+    // position spread — use bounds but ensure safe zone is never negative
     float angle = fi * 2.39996 + seed * 6.28;
-    float safeX = boundX - blobR - 0.1;
-    float safeY = boundY - blobR - 0.1;
+    float safeX = max(boundX - blobR, 0.1);
+    float safeY = max(boundY - blobR, 0.1);
     float baseX = cos(angle) * safeX * (0.3 + h2 * 0.6);
     float baseY = sin(angle) * safeY * (0.3 + h3 * 0.6);
     float baseZ = (h4 - 0.5) * 0.4;
@@ -321,9 +321,10 @@ float map(vec3 p) {
     float dy = sin(t*sy + py + 0.5)*0.4 + cos(t*sy*0.43 + px + 2.1)*0.25 + sin(t*sy*0.67 + pz + 1.2)*0.15;
     float dz = cos(t*sz + pz + 1.0)*0.2 + sin(t*sz*0.53 + px)*0.1;
 
-    // clamp to viewport — account for blob radius so entire blob stays inside
-    float bx = clamp(baseX + dx, -boundX + blobR, boundX - blobR);
-    float by = clamp(baseY + dy, -boundY + blobR, boundY - blobR);
+    float clampX = max(boundX - blobR, 0.1);
+    float clampY = max(boundY - blobR, 0.1);
+    float bx = clamp(baseX + dx, -clampX, clampX);
+    float by = clamp(baseY + dy, -clampY, clampY);
     float bz = baseZ + dz;
 
     vec3 blobPos = vec3(bx, by, bz);
@@ -365,17 +366,6 @@ float map(vec3 p) {
     if (blobD < d) g_nearestBlob = fi;
     d = smin(d, blobD, k);
   }
-
-  // viewport boundary walls — blobs flatten against edges
-  float wallL = p.x + boundX;   // distance to left wall
-  float wallR = boundX - p.x;   // distance to right wall
-  float wallT = boundY - p.y;   // distance to top wall
-  float wallB = p.y + boundY;   // distance to bottom wall
-  // intersect: blobs can't extend past walls
-  d = max(d, -wallL);  // clip left
-  d = max(d, -wallR);  // clip right
-  d = max(d, -wallT);  // clip top
-  d = max(d, -wallB);  // clip bottom
 
   return d;
 }
