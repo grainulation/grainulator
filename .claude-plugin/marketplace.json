@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Research sprint tools for Claude Code — structured research with claims, evidence tiers, and compiled output",
-    "version": "0.1.0"
+    "version": "1.0.0"
   },
   "plugins": [
     {
@@ -16,7 +16,7 @@
         "repo": "grainulation/grainulator"
       },
       "description": "Research sprint orchestrator for Claude Code",
-      "version": "0.1.0",
+      "version": "1.0.0",
       "author": {
         "name": "Grainulation"
       },
@@ -25,7 +25,12 @@
       "license": "MIT",
       "keywords": ["research", "wheat", "claims", "evidence", "briefs"],
       "category": "research",
-      "tags": ["research-sprints", "analysis", "documentation", "decision-making"]
+      "tags": [
+        "research-sprints",
+        "analysis",
+        "documentation",
+        "decision-making"
+      ]
     }
   ]
 }

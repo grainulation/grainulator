@@ -1,6 +1,6 @@
 {
   "name": "grainulator",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Research sprint orchestrator for Claude Code. Structured research with claims, evidence tiers, and compiled output.",
   "author": {
     "name": "Grainulation"
