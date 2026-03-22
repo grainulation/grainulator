@@ -231,11 +231,11 @@ c.addEventListener('webglcontextlost', (e) => { e.preventDefault(); activateFall
 const isMobile = /Mobi|Android/i.test(navigator.userAgent) || innerWidth < 768;
 
 // Perf params — mobile gets lighter workload, desktop unchanged
-const NUM       = isMobile ? 7    : 10;
-const STEPS     = isMobile ? 48   : 80;
-const HIT_THRESH= isMobile ? '0.003' : '0.001';
-const STEP_MULT = isMobile ? '0.9'   : '0.8';
-const NORM_EPS  = isMobile ? '0.003' : '0.001';
+const NUM       = isMobile ? 4    : 6;
+const STEPS     = isMobile ? 32   : 48;
+const HIT_THRESH= isMobile ? '0.005' : '0.003';
+const STEP_MULT = isMobile ? '1.0'   : '0.9';
+const NORM_EPS  = isMobile ? '0.005' : '0.003';
 const GLITCH_ON = isMobile ? 0       : 1;  // disable glitch on mobile
 
 // 3D raymarched lava lamp based on cineShader-Lava approach (w400-w402)
@@ -265,6 +265,9 @@ float sdSphere(vec3 p, float s) {
 }
 
 float hash(float n) { return fract(sin(n) * 43758.5453); }
+
+// global: nearest blob index (set in map, read in main for coloring)
+float g_nearestBlob = 0.0;
 
 // per-blob neon color — each blob gets its own neon hue
 vec3 getNeonColor(float idx) {
@@ -345,6 +348,7 @@ float map(vec3 p) {
       blobD = baseDist - warp * blobR * 0.35;
     }
     float k = 0.3 + 0.1 * sin(fi * 1.7 + t * 0.05);
+    if (blobD < d) g_nearestBlob = fi; // track closest blob for coloring
     d = smin(d, blobD, k);
   }
 
@@ -392,31 +396,8 @@ void main() {
     float NdotV = max(dot(n, -rd), 0.0);
     float fres = pow(1.0 - NdotV, 2.5);
 
-    // find nearest blob to get its neon color
-    float minD = 1e10;
-    float nearestIdx = 0.0;
-    for (int i = 0; i < NUM; i++) {
-      float fi = float(i);
-      float h1n = hash(fi * 412.531 + seed * 3.7);
-      float h2n = hash(fi * 317.892 + seed * 5.1);
-      float h3n = hash(fi * 253.147 + seed * 7.9);
-      float h4n = hash(fi * 173.29 + seed * 2.1);
-      float ang2 = fi * 2.39996 + seed * 6.28;
-      float rad3 = 0.5 + h1n * 1.3;
-      float bx=cos(ang2)*rad3*(0.7+h2n*0.6);
-      float by=sin(ang2)*rad3*(0.7+h3n*0.6);
-      float bz=(h4n-0.5)*0.6;
-      float sx2=0.03+h1n*0.04;float sy2=0.025+h2n*0.035;float sz2=0.02+h3n*0.03;
-      float px2=h2n*6.28+seed*100.0;float py2=h3n*6.28+seed*100.0;float pz2=h1n*6.28+seed*100.0;
-      vec3 bp=vec3(
-        bx+sin(t*sx2+px2)*0.5+sin(t*sx2*0.37+py2+1.7)*0.3+cos(t*sx2*0.71+pz2)*0.15,
-        by+sin(t*sy2+py2+0.5)*0.4+cos(t*sy2*0.43+px2+2.1)*0.25+sin(t*sy2*0.67+pz2+1.2)*0.15,
-        bz+cos(t*sz2+pz2+1.0)*0.2+sin(t*sz2*0.53+px2)*0.1);
-      float dd=length(p-bp);
-      if(dd<minD){minD=dd;nearestIdx=fi;}
-    }
-
-    vec3 neon = getNeonColor(nearestIdx);
+    // neon color from nearest blob (tracked in map(), no second loop)
+    vec3 neon = getNeonColor(g_nearestBlob);
 
     // wax body MATCHES the neon color — dark inside, bright edges
     vec3 waxCol = neon * mix(0.06, 0.18, fres * 0.5);
@@ -483,7 +464,7 @@ const seedLoc = gl.getUniformLocation(prog, 'seed');
 const seedVal = Math.random();
 gl.uniform1f(seedLoc, seedVal);
 // Resolution: reduce DPR on mobile for fewer fragment shader invocations
-const dpr = isMobile ? Math.min(devicePixelRatio, 2.0) : devicePixelRatio;
+const dpr = isMobile ? Math.min(devicePixelRatio, 1.0) : Math.min(devicePixelRatio, 1.5);
 
 const resize = () => {
   c.width = innerWidth * dpr;
