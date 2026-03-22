@@ -181,8 +181,8 @@
         <h1 class="hero-headline">Grainulator</h1>
         <p class="hero-subtitle">Research that compiles.</p>
         <div class="hero-links">
-          <a href="#playground-section" class="hero-link">Try it live &darr;</a>
-          <a href="#install-section" class="hero-link">Get it &rarr;</a>
+          <a href="#playground-section" class="hero-link">Try it live <span class="chevron">&darr;</span></a>
+          <a href="#install-section" class="hero-link">Get it <span class="chevron">&rarr;</span></a>
         </div>
         <div class="hero-brief" aria-label="Example compiled brief">
           <div class="brief-card">
@@ -295,7 +295,32 @@
           </div>
         </div>
 
-        <!-- Mobile: slot machine prompt picker -->
+        <!-- Spotlight picker: one question at a time, auto-rotating -->
+        <div
+          class="spotlight-picker"
+          id="spotlight-picker"
+          role="region"
+          aria-label="Research question spotlight"
+        >
+          <div class="spotlight-question" id="spotlight-question" aria-live="polite"></div>
+          <div class="spotlight-meta" id="spotlight-meta">
+            <span class="spotlight-tag">live demo</span>
+            <span class="spotlight-counter" id="spotlight-counter"></span>
+          </div>
+          <button
+            class="spotlight-cta"
+            id="spotlight-cta"
+            type="button"
+            aria-label="Watch this demo"
+          >
+            Watch the sprint <span class="chevron">&rsaquo;</span>
+          </button>
+          <div class="spotlight-dots" id="spotlight-dots" role="tablist" aria-label="Question selector">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Legacy mobile slot (hidden, replaced by spotlight) -->
         <div
           class="mobile-slot"
           id="mobile-slot"
@@ -410,6 +435,9 @@
             <div class="integration-item">Slack</div>
             <div class="integration-item">GitHub</div>
           </div>
+          <p style="margin-top: 32px; text-align: center;" class="fade-up">
+            <a href="https://grainulation.com/docs" class="learn-more-link">Learn more <span class="chevron">&rsaquo;</span></a>
+          </p>
         </div>
       </section>
 
@@ -443,9 +471,9 @@
           </p>
           <p class="install-time fade-up">In 4 minutes, it will have it.</p>
           <div class="install-links fade-up">
-            <a href="https://grainulation.com/docs">Docs</a>
-            <a href="https://github.com/grainulation/grainulator">GitHub</a>
-            <a href="https://grainulation.com">grainulation.com</a>
+            <a href="https://grainulation.com/docs">Docs <span class="chevron">&rsaquo;</span></a>
+            <a href="https://github.com/grainulation/grainulator">GitHub <span class="chevron">&rsaquo;</span></a>
+            <a href="https://grainulation.com">grainulation.com <span class="chevron">&rsaquo;</span></a>
           </div>
         </div>
       </section>
@@ -635,24 +663,155 @@
     <script src="js/app.js"></script>
     <script src="js/mobile.js"></script>
 
-    <!-- Fade-up reveal on scroll -->
+    <!-- Fade-up reveal on scroll + brief card reveal + spotlight picker -->
     <script>
       (function () {
+        var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        /* Fade-up reveal */
         var els = document.querySelectorAll('.fade-up');
-        if (!els.length) return;
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-          for (var i = 0; i < els.length; i++) els[i].classList.add('visible');
-          return;
+        if (els.length) {
+          if (reduced) {
+            for (var i = 0; i < els.length; i++) els[i].classList.add('visible');
+          } else {
+            var fadeObs = new IntersectionObserver(function (entries) {
+              for (var i = 0; i < entries.length; i++) {
+                if (entries[i].isIntersecting) {
+                  entries[i].target.classList.add('visible');
+                  fadeObs.unobserve(entries[i].target);
+                }
+              }
+            }, { threshold: 0.15 });
+            for (var i = 0; i < els.length; i++) fadeObs.observe(els[i]);
+          }
         }
-        var observer = new IntersectionObserver(function (entries) {
-          for (var i = 0; i < entries.length; i++) {
-            if (entries[i].isIntersecting) {
-              entries[i].target.classList.add('visible');
-              observer.unobserve(entries[i].target);
+
+        /* Brief card + terminal image reveal on scroll */
+        var revealEls = document.querySelectorAll('.brief-card, .game-terminal:not(.terminal-overlay .game-terminal)');
+        if (revealEls.length) {
+          if (reduced) {
+            for (var r = 0; r < revealEls.length; r++) revealEls[r].classList.add('revealed');
+          } else {
+            var revealObs = new IntersectionObserver(function (entries) {
+              for (var r = 0; r < entries.length; r++) {
+                if (entries[r].isIntersecting) {
+                  entries[r].target.classList.add('revealed');
+                  revealObs.unobserve(entries[r].target);
+                }
+              }
+            }, { threshold: 0.1 });
+            for (var r = 0; r < revealEls.length; r++) revealObs.observe(revealEls[r]);
+          }
+        }
+
+        /* Spotlight picker */
+        var spotlightEl = document.getElementById('spotlight-question');
+        var spotlightMeta = document.getElementById('spotlight-meta');
+        var spotlightCounter = document.getElementById('spotlight-counter');
+        var spotlightCta = document.getElementById('spotlight-cta');
+        var spotlightDots = document.getElementById('spotlight-dots');
+        if (!spotlightEl || !spotlightDots) return;
+
+        /* Only use scripted prompts for spotlight */
+        var spotlightPrompts = [];
+        for (var sp = 0; sp < allPrompts.length; sp++) {
+          if (scriptedKeys.indexOf(allPrompts[sp].key) !== -1) {
+            spotlightPrompts.push(allPrompts[sp]);
+          }
+        }
+        if (spotlightPrompts.length === 0) spotlightPrompts = allPrompts.slice(0, 6);
+
+        var spotlightIdx = 0;
+        var spotlightTimer = null;
+        var spotlightPaused = false;
+
+        /* Build dots */
+        for (var d = 0; d < spotlightPrompts.length; d++) {
+          var dot = document.createElement('button');
+          dot.className = 'spotlight-dot' + (d === 0 ? ' active' : '');
+          dot.type = 'button';
+          dot.setAttribute('role', 'tab');
+          dot.setAttribute('aria-label', 'Question ' + (d + 1));
+          dot.dataset.idx = d;
+          dot.addEventListener('click', (function (idx) {
+            return function () { goToSpotlight(idx); };
+          })(d));
+          spotlightDots.appendChild(dot);
+        }
+
+        function updateSpotlight(animate) {
+          var p = spotlightPrompts[spotlightIdx];
+          var dots = spotlightDots.querySelectorAll('.spotlight-dot');
+
+          if (animate && !reduced) {
+            spotlightEl.classList.add('fading-out');
+            spotlightMeta.classList.add('fading-out');
+            setTimeout(function () {
+              spotlightEl.textContent = '\u201C' + p.text + '\u201D';
+              spotlightCounter.textContent = (spotlightIdx + 1) + ' of ' + spotlightPrompts.length;
+              for (var dd = 0; dd < dots.length; dd++) {
+                dots[dd].classList.toggle('active', dd === spotlightIdx);
+              }
+              spotlightEl.classList.remove('fading-out');
+              spotlightEl.classList.add('fading-in');
+              spotlightMeta.classList.remove('fading-out');
+              spotlightMeta.classList.add('fading-in');
+              setTimeout(function () {
+                spotlightEl.classList.remove('fading-in');
+                spotlightMeta.classList.remove('fading-in');
+              }, 50);
+            }, 350);
+          } else {
+            spotlightEl.textContent = '\u201C' + p.text + '\u201D';
+            spotlightCounter.textContent = (spotlightIdx + 1) + ' of ' + spotlightPrompts.length;
+            for (var dd = 0; dd < dots.length; dd++) {
+              dots[dd].classList.toggle('active', dd === spotlightIdx);
             }
           }
-        }, { threshold: 0.15 });
-        for (var i = 0; i < els.length; i++) observer.observe(els[i]);
+        }
+
+        function goToSpotlight(idx) {
+          spotlightIdx = idx;
+          updateSpotlight(true);
+          resetAutoRotate();
+        }
+
+        function nextSpotlight() {
+          spotlightIdx = (spotlightIdx + 1) % spotlightPrompts.length;
+          updateSpotlight(true);
+        }
+
+        function resetAutoRotate() {
+          if (spotlightTimer) clearInterval(spotlightTimer);
+          if (!spotlightPaused) {
+            spotlightTimer = setInterval(nextSpotlight, 5000);
+          }
+        }
+
+        /* CTA click */
+        if (spotlightCta) {
+          spotlightCta.addEventListener('click', function () {
+            var p = spotlightPrompts[spotlightIdx];
+            selectPrompt(p.key, p.text);
+          });
+        }
+
+        /* Pause auto-rotate on hover */
+        var pickerEl = document.getElementById('spotlight-picker');
+        if (pickerEl) {
+          pickerEl.addEventListener('mouseenter', function () {
+            spotlightPaused = true;
+            if (spotlightTimer) clearInterval(spotlightTimer);
+          });
+          pickerEl.addEventListener('mouseleave', function () {
+            spotlightPaused = false;
+            resetAutoRotate();
+          });
+        }
+
+        /* Init */
+        updateSpotlight(false);
+        resetAutoRotate();
       })();
     </script>
   </body>
