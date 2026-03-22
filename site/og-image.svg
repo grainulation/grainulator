@@ -1,23 +1,134 @@
+<!-- OG Image for grainulator.app — 1200x630
+     IMPORTANT: Social platforms do not render SVG for og:image.
+     Convert to PNG before deployment:
+       npx svg2png og-image.svg -o og-image.png -w 1200 -h 630
+     Then update index.html og:image to point to og-image.png -->
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <rect width="1200" height="630" fill="#0A0A0B"/>
-  <!-- Subtle grid lines -->
-  <g stroke="#1E1E22" stroke-width="0.5" opacity="0.5">
-    <line x1="0" y1="157" x2="1200" y2="157"/>
-    <line x1="0" y1="315" x2="1200" y2="315"/>
-    <line x1="0" y1="473" x2="1200" y2="473"/>
-    <line x1="300" y1="0" x2="300" y2="630"/>
-    <line x1="600" y1="0" x2="600" y2="630"/>
-    <line x1="900" y1="0" x2="900" y2="630"/>
-  </g>
-  <!-- Lime glow behind kernel -->
-  <ellipse cx="600" cy="260" rx="80" ry="100" fill="#BFFF00" opacity="0.04"/>
-  <!-- Kernel -->
-  <ellipse cx="600" cy="260" rx="28" ry="52" fill="#BFFF00" transform="rotate(-8 600 260)"/>
-  <line x1="600" y1="212" x2="600" y2="320" stroke="#99CC00" stroke-width="2" stroke-linecap="round"/>
-  <!-- Title -->
-  <text x="600" y="400" text-anchor="middle" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="56" font-weight="800" fill="#F0F0F0" letter-spacing="-1">Grainulator</text>
-  <!-- Subtitle -->
-  <text x="600" y="445" text-anchor="middle" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="22" font-weight="400" fill="#9A9A9A">Research that compiles.</text>
-  <!-- Bottom tagline -->
-  <text x="600" y="560" text-anchor="middle" font-family="monospace" font-size="14" fill="#555">AI research sprints for Claude Code</text>
+  <defs>
+    <!-- Blob gradients: dark olive center -> bright lime -> blue rim -->
+    <radialGradient id="blob1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2d6b30"/>
+      <stop offset="60%" stop-color="#44aa44"/>
+      <stop offset="85%" stop-color="#66ff66"/>
+      <stop offset="93%" stop-color="#8df6ff" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#8df6ff"/>
+    </radialGradient>
+    <radialGradient id="blob2" cx="50%" cy="45%" r="50%">
+      <stop offset="0%" stop-color="#2d6b30"/>
+      <stop offset="55%" stop-color="#3d9940"/>
+      <stop offset="82%" stop-color="#66ff66"/>
+      <stop offset="93%" stop-color="#8df6ff" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#8df6ff"/>
+    </radialGradient>
+    <radialGradient id="blob3" cx="50%" cy="55%" r="50%">
+      <stop offset="0%" stop-color="#2d6b30"/>
+      <stop offset="50%" stop-color="#4cbb50"/>
+      <stop offset="80%" stop-color="#66ff66"/>
+      <stop offset="93%" stop-color="#8df6ff" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#8df6ff"/>
+    </radialGradient>
+    <radialGradient id="blob4" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2d6b30"/>
+      <stop offset="58%" stop-color="#3d9940"/>
+      <stop offset="84%" stop-color="#66ff66"/>
+      <stop offset="93%" stop-color="#8df6ff" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#8df6ff"/>
+    </radialGradient>
+    <!-- Warm bottom glow (lamp bulb) -->
+    <radialGradient id="bulbGlow" cx="50%" cy="100%" r="60%">
+      <stop offset="0%" stop-color="#ff6600" stop-opacity="0.25"/>
+      <stop offset="40%" stop-color="#ff4400" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Ambient green glow behind blobs -->
+    <radialGradient id="ambientGlow" cx="50%" cy="40%" r="45%">
+      <stop offset="0%" stop-color="#66ff66" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Blur filter for glow effects -->
+    <filter id="blobBlur">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+    <filter id="softGlow">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+    <!-- Neon text glow — multi-layer for stronger fluorescent effect -->
+    <filter id="neon" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" in="SourceGraphic" result="blur1"/>
+      <feGaussianBlur stdDeviation="12" in="SourceGraphic" result="blur2"/>
+      <feMerge>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="neonSubtle" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" in="SourceGraphic" result="blur1"/>
+      <feGaussianBlur stdDeviation="8" in="SourceGraphic" result="blur2"/>
+      <feMerge>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Pure black background -->
+  <rect width="1200" height="630" fill="#000000"/>
+
+  <!-- Dark border — prevents floating on white backgrounds -->
+  <rect x="0" y="0" width="1200" height="630" fill="none"
+        stroke="#111111" stroke-width="40"/>
+  <rect x="20" y="20" width="1160" height="590" fill="none"
+        stroke="#1a1a1f" stroke-width="1" opacity="0.4"/>
+
+  <!-- Ambient green glow -->
+  <ellipse cx="600" cy="260" rx="400" ry="280" fill="url(#ambientGlow)"/>
+
+  <!-- Warm bottom glow (the lamp bulb) -->
+  <ellipse cx="600" cy="630" rx="500" ry="200" fill="url(#bulbGlow)"/>
+
+  <!-- Lava lamp blobs -->
+
+  <!-- Blob 1: large, upper-center-left -->
+  <ellipse cx="520" cy="200" rx="85" ry="110" fill="url(#blob1)"
+           opacity="0.85" transform="rotate(-12 520 200)" filter="url(#blobBlur)"/>
+  <ellipse cx="520" cy="200" rx="80" ry="105" fill="url(#blob1)"
+           opacity="0.9" transform="rotate(-12 520 200)"/>
+
+  <!-- Blob 2: medium, upper-right -->
+  <ellipse cx="700" cy="170" rx="55" ry="75" fill="url(#blob2)"
+           opacity="0.80" transform="rotate(8 700 170)" filter="url(#blobBlur)"/>
+  <ellipse cx="700" cy="170" rx="50" ry="70" fill="url(#blob2)"
+           opacity="0.85" transform="rotate(8 700 170)"/>
+
+  <!-- Blob 3: small, drifting left-center -->
+  <ellipse cx="440" cy="340" rx="35" ry="50" fill="url(#blob3)"
+           opacity="0.75" transform="rotate(-5 440 340)" filter="url(#blobBlur)"/>
+  <ellipse cx="440" cy="340" rx="32" ry="46" fill="url(#blob3)"
+           opacity="0.80" transform="rotate(-5 440 340)"/>
+
+  <!-- Blob 4: medium, lower-right -->
+  <ellipse cx="680" cy="320" rx="45" ry="65" fill="url(#blob4)"
+           opacity="0.78" transform="rotate(15 680 320)" filter="url(#blobBlur)"/>
+  <ellipse cx="680" cy="320" rx="42" ry="60" fill="url(#blob4)"
+           opacity="0.83" transform="rotate(15 680 320)"/>
+
+  <!-- Title: "Grainulator" with neon glow -->
+  <text x="600" y="470" text-anchor="middle"
+        font-family="Inter, 'Helvetica Neue', Arial, sans-serif"
+        font-size="64" font-weight="700" letter-spacing="-2"
+        fill="#8df6ff" opacity="0.85" filter="url(#neon)">Grainulator</text>
+
+  <!-- Subtext with subtle neon glow -->
+  <text x="600" y="510" text-anchor="middle"
+        font-family="Inter, 'Helvetica Neue', Arial, sans-serif"
+        font-size="24" font-weight="400"
+        fill="#8df6ff" opacity="0.50" filter="url(#neonSubtle)">Research that compiles.</text>
+
+  <!-- Bottom-right: install command -->
+  <text x="1170" y="608" text-anchor="end"
+        font-family="'SF Mono', 'Fira Code', 'Cascadia Code', monospace"
+        font-size="14" font-weight="400"
+        fill="#39ff14" opacity="0.45">/plugin install grainulator</text>
 </svg>

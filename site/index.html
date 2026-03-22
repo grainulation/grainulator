@@ -1,821 +1,593 @@
-<!doctype html>
+<!--
+  OG IMAGE SPEC (og-image.png — generate separately)
+  ================================================
+  Dimensions: 1200x630 PNG
+  Background: #000000
+  Content:
+    - Lava lamp blobs rendered as a static frame from the shader
+      (capture at t≈8.0 for good blob distribution)
+    - "Grainulator" in system sans-serif, 600 weight, white, centered upper third
+    - "Research that compiles." in monospace, rgba(57,255,20,0.8), centered below
+  Border: 20px padding filled with linear-gradient(135deg, #111 0%, #1a1a1a 100%)
+    so the image doesn't float on white backgrounds (r1301)
+  File: /og-image.png at root of grainulator.app
+-->
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="robots"
-      content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
-    />
-    <title>Grainulator &mdash; AI Research Sprints for Claude Code</title>
-    <meta
-      name="description"
-      content="Ask any question, get a decision-ready brief in 5 minutes. Evidence-tracked research sprints for Claude Code. Open source, MIT."
-    />
-    <meta
-      name="keywords"
-      content="research sprint, Claude Code, AI research, decision brief, evidence tracking, developer tools"
-    />
-    <meta name="author" content="Grainulation" />
-    <link rel="canonical" href="https://grainulator.app/" />
-    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 
-    <!-- Open Graph -->
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Grainulator" />
-    <meta property="og:locale" content="en_US" />
-    <meta
-      property="og:title"
-      content="Grainulator &mdash; AI Research Sprints for Claude Code"
-    />
-    <meta
-      property="og:description"
-      content="Ask any question, get a decision-ready brief in 5 minutes. Evidence-tracked research sprints. Open source."
-    />
-    <meta property="og:url" content="https://grainulator.app/" />
-    <meta property="og:image" content="https://grainulator.app/og-image.svg" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta
-      property="og:image:alt"
-      content="Grainulator &mdash; Research that compiles. AI research sprints for Claude Code."
-    />
+<title>Grainulator — Research that compiles.</title>
+<meta name="description" content="Evidence-tracked research sprints for Claude Code. Ask any question, get a decision-ready brief. Open source, zero dependencies, MIT licensed.">
+<meta name="keywords" content="research sprint, Claude Code, AI research, decision brief, evidence tracking, developer tools, CLI">
+<meta name="author" content="Grainulation">
+<link rel="canonical" href="https://grainulator.app/">
+<link rel="sitemap" type="application/xml" href="/sitemap.xml">
 
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:title"
-      content="Grainulator &mdash; AI Research Sprints for Claude Code"
-    />
-    <meta
-      name="twitter:description"
-      content="Ask any question, get a decision-ready brief in 5 minutes. Evidence-tracked research sprints. Open source."
-    />
-    <meta name="twitter:image" content="https://grainulator.app/og-image.svg" />
-    <meta
-      name="twitter:image:alt"
-      content="Grainulator &mdash; Research that compiles."
-    />
+<!-- Open Graph (r1300-r1317) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Grainulator">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Grainulator — Research that compiles.">
+<meta property="og:description" content="Evidence-tracked research sprints for Claude Code. Ask any question, get a decision-ready brief.">
+<meta property="og:image" content="https://grainulator.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:alt" content="Grainulator — lava lamp blobs on dark background with tagline: Research that compiles.">
+<meta property="og:url" content="https://grainulator.app/">
 
-    <!-- PWA & Icons -->
-    <link rel="manifest" href="/manifest.json" />
-    <link
-      rel="icon"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><ellipse cx='32' cy='30' rx='12' ry='22' fill='%23BFFF00' transform='rotate(-8 32 30)'/><line x1='32' y1='10' x2='32' y2='56' stroke='%2399CC00' stroke-width='1.5' stroke-linecap='round'/></svg>"
-    />
-    <link
-      rel="apple-touch-icon"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%230A0A0B'/><ellipse cx='90' cy='82' rx='22' ry='40' fill='%23BFFF00' transform='rotate(-8 90 82)'/><line x1='90' y1='46' x2='90' y2='130' stroke='%2399CC00' stroke-width='2.5' stroke-linecap='round'/></svg>"
-    />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
-    />
-    <meta name="apple-mobile-web-app-title" content="Grainulator" />
-    <meta name="theme-color" content="#0A0A0B" />
-    <meta name="mobile-web-app-capable" content="yes" />
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Grainulator — Research that compiles.">
+<meta name="twitter:description" content="Evidence-tracked research sprints for Claude Code. Ask any question, get a decision-ready brief.">
+<meta name="twitter:image" content="https://grainulator.app/og-image.png">
+<meta name="twitter:image:alt" content="Grainulator — lava lamp blobs on dark background with tagline: Research that compiles.">
 
-    <!-- Structured Data -->
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": "Grainulator",
-        "url": "https://grainulator.app/",
-        "description": "AI research sprint tool for Claude Code. Ask any question, get a decision-ready brief in 5 minutes. Every finding tracked, challenged, and confidence-graded.",
-        "applicationCategory": "DeveloperApplication",
-        "applicationSubCategory": "Research Tools",
-        "operatingSystem": "Any",
-        "softwareVersion": "1.0",
-        "screenshot": "https://grainulator.app/og-image.svg",
-        "featureList": "Evidence-tracked research sprints, Confidence-graded findings, Decision-ready briefs, Adversarial challenge system",
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "USD"
-        },
-        "author": {
-          "@type": "Organization",
-          "name": "Grainulation",
-          "url": "https://grainulation.com"
-        },
-        "license": "https://opensource.org/licenses/MIT",
-        "installUrl": "https://github.com/grainulation/grainulator",
-        "downloadUrl": "https://github.com/grainulation/grainulator"
-      }
-    </script>
+<!-- Slack unfurl hints -->
+<meta name="twitter:label1" content="Install">
+<meta name="twitter:data1" content="/plugin install grainulator">
+<meta name="twitter:label2" content="License">
+<meta name="twitter:data2" content="MIT">
 
-    <!-- Styles -->
-    <link rel="stylesheet" href="css/style.css" />
-  </head>
-  <body>
-    <a href="#main-content" class="skip-link">Skip to main content</a>
-    <a href="#playground-section" class="skip-link">Skip to playground</a>
+<!-- Theme -->
+<meta name="theme-color" content="#000000">
+<meta name="color-scheme" content="dark">
+<meta name="msapplication-TileColor" content="#000000">
 
-    <!-- aria-live regions -->
-    <div
-      id="terminal-live"
-      class="sr-only"
-      aria-live="polite"
-      role="status"
-    ></div>
-    <div
-      id="copy-status"
-      class="sr-only"
-      aria-live="polite"
-      role="status"
-    ></div>
+<!-- Adaptive favicon (r1307) — SVG with media query for light/dark -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cstyle%3E rect %7B fill: %23000 %7D ellipse %7B fill: %2339FF14 %7D @media (prefers-color-scheme: light) %7B rect %7B fill: %23fff %7D %7D%3C/style%3E%3Crect width='64' height='64' rx='14'/%3E%3Cellipse cx='32' cy='30' rx='12' ry='22' transform='rotate(-8 32 30)'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
 
-    <!-- Nav -->
-    <nav class="top-bar" aria-label="Main navigation">
-      <a href="/" class="logo-brand" aria-label="Grainulator home">
-        <svg
-          class="logo-kernel"
-          viewBox="0 0 64 64"
-          width="20"
-          height="20"
-          aria-hidden="true"
-        >
-          <ellipse
-            cx="32"
-            cy="30"
-            rx="12"
-            ry="22"
-            fill="#BFFF00"
-            transform="rotate(-8 32 30)"
-          />
-          <line
-            x1="32"
-            y1="10"
-            x2="32"
-            y2="56"
-            stroke="#99CC00"
-            stroke-width="1.5"
-            stroke-linecap="round"
-          />
-        </svg>
-        Grainulator
-      </a>
-      <div class="nav-links">
-        <a href="#playground-section" class="nav-link">Playground</a>
-        <a href="#how-section" class="nav-link">How it works</a>
-        <a href="#install-section" class="get-it-link">Get it &rarr;</a>
-      </div>
-    </nav>
+<!-- JSON-LD Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Grainulator",
+  "description": "Evidence-tracked research sprints for Claude Code. Ask any question, get a decision-ready brief.",
+  "url": "https://grainulator.app/",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "macOS, Linux, Windows",
+  "softwareRequirements": "Claude Code CLI",
+  "isAccessibleForFree": true,
+  "license": "https://opensource.org/licenses/MIT",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Organization",
+    "name": "Grainulation",
+    "url": "https://grainulation.com"
+  },
+  "screenshot": "https://grainulator.app/og-image.png"
+}
+</script>
 
-    <!-- Screen reader accessible prompt list -->
-    <div
-      class="sr-prompt-list"
-      id="sr-prompts"
-      role="region"
-      aria-label="Research prompts &mdash; click one to see a demo sprint"
-    >
-      <!-- Populated by JS -->
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:#000;cursor:crosshair;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+canvas{position:fixed;inset:0;width:100%;height:100%}
+
+/* Skip link for accessibility */
+.skip-link{position:absolute;top:-100%;left:50%;transform:translateX(-50%);background:#39FF14;color:#000;padding:0.5rem 1rem;font-family:monospace;font-size:0.85rem;z-index:200;border-radius:0 0 4px 4px;text-decoration:none;font-weight:700}
+.skip-link:focus{top:0}
+
+/* UI overlay — fades in after 2s */
+.ui{position:fixed;bottom:6vh;left:50%;transform:translateX(-50%);z-index:10;text-align:center;opacity:0;animation:appear 1s ease 0.5s forwards;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace}
+.ui-title{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:clamp(0.7rem,1.5vw,0.9rem);font-weight:700;color:#8df6ff;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:0.6rem;user-select:text;text-shadow:0 0 7px #8df6ff,0 0 20px rgba(141,246,255,0.6),0 0 40px rgba(141,246,255,0.3),0 0 80px rgba(141,246,255,0.15)}
+.ui-cmd{font-size:clamp(0.65rem,1.2vw,0.8rem);color:rgba(57,255,20,0.65);cursor:pointer;padding:0.75rem 1.2rem;min-height:48px;border:1px solid rgba(57,255,20,0.15);border-radius:3px;transition:all 0.4s;display:inline-block;text-decoration:none;user-select:all;background:none}
+.ui-cmd:hover,.ui-cmd:focus-visible{color:rgba(57,255,20,0.9);border-color:rgba(57,255,20,0.3);box-shadow:0 0 30px rgba(57,255,20,0.1);outline:none}
+
+@keyframes appear{to{opacity:1}}
+
+/* Toast */
+.toast{position:fixed;bottom:1.5vh;left:50%;transform:translateX(-50%) translateY(40px);font-family:monospace;font-size:0.7rem;color:#39FF14;opacity:0.5;z-index:99;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* Footer */
+.site-footer{position:fixed;bottom:1.5vh;left:50%;transform:translateX(-50%);z-index:10;text-align:center;opacity:0;animation:appear 1s ease 1s forwards}
+.site-footer a{font-family:monospace;font-size:0.6rem;color:rgba(255,255,255,0.45);padding:0.5rem 0.4rem;min-height:48px;display:inline-flex;align-items:center;text-decoration:none;transition:color 0.3s}
+.site-footer a:hover,.site-footer a:focus-visible{color:rgba(255,255,255,0.4);outline:none}
+.site-footer span{color:rgba(255,255,255,0.2);font-size:0.6rem;margin:0 0.3rem}
+
+/* Reduced motion: no canvas, instant UI, centered */
+@media(prefers-reduced-motion:reduce){
+  canvas{display:none}
+  .ui{opacity:1;animation:none;position:fixed;top:50%;bottom:auto;transform:translate(-50%,-50%)}
+  .ui-title{color:#8df6ff}
+  .ui-cmd{color:#39FF14;border-color:rgba(57,255,20,0.3)}
+  .site-footer{opacity:1;animation:none}
+}
+
+/* Visually hidden — accessible to screen readers and crawlers */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* Noscript fallback */
+.noscript-fallback{display:none}
+
+/* === WebGL fallback — CSS-only lava lamp (r1800-r1807) === */
+@property --blob1-x{syntax:'<percentage>';inherits:false;initial-value:30%}
+@property --blob1-y{syntax:'<percentage>';inherits:false;initial-value:70%}
+@property --blob2-x{syntax:'<percentage>';inherits:false;initial-value:70%}
+@property --blob2-y{syntax:'<percentage>';inherits:false;initial-value:30%}
+@property --blob3-x{syntax:'<percentage>';inherits:false;initial-value:50%}
+@property --blob3-y{syntax:'<percentage>';inherits:false;initial-value:50%}
+.webgl-fallback canvas{display:none!important}
+.webgl-fallback::before,.webgl-fallback::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none}
+.webgl-fallback::before{background:radial-gradient(ellipse 50% 60% at var(--blob1-x) var(--blob1-y),rgba(45,107,48,0.35) 0%,transparent 70%),radial-gradient(ellipse 45% 55% at var(--blob2-x) var(--blob2-y),rgba(32,80,10,0.30) 0%,transparent 65%),radial-gradient(ellipse 60% 40% at var(--blob3-x) var(--blob3-y),rgba(20,60,20,0.25) 0%,transparent 60%),linear-gradient(to top,rgba(60,40,15,0.15) 0%,rgba(15,12,8,1) 50%,rgba(0,0,0,1) 100%);animation:lava-drift 25s ease-in-out infinite;filter:blur(40px)}
+.webgl-fallback::after{background:radial-gradient(circle 120px at var(--blob2-x) var(--blob1-y),rgba(57,255,20,0.08) 0%,transparent 70%),radial-gradient(circle 80px at var(--blob1-x) var(--blob2-y),rgba(141,246,255,0.06) 0%,transparent 60%),radial-gradient(ellipse 200px 300px at 50% 85%,rgba(80,50,20,0.12) 0%,transparent 70%);animation:lava-drift-2 30s ease-in-out infinite;filter:blur(50px)}
+@keyframes lava-drift{0%{--blob1-x:30%;--blob1-y:70%;--blob2-x:70%;--blob2-y:30%;--blob3-x:50%;--blob3-y:50%}25%{--blob1-x:45%;--blob1-y:55%;--blob2-x:55%;--blob2-y:60%;--blob3-x:35%;--blob3-y:40%}50%{--blob1-x:60%;--blob1-y:40%;--blob2-x:40%;--blob2-y:70%;--blob3-x:65%;--blob3-y:60%}75%{--blob1-x:35%;--blob1-y:65%;--blob2-x:65%;--blob2-y:45%;--blob3-x:45%;--blob3-y:35%}100%{--blob1-x:30%;--blob1-y:70%;--blob2-x:70%;--blob2-y:30%;--blob3-x:50%;--blob3-y:50%}}
+@keyframes lava-drift-2{0%{--blob2-x:70%;--blob1-y:70%}50%{--blob2-x:40%;--blob1-y:40%}100%{--blob2-x:70%;--blob1-y:70%}}
+@media(prefers-reduced-motion:reduce){.webgl-fallback::before,.webgl-fallback::after{animation:none!important}}
+</style>
+
+<noscript>
+<style>
+  canvas{display:none!important}
+  .ui{opacity:1!important;animation:none!important;position:fixed!important;top:50%!important;bottom:auto!important;transform:translate(-50%,-50%)!important}
+  .ui-title{color:#8df6ff!important}
+  .ui-cmd{color:#39FF14!important;border-color:rgba(57,255,20,0.3)!important;cursor:default!important}
+  .site-footer{opacity:1!important;animation:none!important}
+  .toast{display:none!important}
+  .noscript-fallback{display:block!important;position:fixed;top:35%;left:50%;transform:translate(-50%,-50%);text-align:center;z-index:5}
+  .noscript-fallback p{font-family:monospace;font-size:0.75rem;color:rgba(255,255,255,0.3);margin-bottom:0.5rem}
+</style>
+</noscript>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to content</a>
+
+<canvas id="c" aria-hidden="true"></canvas>
+
+<main id="main-content">
+  <div class="ui" role="region" aria-label="Product information">
+    <h1 class="ui-title">grainulator</h1>
+    <h2 class="sr-only">Research that compiles</h2>
+    <p class="sr-only">Evidence-tracked research sprints for Claude Code. Ask any question, get a decision-ready brief. Open source, zero dependencies, MIT licensed.</p>
+    <button class="ui-cmd" id="cmd" type="button" aria-label="Copy install command: /plugin install grainulator">/plugin install grainulator</button>
+    <h2 class="sr-only">Install</h2>
+  </div>
+
+  <noscript>
+    <div class="noscript-fallback">
+      <p><strong>Grainulator</strong></p>
+      <p>Evidence-tracked research sprints for Claude Code. Ask any question, get a decision-ready brief.</p>
+      <p>Install: /plugin install grainulator</p>
     </div>
+  </noscript>
 
-    <main id="main-content" role="main">
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</main>
 
-      <!-- HERO (black bg) -->
-      <section class="section section-dark hero" id="hero-section" aria-label="Introduction">
-        <h1 class="hero-headline">Grainulator</h1>
-        <p class="hero-subtitle">Research that compiles.</p>
-        <div class="hero-links">
-          <a href="#playground-section" class="hero-link">Try it live <span class="chevron">&darr;</span></a>
-          <a href="#install-section" class="hero-link">Get it <span class="chevron">&rarr;</span></a>
-        </div>
-        <div class="hero-brief" aria-label="Example compiled brief">
-          <div class="brief-card">
-            <div class="brief-bar">
-              <div class="brief-bar-dots" aria-hidden="true">
-                <div class="dot dot-r"></div>
-                <div class="dot dot-y"></div>
-                <div class="dot dot-g"></div>
-              </div>
-              <div class="brief-bar-title">compiled brief</div>
-              <div class="brief-bar-status">&check; pass</div>
-            </div>
-            <div class="brief-body">
-              <div class="brief-label">Sprint</div>
-              <div class="brief-title">
-                &ldquo;Should we use Postgres or MongoDB for the new
-                service?&rdquo;
-              </div>
+<footer class="site-footer">
+  <nav aria-label="External links">
+    <a href="https://github.com/grainulation/grainulator" rel="noopener">github</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="https://grainulator.app/docs" rel="noopener">docs</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="https://opensource.org/licenses/MIT" rel="noopener">mit</a>
+  </nav>
+</footer>
 
-              <div class="brief-rec">
-                <div class="brief-rec-label">Recommendation</div>
-                <div class="brief-rec-text">
-                  Postgres with JSONB columns for flexible fields. Covers
-                  relational queries (80% of workload) without sacrificing
-                  document flexibility.
-                </div>
-              </div>
+<script>
+const c = document.getElementById('c');
+const gl = c.getContext('webgl');
 
-              <div class="brief-timeline">
-                <span class="brief-timeline-label">Timeline:</span>
-                <span class="brief-timeline-value"
-                  >2 weeks (Postgres) vs 9 weeks (MongoDB)</span
-                >
-                <span class="pill pill-confidence" style="margin-left: auto"
-                  >91% confidence</span
-                >
-              </div>
+function activateFallback() {
+  document.body.classList.add('webgl-fallback');
+}
 
-              <div class="brief-finding">
-                <strong>Key finding:</strong> 80% of queries are relational
-                joins &mdash; MongoDB incurs a significant performance
-                penalty. pgvector eliminates the need for a separate vector
-                database.
-              </div>
+function isSoftwareRenderer(g) {
+  var ext = g.getExtension('WEBGL_debug_renderer_info');
+  if (!ext) return false;
+  var renderer = g.getParameter(ext.UNMASKED_RENDERER_WEBGL) || '';
+  return /swiftshader|llvmpipe|software|basic render/i.test(renderer);
+}
 
-              <div class="brief-risks">
-                <div class="brief-risk-row">
-                  <span class="pill pill-high">high</span>
-                  <span class="brief-risk-text"
-                    >MongoDB migration effort is 4.5&times; longer than
-                    initially estimated</span
-                  >
-                </div>
-                <div class="brief-risk-row">
-                  <span class="pill pill-med">med</span>
-                  <span class="brief-risk-text"
-                    >Ecosystem tooling coverage at 73% &mdash; needs
-                    evaluation</span
-                  >
-                </div>
-                <div class="brief-risk-row">
-                  <span class="pill pill-low">low</span>
-                  <span class="brief-risk-text"
-                    >Schema flexibility gap mitigated by JSONB columns</span
-                  >
-                </div>
-              </div>
-            </div>
-            <div class="brief-footer">
-              <span>6 findings &middot; 1 revised &middot; 0 retired</span>
-              <span class="brief-footer-pass">&check; All gates met</span>
-            </div>
-          </div>
-        </div>
-      </section>
+if (!gl || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  if (!gl) activateFallback();
+} else if (isSoftwareRenderer(gl)) {
+  activateFallback();
+} else {
 
-      <!-- SECTION 1: ASK ANYTHING (black bg) -->
-      <section class="section section-dark feature-section" id="how-section" aria-label="How it works">
-        <div class="section-inner">
-          <h2 class="section-headline fade-up">Ask anything.</h2>
-          <p class="section-body fade-up">
-            You ask. It researches. It argues with itself. You get the answer.
-          </p>
-          <div class="how-conversation fade-up">
-            <div class="how-line">You ask.</div>
-            <div class="how-line">It researches.</div>
-            <div class="how-line">It argues with itself.</div>
-            <div class="how-line">You get the answer.</div>
-          </div>
-        </div>
-      </section>
+// Context loss handler (w711)
+c.addEventListener('webglcontextlost', function(e) { e.preventDefault(); activateFallback(); });
 
-      <!-- SECTION 2: PLAYGROUND (light bg) -->
-      <section
-        class="section section-light feature-section pond-opening"
-        id="playground-section"
-        aria-label="Interactive demo playground"
-      >
-        <div class="section-inner">
-          <h2 class="section-headline fade-up">Every finding. Tracked and challenged.</h2>
-          <p class="section-body fade-up">
-            Click any question to watch a research sprint run in real time.
-          </p>
-        </div>
+// Mobile detection
+const isMobile = /Mobi|Android/i.test(navigator.userAgent) || innerWidth < 768;
 
-        <div class="pond-container" id="pond-container">
-          <canvas id="pond" aria-hidden="true"></canvas>
-          <div class="pond-hint" id="pond-hint">
-            Click a prompt to see it in action
-          </div>
-        </div>
+// Perf params — mobile gets lighter workload, desktop unchanged
+const NUM       = isMobile ? 8    : 12;
+const STEPS     = isMobile ? 48   : 96;
+const HIT_THRESH= isMobile ? '0.003' : '0.001';
+const STEP_MULT = isMobile ? '1.0'   : '0.8';
+const NORM_EPS  = isMobile ? '0.003' : '0.001';
+const GLITCH_ON = isMobile ? 0       : 1;  // disable glitch on mobile
 
-        <!-- Spotlight picker: one question at a time, auto-rotating -->
-        <div
-          class="spotlight-picker"
-          id="spotlight-picker"
-          role="region"
-          aria-label="Research question spotlight"
-        >
-          <div class="spotlight-question" id="spotlight-question" aria-live="polite"></div>
-          <div class="spotlight-meta" id="spotlight-meta">
-            <span class="spotlight-tag">live demo</span>
-            <span class="spotlight-counter" id="spotlight-counter"></span>
-          </div>
-          <button
-            class="spotlight-cta"
-            id="spotlight-cta"
-            type="button"
-            aria-label="Watch this demo"
-          >
-            Watch the sprint <span class="chevron">&rsaquo;</span>
-          </button>
-          <div class="spotlight-dots" id="spotlight-dots" role="tablist" aria-label="Question selector">
-            <!-- Populated by JS -->
-          </div>
-        </div>
+// 3D raymarched lava lamp based on cineShader-Lava approach (w400-w402)
+// opSmoothUnion on SDF spheres = actual opaque surfaces with normals
 
-        <!-- Legacy mobile slot (hidden, replaced by spotlight) -->
-        <div
-          class="mobile-slot"
-          id="mobile-slot"
-          role="region"
-          aria-label="Prompt picker"
-        >
-          <div class="mobile-slot-label">Tap to spin, tap card to try it</div>
-          <div
-            class="mobile-slot-card"
-            id="mobile-slot-card"
-            role="button"
-            tabindex="0"
-            aria-live="polite"
-          >
-            <span class="mobile-slot-text" id="mobile-slot-text"></span>
-            <span class="mobile-slot-tag" aria-hidden="true">live demo</span>
-          </div>
-          <div class="mobile-slot-actions">
-            <button
-              class="mobile-slot-btn"
-              id="mobile-spin-btn"
-              type="button"
-              aria-label="Show a different prompt"
-            >
-              Spin
-            </button>
-            <button
-              class="mobile-slot-btn primary"
-              id="mobile-try-btn"
-              type="button"
-              aria-label="Try this prompt"
-            >
-              Try it
-            </button>
-          </div>
-          <div
-            class="mobile-slot-counter"
-            id="mobile-slot-counter"
-            aria-hidden="true"
-          ></div>
-        </div>
+const vs = `attribute vec2 p;void main(){gl_Position=vec4(p,0,1);}`;
+const fs = `
+precision highp float;
+uniform float t;
+uniform vec2 r;
+uniform float seed;
+uniform vec2 tilt; // device orientation: x=gamma(left/right), y=beta(front/back)
 
-        <!-- Reduced motion: static grid of prompts -->
-        <div
-          class="reduced-grid"
-          id="reduced-grid"
-          role="region"
-          aria-label="Research prompts"
-        >
-          <div class="reduced-grid-inner" id="reduced-grid-inner">
-            <!-- Populated by JS -->
-          </div>
-        </div>
-      </section>
+#define NUM ${NUM}
+#define STEPS ${STEPS}
+#define HIT_THRESH ${HIT_THRESH}
+#define STEP_MULT ${STEP_MULT}
+#define NORM_EPS ${NORM_EPS}
+#define GLITCH_ON ${GLITCH_ON}
 
-      <!-- SECTION 3: QUOTES (black bg) -->
-      <section
-        class="section section-dark quotes-section"
-        id="who-section"
-        aria-label="What Grainulator feels like"
-      >
-        <div class="section-inner">
-          <div class="who-quotes">
-            <div class="who-quote fade-up">
-              <p class="who-quote-text">
-                &ldquo;Spell-check for your <em>strategy</em>.&rdquo;
-              </p>
-              <p class="who-quote-for">Everyone who makes decisions</p>
-            </div>
-            <div class="who-quote fade-up">
-              <p class="who-quote-text">
-                &ldquo;A second opinion that <em>never gets tired</em>.&rdquo;
-              </p>
-              <p class="who-quote-for">
-                Managers weighing trade-offs at midnight
-              </p>
-            </div>
-            <div class="who-quote fade-up">
-              <p class="who-quote-text">
-                &ldquo;Peer review for decisions,
-                <em>not just code</em>.&rdquo;
-              </p>
-              <p class="who-quote-for">
-                Engineers who already know what rigor looks like
-              </p>
-            </div>
-            <div class="who-quote fade-up">
-              <p class="who-quote-text">
-                &ldquo;The research intern who actually
-                <em>reads everything</em>.&rdquo;
-              </p>
-              <p class="who-quote-for">
-                Execs who need the brief, not the busywork
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+// smooth min — the merge magic (w400: k=0.4 is the sweet spot)
+float smin(float a, float b, float k) {
+  float h = clamp(0.5 + 0.5*(b-a)/k, 0.0, 1.0);
+  return mix(b, a, h) - k*h*(1.0-h);
+}
 
-      <!-- SECTION 4: INTEGRATIONS (light bg) -->
-      <section
-        class="section section-light feature-section"
-        id="integrations-section"
-        aria-label="Integrations"
-      >
-        <div class="section-inner">
-          <h2 class="section-headline fade-up">Works with everything you already use.</h2>
-          <div class="integrations-grid fade-up">
-            <div class="integration-item">Claude Code</div>
-            <div class="integration-item">Jira</div>
-            <div class="integration-item">Confluence</div>
-            <div class="integration-item">Slack</div>
-            <div class="integration-item">GitHub</div>
-          </div>
-          <p style="margin-top: 32px; text-align: center;" class="fade-up">
-            <a href="https://grainulation.com/docs" class="learn-more-link">Learn more <span class="chevron">&rsaquo;</span></a>
-          </p>
-        </div>
-      </section>
+float sdSphere(vec3 p, float s) {
+  return length(p) - s;
+}
 
-      <!-- SECTION 5: INSTALL (black bg) -->
-      <section
-        class="section section-dark install-section"
-        id="install-section"
-        aria-label="Install Grainulator"
-      >
-        <div class="section-inner">
-          <h2 class="section-headline fade-up">Get Grainulator.</h2>
-          <div
-            class="install-cmd-block fade-up"
-            id="install-cmd"
-            role="button"
-            tabindex="0"
-            aria-label="Copy install command: /plugin install grainulator"
-          >
-            <span class="prompt" aria-hidden="true">/</span>plugin install
-            grainulator
-            <button
-              class="install-copy"
-              id="install-copy-btn"
-              aria-label="Copy to clipboard"
-            >
-              Copy
-            </button>
-          </div>
-          <p class="install-compat fade-up">
-            Works with your existing codebase, Jira, Confluence, Slack.
-          </p>
-          <p class="install-time fade-up">In 4 minutes, it will have it.</p>
-          <div class="install-links fade-up">
-            <a href="https://grainulation.com/docs">Docs <span class="chevron">&rsaquo;</span></a>
-            <a href="https://github.com/grainulation/grainulator">GitHub <span class="chevron">&rsaquo;</span></a>
-            <a href="https://grainulation.com">grainulation.com <span class="chevron">&rsaquo;</span></a>
-          </div>
-        </div>
-      </section>
+// glitch state
+float glitchAmount = 0.0; // 1.0 = full 8-bit, 0.0 = HD
+#if GLITCH_ON
+float glitchSeed = 0.0;
 
-      <!-- Terminal overlay -->
-      <div
-        class="terminal-overlay"
-        id="terminal-overlay"
-        role="dialog"
-        aria-label="Sprint demo"
-        aria-modal="true"
-      >
-        <div class="terminal-overlay-bg" id="terminal-overlay-bg"></div>
-        <div class="terminal-container">
-          <div class="selected-prompt" id="selected-prompt"></div>
-          <div class="game-terminal" id="game-terminal">
-            <div class="terminal-bar">
-              <div class="terminal-dots" aria-hidden="true">
-                <div class="dot dot-r"></div>
-                <div class="dot dot-y"></div>
-                <div class="dot dot-g"></div>
-              </div>
-              <div class="terminal-title" id="terminal-title">grainulator</div>
-              <div class="terminal-status">
-                <span class="status-dot" aria-hidden="true"></span>
-                <span id="terminal-status-text">ready</span>
-              </div>
-            </div>
-            <div
-              class="terminal-body"
-              id="terminal-body"
-              role="log"
-              aria-label="Sprint output"
-            ></div>
-          </div>
-          <div class="terminal-controls" id="terminal-controls">
-            <button
-              class="ctrl-btn"
-              id="btn-skip"
-              type="button"
-              hidden
-              aria-label="Skip animation and show all steps"
-            >
-              Skip to end
-            </button>
-            <button
-              class="ctrl-btn"
-              id="btn-pause"
-              type="button"
-              hidden
-              aria-label="Pause or resume the animation"
-            >
-              Pause
-            </button>
-            <button
-              class="ctrl-btn"
-              id="btn-dismiss"
-              type="button"
-              hidden
-              aria-label="Close and return to prompts"
-            >
-              Back to prompts
-            </button>
-          </div>
-          <div class="sprint-done" id="sprint-done">
-            <div class="sprint-done-text">
-              Like that? <span class="lime">That took 60 seconds.</span> The
-              real thing takes 4 minutes.
-            </div>
-            <div class="sprint-done-sub">
-              Click elsewhere or press Escape to go back. Or &mdash;
-            </div>
-            <button
-              class="ctrl-btn"
-              id="btn-get-it-cta"
-              type="button"
-              style="
-                margin-top: 12px;
-                color: var(--accent, #BFFF00);
-                border-color: rgba(191, 255, 0, 0.3);
-              "
-            >
-              Get Grainulator &rarr;
-            </button>
-          </div>
-        </div>
-      </div>
+float glitchHash(vec2 p) {
+  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+#endif
 
-    </main>
+// the lava scene — all blobs combined via smooth union
+float map(vec3 p) {
+#if GLITCH_ON
+  // patchy glitch: cell-based voxelization, each cell triggers independently
+  if (glitchAmount > 0.01) {
+    float cellSize = 0.8;
+    vec2 cell = floor(p.xy / cellSize);
+    float cellRand = glitchHash(cell + glitchSeed);
+    float cellOn = step(0.6, cellRand);
+    float cellPhase = cellRand * 0.4;
+    float localAmount = clamp(glitchAmount - cellPhase, 0.0, 1.0) * cellOn;
+    if (localAmount > 0.01) {
+      float vs = localAmount * 0.35;
+      vec3 snapped = floor(p / vs + 0.5) * vs;
+      p = mix(p, snapped, localAmount);
+    }
+  }
+#endif
 
-    <footer class="site-footer" role="contentinfo">
-      <a href="https://github.com/grainulation/grainulator">GitHub</a>
-      <span class="sep" aria-hidden="true">&middot;</span>
-      <a href="https://grainulation.com/docs">Docs</a>
-      <span class="sep" aria-hidden="true">&middot;</span>
-      <a href="https://deepwiki.com/grainulation/grainulator">DeepWiki</a>
-      <span class="sep" aria-hidden="true">&middot;</span>
-      <a href="https://grainulation.com">grainulation.com</a>
-      <span class="sep" aria-hidden="true">&middot;</span>
-      <span>MIT</span>
-      <span class="sep" aria-hidden="true">&middot;</span>
-      <span>Zero deps</span>
-    </footer>
+  float d = 100.0;
 
-    <!-- noscript fallback -->
-    <noscript>
-      <style>
-        #pond,
-        .pond-container,
-        .mobile-slot,
-        .spotlight-picker,
-        .terminal-overlay,
-        .reduced-grid {
-          display: none !important;
-        }
-      </style>
-      <div
-        style="
-          background: #0A0A0B;
-          color: #FFFFFF;
-          padding: 80px 20px;
-          font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
-          max-width: 700px;
-          margin: 0 auto;
-        "
-      >
-        <h2
-          style="
-            color: #FFFFFF;
-            font-size: 2rem;
-            font-weight: 800;
-            letter-spacing: -0.03em;
-            margin-bottom: 16px;
-            text-align: center;
-          "
-        >
-          Grainulator &mdash; AI Research Sprints for Claude Code
-        </h2>
-        <p style="font-size: 1.2rem; margin: 0 auto 24px; text-align: center; color: #A1A1A6;">
-          Ask any question, get a decision-ready brief in 5 minutes. Every
-          finding is tracked, challenged, and confidence-graded.
-        </p>
-        <h3 style="color: #FFFFFF; font-size: 1.1rem; font-weight: 700; margin: 32px 0 12px">
-          How It Works
-        </h3>
-        <ol style="line-height: 2; padding-left: 20px; color: #A1A1A6;">
-          <li>Type a research question in natural language</li>
-          <li>
-            Grainulator creates claims, gathers evidence, and challenges
-            findings
-          </li>
-          <li>
-            Receive a compiled brief with confidence scores and risk assessment
-          </li>
-        </ol>
-        <h3 style="color: #FFFFFF; font-size: 1.1rem; font-weight: 700; margin: 32px 0 12px">
-          Install
-        </h3>
-        <p
-          style="
-            font-family: monospace;
-            color: #BFFF00;
-            text-align: center;
-            font-size: 1.1rem;
-          "
-        >
-          /plugin install grainulator
-        </p>
-        <p style="color: #A1A1A6; margin-top: 24px; text-align: center">
-          Open source &middot; MIT &middot; Zero dependencies
-        </p>
-        <p style="margin-top: 16px; text-align: center">
-          <a
-            href="https://github.com/grainulation/grainulator"
-            style="color: #BFFF00"
-            >View on GitHub</a
-          >
-          &middot;
-          <a href="https://grainulation.com/docs" style="color: #BFFF00"
-            >Documentation</a
-          >
-        </p>
-      </div>
-    </noscript>
+  for (int i = 0; i < NUM; i++) {
+    float fi = float(i);
+    float hash1 = fract(fi * 412.531 + 0.513 + seed);
+    float hash2 = fract(fi * 317.892 + 0.217 + seed * 1.7);
+    float hash3 = fract(fi * 253.147 + 0.891 + seed * 2.3);
 
-    <!-- Scripts: modular, loaded in dependency order -->
-    <script src="js/demos.js"></script>
-    <script src="js/pond.js"></script>
-    <script src="js/terminal.js"></script>
-    <script src="js/app.js"></script>
-    <script src="js/mobile.js"></script>
+    // vertical convection: each blob rises and falls
+    float speed = (hash1 - 0.5) * 0.4;
+    float phase = fi * 1.37 + seed * 6.28;
 
-    <!-- Fade-up reveal on scroll + brief card reveal + spotlight picker -->
-    <script>
-      (function () {
-        var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // heat source direction — on desktop heat is at bottom (0,-1,0)
+    // on mobile, tilt rotates where the heat source is
+    vec2 heatDir = vec2(-tilt.x, -1.0 + tilt.y); // default: heat below
+    float heatLen = length(heatDir);
+    heatDir = heatLen > 0.01 ? heatDir / heatLen : vec2(0.0, -1.0);
 
-        /* Fade-up reveal */
-        var els = document.querySelectorAll('.fade-up');
-        if (els.length) {
-          if (reduced) {
-            for (var i = 0; i < els.length; i++) els[i].classList.add('visible');
-          } else {
-            var fadeObs = new IntersectionObserver(function (entries) {
-              for (var i = 0; i < entries.length; i++) {
-                if (entries[i].isIntersecting) {
-                  entries[i].target.classList.add('visible');
-                  fadeObs.unobserve(entries[i].target);
-                }
-              }
-            }, { threshold: 0.15 });
-            for (var i = 0; i < els.length; i++) fadeObs.observe(els[i]);
-          }
-        }
+    // each blob has a thermal cycle:
+    // 1. sits near heat source (bottom), warms up
+    // 2. rises away from heat (upward)
+    // 3. cools at the top, sinks back toward heat
+    float cycle = sin(t * speed + phase); // -1 to 1
+    float rising = cycle * 0.5 + 0.5;    // 0 = near heat, 1 = far from heat
 
-        /* Brief card + terminal image reveal on scroll */
-        var revealEls = document.querySelectorAll('.brief-card, .game-terminal:not(.terminal-overlay .game-terminal)');
-        if (revealEls.length) {
-          if (reduced) {
-            for (var r = 0; r < revealEls.length; r++) revealEls[r].classList.add('revealed');
-          } else {
-            var revealObs = new IntersectionObserver(function (entries) {
-              for (var r = 0; r < entries.length; r++) {
-                if (entries[r].isIntersecting) {
-                  entries[r].target.classList.add('revealed');
-                  revealObs.unobserve(entries[r].target);
-                }
-              }
-            }, { threshold: 0.1 });
-            for (var r = 0; r < revealEls.length; r++) revealObs.observe(revealEls[r]);
-          }
-        }
+    // quadratic easing: blobs linger near bottom (heating) then rise faster
+    float eased = rising < 0.5
+      ? 2.0 * rising * rising
+      : 1.0 - 2.0 * (1.0 - rising) * (1.0 - rising);
 
-        /* Spotlight picker */
-        var spotlightEl = document.getElementById('spotlight-question');
-        var spotlightMeta = document.getElementById('spotlight-meta');
-        var spotlightCounter = document.getElementById('spotlight-counter');
-        var spotlightCta = document.getElementById('spotlight-cta');
-        var spotlightDots = document.getElementById('spotlight-dots');
-        if (!spotlightEl || !spotlightDots) return;
+    // position along heat axis (rise away from heat source)
+    float travel = eased * 2.4 - 1.2; // -1.2 to +1.2
 
-        /* Only use scripted prompts for spotlight */
-        var spotlightPrompts = [];
-        for (var sp = 0; sp < allPrompts.length; sp++) {
-          if (scriptedKeys.indexOf(allPrompts[sp].key) !== -1) {
-            spotlightPrompts.push(allPrompts[sp]);
-          }
-        }
-        if (spotlightPrompts.length === 0) spotlightPrompts = allPrompts.slice(0, 6);
+    // blobs move OPPOSITE to heat direction (float away from heat)
+    vec3 offset;
+    offset.x = -heatDir.x * travel + sin(t * 0.08 * (0.5 + hash2) + phase * 2.1) * 0.5;
+    offset.y = -heatDir.y * travel + sin(t * 0.07 * (0.5 + hash3) + phase * 1.7) * 0.3;
+    offset.z = cos(t * 0.1 * (0.5 + hash3) + phase * 1.7) * 0.3;
 
-        var spotlightIdx = 0;
-        var spotlightTimer = null;
-        var spotlightPaused = false;
+    // smaller blobs — more room to dance
+    float size = mix(0.25, 0.55, hash1);
 
-        /* Build dots */
-        for (var d = 0; d < spotlightPrompts.length; d++) {
-          var dot = document.createElement('button');
-          dot.className = 'spotlight-dot' + (d === 0 ? ' active' : '');
-          dot.type = 'button';
-          dot.setAttribute('role', 'tab');
-          dot.setAttribute('aria-label', 'Question ' + (d + 1));
-          dot.dataset.idx = d;
-          dot.addEventListener('click', (function (idx) {
-            return function () { goToSpotlight(idx); };
-          })(d));
-          spotlightDots.appendChild(dot);
-        }
+    d = smin(d, sdSphere(p - offset, size), 0.45);
+  }
 
-        function updateSpotlight(animate) {
-          var p = spotlightPrompts[spotlightIdx];
-          var dots = spotlightDots.querySelectorAll('.spotlight-dot');
+  // heat pool — where the heat source is (blobs emerge from here)
+  vec2 hd = vec2(-tilt.x, -1.0 + tilt.y);
+  float hl = length(hd);
+  hd = hl > 0.01 ? hd / hl : vec2(0.0, -1.0);
+  vec3 heatPos = vec3(hd.x * 2.2, hd.y * 2.2, 0.0);
+  float pool = sdSphere(p - heatPos, 1.0);
+  d = smin(d, pool, 0.5);
 
-          if (animate && !reduced) {
-            spotlightEl.classList.add('fading-out');
-            spotlightMeta.classList.add('fading-out');
-            setTimeout(function () {
-              spotlightEl.textContent = '\u201C' + p.text + '\u201D';
-              spotlightCounter.textContent = (spotlightIdx + 1) + ' of ' + spotlightPrompts.length;
-              for (var dd = 0; dd < dots.length; dd++) {
-                dots[dd].classList.toggle('active', dd === spotlightIdx);
-              }
-              spotlightEl.classList.remove('fading-out');
-              spotlightEl.classList.add('fading-in');
-              spotlightMeta.classList.remove('fading-out');
-              spotlightMeta.classList.add('fading-in');
-              setTimeout(function () {
-                spotlightEl.classList.remove('fading-in');
-                spotlightMeta.classList.remove('fading-in');
-              }, 50);
-            }, 350);
-          } else {
-            spotlightEl.textContent = '\u201C' + p.text + '\u201D';
-            spotlightCounter.textContent = (spotlightIdx + 1) + ' of ' + spotlightPrompts.length;
-            for (var dd = 0; dd < dots.length; dd++) {
-              dots[dd].classList.toggle('active', dd === spotlightIdx);
-            }
-          }
-        }
+  // cool pool — opposite side where blobs collect before sinking
+  vec3 coolPos = -heatPos * 0.9;
+  float topPool = sdSphere(p - coolPos, 0.7);
+  d = smin(d, topPool, 0.4);
 
-        function goToSpotlight(idx) {
-          spotlightIdx = idx;
-          updateSpotlight(true);
-          resetAutoRotate();
-        }
+  return d;
+}
 
-        function nextSpotlight() {
-          spotlightIdx = (spotlightIdx + 1) % spotlightPrompts.length;
-          updateSpotlight(true);
-        }
+// normal from SDF
+vec3 calcNormal(vec3 p) {
+  vec2 e = vec2(NORM_EPS, 0.0);
+  return normalize(vec3(
+    map(p+e.xyy) - map(p-e.xyy),
+    map(p+e.yxy) - map(p-e.yxy),
+    map(p+e.yyx) - map(p-e.yyx)
+  ));
+}
 
-        function resetAutoRotate() {
-          if (spotlightTimer) clearInterval(spotlightTimer);
-          if (!spotlightPaused) {
-            spotlightTimer = setInterval(nextSpotlight, 5000);
-          }
-        }
+void main() {
+  vec2 uv = (gl_FragCoord.xy - 0.5*r) / min(r.x, r.y);
 
-        /* CTA click */
-        if (spotlightCta) {
-          spotlightCta.addEventListener('click', function () {
-            var p = spotlightPrompts[spotlightIdx];
-            selectPrompt(p.key, p.text);
-          });
-        }
+#if GLITCH_ON
+  // glitch: progressive 8-bit -> HD self-correction
+  float glitchCycle = 8.0;
+  float glitchDuration = 1.5;
+  float cyclePos = mod(t, glitchCycle);
+  float cycleSeed = floor(t / glitchCycle);
+  float triggerPoint = 2.0 + fract(sin(cycleSeed * 73.17) * 4378.5) * 4.0;
+  float glitchProgress = (cyclePos - triggerPoint) / glitchDuration;
+  if (glitchProgress > 0.0 && glitchProgress < 1.0) {
+    glitchAmount = 1.0 - glitchProgress;
+    glitchAmount = glitchAmount * glitchAmount;
+    glitchSeed = cycleSeed;
+  } else {
+    glitchAmount = 0.0;
+  }
+#endif
 
-        /* Pause auto-rotate on hover */
-        var pickerEl = document.getElementById('spotlight-picker');
-        if (pickerEl) {
-          pickerEl.addEventListener('mouseenter', function () {
-            spotlightPaused = true;
-            if (spotlightTimer) clearInterval(spotlightTimer);
-          });
-          pickerEl.addEventListener('mouseleave', function () {
-            spotlightPaused = false;
-            resetAutoRotate();
-          });
-        }
+  // camera — looking at lamp from front
+  vec3 ro = vec3(0.0, 0.0, 6.0);
+  vec3 rd = normalize(vec3(uv, -2.0));
 
-        /* Init */
-        updateSpotlight(false);
-        resetAutoRotate();
-      })();
-    </script>
-  </body>
+  // raymarch
+  float d = 0.0;
+  float hit = -1.0;
+  for (int i = 0; i < STEPS; i++) {
+    vec3 p = ro + rd * d;
+    float h = map(p);
+    if (h < HIT_THRESH) { hit = d; break; }
+    if (d > 20.0) break;
+    d += h * STEP_MULT;
+  }
+
+  // liquid background — dark amber, brighter at bottom
+  float bgY = uv.y * 0.5 + 0.5;
+  vec3 col = mix(
+    vec3(0.06, 0.04, 0.015),  // warm amber at bottom (bulb)
+    vec3(0.015, 0.012, 0.008), // dark at top
+    bgY
+  );
+
+  // bulb hotspot — follows heat source direction
+  vec2 hd2 = vec2(-tilt.x, -1.0 + tilt.y);
+  float hl2 = length(hd2);
+  hd2 = hl2 > 0.01 ? hd2 / hl2 : vec2(0.0, -1.0);
+  vec2 bulbPos = hd2 * 0.5;
+  float bulb = exp(-dot(uv - bulbPos, uv - bulbPos) * 4.0);
+  col += vec3(0.08, 0.05, 0.02) * bulb;
+
+  if (hit > 0.0) {
+    vec3 p = ro + rd * hit;
+    vec3 n = calcNormal(p);
+
+    // light from heat source direction
+    vec2 ld = vec2(-tilt.x, -1.0 + tilt.y);
+    float ll = length(ld);
+    ld = ll > 0.01 ? ld / ll : vec2(0.0, -1.0);
+    vec3 lightDir = normalize(vec3(ld.x * 0.5 + 0.2, ld.y, 0.8));
+    float diff = max(dot(n, lightDir), 0.0);
+    diff = sqrt(diff); // soften — wax is translucent (w409)
+
+    // ambient — soft fill
+    float amb = 0.25 + 0.15 * n.y;
+
+    // rim/fresnel — backlit edges
+    float fres = pow(1.0 - max(dot(n, -rd), 0.0), 2.5);
+
+    // subsurface scatter fake
+    float sss = max(dot(n, -lightDir), 0.0) * 0.2;
+
+    // specular — very subtle waxy sheen
+    vec3 H = normalize(lightDir - rd);
+    float spec = pow(max(dot(n, H), 0.0), 16.0) * 0.12;
+
+    // wax color — DARK center, BRIGHT edge (r1700, r1711: inverse of typical metaball)
+    // thick wax = dark olive #2d6b30, thin edges = bright lime #66ff66
+    float heightFade = (p.y + 3.0) / 6.0;
+    vec3 waxDark = mix(
+      vec3(0.20, 0.50, 0.06), // dark olive-green near bulb (warmer)
+      vec3(0.12, 0.38, 0.05), // even darker olive at top (cooler)
+      clamp(heightFade, 0.0, 1.0)
+    );
+    vec3 waxBright = vec3(0.40, 1.0, 0.25); // bright lime for thin edges
+
+    // fresnel = 1 at glancing angles (thin wax) = where light passes through
+    // the interior is DARK (opaque wax blocks light)
+    // the rim is BRIGHT (backlit, light shines through thin margins)
+    vec3 waxCol = mix(waxDark, waxBright, fres * 0.7);
+
+    // bottom lighting heats the underside (r1701, r1710)
+    float underLight = max(dot(n, vec3(0.0, -1.0, 0.0)), 0.0);
+    waxCol += vec3(0.08, 0.15, 0.02) * underLight;
+
+    // combine — matte, lit by the bulb below
+    col = waxCol * (diff * 0.4 + amb + sss * 0.5);
+    // fluorescent blue rim — Bullina lineata iridescence
+    // inner rim: bright green, outer rim: electric blue glow
+    float rimInner = pow(fres, 1.5);  // wider green halo
+    float rimOuter = pow(fres, 3.0);  // tight blue edge
+    col += waxBright * rimInner * 0.25;
+    col += vec3(0.1, 0.35, 1.0) * rimOuter * 1.2; // strong fluorescent blue
+    // blue bloom — spills slightly beyond the edge
+    col += vec3(0.05, 0.15, 0.6) * pow(fres, 5.0) * 0.8;
+    // very subtle specular — waxy, not shiny
+    col += vec3(0.2, 0.4, 0.1) * spec * 0.5;
+
+    // depth fog — amber-tinted liquid (r1704)
+    float fog = exp(-hit * 0.08);
+    vec3 fogCol = vec3(0.035, 0.028, 0.012);
+    col = mix(fogCol, col, fog);
+  }
+
+  // vignette — gentle
+  float vig = 1.0 - dot(uv * 0.6, uv * 0.6);
+  col *= smoothstep(0.0, 0.5, vig);
+
+  // grain
+  float grain = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898,78.233)) + t) * 43758.5453);
+  col += grain * 0.005 - 0.0025;
+
+  gl_FragColor = vec4(col, 1.0);
+}
+`;
+
+function compile(src, type) {
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src);
+  gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error('Shader:', gl.getShaderInfoLog(s));
+  return s;
+}
+
+const prog = gl.createProgram();
+gl.attachShader(prog, compile(vs, gl.VERTEX_SHADER));
+gl.attachShader(prog, compile(fs, gl.FRAGMENT_SHADER));
+gl.linkProgram(prog);
+if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) console.error('Link:', gl.getProgramInfoLog(prog));
+gl.useProgram(prog);
+
+const buf = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
+const pLoc = gl.getAttribLocation(prog, 'p');
+gl.enableVertexAttribArray(pLoc);
+gl.vertexAttribPointer(pLoc, 2, gl.FLOAT, false, 0, 0);
+
+const tLoc = gl.getUniformLocation(prog, 't');
+const rLoc = gl.getUniformLocation(prog, 'r');
+const seedLoc = gl.getUniformLocation(prog, 'seed');
+const seedVal = Math.random();
+gl.uniform1f(seedLoc, seedVal);
+const tiltLoc = gl.getUniformLocation(prog, 'tilt');
+
+// device orientation — phone tilt moves the lava
+let tiltX = 0, tiltY = 0;
+function handleOrientation(e) {
+  // gamma: left/right tilt (-90 to 90), beta: front/back (-180 to 180)
+  tiltX = (e.gamma || 0) / 90.0; // -1 to 1
+  tiltY = ((e.beta || 0) - 45) / 90.0; // centered around 45deg (normal holding angle)
+  tiltX = Math.max(-1, Math.min(1, tiltX));
+  tiltY = Math.max(-1, Math.min(1, tiltY));
+}
+window.addEventListener('deviceorientation', handleOrientation);
+// iOS 13+ needs permission
+if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+  document.body.addEventListener('click', function once() {
+    DeviceOrientationEvent.requestPermission().then(function(s) {
+      if (s === 'granted') window.addEventListener('deviceorientation', handleOrientation);
+    }).catch(function(){});
+    document.body.removeEventListener('click', once);
+  });
+}
+
+// Resolution: reduce DPR on mobile for fewer fragment shader invocations
+const dpr = isMobile ? Math.min(devicePixelRatio, 1.5) : devicePixelRatio;
+
+function resize() {
+  c.width = innerWidth * dpr;
+  c.height = innerHeight * dpr;
+  gl.viewport(0, 0, c.width, c.height);
+}
+resize();
+addEventListener('resize', resize);
+
+// idle timeout — pause after 90s to save battery (w713)
+var lastInteraction = Date.now();
+var paused = false;
+document.addEventListener('mousemove', function() { lastInteraction = Date.now(); if (paused) { paused = false; requestAnimationFrame(render); } });
+document.addEventListener('touchstart', function() { lastInteraction = Date.now(); if (paused) { paused = false; requestAnimationFrame(render); } });
+
+function render(time) {
+  if (Date.now() - lastInteraction > 90000) { paused = true; return; }
+  gl.uniform1f(tLoc, time * 0.001);
+  gl.uniform2f(rLoc, c.width, c.height);
+  gl.uniform2f(tiltLoc, tiltX, tiltY);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  requestAnimationFrame(render);
+}
+requestAnimationFrame(render);
+
+}
+
+// copy command
+const cmd = document.getElementById('cmd');
+cmd.addEventListener('click', function(e) {
+  e.preventDefault();
+  navigator.clipboard.writeText('/plugin install grainulator').then(function() {
+    const t = document.getElementById('toast');
+    t.textContent = 'copied.';
+    t.classList.add('show');
+    setTimeout(function() { t.classList.remove('show'); }, 1600);
+  });
+});
+cmd.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cmd.click(); }
+});
+
+// easter egg: type "grain" anywhere
+let kb = '';
+document.addEventListener('keydown', function(e) {
+  kb = (kb + e.key.toLowerCase()).slice(-10);
+  if (kb.includes('grain')) {
+    kb = '';
+    document.body.style.transition = 'filter 0.2s';
+    document.body.style.filter = 'invert(1) hue-rotate(180deg)';
+    setTimeout(function() { document.body.style.filter = 'none'; }, 400);
+  }
+});
+</script>
+</body>
 </html>
