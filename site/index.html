@@ -317,19 +317,25 @@ float map(vec3 p) {
     // fract gives 0→1 repeating ramp
     float cycle = fract(t * speed + phase);
 
-    // reshape: slow at bottom (0-0.3), fast rise (0.3-0.7), slow at top (0.7-0.85), sink (0.85-1.0)
+    // reshape: heat(0-0.2), rise(0.2-0.45), cool at top(0.45-0.65), slow fall(0.65-1.0)
     float travel;
-    if (cycle < 0.3) {
-      travel = -2.0 + cycle / 0.3 * 0.5; // -2.0 to -1.5 (pool area)
-    } else if (cycle < 0.7) {
-      float r = (cycle - 0.3) / 0.4;
-      travel = -1.5 + r * r * (3.0 - 2.0 * r) * 4.0; // smooth rise to +2.5
-    } else if (cycle < 0.85) {
-      float r = (cycle - 0.7) / 0.15;
-      travel = 2.5 - r * 0.5; // 2.5 to 2.0, slowly sinking
+    if (cycle < 0.2) {
+      // heating at bottom pool — wobbling, barely moving
+      travel = -2.0 + cycle / 0.2 * 0.4;
+    } else if (cycle < 0.45) {
+      // rising — smooth, accelerating then decelerating
+      float r = (cycle - 0.2) / 0.25;
+      travel = -1.6 + r * r * (3.0 - 2.0 * r) * 4.1;
+    } else if (cycle < 0.65) {
+      // cooling at top — lingering, stiffening (pixelation zone)
+      float r = (cycle - 0.45) / 0.2;
+      travel = 2.5 - r * 0.4;
     } else {
-      float r = (cycle - 0.85) / 0.15;
-      travel = 2.0 - r * 4.0; // 2.0 back to -2.0
+      // falling — SLOW descent through the cool zone, then faster near bottom
+      float r = (cycle - 0.65) / 0.35;
+      // cubic ease-in: slow at top, accelerates toward bottom
+      float eased = r * r * r;
+      travel = 2.1 - eased * 4.1;
     }
 
     // wider horizontal drift so blobs spread across full viewport
