@@ -3,39 +3,71 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="robots" content="index, follow" />
-<title>Grainulator — Research Sprints for Claude Code</title>
-<meta name="description" content="Type a question, get a decision-ready brief in 4 minutes. Grainulator is a research sprint tool that runs inside Claude Code. Every finding tracked, challenged, and confidence-graded. Open source, MIT, zero dependencies." />
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+<title>Grainulator &mdash; AI Research Sprints for Claude Code</title>
+<meta name="description" content="Ask any question, get a decision-ready brief in 5 minutes. Evidence-tracked research sprints for Claude Code. Open source, MIT." />
+<meta name="keywords" content="research sprint, Claude Code, AI research, decision brief, evidence tracking, developer tools" />
+<meta name="author" content="Grainulation" />
+<link rel="canonical" href="https://grainulator.app/" />
+<link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+
+<!-- Open Graph -->
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Grainulator" />
 <meta property="og:locale" content="en_US" />
-<meta property="og:title" content="Grainulator — Research Sprints for Claude Code" />
-<meta property="og:description" content="Type a question, get a decision-ready brief in 4 minutes. Research sprint tool for Claude Code. Open source, $6-12 per sprint." />
+<meta property="og:title" content="Grainulator &mdash; AI Research Sprints for Claude Code" />
+<meta property="og:description" content="Ask any question, get a decision-ready brief in 5 minutes. Evidence-tracked research sprints. Open source." />
 <meta property="og:url" content="https://grainulator.app/" />
+<meta property="og:image" content="https://grainulator.app/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Grainulator &mdash; Research that compiles. AI research sprints for Claude Code." />
+
+<!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image" />
-<link rel="canonical" href="https://grainulator.app/" />
+<meta name="twitter:title" content="Grainulator &mdash; AI Research Sprints for Claude Code" />
+<meta name="twitter:description" content="Ask any question, get a decision-ready brief in 5 minutes. Evidence-tracked research sprints. Open source." />
+<meta name="twitter:image" content="https://grainulator.app/og-image.png" />
+<meta name="twitter:image:alt" content="Grainulator &mdash; Research that compiles." />
+
+<!-- PWA & Icons -->
+<link rel="manifest" href="/manifest.json" />
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><ellipse cx='32' cy='30' rx='12' ry='22' fill='%23BFFF00' transform='rotate(-8 32 30)'/><line x1='32' y1='10' x2='32' y2='56' stroke='%2399CC00' stroke-width='1.5' stroke-linecap='round'/></svg>" />
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%230A0A0B'/><ellipse cx='90' cy='82' rx='22' ry='40' fill='%23BFFF00' transform='rotate(-8 90 82)'/><line x1='90' y1='46' x2='90' y2='130' stroke='%2399CC00' stroke-width='2.5' stroke-linecap='round'/></svg>" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Grainulator" />
 <meta name="theme-color" content="#BFFF00" />
+<meta name="mobile-web-app-capable" content="yes" />
+
+<!-- Structured Data -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   "name": "Grainulator",
-  "description": "Research sprint tool for Claude Code. Type a question, get a decision-ready brief in 4 minutes.",
+  "url": "https://grainulator.app/",
+  "description": "AI research sprint tool for Claude Code. Ask any question, get a decision-ready brief in 5 minutes. Every finding tracked, challenged, and confidence-graded.",
   "applicationCategory": "DeveloperApplication",
+  "applicationSubCategory": "Research Tools",
   "operatingSystem": "Any",
+  "softwareVersion": "1.0",
+  "screenshot": "https://grainulator.app/og-image.png",
+  "featureList": "Evidence-tracked research sprints, Confidence-graded findings, Decision-ready briefs, Adversarial challenge system",
   "offers": {
     "@type": "Offer",
     "price": "0",
     "priceCurrency": "USD",
-    "description": "Plugin is free and open source (MIT). Sprints cost $6-12 in Claude Code compute."
+    "description": "Free and open source (MIT). Sprints cost $6&ndash;12 in Claude Code compute."
   },
   "author": {
     "@type": "Organization",
     "name": "Grainulation",
     "url": "https://grainulation.com"
   },
-  "license": "https://opensource.org/licenses/MIT"
+  "license": "https://opensource.org/licenses/MIT",
+  "installUrl": "https://github.com/grainulation/grainulator",
+  "downloadUrl": "https://github.com/grainulation/grainulator"
 }
 </script>
 <style>
@@ -1246,8 +1278,8 @@ code, pre { font-family: var(--mono); }
 </style>
 </head>
 <body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
 <a href="#playground-section" class="skip-link">Skip to playground</a>
-<a href="#sr-prompts" class="skip-link">Skip to prompt list</a>
 
 <!-- aria-live regions -->
 <div id="terminal-live" class="sr-only" aria-live="polite" role="status"></div>
@@ -1256,7 +1288,7 @@ code, pre { font-family: var(--mono); }
 <!-- Top bar -->
 <nav class="top-bar" aria-label="Main navigation">
   <a href="/" class="logo-brand" aria-label="Grainulator home">
-    <svg class="logo-kernel" viewBox="0 0 64 64" aria-hidden="true"><ellipse cx="32" cy="30" rx="12" ry="22" fill="#BFFF00" transform="rotate(-8 32 30)"/><line x1="32" y1="10" x2="32" y2="56" stroke="#99CC00" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <svg class="logo-kernel" viewBox="0 0 64 64" width="28" height="28" aria-hidden="true"><ellipse cx="32" cy="30" rx="12" ry="22" fill="#BFFF00" transform="rotate(-8 32 30)"/><line x1="32" y1="10" x2="32" y2="56" stroke="#99CC00" stroke-width="1.5" stroke-linecap="round"/></svg>
     Grainulator
   </a>
   <div class="nav-links">
@@ -1270,6 +1302,7 @@ code, pre { font-family: var(--mono); }
   <!-- Populated by JS -->
 </div>
 
+<main id="main-content" role="main">
 <!-- ============================================================
      SECTION 1: HERO
      ============================================================ -->
@@ -1477,6 +1510,8 @@ code, pre { font-family: var(--mono); }
 </div>
 
 <!-- Footer -->
+</main>
+
 <footer class="site-footer" role="contentinfo">
   <a href="https://github.com/grainulation/grainulator">GitHub</a>
   <span class="sep" aria-hidden="true">&middot;</span>
@@ -1494,11 +1529,19 @@ code, pre { font-family: var(--mono); }
   <style>
     #pond, .pond-container, .mobile-slot, .terminal-overlay, .reduced-grid { display: none !important; }
   </style>
-  <div style="background:#0A0A0B;color:#F0F0F0;text-align:center;padding:80px 20px;font-family:system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-    <h2 style="color:#BFFF00;font-size:2rem;margin-bottom:16px;">Grainulator</h2>
-    <p style="font-size:1.2rem;max-width:600px;margin:0 auto 24px;">Type a question, get a decision-ready brief in 4 minutes. Research sprint tool for Claude Code.</p>
-    <p style="font-family:monospace;color:#BFFF00;">/plugin install grainulator</p>
-    <p style="color:#9A9A9A;margin-top:16px;">Open source &middot; MIT &middot; Zero dependencies</p>
+  <div style="background:#0A0A0B;color:#F0F0F0;padding:80px 20px;font-family:system-ui,sans-serif;max-width:700px;margin:0 auto;">
+    <h2 style="color:#BFFF00;font-size:2rem;margin-bottom:16px;text-align:center;">Grainulator &mdash; AI Research Sprints for Claude Code</h2>
+    <p style="font-size:1.2rem;margin:0 auto 24px;text-align:center;">Ask any question, get a decision-ready brief in 5 minutes. Every finding is tracked, challenged, and confidence-graded.</p>
+    <h3 style="color:#BFFF00;font-size:1.1rem;margin:32px 0 12px;">How It Works</h3>
+    <ol style="line-height:2;padding-left:20px;">
+      <li>Type a research question in natural language</li>
+      <li>Grainulator creates claims, gathers evidence, and challenges findings</li>
+      <li>Receive a compiled brief with confidence scores and risk assessment</li>
+    </ol>
+    <h3 style="color:#BFFF00;font-size:1.1rem;margin:32px 0 12px;">Install</h3>
+    <p style="font-family:monospace;color:#BFFF00;text-align:center;font-size:1.1rem;">/plugin install grainulator</p>
+    <p style="color:#9A9A9A;margin-top:24px;text-align:center;">Open source &middot; MIT &middot; Zero dependencies &middot; $6&ndash;12 per sprint in Claude Code compute</p>
+    <p style="margin-top:16px;text-align:center;"><a href="https://github.com/grainulation/grainulator" style="color:#BFFF00;">View on GitHub</a> &middot; <a href="https://grainulation.com/docs" style="color:#BFFF00;">Documentation</a></p>
   </div>
 </noscript>
 

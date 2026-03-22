@@ -1,0 +1,31 @@
+{
+  "name": "Grainulator — AI Research Sprints",
+  "short_name": "Grainulator",
+  "description": "Ask any question, get a decision-ready brief in 5 minutes. Evidence-tracked research sprints for Claude Code.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#BFFF00",
+  "background_color": "#0A0A0B",
+  "categories": ["developer", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%230A0A0B'/%3E%3Cellipse cx='256' cy='232' rx='62' ry='114' fill='%23BFFF00' transform='rotate(-8 256 232)'/%3E%3Cline x1='256' y1='128' x2='256' y2='370' stroke='%2399CC00' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%230A0A0B'/%3E%3Cellipse cx='96' cy='88' rx='24' ry='44' fill='%23BFFF00' transform='rotate(-8 96 88)'/%3E%3Cline x1='96' y1='48' x2='96' y2='140' stroke='%2399CC00' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%230A0A0B'/%3E%3Cellipse cx='256' cy='232' rx='62' ry='114' fill='%23BFFF00' transform='rotate(-8 256 232)'/%3E%3Cline x1='256' y1='128' x2='256' y2='370' stroke='%2399CC00' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

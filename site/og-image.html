@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1200" />
+<title>Grainulator OG Image</title>
+<style>
+  @font-face {
+    font-family: 'Card';
+    src: local('Inter Tight'), local('InterTight'), local('Inter'), local('Helvetica Neue'), local('Arial');
+    font-weight: 100 900;
+    font-display: swap;
+  }
+
+  *, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+  }
+
+  body {
+    font-family: 'Card', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: #0A0A0B;
+    color: #F0F0F0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Subtle grid pattern */
+  body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(191, 255, 0, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(191, 255, 0, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  /* Glow behind kernel */
+  .glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -60%);
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(191, 255, 0, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .kernel {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 32px;
+  }
+
+  .brand {
+    position: relative;
+    z-index: 1;
+    font-size: 72px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    color: #F0F0F0;
+    margin-bottom: 16px;
+  }
+
+  .tagline {
+    position: relative;
+    z-index: 1;
+    font-size: 28px;
+    font-weight: 400;
+    color: #BFFF00;
+    letter-spacing: -0.01em;
+    margin-bottom: 40px;
+  }
+
+  .url {
+    position: relative;
+    z-index: 1;
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+    font-size: 16px;
+    color: #9A9A9A;
+    letter-spacing: 0.02em;
+  }
+
+  /* Corner accents */
+  .corner {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border-color: rgba(191, 255, 0, 0.15);
+    border-style: solid;
+    border-width: 0;
+  }
+  .corner-tl { top: 32px; left: 32px; border-top-width: 2px; border-left-width: 2px; }
+  .corner-tr { top: 32px; right: 32px; border-top-width: 2px; border-right-width: 2px; }
+  .corner-bl { bottom: 32px; left: 32px; border-bottom-width: 2px; border-left-width: 2px; }
+  .corner-br { bottom: 32px; right: 32px; border-bottom-width: 2px; border-right-width: 2px; }
+</style>
+</head>
+<body>
+  <div class="corner corner-tl"></div>
+  <div class="corner corner-tr"></div>
+  <div class="corner corner-bl"></div>
+  <div class="corner corner-br"></div>
+
+  <div class="glow"></div>
+
+  <svg class="kernel" width="120" height="120" viewBox="0 0 64 64" aria-hidden="true">
+    <ellipse cx="32" cy="30" rx="12" ry="22" fill="#BFFF00" transform="rotate(-8 32 30)" />
+    <line x1="32" y1="10" x2="32" y2="56" stroke="#99CC00" stroke-width="1.5" stroke-linecap="round" />
+  </svg>
+
+  <div class="brand">Grainulator</div>
+  <div class="tagline">Research that compiles.</div>
+  <div class="url">grainulator.app</div>
+</body>
+</html>
