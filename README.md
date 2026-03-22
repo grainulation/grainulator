@@ -1,16 +1,20 @@
-# Grainulator
+<p align="center">
+  <img src="site/glitchy.png" alt="Glitchy — the Grainulator mascot" width="200">
+</p>
 
-Research sprint orchestrator for [Claude Code](https://claude.com/claude-code). Structured research with claims, evidence tiers, and compiled output.
+<p align="center">
+  <a href="https://grainulator.app"><img src="https://img.shields.io/badge/site-grainulator.app-8df6ff?style=flat" alt="site"></a>
+  <a href="https://www.npmjs.com/package/@grainulation/grainulator"><img src="https://img.shields.io/npm/v/@grainulation/grainulator" alt="npm version"></a>
+  <a href="https://github.com/grainulation/grainulator/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@grainulation/grainulator" alt="license"></a>
+  <a href="https://github.com/grainulation/grainulator/actions"><img src="https://github.com/grainulation/grainulator/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://deepwiki.com/grainulation/grainulator"><img src="https://deepwiki.com/badge.svg" alt="Explore on DeepWiki"></a>
+</p>
 
-**https://grainulator.app**
+<p align="center"><strong>Research sprint orchestrator for Claude Code.</strong></p>
 
-[![Explore on DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/grainulation/grainulator)
+Grainulator turns Claude Code into a research workstation. Ask a question, get a decision-ready brief. Every finding tracked, challenged, and confidence-graded.
 
-## What it does
-
-Grainulator turns Claude Code into a research workstation. Say "research how auth works in our repo" and it runs a structured sprint: gathering evidence, tracking claims with evidence tiers, detecting conflicts, and compiling polished briefs.
-
-Under the hood it orchestrates the grainulation OSS toolchain (wheat, mill, silo) plus DeepWiki for codebase-aware research -- all packaged as a single Claude Code plugin.
+Under the hood it orchestrates the [grainulation](https://github.com/grainulation/grainulation) OSS toolchain (wheat, mill, silo) plus DeepWiki for codebase-aware research — all packaged as a single Claude Code plugin.
 
 ## Install
 
@@ -30,25 +34,42 @@ Or add to your project's `.claude/settings.json` for team-wide deployment:
 
 Once installed, just talk to Claude:
 
-- **"research how our auth system works"** -- runs a multi-pass research sprint
-- **"challenge r003"** -- adversarial testing of a specific claim
-- **"what are we missing?"** -- blind spot analysis
-- **"write it up"** -- generates a compiled brief
+- **"research how our auth system works"** — runs a multi-pass research sprint
+- **"challenge r003"** — adversarial testing of a specific claim
+- **"what are we missing?"** — blind spot analysis
+- **"write it up"** — generates a compiled brief
 
 No slash syntax required. The intent router detects what you want and runs the right workflow.
 
 ## Skills
 
-| Skill         | Description                                      |
-| ------------- | ------------------------------------------------ |
-| `/init`       | Start a new research sprint                      |
-| `/research`   | Multi-pass investigation with evidence gathering |
-| `/challenge`  | Adversarial testing of a claim                   |
-| `/witness`    | Corroborate a claim against an external source   |
-| `/brief`      | Generate a compiled decision brief               |
-| `/status`     | Sprint dashboard snapshot                        |
-| `/present`    | Generate a presentation deck                     |
-| `/blind-spot` | Structural gap analysis                          |
+| Skill | Description |
+|-------|-------------|
+| `/init` | Start a new research sprint |
+| `/research` | Multi-pass investigation with evidence gathering |
+| `/challenge` | Adversarial testing of a claim |
+| `/witness` | Corroborate a claim against an external source |
+| `/brief` | Generate a compiled decision brief |
+| `/status` | Sprint dashboard snapshot |
+| `/present` | Generate a presentation deck |
+| `/blind-spot` | Structural gap analysis |
+
+## The ecosystem
+
+Grainulator is part of the [grainulation](https://github.com/grainulation/grainulation) ecosystem. Eight tools. Each does one thing. Use what you need.
+
+| Tool | What it does | Install |
+|------|-------------|---------|
+| [wheat](https://github.com/grainulation/wheat) | Research engine. Grow structured evidence. | `npx @grainulation/wheat init` |
+| [farmer](https://github.com/grainulation/farmer) | Permission dashboard. Approve AI actions in real time. | `npm i -g @grainulation/farmer` |
+| [barn](https://github.com/grainulation/barn) | Shared tools. Templates, validators, sprint detection. | `npm i -g @grainulation/barn` |
+| [mill](https://github.com/grainulation/mill) | Format conversion. Export to PDF, CSV, slides. | `npm i -g @grainulation/mill` |
+| [silo](https://github.com/grainulation/silo) | Knowledge storage. Reusable claim libraries and packs. | `npm i -g @grainulation/silo` |
+| [harvest](https://github.com/grainulation/harvest) | Analytics. Cross-sprint patterns and prediction scoring. | `npm i -g @grainulation/harvest` |
+| [orchard](https://github.com/grainulation/orchard) | Orchestration. Multi-sprint coordination and dependencies. | `npm i -g @grainulation/orchard` |
+| [grainulation](https://github.com/grainulation/grainulation) | Unified CLI. Single entry point to the ecosystem. | `npm i -g @grainulation/grainulation` |
+
+**You don't need all eight.** Start with `claude plugin install grainulator`. That's it.
 
 ## Architecture
 
@@ -60,15 +81,15 @@ No slash syntax required. The intent router detects what you want and runs the r
 
 ## Enterprise deployment
 
-Three levels of deployment:
+Three levels:
 
 1. **Team lead**: Commit `.claude/settings.json` with `enabledPlugins` to your repo
 2. **IT admin**: Deploy managed settings via MDM with pre-approved permissions
 3. **Air-gapped**: Use `CLAUDE_CODE_PLUGIN_SEED_DIR` with the plugin baked into container images
 
-## npm scope
+## Zero dependencies
 
-The MCP servers use the `@grainulation` npm scope (`@grainulation/wheat`, `@grainulation/mill`, `@grainulation/silo`). The hooks in `hooks/hooks.json` use `npx -y @grainulation/wheat` which auto-installs on first run -- if the scope is unclaimed, this is a supply chain risk. Claim the scope at https://www.npmjs.com/org/create before publishing.
+Every grainulation tool runs on Node built-ins only. No npm install waterfall. No left-pad. No supply chain anxiety.
 
 ## License
 
