@@ -387,8 +387,16 @@ void main() {
     dist += h * STEP_MULT;
   }
 
-  // background — near-black
+  // background — near-black with subtle grid
   vec3 col = vec3(0.005, 0.004, 0.003);
+  // grid in same color as footer text rgba(255,255,255,0.045)
+  vec2 gridUV = gl_FragCoord.xy;
+  float gridSize = 40.0;
+  float lineW = 1.0;
+  float gx = abs(mod(gridUV.x, gridSize) - gridSize * 0.5);
+  float gy = abs(mod(gridUV.y, gridSize) - gridSize * 0.5);
+  float gridLine = 1.0 - smoothstep(0.0, lineW, min(gx, gy));
+  col += vec3(1.0) * gridLine * 0.035;
   vec3 bgCol = col;
 
   if (hit > 0.0) {
