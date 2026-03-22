@@ -233,8 +233,8 @@ c.addEventListener('webglcontextlost', (e) => { e.preventDefault(); activateFall
 // Mobile detection
 const isMobile = /Mobi|Android/i.test(navigator.userAgent) || innerWidth < 768;
 
-// 80 blobs — 10 copies of each product color, 2D metaballs
-const NUM       = 80;
+// metaballs — mobile keeps 8 (was working), desktop gets 80
+const NUM       = isMobile ? 8 : 80;
 const STEPS     = isMobile ? 56   : 72;
 const HIT_THRESH= isMobile ? '0.002' : '0.001';
 const STEP_MULT = isMobile ? '0.85'  : '0.8';
@@ -252,7 +252,7 @@ uniform float t;
 uniform vec2 r;
 uniform float seed;
 
-#define NUM 80
+#define NUM \${NUM}
 
 float hash(float n) { return fract(sin(n) * 43758.5453); }
 
