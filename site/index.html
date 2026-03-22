@@ -217,7 +217,7 @@ if (!gl || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
 } else {
 
 // Context loss handler (w711)
-c.addEventListener('webglcontextlost', function(e) { e.preventDefault(); activateFallback(); });
+c.addEventListener('webglcontextlost', (e) => { e.preventDefault(); activateFallback(); });
 
 // Mobile detection
 const isMobile = /Mobi|Android/i.test(navigator.userAgent) || innerWidth < 768;
@@ -484,13 +484,13 @@ void main() {
 }
 `;
 
-function compile(src, type) {
+const compile = (src, type) => {
   const s = gl.createShader(type);
   gl.shaderSource(s, src);
   gl.compileShader(s);
   if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error('Shader:', gl.getShaderInfoLog(s));
   return s;
-}
+};
 
 const prog = gl.createProgram();
 gl.attachShader(prog, compile(vs, gl.VERTEX_SHADER));
@@ -515,20 +515,19 @@ const tiltLoc = gl.getUniformLocation(prog, 'tilt');
 
 // device orientation — phone tilt moves the lava
 let tiltX = 0, tiltY = 0;
-function handleOrientation(e) {
-  // gamma: left/right tilt (-90 to 90), beta: front/back (-180 to 180)
-  tiltX = (e.gamma || 0) / 90.0; // -1 to 1
-  tiltY = ((e.beta || 0) - 45) / 90.0; // centered around 45deg (normal holding angle)
+const handleOrientation = (e) => {
+  tiltX = (e.gamma || 0) / 90.0;
+  tiltY = ((e.beta || 0) - 45) / 90.0;
   tiltX = Math.max(-1, Math.min(1, tiltX));
   tiltY = Math.max(-1, Math.min(1, tiltY));
-}
+};
 window.addEventListener('deviceorientation', handleOrientation);
 // iOS 13+ needs permission
 if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
   document.body.addEventListener('click', function once() {
-    DeviceOrientationEvent.requestPermission().then(function(s) {
+    DeviceOrientationEvent.requestPermission().then((s) => {
       if (s === 'granted') window.addEventListener('deviceorientation', handleOrientation);
-    }).catch(function(){});
+    }).catch(()=> {});
     document.body.removeEventListener('click', once);
   });
 }
@@ -536,56 +535,56 @@ if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEve
 // Resolution: reduce DPR on mobile for fewer fragment shader invocations
 const dpr = isMobile ? Math.min(devicePixelRatio, 1.5) : devicePixelRatio;
 
-function resize() {
+const resize = () => {
   c.width = innerWidth * dpr;
   c.height = innerHeight * dpr;
   gl.viewport(0, 0, c.width, c.height);
-}
+};
 resize();
 addEventListener('resize', resize);
 
 // idle timeout — pause after 90s to save battery (w713)
-var lastInteraction = Date.now();
-var paused = false;
-document.addEventListener('mousemove', function() { lastInteraction = Date.now(); if (paused) { paused = false; requestAnimationFrame(render); } });
-document.addEventListener('touchstart', function() { lastInteraction = Date.now(); if (paused) { paused = false; requestAnimationFrame(render); } });
+let lastInteraction = Date.now();
+let paused = false;
+document.addEventListener('mousemove', () => { lastInteraction = Date.now(); if (paused) { paused = false; requestAnimationFrame(render); } });
+document.addEventListener('touchstart', () => { lastInteraction = Date.now(); if (paused) { paused = false; requestAnimationFrame(render); } });
 
-function render(time) {
+const render = (time) => {
   if (Date.now() - lastInteraction > 90000) { paused = true; return; }
   gl.uniform1f(tLoc, time * 0.001);
   gl.uniform2f(rLoc, c.width, c.height);
   gl.uniform2f(tiltLoc, tiltX, tiltY);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   requestAnimationFrame(render);
-}
+};
 requestAnimationFrame(render);
 
 }
 
 // copy command
 const cmd = document.getElementById('cmd');
-cmd.addEventListener('click', function(e) {
+cmd.addEventListener('click', (e) => {
   e.preventDefault();
-  navigator.clipboard.writeText('/plugin install grainulator').then(function() {
+  navigator.clipboard.writeText('/plugin install grainulator').then(() => {
     const t = document.getElementById('toast');
     t.textContent = 'copied.';
     t.classList.add('show');
-    setTimeout(function() { t.classList.remove('show'); }, 1600);
+    setTimeout(() => { t.classList.remove('show'); }, 1600);
   });
 });
-cmd.addEventListener('keydown', function(e) {
+cmd.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cmd.click(); }
 });
 
 // easter egg: type "grain" anywhere
 let kb = '';
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', (e) => {
   kb = (kb + e.key.toLowerCase()).slice(-10);
   if (kb.includes('grain')) {
     kb = '';
     document.body.style.transition = 'filter 0.2s';
     document.body.style.filter = 'invert(1) hue-rotate(180deg)';
-    setTimeout(function() { document.body.style.filter = 'none'; }, 400);
+    setTimeout(() => { document.body.style.filter = 'none'; }, 400);
   }
 });
 </script>
