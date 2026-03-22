@@ -233,17 +233,8 @@ c.addEventListener('webglcontextlost', (e) => { e.preventDefault(); activateFall
 // Mobile detection
 const isMobile = /Mobi|Android/i.test(navigator.userAgent) || innerWidth < 768;
 
-// metaballs — mobile keeps 8 (was working), desktop gets 80
-const NUM       = isMobile ? 8 : 80;
-const STEPS     = isMobile ? 56   : 72;
-const HIT_THRESH= isMobile ? '0.002' : '0.001';
-const STEP_MULT = isMobile ? '0.85'  : '0.8';
-const NORM_EPS  = isMobile ? '0.003' : '0.002';
-const GLITCH_ON = isMobile ? 0       : 1;
-const IS_MOBILE = isMobile ? 1       : 0;
-
-// 3D raymarched lava lamp based on cineShader-Lava approach (w400-w402)
-// opSmoothUnion on SDF spheres = actual opaque surfaces with normals
+// 2D metaballs — no raymarching
+const NUM = isMobile ? 8 : 80;
 
 const vs = `attribute vec2 p;void main(){gl_Position=vec4(p,0,1);}`;
 const fs = `
@@ -252,7 +243,7 @@ uniform float t;
 uniform vec2 r;
 uniform float seed;
 
-#define NUM \${NUM}
+#define NUM ${NUM}
 
 float hash(float n) { return fract(sin(n) * 43758.5453); }
 
