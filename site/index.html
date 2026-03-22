@@ -667,16 +667,184 @@ code, pre { font-family: var(--mono); }
   background: rgba(191, 255, 0, 0.04);
 }
 
+/* ===== MOBILE SLOT MACHINE ===== */
+.mobile-slot {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px 120px;
+  text-align: center;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.mobile-slot-label {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 24px;
+}
+.mobile-slot-card {
+  width: 100%;
+  max-width: 400px;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  background: var(--bg-elevated);
+  border: 1.5px solid var(--border-light);
+  cursor: pointer;
+  transition: border-color 0.3s var(--ease), background 0.3s var(--ease), transform 0.15s var(--ease);
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+.mobile-slot-card:active {
+  transform: scale(0.97);
+}
+.mobile-slot-card.scripted {
+  border-color: var(--lime);
+  background: rgba(191, 255, 0, 0.03);
+}
+.mobile-slot-text {
+  font-family: var(--sans);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.4;
+}
+.mobile-slot-tag {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-family: var(--mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  background: var(--lime-dim);
+  color: var(--lime);
+  opacity: 0;
+  transition: opacity 0.3s var(--ease);
+}
+.mobile-slot-card.scripted .mobile-slot-tag {
+  opacity: 1;
+}
+.mobile-slot-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  width: 100%;
+  max-width: 400px;
+}
+.mobile-slot-btn {
+  flex: 1;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  padding: 16px 12px;
+  min-height: 52px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-dim);
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.mobile-slot-btn:active {
+  background: rgba(255, 255, 255, 0.04);
+}
+.mobile-slot-btn.primary {
+  color: var(--lime);
+  border-color: var(--lime);
+  font-weight: 700;
+}
+.mobile-slot-btn.primary:active {
+  background: rgba(191, 255, 0, 0.06);
+}
+.mobile-slot-counter {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  color: var(--text-faint);
+  margin-top: 16px;
+  opacity: 0.6;
+}
+
+/* Slot spin animation */
+@keyframes slot-spin-out {
+  0% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-30px); }
+}
+@keyframes slot-spin-in {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.mobile-slot-card.spin-out .mobile-slot-text {
+  animation: slot-spin-out 0.2s var(--ease) forwards;
+}
+.mobile-slot-card.spin-in .mobile-slot-text {
+  animation: slot-spin-in 0.25s var(--ease) forwards;
+}
+
 /* ===== MOBILE ===== */
 @media (max-width: 768px) {
   .top-bar { padding: 12px 16px; }
-  .terminal-body { padding: 16px; font-size: 0.75rem; }
-  .terminal-overlay { padding: 50px 12px 32px; }
-  .terminal-container { max-height: calc(100vh - 80px); }
-  .bar-label { width: 80px; font-size: 0.625rem; }
-  .selected-prompt { font-size: 1rem; }
-  .install-cmd { font-size: 0.875rem; padding: 18px 60px 18px 20px; }
-  .hint { bottom: 50px; font-size: 0.6875rem; }
+  .terminal-body { padding: 14px; font-size: 0.6875rem; line-height: 1.8; }
+  .terminal-overlay { padding: 56px 8px 24px; }
+  .terminal-container { max-height: calc(100vh - 72px); }
+  .bar-label { width: 70px; font-size: 0.5625rem; }
+  .bar-track { max-width: 160px; }
+  .bar-pct { width: 36px; font-size: 0.625rem; }
+  .selected-prompt { font-size: 0.9375rem; margin-bottom: 10px; }
+  .terminal-bar { padding: 10px 12px; }
+  .terminal-title { font-size: 0.5625rem; }
+  .t-challenge { padding: 10px 12px; }
+  .hint { display: none; }
+
+  /* Hide canvas on mobile — slot machine replaces it */
+  #pond { display: none !important; }
+  .mobile-slot { display: flex; }
+
+  /* Install overlay becomes bottom sheet */
+  .install-overlay {
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 0;
+  }
+  .install-card {
+    max-width: 100%;
+    background: var(--bg-panel);
+    border-top: 1px solid var(--border-light);
+    padding: 28px 20px calc(env(safe-area-inset-bottom, 16px) + 16px);
+    animation: sheet-up 0.35s var(--ease-snap);
+  }
+  @keyframes sheet-up {
+    0% { transform: translateY(100%); }
+    100% { transform: translateY(0); }
+  }
+  .install-cmd {
+    font-size: 0.8125rem;
+    padding: 16px 56px 16px 16px;
+  }
+  .install-copy {
+    padding: 8px 12px;
+    font-size: 0.625rem;
+  }
+  .install-compat { font-size: 0.75rem; }
+  .install-dismiss { margin-top: 16px; }
+
+  /* Terminal controls on mobile */
+  .terminal-controls { gap: 8px; }
+  .ctrl-btn { padding: 10px 14px; font-size: 0.625rem; }
+
+  /* Sprint done CTA */
+  .sprint-done-text { font-size: 0.9375rem; }
+  .sprint-done-sub { font-size: 0.625rem; }
 }
 
 /* ===== REDUCED MOTION ===== */
@@ -688,6 +856,7 @@ code, pre { font-family: var(--mono); }
   }
   .bar-fill { width: var(--target-w) !important; }
   #pond { display: none !important; }
+  .mobile-slot { display: none !important; }
   .reduced-grid { display: block !important; }
 }
 
@@ -729,7 +898,7 @@ code, pre { font-family: var(--mono); }
 /* ===== PRINT ===== */
 @media print {
   body { background: #fff; color: #111; font-size: 12pt; line-height: 1.5; }
-  .top-bar, .site-footer, #pond, .hint { display: none !important; }
+  .top-bar, .site-footer, #pond, .hint, .mobile-slot { display: none !important; }
   * {
     opacity: 1 !important;
     transform: none !important;
@@ -771,6 +940,20 @@ code, pre { font-family: var(--mono); }
   <div class="reduced-grid-inner" id="reduced-grid-inner">
     <!-- Populated by JS -->
   </div>
+</div>
+
+<!-- Mobile: slot machine prompt picker -->
+<div class="mobile-slot" id="mobile-slot" role="region" aria-label="Prompt picker">
+  <div class="mobile-slot-label">Tap to spin, tap card to try it</div>
+  <div class="mobile-slot-card" id="mobile-slot-card" role="button" tabindex="0" aria-live="polite">
+    <span class="mobile-slot-text" id="mobile-slot-text"></span>
+    <span class="mobile-slot-tag" aria-hidden="true">live demo</span>
+  </div>
+  <div class="mobile-slot-actions">
+    <button class="mobile-slot-btn" id="mobile-spin-btn" type="button" aria-label="Show a different prompt">Spin</button>
+    <button class="mobile-slot-btn primary" id="mobile-try-btn" type="button" aria-label="Try this prompt">Try it</button>
+  </div>
+  <div class="mobile-slot-counter" id="mobile-slot-counter" aria-hidden="true"></div>
 </div>
 
 <!-- Hint -->
@@ -1370,6 +1553,7 @@ code, pre { font-family: var(--mono); }
   var finished = false;
   var terminalActive = false;
   var demosWatched = 0;
+  var isMobile = window.matchMedia('(max-width: 768px)').matches;
 
   /* ======================================================
      FISH / PROMPT BUBBLES
@@ -1573,8 +1757,15 @@ code, pre { font-family: var(--mono); }
      ====================================================== */
   function selectPrompt(key, text) {
     terminalActive = true;
-    canvas.classList.add('dimmed');
-    hintEl.classList.add('hidden');
+
+    if (isMobile) {
+      // Hide mobile slot machine
+      var ms = document.getElementById('mobile-slot');
+      if (ms) ms.style.display = 'none';
+    } else {
+      canvas.classList.add('dimmed');
+      hintEl.classList.add('hidden');
+    }
 
     // Show overlay
     termOverlay.classList.add('active');
@@ -1619,11 +1810,17 @@ code, pre { font-family: var(--mono); }
 
     termOverlay.classList.remove('active');
     selectedPromptEl.classList.remove('visible');
-    canvas.classList.remove('dimmed');
-    canvas.classList.add('bright');
-    hintEl.classList.remove('hidden');
 
-    setTimeout(function () { canvas.classList.remove('bright'); }, 500);
+    if (isMobile) {
+      // On mobile, just restore slot machine visibility
+      var ms = document.getElementById('mobile-slot');
+      if (ms) ms.style.display = 'flex';
+    } else {
+      canvas.classList.remove('dimmed');
+      canvas.classList.add('bright');
+      hintEl.classList.remove('hidden');
+      setTimeout(function () { canvas.classList.remove('bright'); }, 500);
+    }
   }
 
   termOverlayBg.addEventListener('click', dismissTerminal);
@@ -1987,20 +2184,145 @@ code, pre { font-family: var(--mono); }
   });
 
   /* ======================================================
+     MOBILE SLOT MACHINE
+     ====================================================== */
+  var mobileSlot = document.getElementById('mobile-slot');
+  var mobileSlotCard = document.getElementById('mobile-slot-card');
+  var mobileSlotText = document.getElementById('mobile-slot-text');
+  var mobileSpinBtn = document.getElementById('mobile-spin-btn');
+  var mobileTryBtn = document.getElementById('mobile-try-btn');
+  var mobileCounter = document.getElementById('mobile-slot-counter');
+
+  // Shuffle array for mobile display order, prioritize scripted prompts first
+  var mobilePrompts = allPrompts.slice();
+  // Fisher-Yates shuffle
+  for (var si = mobilePrompts.length - 1; si > 0; si--) {
+    var sj = Math.floor(Math.random() * (si + 1));
+    var tmp = mobilePrompts[si];
+    mobilePrompts[si] = mobilePrompts[sj];
+    mobilePrompts[sj] = tmp;
+  }
+  // Move scripted prompts to the front so first spins are interactive
+  var scriptedMobile = [];
+  var unscriptedMobile = [];
+  for (var mi = 0; mi < mobilePrompts.length; mi++) {
+    if (scripts[mobilePrompts[mi].key]) {
+      scriptedMobile.push(mobilePrompts[mi]);
+    } else {
+      unscriptedMobile.push(mobilePrompts[mi]);
+    }
+  }
+  mobilePrompts = scriptedMobile.concat(unscriptedMobile);
+
+  var mobileSlotIndex = 0;
+
+  function updateMobileSlot(animate) {
+    var p = mobilePrompts[mobileSlotIndex];
+    var isScripted = !!scripts[p.key];
+
+    if (animate && !prefersReduced) {
+      mobileSlotCard.classList.add('spin-out');
+      mobileSlotCard.classList.remove('spin-in');
+      setTimeout(function () {
+        mobileSlotText.textContent = p.text;
+        mobileSlotCard.classList.remove('spin-out');
+        mobileSlotCard.classList.add('spin-in');
+        if (isScripted) {
+          mobileSlotCard.classList.add('scripted');
+        } else {
+          mobileSlotCard.classList.remove('scripted');
+        }
+        setTimeout(function () {
+          mobileSlotCard.classList.remove('spin-in');
+        }, 250);
+      }, 200);
+    } else {
+      mobileSlotText.textContent = p.text;
+      if (isScripted) {
+        mobileSlotCard.classList.add('scripted');
+      } else {
+        mobileSlotCard.classList.remove('scripted');
+      }
+    }
+
+    mobileCounter.textContent = (mobileSlotIndex + 1) + ' / ' + mobilePrompts.length;
+  }
+
+  function mobileSpinNext() {
+    mobileSlotIndex = (mobileSlotIndex + 1) % mobilePrompts.length;
+    updateMobileSlot(true);
+  }
+
+  function mobileTryCurrent() {
+    var p = mobilePrompts[mobileSlotIndex];
+    selectPrompt(p.key, p.text);
+  }
+
+  // Wire up mobile slot events
+  if (mobileSpinBtn) {
+    mobileSpinBtn.addEventListener('click', mobileSpinNext);
+  }
+  if (mobileTryBtn) {
+    mobileTryBtn.addEventListener('click', mobileTryCurrent);
+  }
+  if (mobileSlotCard) {
+    mobileSlotCard.addEventListener('click', mobileTryCurrent);
+    mobileSlotCard.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        mobileTryCurrent();
+      }
+    });
+  }
+
+  // Swipe support on the card
+  var touchStartX = 0;
+  var touchStartY = 0;
+  if (mobileSlotCard) {
+    mobileSlotCard.addEventListener('touchstart', function (e) {
+      touchStartX = e.changedTouches[0].clientX;
+      touchStartY = e.changedTouches[0].clientY;
+    }, { passive: true });
+    mobileSlotCard.addEventListener('touchend', function (e) {
+      var dx = e.changedTouches[0].clientX - touchStartX;
+      var dy = e.changedTouches[0].clientY - touchStartY;
+      // Horizontal swipe > 50px and more horizontal than vertical
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        e.preventDefault();
+        if (dx < 0) {
+          // Swipe left: next
+          mobileSpinNext();
+        } else {
+          // Swipe right: previous
+          mobileSlotIndex = (mobileSlotIndex - 1 + mobilePrompts.length) % mobilePrompts.length;
+          updateMobileSlot(true);
+        }
+      }
+    }, { passive: false });
+  }
+
+  // Initialize the first slot prompt
+  if (isMobile && !prefersReduced) {
+    updateMobileSlot(false);
+  }
+
+  /* ======================================================
      INIT
      ====================================================== */
   if (!prefersReduced) {
-    resize();
-    initFish();
-    window.addEventListener('resize', function () {
+    if (!isMobile) {
       resize();
-      // Reposition fish that are out of bounds
-      for (var i = 0; i < fish.length; i++) {
-        if (fish[i].x + fish[i].w > W) fish[i].x = W - fish[i].w - 10;
-        if (fish[i].y + fish[i].h > H) fish[i].y = H - fish[i].h - 10;
-      }
-    });
-    requestAnimationFrame(animate);
+      initFish();
+      window.addEventListener('resize', function () {
+        resize();
+        // Reposition fish that are out of bounds
+        for (var i = 0; i < fish.length; i++) {
+          if (fish[i].x + fish[i].w > W) fish[i].x = W - fish[i].w - 10;
+          if (fish[i].y + fish[i].h > H) fish[i].y = H - fish[i].h - 10;
+        }
+      });
+      requestAnimationFrame(animate);
+    }
   }
 
 })();
