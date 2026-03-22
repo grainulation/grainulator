@@ -278,15 +278,27 @@ float glitchHash(vec2 p) {
 
 float map(vec3 p) {
 #if GLITCH_ON
-  float topZone = smoothstep(2.0, 3.5, p.y);
-  if (topZone > 0.01) {
+  // glitch = cooling wax falling down
+  // detect downward motion: sample SDF slightly above and below
+  // if closer to surface below than above, wax is moving down here
+  float hAbove = length(p - vec3(p.x, p.y + 0.3, p.z));
+  float hBelow = length(p - vec3(p.x, p.y - 0.3, p.z));
+  // also needs to be in the travel zone (not the pool, not empty space)
+  // y between 0.5 and 3.0 = the zone where blobs are in transit
+  float inTransit = smoothstep(0.3, 0.8, p.y) * smoothstep(3.5, 2.5, p.y);
+  // falling = wax is denser below this point (moving down)
+  // use a simple heuristic: mid-height blobs that are between top and pool
+  // the falling zone is roughly y 0.5-2.5, peaking around y 1.5
+  float fallZone = inTransit * smoothstep(3.0, 1.5, p.y);
+
+  if (fallZone > 0.02) {
     float cellSize = 0.5;
     vec2 cell = floor(p.xy / cellSize);
     float cellRand = glitchHash(cell + seed);
     float cellOn = step(0.4, cellRand);
-    float localAmount = topZone * topZone * cellOn;
+    float localAmount = fallZone * fallZone * cellOn;
     if (localAmount > 0.01) {
-      float vs = localAmount * 0.35;
+      float vs = localAmount * 0.3;
       vec3 snapped = floor(p / vs + 0.5) * vs;
       p = mix(p, snapped, localAmount);
     }
