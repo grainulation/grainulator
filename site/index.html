@@ -58,7 +58,6 @@
 <meta name="msapplication-TileColor" content="#000000">
 
 <!-- Adaptive favicon (r1307) — SVG with media query for light/dark -->
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3CradialGradient id='g' cx='50%25' cy='45%25' r='50%25'%3E%3Cstop offset='0%25' stop-color='%232d6b30'/%3E%3Cstop offset='70%25' stop-color='%2366ff66'/%3E%3Cstop offset='100%25' stop-color='%238df6ff'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='%23060606'/%3E%3Cellipse cx='32' cy='30' rx='12' ry='22' fill='url(%23g)' stroke='%238df6ff' stroke-width='1.5' transform='rotate(-8 32 30)'/%3E%3C/svg%3E">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.json">
@@ -306,54 +305,60 @@ float map(vec3 p) {
     float hash2 = fract(fi * 317.892 + 0.217 + seed * 1.7);
     float hash3 = fract(fi * 253.147 + 0.891 + seed * 2.3);
 
-    // 35-60 second cycle per blob
-    float cycleTime = 35.0 + hash1 * 25.0;
+    // 60-120 second full cycle (r1905)
+    float cycleTime = 60.0 + hash1 * 60.0;
     float phase = fract(t / cycleTime + fi * 0.27 + seed);
 
     float y;
-    float shapePhase; // 0=dome, 0.5=teardrop, 1=flat top
+    // shape: 0=dome, 1=teardrop, 2=flat top, 3=drip (falling)
+    float shapePhase;
 
-    if (phase < 0.40) {
-      // DOME FORMING on pool surface (40% of time)
-      float rr = phase / 0.40;
+    if (phase < 0.45) {
+      // DOME FORMING on pool surface (45% — most time spent here)
+      float rr = phase / 0.45;
       float dome = rr * rr * (3.0 - 2.0 * rr);
       y = 0.0 + dome * 0.8;
       shapePhase = 0.0;
-    } else if (phase < 0.60) {
-      // RISING as teardrop (20%)
-      float rr = (phase - 0.40) / 0.20;
+    } else if (phase < 0.70) {
+      // RISING as teardrop (25% — slow, buoyancy is gentle) (r1904)
+      float rr = (phase - 0.45) / 0.25;
       float rise = rr * rr * (3.0 - 2.0 * rr);
       y = 0.8 + rise * 2.7;
-      shapePhase = 0.5;
-    } else if (phase < 0.75) {
-      // AT TOP cooling (15%)
-      float rr = (phase - 0.60) / 0.15;
-      y = 3.5 - rr * 0.3;
       shapePhase = 1.0;
+    } else if (phase < 0.80) {
+      // AT TOP cooling/flattening (10%)
+      float rr = (phase - 0.70) / 0.10;
+      y = 3.5 - rr * 0.3;
+      shapePhase = 2.0;
     } else {
-      // FALLING — slow at top, accelerating near pool (25%)
-      float rr = (phase - 0.75) / 0.25;
-      float fall = rr * rr * rr;
+      // FALLING — fast, gravity wins (20%) (r1904: fall faster than rise)
+      float rr = (phase - 0.80) / 0.20;
+      float fall = rr * rr; // quadratic — accelerates down
       y = 3.2 - fall * 3.2;
-      shapePhase = mix(1.0, 0.0, rr);
+      shapePhase = 3.0; // drip shape
     }
 
-    // minimal horizontal drift — real lava mostly goes straight up/down
+    // minimal horizontal drift
     float xOff = (hash2 - 0.5) * 1.0 + sin(t * 0.03 + fi * 2.1) * 0.15;
     float zOff = (hash3 - 0.5) * 0.6 + cos(t * 0.025 + fi * 1.7) * 0.1;
 
     vec3 blobPos = vec3(xOff, y, zOff);
 
-    // shape morphing: dome → teardrop → flat
-    vec3 domeRad     = vec3(0.40, 0.28, 0.40);
-    vec3 teardropRad = vec3(0.28, 0.50, 0.28);
-    vec3 flatRad     = vec3(0.40, 0.28, 0.40);
+    // shape morphing by phase (r1902, r1909)
+    vec3 domeRad     = vec3(0.42, 0.25, 0.42); // wide, flat dome
+    vec3 teardropRad = vec3(0.28, 0.50, 0.28); // tall, narrow rising
+    vec3 flatRad     = vec3(0.45, 0.25, 0.45); // flattening at top
+    vec3 dripRad     = vec3(0.22, 0.55, 0.22); // elongated drip falling (r1909: 0.6:1.4)
 
     vec3 blobRad;
-    if (shapePhase < 0.5) {
-      blobRad = mix(domeRad, teardropRad, shapePhase * 2.0);
+    if (shapePhase < 1.0) {
+      blobRad = mix(domeRad, teardropRad, shapePhase);
+    } else if (shapePhase < 2.0) {
+      blobRad = mix(teardropRad, flatRad, shapePhase - 1.0);
+    } else if (shapePhase < 3.0) {
+      blobRad = mix(flatRad, dripRad, shapePhase - 2.0);
     } else {
-      blobRad = mix(teardropRad, flatRad, (shapePhase - 0.5) * 2.0);
+      blobRad = dripRad;
     }
     blobRad *= 0.8 + hash1 * 0.4;
 
@@ -400,23 +405,24 @@ void main() {
     dist += h * STEP_MULT;
   }
 
-  // liquid background
-  float bgY = uv.y * 0.5 + 0.5;
+  // liquid background — entire bottom is the heat/light source
+  float bgY = uv.y * 0.5 + 0.5; // 0 at bottom, 1 at top
   vec3 col = mix(
-    vec3(0.06, 0.04, 0.015),
-    vec3(0.015, 0.012, 0.008),
-    bgY
+    vec3(0.08, 0.05, 0.02),   // warm amber across entire bottom
+    vec3(0.012, 0.010, 0.006), // dark at top
+    smoothstep(0.0, 0.6, bgY)
   );
-  vec2 bulbPos = vec2(0.0, -0.4);
-  float bulb = exp(-dot(uv - bulbPos, uv - bulbPos) * 3.0);
-  col += vec3(0.08, 0.05, 0.02) * bulb;
+  // bottom-wide glow — not a point, the whole bottom edge glows
+  float bottomGlow = exp(-bgY * 3.0); // strongest at very bottom, fades up
+  col += vec3(0.10, 0.06, 0.02) * bottomGlow;
 
   vec3 bgCol = col;
   if (hit > 0.0) {
     vec3 p = ro + rd * hit;
     vec3 n = calcNormal(p);
 
-    vec3 lightDir = normalize(vec3(0.2, -0.8, 0.8));
+    // light from BELOW — entire bottom of lamp is the heat plate
+    vec3 lightDir = normalize(vec3(0.0, -1.0, 0.3));
     float diff = max(dot(n, lightDir), 0.0);
     diff = sqrt(diff);
     float amb = 0.25 + 0.15 * n.y;
