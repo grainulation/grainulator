@@ -276,22 +276,20 @@ float glitchHash(vec2 p) {
 // the lava scene — all blobs combined via smooth union
 float map(vec3 p) {
 #if GLITCH_ON
-  // physics-based glitch: HD near heat, pixelates as wax cools (rises)
-  // self-corrects when sinking back toward heat pool
-  float heatY = -3.0; // heat source Y position (bottom)
-  // how far above the heat pool — starts pixelating almost immediately
-  float coolDist = max(0.0, p.y - heatY - 0.5) / 4.0; // 0 near heat, ~1 at top
-  coolDist = min(coolDist, 1.0);
-
-  if (coolDist > 0.01) {
-    // patchy: cells decide independently
-    float cellSize = 0.5 + (1.0 - coolDist) * 0.5;
+  // physics-based glitch: lava lamp thermal logic
+  // RISING = hot = smooth HD (wax is fluid)
+  // TOP = cooling = pixelates (wax is stiffening)
+  // FALLING = reheating = self-corrects as it nears heat
+  // only the TOP zone pixelates — above y=1.0
+  float topZone = smoothstep(1.0, 2.5, p.y); // 0 below midpoint, 1 at top
+  if (topZone > 0.01) {
+    float cellSize = 0.5;
     vec2 cell = floor(p.xy / cellSize);
     float cellRand = glitchHash(cell + seed);
-    float cellOn = step(0.4, cellRand); // 60% of cells pixelate
-    float localAmount = coolDist * coolDist * cellOn; // quadratic ramp
+    float cellOn = step(0.4, cellRand);
+    float localAmount = topZone * topZone * cellOn;
     if (localAmount > 0.01) {
-      float vs = localAmount * 0.4;
+      float vs = localAmount * 0.35;
       vec3 snapped = floor(p / vs + 0.5) * vs;
       p = mix(p, snapped, localAmount);
     }
