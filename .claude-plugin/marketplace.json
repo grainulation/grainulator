@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Research sprint tools for Claude Code — structured research with claims, evidence tiers, and compiled output",
-    "version": "1.0.0"
+    "version": "0.1.0"
   },
   "plugins": [
     {
