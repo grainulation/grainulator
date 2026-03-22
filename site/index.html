@@ -305,11 +305,11 @@ float map(vec3 p) {
   // morph between sphere and ellipsoid shapes
   float stretch = 0.5 + 0.5 * sin(morphT * 0.6);
   vec3 coreRad = vec3(
-    1.4 + stretch * 0.3 + beat * 0.06,
-    1.5 - stretch * 0.2 + beat * 0.06,
-    1.4 + stretch * 0.15 * sin(morphT * 1.3) + beat * 0.06
+    0.4 + stretch * 0.15 + beat * 0.03,
+    0.45 - stretch * 0.1 + beat * 0.03,
+    0.4 + stretch * 0.08 * sin(morphT * 1.3) + beat * 0.03
   );
-  float sphereRadius = 1.5; // reference for blob anchor distance
+  float sphereRadius = 0.45; // small core — blobs are the show
   float d = sdEllipsoid(sp - corePos, coreRad);
 
   // surface noise — "a million tiny bumps" emerging from the core
@@ -320,7 +320,7 @@ float map(vec3 p) {
                     sin(noiseP.z * 1.8 + noiseP.x * 2.5);
   surfNoise = surfNoise * 0.5 + 0.5; // 0-1
   // only displace outward from the surface (not inward)
-  d -= surfNoise * 0.08 * smoothstep(0.3, -0.05, d); // bumps on surface only
+  d -= surfNoise * 0.04 * smoothstep(0.15, -0.02, d); // subtle bumps on small core
 
   // blobs emerge radially from sphere surface
   for (int i = 0; i < NUM; i++) {
@@ -351,22 +351,22 @@ float map(vec3 p) {
     if (phase < 0.40) {
       // dome forming on surface
       float rr = phase / 0.40;
-      radialOffset = rr * rr * (3.0 - 2.0 * rr) * 0.6;
+      radialOffset = rr * rr * (3.0 - 2.0 * rr) * 0.3;
       shapePhase = 0.0;
     } else if (phase < 0.65) {
       // rising outward — smooth HD
       float rr = (phase - 0.40) / 0.25;
-      radialOffset = 0.6 + rr * rr * (3.0 - 2.0 * rr) * 1.8;
+      radialOffset = 0.3 + rr * rr * (3.0 - 2.0 * rr) * 1.5;
       shapePhase = 1.0;
     } else if (phase < 0.80) {
       // at max distance — cooling
       float rr = (phase - 0.65) / 0.15;
-      radialOffset = 2.4 - rr * 0.2;
+      radialOffset = 1.8 - rr * 0.15;
       shapePhase = 2.0;
     } else {
-      // falling back to sphere
+      // falling back
       float rr = (phase - 0.80) / 0.20;
-      radialOffset = 2.2 - rr * rr * 2.2;
+      radialOffset = 1.65 - rr * rr * 1.65;
       shapePhase = 3.0;
       isFalling = true;
     }
