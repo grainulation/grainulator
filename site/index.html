@@ -318,9 +318,7 @@ float map(vec3 p) {
     vec3 blobPos = vec3(baseX + dx, baseY + dy, baseZ + dz);
 
     // random sizes
-    // random size per blob on load: 0.2, 0.3, or 1.0
-    float sizeRoll = fract(h4 * 3.7 + seed * 11.0);
-    float blobR = sizeRoll < 0.33 ? 0.2 : (sizeRoll < 0.66 ? 0.3 : 1.0);
+    float blobR = 0.3 + h4 * 0.4; // 0.3 to 0.7
 
     vec3 evalP = p;
 
