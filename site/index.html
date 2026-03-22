@@ -73,7 +73,7 @@
       content="black-translucent"
     />
     <meta name="apple-mobile-web-app-title" content="Grainulator" />
-    <meta name="theme-color" content="#BFFF00" />
+    <meta name="theme-color" content="#000000" />
     <meta name="mobile-web-app-capable" content="yes" />
 
     <!-- Structured Data -->
@@ -127,22 +127,14 @@
       role="status"
     ></div>
 
-    <!-- Animated nebula background -->
-    <div class="nebula-bg" aria-hidden="true">
-      <div class="nebula-blob nebula-blob-1"></div>
-      <div class="nebula-blob nebula-blob-2"></div>
-      <div class="nebula-blob nebula-blob-3"></div>
-      <div class="nebula-blob nebula-blob-4"></div>
-    </div>
-
-    <!-- Full-width glass header -->
+    <!-- Nav -->
     <nav class="top-bar" aria-label="Main navigation">
       <a href="/" class="logo-brand" aria-label="Grainulator home">
         <svg
           class="logo-kernel"
           viewBox="0 0 64 64"
-          width="24"
-          height="24"
+          width="20"
+          height="20"
           aria-hidden="true"
         >
           <ellipse
@@ -167,9 +159,8 @@
       </a>
       <div class="nav-links">
         <a href="#playground-section" class="nav-link">Playground</a>
-        <a href="#install-section" class="get-it-link" id="get-it-link"
-          >Get it &rarr;</a
-        >
+        <a href="#how-section" class="nav-link">How it works</a>
+        <a href="#install-section" class="get-it-link">Get it &rarr;</a>
       </div>
     </nav>
 
@@ -184,308 +175,280 @@
     </div>
 
     <main id="main-content" role="main">
-      <!-- ONE BIG GLASS PANEL -->
-      <div class="glass-surface">
-        <!-- Specular highlight overlay -->
-        <div class="glass-specular" aria-hidden="true"></div>
 
-        <!-- SECTION 1: HERO -->
-        <section class="section hero" id="hero-section" aria-label="Introduction">
-          <div class="section-inner">
-            <div class="hero-content">
-              <div class="hero-text">
-                <h1 class="hero-headline">Research that compiles.</h1>
-                <p class="hero-subtitle">
-                  Ask any question. Get a brief backed by evidence. Five minutes.
-                </p>
-                <div class="hero-buttons">
-                  <a href="#playground-section" class="btn-primary"
-                    >Try it live &darr;</a
+      <!-- HERO (black bg) -->
+      <section class="section section-dark hero" id="hero-section" aria-label="Introduction">
+        <h1 class="hero-headline">Grainulator</h1>
+        <p class="hero-subtitle">Research that compiles.</p>
+        <div class="hero-links">
+          <a href="#playground-section" class="hero-link">Try it live &darr;</a>
+          <a href="#install-section" class="hero-link">Get it &rarr;</a>
+        </div>
+        <div class="hero-brief" aria-label="Example compiled brief">
+          <div class="brief-card">
+            <div class="brief-bar">
+              <div class="brief-bar-dots" aria-hidden="true">
+                <div class="dot dot-r"></div>
+                <div class="dot dot-y"></div>
+                <div class="dot dot-g"></div>
+              </div>
+              <div class="brief-bar-title">compiled brief</div>
+              <div class="brief-bar-status">&check; pass</div>
+            </div>
+            <div class="brief-body">
+              <div class="brief-label">Sprint</div>
+              <div class="brief-title">
+                &ldquo;Should we use Postgres or MongoDB for the new
+                service?&rdquo;
+              </div>
+
+              <div class="brief-rec">
+                <div class="brief-rec-label">Recommendation</div>
+                <div class="brief-rec-text">
+                  Postgres with JSONB columns for flexible fields. Covers
+                  relational queries (80% of workload) without sacrificing
+                  document flexibility.
+                </div>
+              </div>
+
+              <div class="brief-timeline">
+                <span class="brief-timeline-label">Timeline:</span>
+                <span class="brief-timeline-value"
+                  >2 weeks (Postgres) vs 9 weeks (MongoDB)</span
+                >
+                <span class="pill pill-confidence" style="margin-left: auto"
+                  >91% confidence</span
+                >
+              </div>
+
+              <div class="brief-finding">
+                <strong>Key finding:</strong> 80% of queries are relational
+                joins &mdash; MongoDB incurs a significant performance
+                penalty. pgvector eliminates the need for a separate vector
+                database.
+              </div>
+
+              <div class="brief-risks">
+                <div class="brief-risk-row">
+                  <span class="pill pill-high">high</span>
+                  <span class="brief-risk-text"
+                    >MongoDB migration effort is 4.5&times; longer than
+                    initially estimated</span
                   >
-                  <a href="#install-section" class="btn-secondary"
-                    >Get it &rarr;</a
+                </div>
+                <div class="brief-risk-row">
+                  <span class="pill pill-med">med</span>
+                  <span class="brief-risk-text"
+                    >Ecosystem tooling coverage at 73% &mdash; needs
+                    evaluation</span
+                  >
+                </div>
+                <div class="brief-risk-row">
+                  <span class="pill pill-low">low</span>
+                  <span class="brief-risk-text"
+                    >Schema flexibility gap mitigated by JSONB columns</span
                   >
                 </div>
               </div>
-              <div class="hero-brief" aria-label="Example compiled brief">
-                <div class="brief-card">
-                  <div class="brief-bar">
-                    <div class="brief-bar-dots" aria-hidden="true">
-                      <div class="dot dot-r"></div>
-                      <div class="dot dot-y"></div>
-                      <div class="dot dot-g"></div>
-                    </div>
-                    <div class="brief-bar-title">compiled brief</div>
-                    <div class="brief-bar-status">&check; pass</div>
-                  </div>
-                  <div class="brief-body">
-                    <div class="brief-label">Sprint</div>
-                    <div class="brief-title">
-                      &ldquo;Should we use Postgres or MongoDB for the new
-                      service?&rdquo;
-                    </div>
-
-                    <div class="brief-rec">
-                      <div class="brief-rec-label">Recommendation</div>
-                      <div class="brief-rec-text">
-                        Postgres with JSONB columns for flexible fields. Covers
-                        relational queries (80% of workload) without sacrificing
-                        document flexibility.
-                      </div>
-                    </div>
-
-                    <div class="brief-timeline">
-                      <span class="brief-timeline-label">Timeline:</span>
-                      <span class="brief-timeline-value"
-                        >2 weeks (Postgres) vs 9 weeks (MongoDB)</span
-                      >
-                      <span class="pill pill-confidence" style="margin-left: auto"
-                        >91% confidence</span
-                      >
-                    </div>
-
-                    <div class="brief-finding">
-                      <strong>Key finding:</strong> 80% of queries are relational
-                      joins &mdash; MongoDB incurs a significant performance
-                      penalty. pgvector eliminates the need for a separate vector
-                      database.
-                    </div>
-
-                    <div class="brief-risks">
-                      <div class="brief-risk-row">
-                        <span class="pill pill-high">high</span>
-                        <span class="brief-risk-text"
-                          >MongoDB migration effort is 4.5&times; longer than
-                          initially estimated</span
-                        >
-                      </div>
-                      <div class="brief-risk-row">
-                        <span class="pill pill-med">med</span>
-                        <span class="brief-risk-text"
-                          >Ecosystem tooling coverage at 73% &mdash; needs
-                          evaluation</span
-                        >
-                      </div>
-                      <div class="brief-risk-row">
-                        <span class="pill pill-low">low</span>
-                        <span class="brief-risk-text"
-                          >Schema flexibility gap mitigated by JSONB columns</span
-                        >
-                      </div>
-                    </div>
-                  </div>
-                  <div class="brief-footer">
-                    <span>6 findings &middot; 1 revised &middot; 0 retired</span>
-                    <span class="brief-footer-pass">&check; All gates met</span>
-                  </div>
-                </div>
-              </div>
             </div>
-          </div>
-        </section>
-
-        <!-- Glass divider -->
-        <div class="glass-divider" aria-hidden="true"></div>
-
-        <!-- SECTION 2: PROOF -->
-        <section
-          class="section proof"
-          id="proof-section"
-          aria-label="Why evidence matters"
-        >
-          <div class="section-inner">
-            <div class="proof-inner">
-              <p class="proof-analogy">
-                You wouldn&rsquo;t ship code without tests.<br />Why ship
-                <em>decisions</em> without evidence?
-              </p>
-              <p class="proof-footnote">
-                5 minutes. Every finding tracked and challenged.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <!-- Glass divider -->
-        <div class="glass-divider" aria-hidden="true"></div>
-
-        <!-- SECTION 3: HOW IT WORKS -->
-        <section class="section" id="how-section" aria-label="How it works">
-          <div class="section-inner">
-            <div class="how-inner">
-              <div class="how-conversation">
-                <div class="how-line">You ask.</div>
-                <div class="how-line">It researches.</div>
-                <div class="how-line">It argues with itself.</div>
-                <div class="how-line">You get the answer.</div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div><!-- /.glass-surface (top half) -->
-
-      <!-- SECTION 4: POND OPENING — the glass breaks open here -->
-      <section
-        class="section playground pond-opening"
-        id="playground-section"
-        aria-label="Interactive demo playground"
-      >
-        <div class="section-inner">
-          <p class="playground-subtitle">
-            Click any question to watch a research sprint
-          </p>
-
-          <div class="pond-container" id="pond-container">
-            <canvas id="pond" aria-hidden="true"></canvas>
-            <div class="pond-hint" id="pond-hint">
-              Click a prompt to see it in action
-            </div>
-          </div>
-
-          <!-- Mobile: slot machine prompt picker -->
-          <div
-            class="mobile-slot"
-            id="mobile-slot"
-            role="region"
-            aria-label="Prompt picker"
-          >
-            <div class="mobile-slot-label">Tap to spin, tap card to try it</div>
-            <div
-              class="mobile-slot-card"
-              id="mobile-slot-card"
-              role="button"
-              tabindex="0"
-              aria-live="polite"
-            >
-              <span class="mobile-slot-text" id="mobile-slot-text"></span>
-              <span class="mobile-slot-tag" aria-hidden="true">live demo</span>
-            </div>
-            <div class="mobile-slot-actions">
-              <button
-                class="mobile-slot-btn"
-                id="mobile-spin-btn"
-                type="button"
-                aria-label="Show a different prompt"
-              >
-                Spin
-              </button>
-              <button
-                class="mobile-slot-btn primary"
-                id="mobile-try-btn"
-                type="button"
-                aria-label="Try this prompt"
-              >
-                Try it
-              </button>
-            </div>
-            <div
-              class="mobile-slot-counter"
-              id="mobile-slot-counter"
-              aria-hidden="true"
-            ></div>
-          </div>
-
-          <!-- Reduced motion: static grid of prompts -->
-          <div
-            class="reduced-grid"
-            id="reduced-grid"
-            role="region"
-            aria-label="Research prompts"
-          >
-            <div class="reduced-grid-inner" id="reduced-grid-inner">
-              <!-- Populated by JS -->
+            <div class="brief-footer">
+              <span>6 findings &middot; 1 revised &middot; 0 retired</span>
+              <span class="brief-footer-pass">&check; All gates met</span>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- GLASS SURFACE RESUMES (bottom half) -->
-      <div class="glass-surface glass-surface-bottom">
-        <div class="glass-specular" aria-hidden="true"></div>
-
-        <!-- SECTION 5: WHO IT'S FOR -->
-        <section
-          class="section who"
-          id="who-section"
-          aria-label="What Grainulator feels like"
-        >
-          <div class="section-inner">
-            <div class="who-inner">
-              <div class="who-quotes">
-                <div class="who-quote">
-                  <p class="who-quote-text">
-                    &ldquo;Spell-check for your <em>strategy</em>.&rdquo;
-                  </p>
-                  <p class="who-quote-for">everyone who makes decisions</p>
-                </div>
-                <div class="who-quote">
-                  <p class="who-quote-text">
-                    &ldquo;A second opinion that <em>never gets tired</em>.&rdquo;
-                  </p>
-                  <p class="who-quote-for">
-                    managers weighing trade-offs at midnight
-                  </p>
-                </div>
-                <div class="who-quote">
-                  <p class="who-quote-text">
-                    &ldquo;Peer review for decisions,
-                    <em>not just code</em>.&rdquo;
-                  </p>
-                  <p class="who-quote-for">
-                    engineers who already know what rigor looks like
-                  </p>
-                </div>
-                <div class="who-quote">
-                  <p class="who-quote-text">
-                    &ldquo;The research intern who actually
-                    <em>reads everything</em>.&rdquo;
-                  </p>
-                  <p class="who-quote-for">
-                    execs who need the brief, not the busywork
-                  </p>
-                </div>
-              </div>
-            </div>
+      <!-- SECTION 1: ASK ANYTHING (black bg) -->
+      <section class="section section-dark feature-section" id="how-section" aria-label="How it works">
+        <div class="section-inner">
+          <h2 class="section-headline fade-up">Ask anything.</h2>
+          <p class="section-body fade-up">
+            You ask. It researches. It argues with itself. You get the answer.
+          </p>
+          <div class="how-conversation fade-up">
+            <div class="how-line">You ask.</div>
+            <div class="how-line">It researches.</div>
+            <div class="how-line">It argues with itself.</div>
+            <div class="how-line">You get the answer.</div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <!-- Glass divider -->
-        <div class="glass-divider" aria-hidden="true"></div>
+      <!-- SECTION 2: PLAYGROUND (light bg) -->
+      <section
+        class="section section-light feature-section pond-opening"
+        id="playground-section"
+        aria-label="Interactive demo playground"
+      >
+        <div class="section-inner">
+          <h2 class="section-headline fade-up">Every finding. Tracked and challenged.</h2>
+          <p class="section-body fade-up">
+            Click any question to watch a research sprint run in real time.
+          </p>
+        </div>
 
-        <!-- SECTION 6: INSTALL + CLOSE -->
-        <section
-          class="section install-section"
-          id="install-section"
-          aria-label="Install Grainulator"
+        <div class="pond-container" id="pond-container">
+          <canvas id="pond" aria-hidden="true"></canvas>
+          <div class="pond-hint" id="pond-hint">
+            Click a prompt to see it in action
+          </div>
+        </div>
+
+        <!-- Mobile: slot machine prompt picker -->
+        <div
+          class="mobile-slot"
+          id="mobile-slot"
+          role="region"
+          aria-label="Prompt picker"
         >
-          <div class="section-inner">
-            <div class="install-center">
-              <div class="install-label">In Claude Code, type:</div>
-              <div
-                class="install-cmd-block"
-                id="install-cmd"
-                role="button"
-                tabindex="0"
-                aria-label="Copy install command: /plugin install grainulator"
-              >
-                <span class="prompt" aria-hidden="true">/</span>plugin install
-                grainulator
-                <button
-                  class="install-copy"
-                  id="install-copy-btn"
-                  aria-label="Copy to clipboard"
-                >
-                  Copy
-                </button>
-              </div>
-              <p class="install-compat">
-                Works with your existing codebase, Jira, Confluence, Slack.
+          <div class="mobile-slot-label">Tap to spin, tap card to try it</div>
+          <div
+            class="mobile-slot-card"
+            id="mobile-slot-card"
+            role="button"
+            tabindex="0"
+            aria-live="polite"
+          >
+            <span class="mobile-slot-text" id="mobile-slot-text"></span>
+            <span class="mobile-slot-tag" aria-hidden="true">live demo</span>
+          </div>
+          <div class="mobile-slot-actions">
+            <button
+              class="mobile-slot-btn"
+              id="mobile-spin-btn"
+              type="button"
+              aria-label="Show a different prompt"
+            >
+              Spin
+            </button>
+            <button
+              class="mobile-slot-btn primary"
+              id="mobile-try-btn"
+              type="button"
+              aria-label="Try this prompt"
+            >
+              Try it
+            </button>
+          </div>
+          <div
+            class="mobile-slot-counter"
+            id="mobile-slot-counter"
+            aria-hidden="true"
+          ></div>
+        </div>
+
+        <!-- Reduced motion: static grid of prompts -->
+        <div
+          class="reduced-grid"
+          id="reduced-grid"
+          role="region"
+          aria-label="Research prompts"
+        >
+          <div class="reduced-grid-inner" id="reduced-grid-inner">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3: QUOTES (black bg) -->
+      <section
+        class="section section-dark quotes-section"
+        id="who-section"
+        aria-label="What Grainulator feels like"
+      >
+        <div class="section-inner">
+          <div class="who-quotes">
+            <div class="who-quote fade-up">
+              <p class="who-quote-text">
+                &ldquo;Spell-check for your <em>strategy</em>.&rdquo;
               </p>
-              <p class="install-time">In 4 minutes, it will have it.</p>
+              <p class="who-quote-for">Everyone who makes decisions</p>
+            </div>
+            <div class="who-quote fade-up">
+              <p class="who-quote-text">
+                &ldquo;A second opinion that <em>never gets tired</em>.&rdquo;
+              </p>
+              <p class="who-quote-for">
+                Managers weighing trade-offs at midnight
+              </p>
+            </div>
+            <div class="who-quote fade-up">
+              <p class="who-quote-text">
+                &ldquo;Peer review for decisions,
+                <em>not just code</em>.&rdquo;
+              </p>
+              <p class="who-quote-for">
+                Engineers who already know what rigor looks like
+              </p>
+            </div>
+            <div class="who-quote fade-up">
+              <p class="who-quote-text">
+                &ldquo;The research intern who actually
+                <em>reads everything</em>.&rdquo;
+              </p>
+              <p class="who-quote-for">
+                Execs who need the brief, not the busywork
+              </p>
             </div>
           </div>
-        </section>
-      </div><!-- /.glass-surface-bottom -->
+        </div>
+      </section>
+
+      <!-- SECTION 4: INTEGRATIONS (light bg) -->
+      <section
+        class="section section-light feature-section"
+        id="integrations-section"
+        aria-label="Integrations"
+      >
+        <div class="section-inner">
+          <h2 class="section-headline fade-up">Works with everything you already use.</h2>
+          <div class="integrations-grid fade-up">
+            <div class="integration-item">Claude Code</div>
+            <div class="integration-item">Jira</div>
+            <div class="integration-item">Confluence</div>
+            <div class="integration-item">Slack</div>
+            <div class="integration-item">GitHub</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 5: INSTALL (black bg) -->
+      <section
+        class="section section-dark install-section"
+        id="install-section"
+        aria-label="Install Grainulator"
+      >
+        <div class="section-inner">
+          <h2 class="section-headline fade-up">Get Grainulator.</h2>
+          <div
+            class="install-cmd-block fade-up"
+            id="install-cmd"
+            role="button"
+            tabindex="0"
+            aria-label="Copy install command: /plugin install grainulator"
+          >
+            <span class="prompt" aria-hidden="true">/</span>plugin install
+            grainulator
+            <button
+              class="install-copy"
+              id="install-copy-btn"
+              aria-label="Copy to clipboard"
+            >
+              Copy
+            </button>
+          </div>
+          <p class="install-compat fade-up">
+            Works with your existing codebase, Jira, Confluence, Slack.
+          </p>
+          <p class="install-time fade-up">In 4 minutes, it will have it.</p>
+          <div class="install-links fade-up">
+            <a href="https://grainulation.com/docs">Docs</a>
+            <a href="https://github.com/grainulation/grainulator">GitHub</a>
+            <a href="https://grainulation.com">grainulation.com</a>
+          </div>
+        </div>
+      </section>
 
       <!-- Terminal overlay -->
       <div
@@ -561,8 +524,8 @@
               type="button"
               style="
                 margin-top: 12px;
-                color: var(--lime);
-                border-color: rgba(191, 255, 0, 0.3);
+                color: var(--blue);
+                border-color: rgba(41, 151, 255, 0.3);
               "
             >
               Get Grainulator &rarr;
@@ -571,7 +534,6 @@
         </div>
       </div>
 
-      <!-- Footer -->
     </main>
 
     <footer class="site-footer" role="contentinfo">
@@ -601,17 +563,17 @@
       </style>
       <div
         style="
-          background: #050508;
+          background: #000;
           color: #f0f0f0;
           padding: 80px 20px;
-          font-family: system-ui, sans-serif;
+          font-family: -apple-system, BlinkMacSystemFont, sans-serif;
           max-width: 700px;
           margin: 0 auto;
         "
       >
         <h2
           style="
-            color: #bfff00;
+            color: #fff;
             font-size: 2rem;
             margin-bottom: 16px;
             text-align: center;
@@ -619,14 +581,14 @@
         >
           Grainulator &mdash; AI Research Sprints for Claude Code
         </h2>
-        <p style="font-size: 1.2rem; margin: 0 auto 24px; text-align: center">
+        <p style="font-size: 1.2rem; margin: 0 auto 24px; text-align: center; color: #86868b;">
           Ask any question, get a decision-ready brief in 5 minutes. Every
           finding is tracked, challenged, and confidence-graded.
         </p>
-        <h3 style="color: #bfff00; font-size: 1.1rem; margin: 32px 0 12px">
+        <h3 style="color: #fff; font-size: 1.1rem; margin: 32px 0 12px">
           How It Works
         </h3>
-        <ol style="line-height: 2; padding-left: 20px">
+        <ol style="line-height: 2; padding-left: 20px; color: #86868b;">
           <li>Type a research question in natural language</li>
           <li>
             Grainulator creates claims, gathers evidence, and challenges
@@ -636,30 +598,30 @@
             Receive a compiled brief with confidence scores and risk assessment
           </li>
         </ol>
-        <h3 style="color: #bfff00; font-size: 1.1rem; margin: 32px 0 12px">
+        <h3 style="color: #fff; font-size: 1.1rem; margin: 32px 0 12px">
           Install
         </h3>
         <p
           style="
             font-family: monospace;
-            color: #bfff00;
+            color: #fff;
             text-align: center;
             font-size: 1.1rem;
           "
         >
           /plugin install grainulator
         </p>
-        <p style="color: #9a9a9a; margin-top: 24px; text-align: center">
+        <p style="color: #86868b; margin-top: 24px; text-align: center">
           Open source &middot; MIT &middot; Zero dependencies
         </p>
         <p style="margin-top: 16px; text-align: center">
           <a
             href="https://github.com/grainulation/grainulator"
-            style="color: #bfff00"
+            style="color: #2997ff"
             >View on GitHub</a
           >
           &middot;
-          <a href="https://grainulation.com/docs" style="color: #bfff00"
+          <a href="https://grainulation.com/docs" style="color: #2997ff"
             >Documentation</a
           >
         </p>
@@ -672,5 +634,26 @@
     <script src="js/terminal.js"></script>
     <script src="js/app.js"></script>
     <script src="js/mobile.js"></script>
+
+    <!-- Fade-up reveal on scroll -->
+    <script>
+      (function () {
+        var els = document.querySelectorAll('.fade-up');
+        if (!els.length) return;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          for (var i = 0; i < els.length; i++) els[i].classList.add('visible');
+          return;
+        }
+        var observer = new IntersectionObserver(function (entries) {
+          for (var i = 0; i < entries.length; i++) {
+            if (entries[i].isIntersecting) {
+              entries[i].target.classList.add('visible');
+              observer.unobserve(entries[i].target);
+            }
+          }
+        }, { threshold: 0.15 });
+        for (var i = 0; i < els.length; i++) observer.observe(els[i]);
+      })();
+    </script>
   </body>
 </html>

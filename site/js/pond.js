@@ -1,162 +1,27 @@
 /* ======================================================
-   GRAINULATOR — Canvas Fish Pond + Particles
-   Canvas 2D pond with fish AI, particles, ripples, caustics.
+   GRAINULATOR — Canvas Fish Pond (Simplified)
+   Canvas 2D pond with fish AI. No particles, no caustics,
+   no ripples. Just fish swimming calmly.
    Zero libraries. 60fps.
    ====================================================== */
 
 /* ======================================================
-   PARTICLE SYSTEM
+   PARTICLE SYSTEM — kept as stubs for JS compatibility
+   (terminal.js calls burstParticles on victory)
    ====================================================== */
-var MAX_PARTICLES = 200;
+var MAX_PARTICLES = 0;
 var particles = [];
 var activeParticles = 0;
 
-for (var pi = 0; pi < MAX_PARTICLES; pi++) {
-  particles.push({
-    active: false, x: 0, y: 0, vx: 0, vy: 0,
-    life: 0, maxLife: 0, r: 0, g: 0, b: 0, a: 1, size: 2, type: "dot",
-  });
-}
+function spawnParticle() {}
+function burstParticles() {}
+function updateParticles() {}
+function drawParticles() {}
 
-function spawnParticle(x, y, vx, vy, life, r, g, b, size, type) {
-  for (var i = 0; i < MAX_PARTICLES; i++) {
-    if (!particles[i].active) {
-      var p = particles[i];
-      p.active = true; p.x = x; p.y = y; p.vx = vx; p.vy = vy;
-      p.life = life; p.maxLife = life; p.r = r; p.g = g; p.b = b;
-      p.a = 1; p.size = size || 2; p.type = type || "dot";
-      activeParticles++;
-      return;
-    }
-  }
-}
-
-function burstParticles(x, y, count, r, g, b, speed, life, size) {
-  for (var i = 0; i < count; i++) {
-    var angle = Math.random() * Math.PI * 2;
-    var spd = speed * (0.3 + Math.random() * 0.7);
-    spawnParticle(
-      x + (Math.random() - 0.5) * 10, y + (Math.random() - 0.5) * 10,
-      Math.cos(angle) * spd, Math.sin(angle) * spd,
-      life * (0.5 + Math.random() * 0.5), r, g, b,
-      size || 1 + Math.random() * 3, "dot"
-    );
-  }
-}
-
-function updateParticles(dt) {
-  activeParticles = 0;
-  for (var i = 0; i < MAX_PARTICLES; i++) {
-    var p = particles[i];
-    if (!p.active) continue;
-    activeParticles++;
-    p.life -= dt;
-    if (p.life <= 0) { p.active = false; continue; }
-    p.x += p.vx * dt * 60;
-    p.y += p.vy * dt * 60;
-    p.vy += 0.02 * dt * 60;
-    p.vx *= 0.98;
-    p.vy *= 0.98;
-    p.a = Math.max(0, p.life / p.maxLife);
-  }
-}
-
-function drawParticles(ctx) {
-  if (!ctx) return;
-  for (var i = 0; i < MAX_PARTICLES; i++) {
-    var p = particles[i];
-    if (!p.active) continue;
-    ctx.globalAlpha = p.a * 0.8;
-    ctx.fillStyle = "rgb(" + p.r + "," + p.g + "," + p.b + ")";
-    if (p.type === "spark") {
-      ctx.save();
-      var angle = Math.atan2(p.vy, p.vx);
-      ctx.translate(p.x, p.y);
-      ctx.rotate(angle);
-      ctx.fillRect(-p.size * 2, -p.size * 0.3, p.size * 4, p.size * 0.6);
-      ctx.restore();
-    } else {
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size * p.a, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
-  ctx.globalAlpha = 1;
-}
-
-/* ======================================================
-   RIPPLE SYSTEM
-   ====================================================== */
-var MAX_RIPPLES = 10;
-var ripples = [];
-for (var ri = 0; ri < MAX_RIPPLES; ri++) {
-  ripples.push({ active: false, x: 0, y: 0, radius: 0, maxRadius: 0, life: 0, maxLife: 0 });
-}
-
-function spawnRipple(x, y, maxRadius) {
-  for (var i = 0; i < MAX_RIPPLES; i++) {
-    if (!ripples[i].active) {
-      ripples[i].active = true; ripples[i].x = x; ripples[i].y = y;
-      ripples[i].radius = 0; ripples[i].maxRadius = maxRadius || 120;
-      ripples[i].life = 1; ripples[i].maxLife = 1;
-      return;
-    }
-  }
-}
-
-function updateRipples(dt) {
-  for (var i = 0; i < MAX_RIPPLES; i++) {
-    var r = ripples[i];
-    if (!r.active) continue;
-    r.life -= dt * 1.0;
-    if (r.life <= 0) { r.active = false; continue; }
-    r.radius = r.maxRadius * (1 - r.life / r.maxLife);
-  }
-}
-
-function drawRipples(ctx) {
-  if (!ctx) return;
-  for (var i = 0; i < MAX_RIPPLES; i++) {
-    var r = ripples[i];
-    if (!r.active) continue;
-    var alpha = r.life * 0.3;
-    ctx.strokeStyle = "rgba(191, 255, 0, " + alpha + ")";
-    ctx.lineWidth = 1.5 * r.life;
-    ctx.beginPath();
-    ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-}
-
-/* ======================================================
-   CAUSTICS
-   ====================================================== */
-var causticsTime = 0;
-
-function drawCaustics(ctx, t, W, H) {
-  if (!ctx) return;
-  causticsTime = t * 0.0003;
-  ctx.globalAlpha = 0.012;
-  ctx.fillStyle = "#BFFF00";
-  for (var cx = 0; cx < W; cx += 80) {
-    for (var cy = 0; cy < H; cy += 80) {
-      var v = Math.sin(cx * 0.01 + causticsTime * 2) *
-        Math.cos(cy * 0.012 + causticsTime * 1.5) *
-        Math.sin((cx + cy) * 0.008 + causticsTime);
-      if (v > 0.3) {
-        var s = v * 40;
-        ctx.beginPath();
-        ctx.arc(
-          cx + Math.sin(causticsTime + cy * 0.01) * 20,
-          cy + Math.cos(causticsTime + cx * 0.01) * 20,
-          s, 0, Math.PI * 2
-        );
-        ctx.fill();
-      }
-    }
-  }
-  ctx.globalAlpha = 1;
-}
+/* Ripple stubs */
+function spawnRipple() {}
+function updateRipples() {}
+function drawRipples() {}
 
 /* ======================================================
    FISH / PROMPT BUBBLES
@@ -188,7 +53,7 @@ function initFish(ctx) {
 
   for (var i = 0; i < allPrompts.length; i++) {
     var p = allPrompts[i];
-    ctx.font = "600 " + baseFontSize + "px " + fontFamily;
+    ctx.font = "500 " + baseFontSize + "px " + fontFamily;
     var tw = ctx.measureText(p.text).width;
     var padX = 24, padY = 16;
     var bw = tw + padX * 2;
@@ -200,21 +65,21 @@ function initFish(ctx) {
       y: 20 + Math.random() * (H - bh - 40),
       w: bw, h: bh, fontSize: baseFontSize,
       radius: (Math.max(bw, bh) / 2) * 0.6,
-      vx: (Math.random() - 0.5) * 0.5,
-      vy: (Math.random() - 0.5) * 0.3,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.2,
       wobblePhase: Math.random() * Math.PI * 2,
-      wobbleSpeed: 0.3 + Math.random() * 0.4,
-      rotation: 0, opacity: 0.55, baseOpacity: 0.55,
+      wobbleSpeed: 0.2 + Math.random() * 0.3,
+      rotation: 0, opacity: 0.5, baseOpacity: 0.5,
       hovered: false, scale: 1.0, depth: 1.0,
       scatterVx: 0, scatterVy: 0, scatterDecay: 0,
-      jumpTime: -1, jumpCooldown: 20 + Math.random() * 40,
+      jumpTime: -1, jumpCooldown: 30 + Math.random() * 60,
       clickScale: 1, clickScaleTarget: 1,
     });
   }
 }
 
 function updateFish(dt) {
-  var cursorInfluenceRadius = 200;
+  var cursorInfluenceRadius = 180;
   var wallPad = 4;
   var collisionPad = 6;
 
@@ -223,15 +88,15 @@ function updateFish(dt) {
     if (clickedFishIndex === i && clickedFishAnim > 0) continue;
 
     f.wobblePhase += f.wobbleSpeed * dt;
-    var wiggle = Math.sin(f.wobblePhase * 2) * 0.02;
-    f.rotation = f.rotation * 0.9 + (wiggle + f.vx * 0.03) * 0.1;
+    var wiggle = Math.sin(f.wobblePhase * 2) * 0.015;
+    f.rotation = f.rotation * 0.92 + (wiggle + f.vx * 0.02) * 0.08;
 
     if (f.scatterDecay > 0) {
       f.scatterDecay -= dt * 2;
       if (f.scatterDecay < 0) f.scatterDecay = 0;
     }
 
-    /* --- schooling (loose flocking) --- */
+    /* schooling */
     var avgVx = 0, avgVy = 0, neighbors = 0;
     for (var j = 0; j < fish.length; j++) {
       if (i === j) continue;
@@ -243,8 +108,8 @@ function updateFish(dt) {
         avgVy += fish[j].vy;
         neighbors++;
         if (dist < 100 && dist > 0) {
-          f.vx -= (dx / dist) * 0.005;
-          f.vy -= (dy / dist) * 0.005;
+          f.vx -= (dx / dist) * 0.004;
+          f.vy -= (dy / dist) * 0.004;
         }
       }
     }
@@ -254,30 +119,30 @@ function updateFish(dt) {
       f.vy += (avgVy - f.vy) * 0.002;
     }
 
-    /* --- cursor flee --- */
+    /* cursor flee */
     var mdx = f.x + f.w / 2 - mouseX;
     var mdy = f.y + f.h / 2 - mouseY;
     var mDist = Math.sqrt(mdx * mdx + mdy * mdy);
     if (mDist < cursorInfluenceRadius && mDist > 0) {
-      var fleeFactor = (1 - mDist / cursorInfluenceRadius) * 0.15 * f.depth;
+      var fleeFactor = (1 - mDist / cursorInfluenceRadius) * 0.1 * f.depth;
       f.vx += (mdx / mDist) * fleeFactor;
       f.vy += (mdy / mDist) * fleeFactor;
     }
 
-    /* --- integrate position --- */
+    /* integrate position */
     var sx = f.vx + f.scatterVx * f.scatterDecay;
     var sy = f.vy + f.scatterVy * f.scatterDecay;
-    var wobbleX = Math.sin(f.wobblePhase) * 0.12;
-    var wobbleY = Math.cos(f.wobblePhase * 0.7) * 0.08;
+    var wobbleX = Math.sin(f.wobblePhase) * 0.08;
+    var wobbleY = Math.cos(f.wobblePhase * 0.7) * 0.05;
 
     f.x += (sx + wobbleX) * dt * 60;
     f.y += (sy + wobbleY) * dt * 60;
 
     var speed = Math.sqrt(f.vx * f.vx + f.vy * f.vy);
-    if (speed > 1.5) { f.vx *= 1.5 / speed; f.vy *= 1.5 / speed; }
+    if (speed > 1.0) { f.vx *= 1.0 / speed; f.vy *= 1.0 / speed; }
     f.vx *= 0.999; f.vy *= 0.999;
 
-    /* --- wall bounce --- */
+    /* wall bounce */
     if (f.x < wallPad) { f.x = wallPad; f.vx = Math.abs(f.vx) * 0.5; }
     if (f.x + f.w > W - wallPad) { f.x = W - f.w - wallPad; f.vx = -Math.abs(f.vx) * 0.5; }
     if (f.y < wallPad) { f.y = wallPad; f.vy = Math.abs(f.vy) * 0.5; }
@@ -285,7 +150,7 @@ function updateFish(dt) {
 
     f.jumpCooldown -= dt;
     if (f.jumpCooldown <= 0 && f.jumpTime < 0) {
-      f.jumpTime = 0; f.jumpCooldown = 25 + Math.random() * 45;
+      f.jumpTime = 0; f.jumpCooldown = 30 + Math.random() * 60;
     }
     if (f.jumpTime >= 0) {
       f.jumpTime += dt * 3;
@@ -294,11 +159,11 @@ function updateFish(dt) {
 
     f.clickScale += (f.clickScaleTarget - f.clickScale) * 0.2;
     f.hovered = mouseX >= f.x && mouseX <= f.x + f.w && mouseY >= f.y && mouseY <= f.y + f.h;
-    var targetOpacity = f.hovered ? Math.min(f.baseOpacity + 0.4, 1) : f.baseOpacity;
-    f.opacity += (targetOpacity - f.opacity) * 0.15;
+    var targetOpacity = f.hovered ? Math.min(f.baseOpacity + 0.45, 1) : f.baseOpacity;
+    f.opacity += (targetOpacity - f.opacity) * 0.12;
   }
 
-  /* --- fish-fish collision --- */
+  /* fish-fish collision */
   for (var i = 0; i < fish.length; i++) {
     if (clickedFishIndex === i && clickedFishAnim > 0) continue;
     var a = fish[i];
@@ -315,8 +180,8 @@ function updateFish(dt) {
         var nx = dx / dist, ny = dy / dist;
         a.x -= nx * overlap * 0.25; a.y -= ny * overlap * 0.25;
         b.x += nx * overlap * 0.25; b.y += ny * overlap * 0.25;
-        a.vx -= nx * 0.15; a.vy -= ny * 0.15;
-        b.vx += nx * 0.15; b.vy += ny * 0.15;
+        a.vx -= nx * 0.1; a.vy -= ny * 0.1;
+        b.vx += nx * 0.1; b.vy += ny * 0.1;
       }
     }
   }
@@ -326,9 +191,6 @@ function drawFish(ctx, gameTerminal, pondContainer) {
   if (!ctx) return;
   ctx.clearRect(0, 0, W, H);
   var fontFamily = getComputedStyle(document.body).fontFamily;
-
-  drawCaustics(ctx, performance.now(), W, H);
-  drawRipples(ctx);
 
   for (var i = 0; i < fish.length; i++) {
     var f = fish[i];
@@ -340,8 +202,8 @@ function drawFish(ctx, gameTerminal, pondContainer) {
     var jumpScale = 1, jumpY = 0;
     if (f.jumpTime >= 0) {
       var jt = f.jumpTime;
-      jumpScale = 1 + Math.sin(jt * Math.PI) * 0.05;
-      jumpY = -Math.sin(jt * Math.PI) * 3;
+      jumpScale = 1 + Math.sin(jt * Math.PI) * 0.03;
+      jumpY = -Math.sin(jt * Math.PI) * 2;
     }
 
     var totalScale = f.clickScale * jumpScale;
@@ -354,10 +216,10 @@ function drawFish(ctx, gameTerminal, pondContainer) {
     ctx.translate(-f.w / 2, -f.h / 2);
     ctx.globalAlpha = f.opacity;
 
-    var borderColor = f.hovered ? "rgba(191, 255, 0, 0.6)" : "rgba(255, 255, 255, " + (0.03 + f.depth * 0.04) + ")";
-    var bgColor = f.hovered ? "rgba(191, 255, 0, 0.08)" : "rgba(255, 255, 255, " + (0.01 + f.depth * 0.02) + ")";
+    var borderColor = f.hovered ? "rgba(41, 151, 255, 0.6)" : "rgba(255, 255, 255, " + (0.04 + f.depth * 0.04) + ")";
+    var bgColor = f.hovered ? "rgba(41, 151, 255, 0.08)" : "rgba(255, 255, 255, " + (0.02 + f.depth * 0.02) + ")";
 
-    var r = 6;
+    var r = 10;
     ctx.beginPath();
     ctx.moveTo(r, 0); ctx.lineTo(f.w - r, 0);
     ctx.quadraticCurveTo(f.w, 0, f.w, r); ctx.lineTo(f.w, f.h - r);
@@ -371,14 +233,14 @@ function drawFish(ctx, gameTerminal, pondContainer) {
     ctx.stroke();
 
     if (scripts[f.key] && !f.hovered) {
-      ctx.fillStyle = "rgba(191, 255, 0, 0.3)";
+      ctx.fillStyle = "rgba(41, 151, 255, 0.4)";
       ctx.beginPath();
       ctx.arc(f.w - 8, 8, 3, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    ctx.font = "600 " + f.fontSize + "px " + fontFamily;
-    ctx.fillStyle = f.hovered ? "#BFFF00" : "rgba(154, 154, 154, " + (0.5 + f.depth * 0.5) + ")";
+    ctx.font = "500 " + f.fontSize + "px " + fontFamily;
+    ctx.fillStyle = f.hovered ? "#2997ff" : "rgba(134, 134, 139, " + (0.5 + f.depth * 0.5) + ")";
     ctx.textBaseline = "middle";
 
     var maxTextW = f.w - 20;
@@ -393,7 +255,6 @@ function drawFish(ctx, gameTerminal, pondContainer) {
     ctx.restore();
   }
 
-  drawParticles(ctx);
   ctx.globalAlpha = 1;
 }
 
@@ -411,27 +272,17 @@ function drawClickedFishAnim(ctx, f, fontFamily, gameTerminal, pondContainer) {
   var cy = startY + (targetY - startY) * eased;
   var scale = 1 - t * 0.6;
   var alpha = 1 - t;
-  var skewX = Math.sin(t * Math.PI) * 0.15 * (targetX > startX ? 1 : -1);
 
   ctx.save();
   ctx.globalAlpha = alpha;
   ctx.translate(cx, cy);
-  ctx.transform(1, 0, skewX, 1, 0, 0);
   ctx.scale(scale, scale);
   ctx.translate(-f.w / 2, -f.h / 2);
 
-  if (t > 0.1 && t < 0.8) {
-    spawnParticle(
-      cx + (Math.random() - 0.5) * 20, cy + (Math.random() - 0.5) * 10,
-      (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2,
-      0.3 + Math.random() * 0.3, 191, 255, 0, 2, "dot"
-    );
-  }
-
-  ctx.fillStyle = "rgba(191, 255, 0, 0.15)";
-  ctx.strokeStyle = "rgba(191, 255, 0, 0.5)";
+  ctx.fillStyle = "rgba(41, 151, 255, 0.1)";
+  ctx.strokeStyle = "rgba(41, 151, 255, 0.5)";
   ctx.lineWidth = 1;
-  var r = 6;
+  var r = 10;
   ctx.beginPath();
   ctx.moveTo(r, 0); ctx.lineTo(f.w - r, 0);
   ctx.quadraticCurveTo(f.w, 0, f.w, r); ctx.lineTo(f.w, f.h - r);
@@ -441,8 +292,8 @@ function drawClickedFishAnim(ctx, f, fontFamily, gameTerminal, pondContainer) {
   ctx.closePath();
   ctx.fill(); ctx.stroke();
 
-  ctx.font = "600 " + f.fontSize + "px " + fontFamily;
-  ctx.fillStyle = "#BFFF00";
+  ctx.font = "500 " + f.fontSize + "px " + fontFamily;
+  ctx.fillStyle = "#2997ff";
   ctx.textBaseline = "middle";
   ctx.fillText(f.text.length > 30 ? f.text.slice(0, 30) + "\u2026" : f.text, 10, f.h / 2);
   ctx.restore();
@@ -455,8 +306,8 @@ function scatterFishAround(cx, cy, excludeIndex) {
     var dx = f.x + f.w / 2 - cx;
     var dy = f.y + f.h / 2 - cy;
     var dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist < 300 && dist > 0) {
-      var force = (1 - dist / 300) * 3;
+    if (dist < 250 && dist > 0) {
+      var force = (1 - dist / 250) * 2;
       f.scatterVx = (dx / dist) * force;
       f.scatterVy = (dy / dist) * force;
       f.scatterDecay = 1;
