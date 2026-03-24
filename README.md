@@ -4,7 +4,6 @@
 
 <p align="center">
   <a href="https://grainulator.app"><img src="https://img.shields.io/badge/site-grainulator.app-8df6ff?style=flat" alt="site"></a>
-  <a href="https://www.npmjs.com/package/@grainulation/grainulator"><img src="https://img.shields.io/npm/v/@grainulation/grainulator" alt="npm version"></a>
   <a href="https://github.com/grainulation/grainulator/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
   <a href="https://github.com/grainulation/grainulator/actions"><img src="https://github.com/grainulation/grainulator/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://deepwiki.com/grainulation/grainulator"><img src="https://deepwiki.com/badge.svg" alt="Explore on DeepWiki"></a>
