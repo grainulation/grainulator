@@ -339,9 +339,9 @@ float map(vec3 p) {
 
     // random sizes
 #if IS_MOBILE
-    float blobR = 1.5 + h4 * 2.0; // mobile: 1.5-3.5
+    float blobR = 0.8 + h4 * 1.0; // mobile: 0.8-1.8
 #else
-    float blobR = 0.34 + h4 * 0.44; // desktop: 0.34-0.78
+    float blobR = 0.20 + h4 * 0.30; // desktop: 0.20-0.50
 #endif
 
     vec3 evalP = p;
