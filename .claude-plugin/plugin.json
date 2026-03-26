@@ -9,5 +9,5 @@
 	"skills": "skills/",
 	"agents": "agents/",
 	"hooks": "hooks/hooks.json",
-	"mcpConfig": ".mcp.json"
+	"mcpServers": ".mcp.json"
 }
