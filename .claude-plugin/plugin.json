@@ -6,8 +6,8 @@
 		"name": "Grainulation"
 	},
 	"homepage": "https://grainulator.app",
-	"skills": "skills/",
-	"agents": "agents/",
-	"hooks": "hooks/hooks.json",
-	"mcpServers": ".mcp.json"
+	"skills": "./skills/",
+	"agents": "./agents/",
+	"hooks": "./hooks/hooks.json",
+	"mcpServers": "./.mcp.json"
 }
