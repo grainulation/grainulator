@@ -7,7 +7,7 @@
 	},
 	"homepage": "https://grainulator.app",
 	"skills": "./skills/",
-	"agents": "./agents/",
+	"agents": ["./agents/grainulator.md"],
 	"hooks": "./hooks/hooks.json",
 	"mcpServers": "./.mcp.json"
 }
