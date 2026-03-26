@@ -2,7 +2,7 @@
 	"name": "grainulation-marketplace",
 	"owner": {
 		"name": "Grainulation",
-		"email": "info@grainulation.app"
+		"email": "info@grainulator.app"
 	},
 	"metadata": {
 		"description": "Research sprint tools for Claude Code — structured research with claims, evidence tiers, and compiled output",
