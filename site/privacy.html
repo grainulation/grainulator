@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — Grainulator</title>
+<meta name="description" content="Grainulator privacy policy. We collect zero user data.">
+<link rel="canonical" href="https://grainulator.app/privacy">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;color:#e0e0e0;font-family:system-ui,-apple-system,sans-serif;line-height:1.7;padding:2rem;max-width:720px;margin:0 auto}
+a{color:#39ff14;text-decoration:none}
+a:hover{text-decoration:underline}
+h1{color:#fff;font-size:1.8rem;margin-bottom:.5rem}
+h2{color:#fff;font-size:1.2rem;margin-top:2rem;margin-bottom:.5rem}
+p,ul{margin-bottom:1rem}
+ul{padding-left:1.5rem}
+li{margin-bottom:.3rem}
+.meta{color:#888;font-size:.9rem;margin-bottom:2rem}
+.back{display:inline-block;margin-bottom:2rem;color:#39ff14;font-size:.9rem}
+</style>
+</head>
+<body>
+<a class="back" href="/">← grainulator.app</a>
+<h1>Privacy Policy</h1>
+<p class="meta">Effective: March 25, 2026</p>
+
+<h2>1. What Grainulator Is</h2>
+<p>Grainulator is a Claude Code plugin for structured research sprints. It runs entirely on your local machine as a set of CLI tools and MCP servers. There is no Grainulator backend, no cloud service, and no user account.</p>
+
+<h2>2. Data We Collect</h2>
+<p><strong>None.</strong> Grainulator does not collect, transmit, or store any user data on remote servers. All sprint data (claims, compilations, output artifacts) is stored locally in the <code>.wheat/</code> directory of your project.</p>
+<ul>
+<li>No analytics or telemetry</li>
+<li>No usage tracking</li>
+<li>No error reporting to us</li>
+<li>No cookies or device fingerprinting</li>
+<li>No user accounts or authentication tokens</li>
+</ul>
+
+<h2>3. Local MCP Servers</h2>
+<p>Grainulator bundles three local MCP servers that run as stdio processes on your machine:</p>
+<ul>
+<li><strong>wheat</strong> — claims engine (reads/writes <code>.wheat/</code> locally)</li>
+<li><strong>mill</strong> — format conversion (processes files locally)</li>
+<li><strong>silo</strong> — knowledge storage (reads/writes to local plugin data)</li>
+</ul>
+<p>These servers never contact external endpoints. All data they process stays on your machine.</p>
+
+<h2>4. Third-Party Service: DeepWiki</h2>
+<p>Grainulator includes an optional connection to <a href="https://deepwiki.com">DeepWiki</a> (<code>mcp.deepwiki.com</code>), a third-party HTTP MCP server that provides documentation for open-source projects. When you use DeepWiki-powered tools, your queries about open-source repositories are sent to DeepWiki's servers.</p>
+<p>DeepWiki is operated by a third party, not by Grainulator. You can remove the <code>deepwiki</code> entry from <code>.mcp.json</code> to disable this connection entirely. All other Grainulator functionality continues to work without it.</p>
+
+<h2>5. Your API Keys</h2>
+<p>Grainulator itself does not require or store API keys. Claude Code (the host environment) uses your Anthropic API key, which is managed by Claude Code. See <a href="https://www.anthropic.com/privacy">Anthropic's privacy policy</a>.</p>
+
+<h2>6. Data Storage and Retention</h2>
+<p>All Grainulator data lives in your local filesystem:</p>
+<ul>
+<li>Sprint data: <code>.wheat/</code> in your project</li>
+<li>Plugin cache: <code>~/.claude/plugins/cache/</code></li>
+<li>Silo data: <code>CLAUDE_PLUGIN_DATA/silo/</code></li>
+</ul>
+<p>We have no access to any of this data. You control it entirely. Delete it whenever you want.</p>
+
+<h2>7. Children's Privacy</h2>
+<p>Grainulator is a developer tool distributed via npm and Claude Code. It is not directed at children under 13.</p>
+
+<h2>8. Changes</h2>
+<p>If we change this policy, we will update this page and the effective date above. Since we collect no data, we do not anticipate material changes.</p>
+
+<h2>9. Contact</h2>
+<p>Questions? Open an issue at <a href="https://github.com/grainulation/grainulator/issues">github.com/grainulation/grainulator</a>.</p>
+</body>
+</html>

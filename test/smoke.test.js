@@ -35,8 +35,7 @@ describe("plugin.json", () => {
 		assert.ok(plugin.description, "missing description");
 		assert.ok(plugin.skills, "missing skills");
 		assert.ok(plugin.agents, "missing agents");
-		assert.ok(plugin.hooks, "missing hooks");
-		assert.ok(plugin.mcpConfig, "missing mcpConfig");
+		assert.ok(plugin.mcpServers, "missing mcpServers");
 	});
 
 	it("referenced paths exist", () => {
@@ -44,17 +43,20 @@ describe("plugin.json", () => {
 			fs.existsSync(path.join(ROOT, plugin.skills)),
 			`skills dir missing: ${plugin.skills}`,
 		);
+		const agentPaths = Array.isArray(plugin.agents)
+			? plugin.agents
+			: [plugin.agents];
+		for (const p of agentPaths) {
+			assert.ok(fs.existsSync(path.join(ROOT, p)), `agent path missing: ${p}`);
+		}
+		// hooks/hooks.json is auto-discovered, not in plugin.json
 		assert.ok(
-			fs.existsSync(path.join(ROOT, plugin.agents)),
-			`agents dir missing: ${plugin.agents}`,
+			fs.existsSync(path.join(ROOT, "hooks", "hooks.json")),
+			"hooks/hooks.json missing",
 		);
 		assert.ok(
-			fs.existsSync(path.join(ROOT, plugin.hooks)),
-			`hooks file missing: ${plugin.hooks}`,
-		);
-		assert.ok(
-			fs.existsSync(path.join(ROOT, plugin.mcpConfig)),
-			`mcp config missing: ${plugin.mcpConfig}`,
+			fs.existsSync(path.join(ROOT, plugin.mcpServers)),
+			`mcp config missing: ${plugin.mcpServers}`,
 		);
 	});
 });
@@ -115,16 +117,32 @@ describe("hooks.json", () => {
 		hooks = JSON.parse(raw);
 	});
 
-	it("has hooks array", () => {
-		assert.ok(Array.isArray(hooks.hooks), "hooks.hooks is not an array");
-		assert.ok(hooks.hooks.length > 0, "hooks array is empty");
+	it("has event-keyed hooks object", () => {
+		assert.ok(hooks.hooks, "missing hooks wrapper");
+		assert.ok(typeof hooks.hooks === "object", "hooks.hooks is not an object");
+		const events = Object.keys(hooks.hooks);
+		assert.ok(events.length > 0, "no hook events defined");
+		for (const event of events) {
+			assert.ok(
+				Array.isArray(hooks.hooks[event]),
+				`hooks.hooks.${event} is not an array`,
+			);
+		}
 	});
 
-	it("each hook has type, matcher, and script", () => {
-		for (const hook of hooks.hooks) {
-			assert.ok(hook.type, "hook missing type");
-			assert.ok(hook.matcher, "hook missing matcher");
-			assert.ok(hook.script, "hook missing script");
+	it("each hook entry has matcher and hooks array with type+command", () => {
+		for (const [event, entries] of Object.entries(hooks.hooks)) {
+			for (const entry of entries) {
+				assert.ok(entry.matcher, `${event} entry missing matcher`);
+				assert.ok(
+					Array.isArray(entry.hooks),
+					`${event} entry missing hooks array`,
+				);
+				for (const h of entry.hooks) {
+					assert.ok(h.type, `${event} hook missing type`);
+					assert.ok(h.command, `${event} hook missing command`);
+				}
+			}
 		}
 	});
 });
@@ -147,11 +165,12 @@ describe(".mcp.json", () => {
 		);
 	});
 
-	it("does not use ${CWD} in env values", () => {
+	it("does not use CWD variable in env values", () => {
 		const raw = fs.readFileSync(path.join(ROOT, ".mcp.json"), "utf8");
+		const cwdVar = "$" + "{CWD}";
 		assert.ok(
-			!raw.includes("${CWD}"),
-			".mcp.json contains unsupported ${CWD} variable",
+			!raw.includes(cwdVar),
+			`.mcp.json contains unsupported ${cwdVar} variable`,
 		);
 	});
 });
