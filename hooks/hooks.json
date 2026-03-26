@@ -1,24 +1,26 @@
 {
-	"PostToolUse": [
-		{
-			"matcher": "mcp__wheat__wheat_add-claim",
-			"hooks": [
-				{
-					"type": "command",
-					"command": "node -e \"process.stdout.write('--- Auto-compiling after claim mutation ---\\n')\" && npx -y @grainulation/wheat compile"
-				}
-			]
-		}
-	],
-	"PreToolUse": [
-		{
-			"matcher": "Write",
-			"hooks": [
-				{
-					"type": "command",
-					"command": "node -e \"const p=JSON.parse(process.env.CLAUDE_HOOK_CONTEXT||'{}'); if((p.tool_input?.file_path||'').includes('.wheat/')){process.stderr.write('BLOCKED: Direct writes to .wheat/ are not allowed. Use wheat MCP tools.\\n');process.exit(1)}\""
-				}
-			]
-		}
-	]
+	"hooks": {
+		"PostToolUse": [
+			{
+				"matcher": "mcp__wheat__wheat_add-claim",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node -e \"process.stdout.write('--- Auto-compiling after claim mutation ---\\n')\" && npx -y @grainulation/wheat compile"
+					}
+				]
+			}
+		],
+		"PreToolUse": [
+			{
+				"matcher": "Write",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node -e \"const p=JSON.parse(process.env.CLAUDE_HOOK_CONTEXT||'{}'); if((p.tool_input?.file_path||'').includes('.wheat/')){process.stderr.write('BLOCKED: Direct writes to .wheat/ are not allowed. Use wheat MCP tools.\\n');process.exit(1)}\""
+					}
+				]
+			}
+		]
+	}
 }
