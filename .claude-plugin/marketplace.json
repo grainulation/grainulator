@@ -12,8 +12,8 @@
 		{
 			"name": "grainulator",
 			"source": {
-				"source": "github",
-				"repo": "grainulation/grainulator"
+				"source": "npm",
+				"package": "@grainulation/grainulator"
 			},
 			"description": "Research sprint orchestrator for Claude Code",
 			"version": "1.0.0",
