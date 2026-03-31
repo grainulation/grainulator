@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-03-31
+
+### Added
+
+- `/setup` skill for post-install MCP server verification and onboarding.
+- Privacy policy page (`site/privacy.html`) for marketplace submission.
+
+### Changed
+
+- MCP server source in marketplace.json switched from GitHub SSH to HTTPS git URL.
+- Wheat MCP invocation changed from `wheat mcp` subcommand to dedicated `wheat-mcp` binary (fixes connection drops in Claude Code plugin transport).
+
+### Fixed
+
+- `plugin.json`: renamed `mcpConfig` to `mcpServers` (official schema).
+- `plugin.json`: added `./` prefix to all paths (required by plugin spec).
+- `plugin.json`: explicit agent file path instead of directory glob.
+- `hooks.json`: converted to event-keyed object format with `{ hooks: {} }` wrapper for auto-discovery.
+- Smoke tests updated to match new plugin schema.
+- Biome schema bumped to 2.4.9, template string lint warnings resolved.
+- Contact email updated to info@grainulator.app.
+
 ## [1.0.0] - 2026-03-21
 
 ### Changed
