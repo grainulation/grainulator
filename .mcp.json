@@ -3,7 +3,7 @@
 		"wheat": {
 			"type": "stdio",
 			"command": "npx",
-			"args": ["-y", "@grainulation/wheat", "mcp"],
+			"args": ["-y", "@grainulation/wheat-mcp"],
 			"env": {
 				"WHEAT_ROOT": ".wheat"
 			}
