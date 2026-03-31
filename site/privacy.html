@@ -30,7 +30,7 @@ li{margin-bottom:.3rem}
 <p>Grainulator is a Claude Code plugin for structured research sprints. It runs entirely on your local machine as a set of CLI tools and MCP servers. There is no Grainulator backend, no cloud service, and no user account.</p>
 
 <h2>2. Data We Collect</h2>
-<p><strong>None.</strong> Grainulator does not collect, transmit, or store any user data on remote servers. All sprint data (claims, compilations, output artifacts) is stored locally in the <code>.wheat/</code> directory of your project.</p>
+<p><strong>None.</strong> Grainulator does not collect, transmit, or store any user data on remote servers. All sprint data (claims, compilations, output artifacts) is stored locally in your project root (<code>claims.json</code>, <code>compilation.json</code>, <code>output/</code>).</p>
 <ul>
 <li>No analytics or telemetry</li>
 <li>No usage tracking</li>
@@ -42,7 +42,7 @@ li{margin-bottom:.3rem}
 <h2>3. Local MCP Servers</h2>
 <p>Grainulator bundles three local MCP servers that run as stdio processes on your machine:</p>
 <ul>
-<li><strong>wheat</strong> — claims engine (reads/writes <code>.wheat/</code> locally)</li>
+<li><strong>wheat</strong> — claims engine (reads/writes <code>claims.json</code> and <code>compilation.json</code> locally)</li>
 <li><strong>mill</strong> — format conversion (processes files locally)</li>
 <li><strong>silo</strong> — knowledge storage (reads/writes to local plugin data)</li>
 </ul>
@@ -58,7 +58,7 @@ li{margin-bottom:.3rem}
 <h2>6. Data Storage and Retention</h2>
 <p>All Grainulator data lives in your local filesystem:</p>
 <ul>
-<li>Sprint data: <code>.wheat/</code> in your project</li>
+<li>Sprint data: <code>claims.json</code>, <code>compilation.json</code>, <code>output/</code> in your project root</li>
 <li>Plugin cache: <code>~/.claude/plugins/cache/</code></li>
 <li>Silo data: <code>CLAUDE_PLUGIN_DATA/silo/</code></li>
 </ul>

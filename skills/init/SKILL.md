@@ -26,9 +26,7 @@ $ARGUMENTS
 
 2. Generate a sprint slug from the question (lowercase, hyphenated, max 4 words). Example: "how does auth work" -> `auth-architecture`.
 
-3. Create the sprint directory at `.wheat/sprints/<slug>/`.
-
-4. Create `claims.json` with schema_version "1.0" and meta fields (question, initiated date, audience, phase: "define", connectors: []).
+3. Create `claims.json` in the project root with schema_version "1.0" and meta fields (question, initiated date, audience, phase: "define", connectors: []).
 
 5. Add define-phase claims:
    - `d001`: constraint claim capturing the core question scope

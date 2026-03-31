@@ -76,7 +76,7 @@ Grainulator is part of the [grainulation](https://github.com/grainulation/grainu
 - **MCP servers**: wheat (claims), mill (output conversion), silo (knowledge store), DeepWiki (codebase research)
 - **Skills**: Prompt-engineered markdown files in `skills/<name>/SKILL.md`
 - **Agent**: Autonomous sprint subagent in `agents/grainulator.md`
-- **Hooks**: Auto-compile on claim mutation, write-guard on `.wheat/`
+- **Hooks**: Auto-compile on claim mutation, write-guard on `claims.json` and `compilation.json`
 
 ## Enterprise deployment
 

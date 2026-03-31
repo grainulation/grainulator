@@ -30,7 +30,7 @@ Grainulator bundles three core MCP servers that run locally via `npx`. Check eac
    - Purpose: Manages typed claims (`claims.json`), compiles sprint state, resolves conflicts, and searches across claims. This is the backbone of every research sprint.
    - Verify: Call `wheat_status`. If it returns sprint data or a "no sprint found" message, the server is healthy.
    - If it fails: The `@grainulation/wheat` npm package may not be accessible. Ask the user to run `npx -y @grainulation/wheat` manually to check for npm/network issues.
-   - Env: `WHEAT_ROOT` defaults to `.wheat` (relative to the working directory).
+   - Sprint data (`claims.json`, `compilation.json`) lives in the project root.
 
 2. **Mill** (format conversion engine)
    - Purpose: Converts between document formats (Markdown, HTML, PDF). Used by `/brief` and `/present` to produce output artifacts.
@@ -78,7 +78,7 @@ Optional Dependencies:
 
 ### Phase 3: Check for existing sprints
 
-5. Look for existing sprints in `.wheat/sprints/`. If sprints exist, list them with their question and phase:
+5. Look for an existing sprint by checking for `claims.json` in the project root. If a sprint exists, show its question and phase:
 
 ```
 Existing sprints:
@@ -114,5 +114,4 @@ You're ready to go. Try:
 - **All three core servers use `npx -y`**, so they download on first run. First-run latency of 5-15 seconds is normal.
 - **Node.js is required.** If `npx` is not found, the user needs to install Node.js (v18+ recommended).
 - **Network required for first run** since packages are fetched from npm. After the first run, npx caches them locally.
-- **WHEAT_ROOT** can be overridden if the user stores sprint data in a non-default location.
 - **Silo persistence**: Silo stores data in `${CLAUDE_PLUGIN_DATA}/silo`. This survives plugin updates but is deleted on uninstall (unless `--keep-data` is used).

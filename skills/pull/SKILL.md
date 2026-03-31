@@ -27,7 +27,7 @@ Expected: Confluence page URL or page ID, or a search query.
 
 2. **Parse the page content** to extract claims.
 
-3. **Create the local sprint** directory at `.wheat/sprints/<slug>/`.
+3. **Create the local sprint** by initializing `claims.json` in the project root.
 
 4. **Import claims** using `wheat_add-claim`.
 

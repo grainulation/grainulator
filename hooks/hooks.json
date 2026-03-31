@@ -17,7 +17,7 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "node -e \"const p=JSON.parse(process.env.CLAUDE_HOOK_CONTEXT||'{}'); if((p.tool_input?.file_path||'').includes('.wheat/')){process.stderr.write('BLOCKED: Direct writes to .wheat/ are not allowed. Use wheat MCP tools.\\n');process.exit(1)}\""
+						"command": "node -e \"const p=JSON.parse(process.env.CLAUDE_HOOK_CONTEXT||'{}'); const f=p.tool_input?.file_path||''; if(f.endsWith('/claims.json')||f.endsWith('/compilation.json')){process.stderr.write('BLOCKED: Direct writes to claims.json and compilation.json are not allowed. Use wheat MCP tools.\\n');process.exit(1)}\""
 					}
 				]
 			}

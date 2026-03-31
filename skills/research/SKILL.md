@@ -28,7 +28,7 @@ $ARGUMENTS
 
 ## Instructions
 
-1. **Identify the active sprint** by checking `.wheat/sprints/` for the most recent sprint, or ask which sprint to target if multiple exist.
+1. **Identify the active sprint** by checking for `claims.json` in the project root, or ask which sprint to target if none exists.
 
 2. **Plan research passes** (2-4 passes depending on topic breadth):
    - Pass 1: Broad landscape -- what exists, key concepts, major players
