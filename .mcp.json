@@ -2,8 +2,8 @@
 	"mcpServers": {
 		"wheat": {
 			"type": "stdio",
-			"command": "npx",
-			"args": ["-y", "@grainulation/wheat-mcp"],
+			"command": "node",
+			"args": ["${CLAUDE_PLUGIN_ROOT}/lib/wheat-mcp.cjs"],
 			"env": {
 				"WHEAT_ROOT": ".wheat"
 			}
