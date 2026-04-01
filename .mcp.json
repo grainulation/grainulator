@@ -3,7 +3,7 @@
 		"wheat": {
 			"type": "stdio",
 			"command": "npx",
-			"args": ["-y", "@grainulation/wheat", "mcp"]
+			"args": ["-y", "-p", "@grainulation/wheat", "wheat-mcp"]
 		},
 		"mill": {
 			"type": "stdio",
