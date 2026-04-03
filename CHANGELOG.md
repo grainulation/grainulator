@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-04-03
+
+### Added
+
+- `/healthcheck` skill — pre-flight MCP server verification with parallel pings, failure class diagnosis, and fix commands
+- Agent definition updated with healthcheck skill reference
+
 ## [1.1.0] - 2026-03-31
 
 ### Added
