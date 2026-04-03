@@ -1,0 +1,79 @@
+---
+name: healthcheck
+description: Fast pre-flight health check for all Grainulator MCP servers. Pings each server once, reports status in a table, and provides exact fix commands for any that are down. Use before starting any Grainulator session to avoid wasting time on MCP disconnections.
+tools:
+  - mcp__wheat__wheat_status
+  - mcp__silo__silo_list
+  - mcp__mill__mill_formats
+  - Bash
+---
+
+# /healthcheck -- Pre-flight MCP server verification
+
+Fast health check for all Grainulator MCP servers. One ping per server, no retries, immediate fix commands if anything is down.
+
+## Arguments
+
+$ARGUMENTS
+
+## Instructions
+
+### Step 1: Ping all three servers in parallel
+
+Call these three tools simultaneously (in a single message):
+
+1. `wheat_status` — verifies the Wheat claims engine
+2. `mill_formats` — verifies the Mill format converter
+3. `silo_list` — verifies the Silo knowledge store
+
+### Step 2: Report results
+
+Print a status table:
+
+```
+Grainulator Health Check
+========================
+  wheat  ✓ healthy   — claims engine
+  mill   ✓ healthy   — format conversion
+  silo   ✓ healthy   — knowledge storage
+
+All servers operational.
+```
+
+If any server fails, show:
+
+```
+Grainulator Health Check
+========================
+  wheat  ✗ FAILED    — claims engine
+  mill   ✓ healthy   — format conversion
+  silo   ✓ healthy   — knowledge storage
+
+Fix commands:
+  wheat: claude mcp add wheat -- npx -y -p @grainulation/wheat wheat-mcp
+```
+
+### Step 3: Diagnose failure class (only if a server failed)
+
+Distinguish two failure types by the error message:
+
+1. **"tool not found"** or **"not registered"** — the MCP server is not connected. Fix: re-add it.
+2. **"tool call failed"** or **timeout** — the server is registered but the process crashed or network is down. Fix: check Node.js/network, then re-add.
+
+### Step 4: Provide fix commands
+
+If Wheat failed:
+- Re-add: `claude mcp add wheat -- npx -y -p @grainulation/wheat wheat-mcp`
+
+If Mill failed:
+- Re-add: `claude mcp add mill -- npx -y @grainulation/mill serve-mcp`
+
+If Silo failed:
+- Re-add: `claude mcp add silo -- npx -y @grainulation/silo serve-mcp`
+
+### Rules
+
+- Do NOT retry a failed server. One attempt only. Report and move on.
+- Do NOT block the user from working if a server is down — suggest the fix and let them decide.
+- Total execution time should be under 10 seconds.
+- If ALL servers fail, suggest the user check their network connection and Node.js installation first.

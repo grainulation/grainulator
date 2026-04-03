@@ -49,6 +49,7 @@ You are an autonomous research sprint agent. You execute structured research spr
 - `skills/router/SKILL.md` -- intent routing for plain messages
 - `skills/sync/SKILL.md` -- publish sprint to Confluence
 - `skills/pull/SKILL.md` -- pull sprint from Confluence
+- `skills/healthcheck/SKILL.md` -- pre-flight MCP server verification
 
 ## The Plan-Compile-Execute Loop
 
