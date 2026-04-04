@@ -1,10 +1,11 @@
 // Service worker for grainulator.app PWA
-// Caches the single-page site for offline access
+// Stale-while-revalidate: serve cached version instantly, update in background
 
-const CACHE = "grainulator-v2";
+const CACHE = "grainulator-v3";
 const ASSETS = [
 	"/",
 	"/index.html",
+	"/glitchy.png",
 	"/manifest.json",
 	"/favicon-32.png",
 	"/favicon-64.png",
@@ -30,5 +31,19 @@ self.addEventListener("activate", (e) => {
 });
 
 self.addEventListener("fetch", (e) => {
-	e.respondWith(caches.match(e.request).then((r) => r || fetch(e.request)));
+	// Stale-while-revalidate: serve cache, update in background
+	e.respondWith(
+		caches.match(e.request).then((cached) => {
+			const fetchPromise = fetch(e.request)
+				.then((response) => {
+					if (response.ok) {
+						const clone = response.clone();
+						caches.open(CACHE).then((c) => c.put(e.request, clone));
+					}
+					return response;
+				})
+				.catch(() => cached);
+			return cached || fetchPromise;
+		}),
+	);
 });

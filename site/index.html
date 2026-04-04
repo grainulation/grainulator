@@ -95,7 +95,7 @@
 html,body{height:100%;overflow:hidden;background:#000;cursor:crosshair;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 html.demo-active{overflow:auto;overflow-x:hidden}
 canvas{position:fixed;inset:0;width:100%;height:100%;transition:opacity 0.6s ease}
-canvas.dimmed{opacity:0.3}
+canvas.dimmed{opacity:0}
 
 /* Skip link for accessibility */
 .skip-link{position:absolute;top:-100%;left:50%;transform:translateX(-50%);background:#8df6ff;color:#000;padding:0.5rem 1rem;font-family:monospace;font-size:0.85rem;z-index:200;border-radius:0 0 4px 4px;text-decoration:none;font-weight:700}
@@ -110,10 +110,8 @@ canvas.dimmed{opacity:0.3}
 .cta-row{display:flex;gap:0.8rem;justify-content:center;align-items:center;flex-wrap:wrap}
 .cta-btn{font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:clamp(0.65rem,1.2vw,0.8rem);padding:0.75rem 1.2rem;min-height:48px;border-radius:3px;transition:all 0.4s;display:inline-flex;align-items:center;text-decoration:none;cursor:pointer;border:none;background:none}
 
-.cta-try{color:rgba(141,246,255,0.4);border:1px solid rgba(141,246,255,0.15);pointer-events:none;position:relative;overflow:hidden}
-.cta-try.ready{color:#8df6ff;border-color:rgba(141,246,255,0.5);pointer-events:auto;cursor:pointer;animation:pulse-teal 2s ease-in-out infinite}
-.cta-try.ready:hover,.cta-try.ready:focus-visible{box-shadow:0 0 30px rgba(141,246,255,0.25);text-shadow:0 0 7px #8df6ff;outline:none}
-.cta-try .progress-bar{position:absolute;bottom:0;left:0;height:2px;background:#8df6ff;transition:width 0.3s ease;width:0}
+.cta-try{color:#8df6ff;border:1px solid rgba(141,246,255,0.4);cursor:pointer}
+.cta-try:hover,.cta-try:focus-visible{box-shadow:0 0 30px rgba(141,246,255,0.25);text-shadow:0 0 7px #8df6ff;outline:none}
 
 .cta-install{color:#8df6ff;border:1px solid rgba(141,246,255,0.4);padding:0.9rem 1.5rem;font-size:clamp(0.7rem,1.3vw,0.85rem);font-weight:700;text-shadow:0 0 7px #8df6ff,0 0 20px rgba(141,246,255,0.3)}
 .cta-install:hover,.cta-install:focus-visible{color:#8df6ff;border-color:rgba(141,246,255,0.6);box-shadow:0 0 30px rgba(141,246,255,0.25);outline:none;text-shadow:0 0 7px #8df6ff,0 0 20px rgba(141,246,255,0.4)}
@@ -134,7 +132,7 @@ canvas.dimmed{opacity:0.3}
 
 /* === DEMO PHASE === */
 .demo-layer{position:fixed;inset:0;z-index:5;pointer-events:none;opacity:0;transition:opacity 0.5s ease;overflow:hidden}
-.demo-layer::before{content:'';position:absolute;inset:0;background:rgba(0,0,0,0.92)}
+.demo-layer::before{content:'';position:absolute;inset:0;background:#000}
 .demo-layer.active{opacity:1;pointer-events:auto;overflow-y:auto;z-index:20}
 
 .demo-ui{max-width:720px;margin:0 auto;padding:2rem 1.5rem calc(4rem + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:1.5rem;min-height:100dvh}
@@ -145,12 +143,14 @@ canvas.dimmed{opacity:0.3}
 .demo-title{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:0.75rem;font-weight:700;color:#8df6ff;letter-spacing:0.12em;text-transform:uppercase;text-shadow:0 0 7px #8df6ff}
 
 /* Glass panels */
-.glass{background:rgba(255,255,255,0.04);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:1.2rem;position:relative}
+.glass{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:1.2rem;position:relative}
 
 /* Question input */
 .q-input{font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:0.85rem;color:#fff;background:rgba(0,0,0,0.3);border:1px solid rgba(141,246,255,0.3);border-radius:6px;padding:0.9rem 1rem;width:100%;outline:none;transition:border-color 0.3s,box-shadow 0.3s;text-align:center}
 .q-input:focus{border-color:rgba(141,246,255,0.6);box-shadow:0 0 20px rgba(141,246,255,0.1)}
 .q-input::placeholder{color:rgba(255,255,255,0.25)}
+.q-input:disabled{opacity:0.5;cursor:not-allowed;border-color:rgba(141,246,255,0.15)}
+.q-input:disabled::placeholder{color:rgba(141,246,255,0.3)}
 .model-status{font-family:monospace;font-size:0.65rem;color:#8df6ff;text-align:center;margin-top:0.5rem;min-height:1em}
 
 /* Claim cards */
@@ -201,7 +201,7 @@ canvas.dimmed{opacity:0.3}
 
 /* Card drift animation */
 @keyframes card-drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
-.claim-card.drifting{animation:card-drift 50s ease-in-out infinite}
+.claim-card.drifting{animation:card-in 0.4s ease forwards,card-drift 50s ease-in-out infinite}
 
 /* Mobile */
 @media(max-width:768px){
@@ -232,7 +232,6 @@ canvas.dimmed{opacity:0.3}
   .ui.hidden{display:none}
   .ui-title{color:#8df6ff}
   html body .cta-row .cta-btn{transition:none;animation:none;box-shadow:0 0 20px rgba(255,255,255,0.15)}
-  .cta-try.ready{animation:none}
   .site-footer{opacity:1;animation:none}
   html body .claim-card{animation:none;transition:none;opacity:1;transform:none}
   html body .claim-card.drifting{animation:none}
@@ -320,10 +319,11 @@ canvas.dimmed{opacity:0.3}
         class="q-input"
         id="demo-question"
         type="text"
-        placeholder="Ask a research question..."
+        placeholder="Explore the demo below..."
         autocomplete="off"
         spellcheck="false"
         maxlength="500"
+        disabled
       >
       <div id="model-status" class="model-status"></div>
     </div>
@@ -352,12 +352,11 @@ canvas.dimmed{opacity:0.3}
       <button class="cta-btn cta-install" id="ctaInstall" type="button" aria-label="Copy install command: /plugin install grainulator">
         /plugin install grainulator
       </button>
-      <button class="cta-btn cta-try" id="ctaTry" type="button" aria-label="Try the demo (loading model...)" hidden>
-        try it now
-        <span class="progress-bar" id="preloadBar"></span>
+      <button class="cta-btn cta-try" id="ctaTry" type="button" aria-label="Explore the demo">
+        explore demo
       </button>
     </div>
-    <button class="cta-btn" id="cancel-btn" type="button" style="display:none;color:#f43f5e;border:1px solid rgba(244,63,94,0.4);font-size:0.65rem;padding:0.5rem 1rem;margin-top:0.4rem" tabindex="0">Cancel download</button>
+    <button class="cta-btn" id="cancel-btn" type="button" style="display:none;color:#f43f5e;border:1px solid rgba(244,63,94,0.3);font-size:0.6rem;padding:0.4rem 0.8rem;margin-top:0.3rem" tabindex="0">cancel model download</button>
     <p class="privacy-note" id="privacyNote" hidden>Model runs locally in your browser. Weights downloaded from HuggingFace CDN on first use.</p>
     <p class="privacy-note" id="noWebGPUNote" hidden>Demo requires WebGPU (Chrome/Edge desktop).</p>
     <h2 class="sr-only">Install</h2>
@@ -767,7 +766,6 @@ const siteFooter = document.getElementById('siteFooter');
 const demoLayer = document.getElementById('demoLayer');
 const ctaTry = document.getElementById('ctaTry');
 const ctaInstall = document.getElementById('ctaInstall');
-const preloadBar = document.getElementById('preloadBar');
 const demoBack = document.getElementById('demoBack');
 const canvas = document.getElementById('c');
 
@@ -784,27 +782,16 @@ function enterDemo() {
   landingUI.classList.add('hidden');
   siteFooter.classList.add('hidden');
   canvas.classList.add('dimmed');
-  demoLayer.setAttribute('aria-busy', 'true');
+  pauseShader();
   demoLayer.classList.add('active');
   // Update skip link target
   const skipLink = document.querySelector('.skip-link');
   if (skipLink) skipLink.setAttribute('href', '#demo-question');
-  // Load claims + focus input after overlay is visible
-  // Use setTimeout as fallback — transitionend may not fire if transition is skipped
-  const onReady = () => {
-    demoLayer.removeAttribute('aria-busy');
-    if (!document.querySelector('.claim-card')) loadTrackA();
-    const qEl = document.getElementById('demo-question');
-    if (qEl) qEl.focus();
-  };
-  let transitionFired = false;
-  demoLayer.addEventListener('transitionend', function handler() {
-    demoLayer.removeEventListener('transitionend', handler);
-    transitionFired = true;
-    onReady();
-  }, { once: true });
-  setTimeout(() => { if (!transitionFired) onReady(); }, 600);
-  if (window._shaderWake) window._shaderWake();
+  // Always load Track A immediately — don't wait for transition
+  loadTrackA();
+  // Focus input only if enabled (model ready)
+  const qEl = document.getElementById('demo-question');
+  if (qEl && !qEl.disabled) qEl.focus();
 }
 
 function exitDemo() {
@@ -814,6 +801,7 @@ function exitDemo() {
   document.documentElement.classList.remove('demo-active');
   demoLayer.classList.remove('active');
   canvas.classList.remove('dimmed');
+  resumeShader();
   setTimeout(() => {
     landingUI.inert = false;
     landingUI.removeAttribute('aria-hidden');
@@ -822,7 +810,6 @@ function exitDemo() {
     const skipLink = document.querySelector('.skip-link');
     if (skipLink) skipLink.setAttribute('href', '#main-content');
   }, 100);
-  if (window._shaderWake) window._shaderWake();
 }
 
 ctaTry.addEventListener('click', enterDemo);
@@ -1128,6 +1115,7 @@ compileBtn.addEventListener('click', async () => {
   againBtn.textContent = 'Ask another question';
   againBtn.style.cssText = 'opacity:0.5;border-color:rgba(141,246,255,0.1);font-size:0.6rem;';
   againBtn.addEventListener('click', () => {
+    window._liveClaims = null;
     qInput.value = '';
     qInput.focus();
     compilerOutput.classList.remove('expanded');
@@ -1153,107 +1141,91 @@ function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 // ===================================================================
 // WEBLLM PRELOADING — silent, background, progressive, lazy
 // ===================================================================
+// Three-state machine: NOT_READY → READY → ERROR
+// Input starts disabled. Model downloads silently. Input enables when ready.
 (async function initWebLLM() {
-  const ctaTryBtn = document.getElementById('ctaTry');
-  const bar = document.getElementById('preloadBar');
   const privacyNote = document.getElementById('privacyNote');
   const noWebGPUNote = document.getElementById('noWebGPUNote');
+  const modelStatusEl = document.getElementById('model-status');
+  const cancelBtn = document.getElementById('cancel-btn');
 
-  // 4-tier detection (from a11y spec)
+  // Tier detection — skip network speed (Chrome caps at 10Mbps)
   async function detectTier() {
     if (!navigator.gpu) return 'minimal';
-    const save = navigator.connection?.saveData;
-    const speed = navigator.connection?.downlink || 100;
-    const mem = navigator.deviceMemory || 8;
-    if (save || speed < 10 || mem <= 2) return 'minimal';
-    if (speed < 50 || mem <= 4) return 'network-constrained';
     try {
       const adapter = await navigator.gpu.requestAdapter();
-      if (!adapter) return 'network-constrained';
+      if (!adapter) return 'minimal';
       const maxBuf = adapter.limits?.maxBufferSize || Infinity;
       if (maxBuf < 256 * 1024 * 1024) return 'reduced-gpu';
       return 'full';
-    } catch { return 'network-constrained'; }
+    } catch { return 'minimal'; }
   }
 
   const tier = await detectTier();
   document.documentElement.setAttribute('data-tier', tier);
 
-  // Mobile/no-WebGPU: show try button for Track A demo, hide install on mobile
+  // No WebGPU — ERROR state, Track A only
   if (tier === 'minimal') {
     noWebGPUNote.removeAttribute('hidden');
-    ctaTryBtn.removeAttribute('hidden');
-    ctaTryBtn.textContent = 'try demo';
-    ctaTryBtn.classList.add('ready');
-    ctaTryBtn.setAttribute('aria-label', 'Try the demo (pre-generated data, no model needed)');
-    ctaTryBtn.addEventListener('click', () => { enterDemo(); loadTrackA(); });
+    if (modelStatusEl) modelStatusEl.textContent = '';
     return;
   }
 
-  // WebGPU available: keep try button HIDDEN until model is ready
+  // WebGPU available — start in NOT_READY state, download model silently
   privacyNote.removeAttribute('hidden');
-
-  // Determine model by tier
   const modelId = tier === 'full'
     ? 'SmolLM2-1.7B-Instruct-q4f16_1-MLC'
     : 'SmolLM2-360M-Instruct-q4f16_1-MLC';
 
-  // Lazy load WebLLM with 20s timeout + cancel button
-  let engine = null;
-  const cancelBtn = document.getElementById('cancel-btn');
   const abortController = new AbortController();
-
+  cancelBtn.style.display = 'inline-flex';
   cancelBtn.addEventListener('click', () => {
     abortController.abort();
     cancelBtn.style.display = 'none';
+    // Move to ERROR state
+    if (modelStatusEl) modelStatusEl.textContent = '';
   });
 
   try {
-    const loadPromise = (async () => {
-      const { CreateMLCEngine } = await import('https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.82/+esm');
-      if (abortController.signal.aborted) throw new Error('Download cancelled');
-      return CreateMLCEngine(modelId, {
-        initProgressCallback: (report) => {
-          if (abortController.signal.aborted) throw new Error('Download cancelled');
-          const progress = report.progress || 0;
-          const pct = progress * 100;
-          bar.style.width = `${pct}%`;
-          if (window._setPreloadProgress) window._setPreloadProgress(progress);
-          updateModelProgress(pct);
-          announceProgress(pct);
+    const { CreateMLCEngine } = await import('https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.82/+esm');
+    if (abortController.signal.aborted) throw new Error('Cancelled');
+
+    const engine = await CreateMLCEngine(modelId, {
+      initProgressCallback: (report) => {
+        if (abortController.signal.aborted) throw new Error('Cancelled');
+        const pct = Math.round((report.progress || 0) * 100);
+        if (modelStatusEl && pct < 100) {
+          modelStatusEl.textContent = 'downloading model (' + pct + '%)...';
         }
-      });
-    })();
-
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('WebLLM load timeout (20s)')), 20000)
-    );
-
-    const abortPromise = new Promise((_, reject) => {
-      abortController.signal.addEventListener('abort', () => reject(new Error('Download cancelled')));
+        if (window._setPreloadProgress) window._setPreloadProgress(report.progress || 0);
+        updateModelProgress(pct);
+        announceProgress(pct);
+      }
     });
 
-    engine = await Promise.race([loadPromise, timeoutPromise, abortPromise]);
-
+    // → READY state
     window._webllmEngine = engine;
     window._webllmReady = true;
     cancelBtn.style.display = 'none';
-
-    // NOW show the button — model is ready
-    ctaTryBtn.removeAttribute('hidden');
-    ctaTryBtn.classList.add('ready');
-    ctaTryBtn.textContent = 'try it now';
-    ctaTryBtn.setAttribute('aria-label', 'Try the demo');
-    announceState('Demo ready');
+    const qi = document.getElementById('demo-question');
+    qi.disabled = false;
+    qi.placeholder = 'Ask your own question...';
+    if (modelStatusEl) modelStatusEl.textContent = '\u26A1 local model ready';
+    announceState('Live inference ready');
+    // If user is in demo, focus input
+    if (demoActive) qi.focus();
+    // If a question was queued from #q= hash, auto-submit
+    if (window._queuedQuestion) {
+      qi.value = window._queuedQuestion;
+      window._queuedQuestion = null;
+      qi.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+    }
 
   } catch (err) {
-    console.warn('WebLLM load failed/timeout, using Track A:', err);
+    console.warn('WebLLM:', err.message);
     cancelBtn.style.display = 'none';
-    // Model failed — still show button for Track A demo
-    ctaTryBtn.removeAttribute('hidden');
-    ctaTryBtn.textContent = 'try demo';
-    ctaTryBtn.classList.add('ready');
-    ctaTryBtn.setAttribute('aria-label', 'Try the demo');
+    // → ERROR state — Track A is already loaded, input stays disabled
+    if (modelStatusEl) modelStatusEl.textContent = '';
   }
 })();
 
@@ -1264,14 +1236,13 @@ const qInput = document.getElementById('demo-question');
 
 qInput.addEventListener('keydown', async (e) => {
   if (e.key !== 'Enter') return;
-  if (inferenceRunning) return; // BUG #5: prevent double-submit
+  if (inferenceRunning) return;
+  if (qInput.disabled) return;
   const question = qInput.value.trim();
   if (!question) return;
 
   if (!window._webllmReady || !window._webllmEngine) {
-    // No model — just load Track A silently
-    loadTrackA();
-    compileBtn.disabled = false;
+    showToast('model not ready yet');
     return;
   }
 
@@ -1283,9 +1254,7 @@ qInput.addEventListener('keydown', async (e) => {
   area.classList.remove('empty');
   compileBtn.disabled = true;
 
-  // GPU contention: pause shader during inference
-  pauseShader();
-  document.body.classList.add('webgl-fallback');
+  // GPU contention: shader already paused from enterDemo()
 
   try {
     const systemPrompt = `You are a research analyst. Given a question, produce exactly 5 research claims as a JSON array. Each claim has: id (r001-r005), type (one of: constraint, factual, risk, recommendation, estimate), tier (one of: stated, web, documented, tested), text (one sentence, factual). Return ONLY valid JSON array, no markdown.`;
@@ -1328,9 +1297,6 @@ qInput.addEventListener('keydown', async (e) => {
     showToast('inference failed \u2014 loading demo data');
     loadTrackA();
   } finally {
-    // Resume shader after inference
-    document.body.classList.remove('webgl-fallback');
-    resumeShader();
     inferenceRunning = false;
     qInput.disabled = false;
   }
@@ -1399,9 +1365,8 @@ document.addEventListener('keydown', (e) => {
   if (hash.startsWith('#q=')) {
     const q = decodeURIComponent(hash.slice(3));
     if (q) {
-      const qEl = document.getElementById('demo-question');
-      if (qEl) qEl.value = q;
-      // Auto-enter demo after page load for shared links
+      // Queue the question — will auto-submit when model loads
+      window._queuedQuestion = q;
       requestAnimationFrame(() => enterDemo());
     }
   } else if (hash === '#demo') {
