@@ -2,3 +2,5 @@ node_modules/
 .wheat/
 .DS_Store
 *.log
+.wheat-tips.md
+.wheat-compile.lock

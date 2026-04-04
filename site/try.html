@@ -491,8 +491,8 @@ a:hover { text-decoration: underline; }
 
   <!-- Track Tabs -->
   <div class="track-tabs">
-    <button class="track-tab active" id="tabA" onclick="switchTrack('a')">Demo Sprint</button>
-    <button class="track-tab" id="tabB" onclick="switchTrack('b')">Run Your Own</button>
+    <button type="button" class="track-tab active" id="tabA" onclick="switchTrack('a')">Demo Sprint</button>
+    <button type="button" class="track-tab" id="tabB" onclick="switchTrack('b')">Run Your Own</button>
   </div>
 
   <!-- ============ TRACK A ============ -->
@@ -505,7 +505,7 @@ a:hover { text-decoration: underline; }
     <div class="claims-list" id="claimsA"></div>
 
     <div class="compile-section">
-      <button class="compile-btn" id="compileBtnA" onclick="runCompile('a')">wheat compile</button>
+      <button type="button" class="compile-btn" id="compileBtnA" onclick="runCompile('a')">wheat compile</button>
     </div>
 
     <div class="compile-output" id="compileOutputA"></div>
@@ -515,10 +515,11 @@ a:hover { text-decoration: underline; }
   <div id="trackB" class="track-b-panel">
     <input type="text" class="question-input" id="questionInput"
            placeholder="Enter a research question..."
+           aria-label="Research question"
            maxlength="200">
 
     <div class="model-select-row">
-      <select class="model-select" id="modelSelect">
+      <select class="model-select" id="modelSelect" aria-label="Select language model">
         <option value="Phi-3.5-mini-instruct-q4f16_1-MLC">Phi-3.5 Mini 3.8B (q4f16) &mdash; recommended for 4GB+ VRAM</option>
         <option value="SmolLM2-1.7B-Instruct-q4f16_1-MLC">SmolLM2 1.7B (q4f16) &mdash; 2-4GB VRAM</option>
         <option value="SmolLM2-360M-Instruct-q4f16_1-MLC">SmolLM2 360M (q4f16) &mdash; low-end / mobile</option>
@@ -527,11 +528,11 @@ a:hover { text-decoration: underline; }
     </div>
 
     <div style="display:flex;gap:0.75rem;margin-bottom:1.5rem;">
-      <button class="start-btn" id="startBtn" onclick="startLiveSprint()">Start Sprint</button>
+      <button type="button" class="start-btn" id="startBtn" onclick="startLiveSprint()">Start Sprint</button>
     </div>
 
     <div class="progress-bar" id="progressBar">
-      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Model download progress" id="progressTrack"><div class="progress-fill" id="progressFill"></div></div>
       <div class="progress-text" id="progressText">Loading model...</div>
     </div>
 
@@ -540,7 +541,7 @@ a:hover { text-decoration: underline; }
     <div class="claims-list" id="claimsB"></div>
 
     <div class="compile-section" style="display:none" id="compileSectionB">
-      <button class="compile-btn" id="compileBtnB" onclick="runCompile('b')">wheat compile</button>
+      <button type="button" class="compile-btn" id="compileBtnB" onclick="runCompile('b')">wheat compile</button>
     </div>
 
     <div class="compile-output" id="compileOutputB"></div>
@@ -623,26 +624,53 @@ function compileClaims(claims) {
     result.warnings.push(`${claims.length - valid.length} claim(s) failed validation`);
   }
 
-  // Pass 2: Conflict detection
+  // Pass 2: Conflict detection (topic-based, generalized)
   const types = valid.map(c => c.type);
   const hasConstraint = types.includes("constraint");
   const hasRecommendation = types.includes("recommendation");
   const hasRisk = types.includes("risk");
-  if (hasConstraint && hasRecommendation) {
-    // Simple heuristic: check for tension
-    const constraints = valid.filter(c => c.type === "constraint");
-    const recs = valid.filter(c => c.type === "recommendation");
-    let tensions = 0;
-    for (const con of constraints) {
-      for (const rec of recs) {
-        if (con.claim.toLowerCase().includes("latency") && rec.claim.toLowerCase().includes("pilot")) {
+
+  // Tensioning type pairs: types that naturally conflict on the same topic
+  const tensionPairs = [
+    ["constraint", "recommendation"],
+    ["factual", "risk"],
+    ["recommendation", "risk"],
+    ["constraint", "estimate"]
+  ];
+
+  // Extract significant keywords from a claim (5+ chars, no stop words)
+  const stopWords = ["should", "would", "could", "about", "which", "their", "there", "these", "those", "without", "between", "during", "before", "after", "being", "other", "every", "under", "through"];
+  function extractTopicWords(text) {
+    return text.toLowerCase()
+      .replace(/[^a-z0-9\s]/g, "")
+      .split(/\s+/)
+      .filter(w => w.length > 4 && !stopWords.includes(w));
+  }
+
+  // Detect topic overlap between two claims (shared keywords)
+  function topicOverlap(a, b) {
+    const wordsA = new Set(extractTopicWords(a.claim));
+    const wordsB = extractTopicWords(b.claim);
+    return wordsB.filter(w => wordsA.has(w));
+  }
+
+  let tensions = 0;
+  const tensionDetails = [];
+  for (const [typeA, typeB] of tensionPairs) {
+    const groupA = valid.filter(c => c.type === typeA);
+    const groupB = valid.filter(c => c.type === typeB);
+    for (const a of groupA) {
+      for (const b of groupB) {
+        const shared = topicOverlap(a, b);
+        if (shared.length >= 2) {
           tensions++;
+          tensionDetails.push(`${a.id} (${typeA}) vs ${b.id} (${typeB}) on [${shared.slice(0, 3).join(", ")}]`);
         }
       }
     }
-    if (tensions > 0) {
-      result.warnings.push(`${tensions} tension(s) detected between constraints and recommendations — review advised`);
-    }
+  }
+  if (tensions > 0) {
+    result.warnings.push(`${tensions} tension(s) detected: ${tensionDetails.join("; ")} — review advised`);
   }
 
   // Pass 3: Evidence coverage
@@ -725,21 +753,63 @@ function compileClaims(claims) {
 
 // ── Render Helpers ─────────────────────────────────────────────────────
 function renderClaim(claim, container) {
+  const VALID_TYPES = ["constraint", "factual", "risk", "recommendation", "estimate", "feedback"];
+  const VALID_EVIDENCE = ["stated", "web", "documented", "tested", "production"];
+
   const card = document.createElement("div");
   card.className = "claim-card";
-  card.onclick = () => card.classList.toggle("expanded");
-  card.innerHTML = `
-    <div class="claim-top">
-      <span class="claim-id">${claim.id}</span>
-      <span class="type-badge ${claim.type}">${claim.type}</span>
-      <span class="evidence-pill ${claim.evidence}">${claim.evidence}</span>
-      <span class="claim-text">${claim.claim}</span>
-    </div>
-    <div class="claim-detail">
-      <strong>Source:</strong> ${claim.source || "—"}<br>
-      <strong>Detail:</strong> ${claim.detail || "—"}
-    </div>
-  `;
+  card.setAttribute("tabindex", "0");
+  card.setAttribute("role", "button");
+  card.setAttribute("aria-expanded", "false");
+  const toggleExpand = () => {
+    card.classList.toggle("expanded");
+    card.setAttribute("aria-expanded", card.classList.contains("expanded"));
+  };
+  card.onclick = toggleExpand;
+  card.onkeydown = (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleExpand(); }
+  };
+
+  const top = document.createElement("div");
+  top.className = "claim-top";
+
+  const idSpan = document.createElement("span");
+  idSpan.className = "claim-id";
+  idSpan.textContent = claim.id;
+
+  const typeSpan = document.createElement("span");
+  const safeType = VALID_TYPES.includes(claim.type) ? claim.type : "";
+  typeSpan.className = "type-badge" + (safeType ? " " + safeType : "");
+  typeSpan.textContent = claim.type;
+
+  const evidenceSpan = document.createElement("span");
+  const safeEvidence = VALID_EVIDENCE.includes(claim.evidence) ? claim.evidence : "";
+  evidenceSpan.className = "evidence-pill" + (safeEvidence ? " " + safeEvidence : "");
+  evidenceSpan.textContent = claim.evidence;
+
+  const textSpan = document.createElement("span");
+  textSpan.className = "claim-text";
+  textSpan.textContent = claim.claim;
+
+  top.appendChild(idSpan);
+  top.appendChild(typeSpan);
+  top.appendChild(evidenceSpan);
+  top.appendChild(textSpan);
+
+  const detail = document.createElement("div");
+  detail.className = "claim-detail";
+  const sourceLabel = document.createElement("strong");
+  sourceLabel.textContent = "Source:";
+  const detailLabel = document.createElement("strong");
+  detailLabel.textContent = "Detail:";
+  detail.appendChild(sourceLabel);
+  detail.appendChild(document.createTextNode(" " + (claim.source || "\u2014")));
+  detail.appendChild(document.createElement("br"));
+  detail.appendChild(detailLabel);
+  detail.appendChild(document.createTextNode(" " + (claim.detail || "\u2014")));
+
+  card.appendChild(top);
+  card.appendChild(detail);
   container.appendChild(card);
 }
 
@@ -978,20 +1048,62 @@ window.startLiveSprint = async () => {
   document.getElementById("compileOutputB").classList.remove("visible");
 
   try {
-    // Dynamic import of WebLLM
+    // Dynamic import of WebLLM (pinned version with fallback)
     progressText.textContent = "Loading WebLLM runtime...";
-    const webllm = await import("https://esm.run/@mlc-ai/web-llm");
+    let webllm;
+    try {
+      webllm = await import("https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.82/+esm");
+    } catch {
+      try {
+        webllm = await import("https://esm.run/@mlc-ai/web-llm@0.2.82");
+      } catch {
+        throw new Error("WebLLM unavailable — could not load the runtime library. Please check your network connection and try again.");
+      }
+    }
 
-    // Create engine
+    // Create engine with abort support
     progressText.textContent = `Downloading ${modelId.split("-").slice(0, -1).join(" ")}...`;
 
-    engine = await webllm.CreateMLCEngine(modelId, {
+    const abortController = new AbortController();
+
+    // Show cancel button
+    const cancelBtn = document.createElement("button");
+    cancelBtn.textContent = "Cancel";
+    cancelBtn.className = "start-btn";
+    cancelBtn.type = "button";
+    cancelBtn.style.cssText = "background:transparent;color:var(--risk);border:1px solid var(--risk);margin-left:0.75rem;padding:0.4rem 1rem;font-size:0.8rem;";
+    cancelBtn.onclick = () => {
+      abortController.abort();
+      cancelBtn.remove();
+    };
+    progressBar.appendChild(cancelBtn);
+
+    const enginePromise = webllm.CreateMLCEngine(modelId, {
       initProgressCallback: (report) => {
+        if (abortController.signal.aborted) return;
         const pct = Math.round(report.progress * 100);
         progressFill.style.width = pct + "%";
         progressText.textContent = report.text || `Loading model... ${pct}%`;
+        const progressTrack = document.getElementById("progressTrack");
+        if (progressTrack) progressTrack.setAttribute("aria-valuenow", pct);
       }
     });
+
+    // Race engine creation against abort
+    abortController.signal.addEventListener("abort", () => {
+      progressBar.classList.remove("visible");
+      streamArea.textContent = "Download cancelled. Switching back to Demo Sprint.";
+      startBtn.disabled = false;
+      switchTrack("a");
+    });
+
+    engine = await enginePromise;
+    cancelBtn.remove();
+
+    if (abortController.signal.aborted) {
+      engine = null;
+      return;
+    }
 
     progressFill.style.width = "100%";
     progressText.textContent = "Model loaded. Generating claims...";
@@ -1018,13 +1130,33 @@ window.startLiveSprint = async () => {
     progressBar.classList.remove("visible");
     progressText.textContent = "";
 
-    // Parse claims from output
+    // Parse claims from output with JSON repair
     let parsed = null;
     try {
+      // Strip markdown code fences if present
+      let cleaned = fullText.replace(/```(?:json)?\s*/gi, "").replace(/```/g, "");
       // Try to extract JSON array from the response
-      const jsonMatch = fullText.match(/\[[\s\S]*\]/);
+      const jsonMatch = cleaned.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
-        parsed = JSON.parse(jsonMatch[0]);
+        let jsonStr = jsonMatch[0];
+        // Repair: strip trailing commas before ] or }
+        jsonStr = jsonStr.replace(/,\s*([\]}])/g, "$1");
+        try {
+          parsed = JSON.parse(jsonStr);
+        } catch {
+          // Fallback: try extracting individual claim objects
+          const objMatches = [...jsonStr.matchAll(/\{[^{}]*\}/g)];
+          if (objMatches.length > 0) {
+            const extracted = [];
+            for (const m of objMatches) {
+              try {
+                let objStr = m[0].replace(/,\s*([\]}])/g, "$1");
+                extracted.push(JSON.parse(objStr));
+              } catch { /* skip malformed object */ }
+            }
+            if (extracted.length > 0) parsed = extracted;
+          }
+        }
       }
     } catch (e) {
       streamArea.textContent += "\n\n[Parse error: could not extract valid JSON claims from model output]";

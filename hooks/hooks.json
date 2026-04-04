@@ -6,7 +6,7 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "node lib/tips-hook.cjs"
+						"command": "node ${CLAUDE_PLUGIN_ROOT}/lib/tips-hook.cjs"
 					}
 				]
 			}
