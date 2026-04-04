@@ -3,10 +3,11 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/grainulation/grainulator/releases"><img src="https://img.shields.io/github/v/tag/grainulation/grainulator?label=version" alt="version"></a>
   <a href="https://grainulator.app"><img src="https://img.shields.io/badge/site-grainulator.app-8df6ff?style=flat" alt="site"></a>
   <a href="https://github.com/grainulation/grainulator/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
   <a href="https://github.com/grainulation/grainulator/actions"><img src="https://github.com/grainulation/grainulator/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://deepwiki.com/grainulation/grainulator"><img src="https://deepwiki.com/badge.svg" alt="Explore on DeepWiki"></a>
+  <a href="https://deepwiki.com/grainulation/grainulator"><img src="https://deepwiki.com/badge.svg" alt="Docs on DeepWiki"></a>
 </p>
 
 <p align="center"><strong>Research sprint orchestrator for Claude Code.</strong></p>
