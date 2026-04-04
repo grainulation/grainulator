@@ -7,7 +7,7 @@
     - Lava lamp blobs rendered as a static frame from the shader
       (capture at t≈8.0 for good blob distribution)
     - "Grainulator" in system sans-serif, 600 weight, white, centered upper third
-    - "Research that compiles." in monospace, rgba(57,255,20,0.8), centered below
+    - "Research that compiles." in monospace, rgba(141,246,255,0.8), centered below
   Border: 20px padding filled with linear-gradient(135deg, #111 0%, #1a1a1a 100%)
     so the image doesn't float on white backgrounds (r1301)
   File: /og-image.png at root of grainulator.app
@@ -98,7 +98,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;transition:opacity 0.6s eas
 canvas.dimmed{opacity:0.3}
 
 /* Skip link for accessibility */
-.skip-link{position:absolute;top:-100%;left:50%;transform:translateX(-50%);background:#39FF14;color:#000;padding:0.5rem 1rem;font-family:monospace;font-size:0.85rem;z-index:200;border-radius:0 0 4px 4px;text-decoration:none;font-weight:700}
+.skip-link{position:absolute;top:-100%;left:50%;transform:translateX(-50%);background:#8df6ff;color:#000;padding:0.5rem 1rem;font-family:monospace;font-size:0.85rem;z-index:200;border-radius:0 0 4px 4px;text-decoration:none;font-weight:700}
 .skip-link:focus{top:0}
 
 /* === LANDING PHASE === */
@@ -123,13 +123,13 @@ canvas.dimmed{opacity:0.3}
 
 /* Toast */
 .toast{position:fixed;bottom:1.5vh;left:50%;transform:translateX(-50%) translateY(40px);font-family:monospace;font-size:0.7rem;color:#8df6ff;opacity:0.5;z-index:99;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none}
-.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:0.9}
 
 /* Footer */
 .site-footer{position:fixed;bottom:1.5vh;left:50%;transform:translateX(-50%);z-index:10;text-align:center;opacity:0;animation:appear 1s ease 1s forwards;transition:opacity 0.4s}
 .site-footer.hidden{opacity:0;pointer-events:none}
 .site-footer a{font-family:monospace;font-size:0.6rem;color:rgba(255,255,255,0.45);padding:0.5rem 0.4rem;min-height:48px;display:inline-flex;align-items:center;text-decoration:none;transition:color 0.3s}
-.site-footer a:hover,.site-footer a:focus-visible{color:rgba(255,255,255,0.4);outline:none}
+.site-footer a:hover,.site-footer a:focus-visible{color:rgba(255,255,255,0.65);outline:none}
 .site-footer span{color:rgba(255,255,255,0.2);font-size:0.6rem;margin:0 0.3rem}
 
 /* === DEMO PHASE === */
@@ -155,6 +155,7 @@ canvas.dimmed{opacity:0.3}
 .q-input{font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:0.85rem;color:#fff;background:rgba(0,0,0,0.3);border:1px solid rgba(141,246,255,0.3);border-radius:6px;padding:0.9rem 1rem;width:100%;outline:none;transition:border-color 0.3s,box-shadow 0.3s;text-align:center}
 .q-input:focus{border-color:rgba(141,246,255,0.6);box-shadow:0 0 20px rgba(141,246,255,0.1)}
 .q-input::placeholder{color:rgba(255,255,255,0.25)}
+.model-status{font-family:monospace;font-size:0.65rem;color:#8df6ff;text-align:center;margin-top:0.5rem;min-height:1em}
 
 /* Claim cards */
 .claims-area{display:flex;flex-direction:column;gap:0.8rem;min-height:120px}
@@ -174,8 +175,8 @@ canvas.dimmed{opacity:0.3}
 .type-feedback{background:rgba(156,163,175,0.15);color:#9ca3af}
 
 .evidence-tier{font-family:monospace;font-size:0.55rem;padding:0.1rem 0.4rem;border-radius:2px;margin-left:auto}
-.tier-stated{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3)}
-.tier-web{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.45)}
+.tier-stated{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.6)}
+.tier-web{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7)}
 .tier-documented{background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.6)}
 .tier-tested{background:rgba(255,255,255,0.18);color:rgba(255,255,255,0.75)}
 .tier-production{background:rgba(141,246,255,0.15);color:rgba(141,246,255,0.8)}
@@ -210,6 +211,7 @@ canvas.dimmed{opacity:0.3}
 @media(max-width:768px){
   .ui{bottom:calc(12vh + env(safe-area-inset-bottom,0px))}
   .cta-btn{padding:0.5rem 1rem;min-height:44px;font-size:0.7rem}
+  .cta-install{display:none}
   .site-footer{bottom:calc(3vh + env(safe-area-inset-bottom,0px))}
   .site-footer a{min-height:44px;padding:0.4rem 0.5rem;font-size:0.55rem}
   .demo-ui{padding:1.5rem 1rem 3rem}
@@ -261,7 +263,7 @@ canvas.dimmed{opacity:0.3}
 .handoff-btn:hover,.handoff-btn:focus-visible{color:#8df6ff;border-color:rgba(141,246,255,0.5);box-shadow:0 0 15px rgba(141,246,255,0.1)}
 
 /* Privacy disclosure */
-.privacy-note{font-family:monospace;font-size:0.55rem;color:rgba(255,255,255,0.25);text-align:center;margin-top:0.3rem;line-height:1.4}
+.privacy-note{font-family:monospace;font-size:0.65rem;color:rgba(255,255,255,0.4);text-align:center;margin-top:0.3rem;line-height:1.4}
 
 /* Noscript fallback */
 .noscript-fallback{display:none}
@@ -276,7 +278,7 @@ canvas.dimmed{opacity:0.3}
 .webgl-fallback canvas{display:none!important}
 .webgl-fallback::before,.webgl-fallback::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none}
 .webgl-fallback::before{background:radial-gradient(ellipse 50% 60% at var(--blob1-x) var(--blob1-y),rgba(45,107,48,0.35) 0%,transparent 70%),radial-gradient(ellipse 45% 55% at var(--blob2-x) var(--blob2-y),rgba(32,80,10,0.30) 0%,transparent 65%),radial-gradient(ellipse 60% 40% at var(--blob3-x) var(--blob3-y),rgba(20,60,20,0.25) 0%,transparent 60%),linear-gradient(to top,rgba(60,40,15,0.15) 0%,rgba(15,12,8,1) 50%,rgba(0,0,0,1) 100%);animation:lava-drift 25s ease-in-out infinite;filter:blur(40px)}
-.webgl-fallback::after{background:radial-gradient(circle 120px at var(--blob2-x) var(--blob1-y),rgba(57,255,20,0.08) 0%,transparent 70%),radial-gradient(circle 80px at var(--blob1-x) var(--blob2-y),rgba(141,246,255,0.06) 0%,transparent 60%),radial-gradient(ellipse 200px 300px at 50% 85%,rgba(80,50,20,0.12) 0%,transparent 70%);animation:lava-drift-2 30s ease-in-out infinite;filter:blur(50px)}
+.webgl-fallback::after{background:radial-gradient(circle 120px at var(--blob2-x) var(--blob1-y),rgba(141,246,255,0.08) 0%,transparent 70%),radial-gradient(circle 80px at var(--blob1-x) var(--blob2-y),rgba(141,246,255,0.06) 0%,transparent 60%),radial-gradient(ellipse 200px 300px at 50% 85%,rgba(80,50,20,0.12) 0%,transparent 70%);animation:lava-drift-2 30s ease-in-out infinite;filter:blur(50px)}
 @keyframes lava-drift{0%{--blob1-x:30%;--blob1-y:70%;--blob2-x:70%;--blob2-y:30%;--blob3-x:50%;--blob3-y:50%}25%{--blob1-x:45%;--blob1-y:55%;--blob2-x:55%;--blob2-y:60%;--blob3-x:35%;--blob3-y:40%}50%{--blob1-x:60%;--blob1-y:40%;--blob2-x:40%;--blob2-y:70%;--blob3-x:65%;--blob3-y:60%}75%{--blob1-x:35%;--blob1-y:65%;--blob2-x:65%;--blob2-y:45%;--blob3-x:45%;--blob3-y:35%}100%{--blob1-x:30%;--blob1-y:70%;--blob2-x:70%;--blob2-y:30%;--blob3-x:50%;--blob3-y:50%}}
 @keyframes lava-drift-2{0%{--blob2-x:70%;--blob1-y:70%}50%{--blob2-x:40%;--blob1-y:40%}100%{--blob2-x:70%;--blob1-y:70%}}
 @media(prefers-reduced-motion:reduce){.webgl-fallback::before,.webgl-fallback::after{animation:none!important}}
@@ -327,6 +329,7 @@ canvas.dimmed{opacity:0.3}
         spellcheck="false"
         maxlength="500"
       >
+      <div id="model-status" class="model-status"></div>
     </div>
 
     <div class="claims-area empty" id="claimsArea" role="region" aria-label="Research claims" aria-live="polite"></div>
@@ -827,7 +830,7 @@ ctaInstall.addEventListener('click', (e) => {
   e.preventDefault();
   navigator.clipboard.writeText('/plugin install grainulator').then(() => {
     showToast('copied.');
-  });
+  }).catch(() => showToast('copy failed'));
 });
 ctaInstall.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ctaInstall.click(); }
@@ -874,6 +877,8 @@ function loadTrackA() {
   const area = document.getElementById('claimsArea');
   area.innerHTML = '';
   area.classList.remove('empty');
+  const modelStatusEl = document.getElementById('model-status');
+  if (modelStatusEl && !window._webllmReady) modelStatusEl.textContent = '\uD83D\uDCCB pre-generated demo';
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -887,15 +892,13 @@ function loadTrackA() {
     addClaimCard(area, card);
   });
 
-  initClaimCardKeyboard(area);
+
   document.getElementById('compileBtn').disabled = false;
 }
 
 function createClaimCard(claim) {
   const card = document.createElement('div');
   card.className = 'claim-card glass';
-  card.setAttribute('role', 'button');
-  card.setAttribute('tabindex', '0');
   card.setAttribute('aria-label', `Claim: ${claim.id} — ${claim.type} — ${claim.text.slice(0, 80)}`);
 
   const header = document.createElement('div');
@@ -933,27 +936,6 @@ function addClaimCard(container, cardEl) {
   if (announcer) announcer.textContent = 'New claim: ' + (cardEl.querySelector('.claim-title')?.textContent || 'generated');
 }
 
-// A11y: roving tabindex for claim cards
-function initClaimCardKeyboard(container) {
-  const getCards = () => Array.from(container.querySelectorAll('.claim-card'));
-  container.addEventListener('keydown', (e) => {
-    const cards = getCards();
-    const current = document.activeElement;
-    const idx = cards.indexOf(current);
-    if (idx === -1) return;
-    let next = -1;
-    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); next = (idx + 1) % cards.length; }
-    else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); next = (idx - 1 + cards.length) % cards.length; }
-    else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); current.click(); return; }
-    else if (e.key === 'Home') { e.preventDefault(); next = 0; }
-    else if (e.key === 'End') { e.preventDefault(); next = cards.length - 1; }
-    if (next !== -1) {
-      cards[idx].setAttribute('tabindex', '-1');
-      cards[next].setAttribute('tabindex', '0');
-      cards[next].focus();
-    }
-  });
-}
 
 // ===================================================================
 // IN-BROWSER COMPILER — 7-pass pipeline
@@ -1106,7 +1088,7 @@ compileBtn.addEventListener('click', async () => {
   // Handoff: copy install command
   document.getElementById('handoff-copy').addEventListener('click', () => {
     const cmd = 'npx @grainulation/wheat "' + question.replace(/"/g, '\\"') + '"';
-    navigator.clipboard.writeText(cmd).then(() => showToast('install command copied.'));
+    navigator.clipboard.writeText(cmd).then(() => showToast('install command copied.')).catch(() => showToast('copy failed'));
   });
 
   // Handoff: download sprint as JSON
@@ -1127,7 +1109,7 @@ compileBtn.addEventListener('click', async () => {
       try { await navigator.share({ title: 'Grainulator Sprint', text: question, url: shareUrl }); }
       catch { /* user cancelled */ }
     } else {
-      await navigator.clipboard.writeText(shareUrl);
+      await navigator.clipboard.writeText(shareUrl).catch(() => showToast('copy failed'));
       showToast('link copied.');
     }
   });
@@ -1196,10 +1178,15 @@ function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
   const tier = await detectTier();
   document.documentElement.setAttribute('data-tier', tier);
 
-  // Mobile/no-WebGPU: only show install, not try
+  // Mobile/no-WebGPU: show try button for Track A demo, hide install on mobile
   if (tier === 'minimal') {
     noWebGPUNote.removeAttribute('hidden');
-    return; // ctaTry stays hidden
+    ctaTryBtn.removeAttribute('hidden');
+    ctaTryBtn.textContent = 'try demo';
+    ctaTryBtn.classList.add('ready');
+    ctaTryBtn.setAttribute('aria-label', 'Try the demo (pre-generated data, no model needed)');
+    ctaTryBtn.addEventListener('click', () => { enterDemo(); loadTrackA(); });
+    return;
   }
 
   // WebGPU available: show try button (secondary) + privacy note
@@ -1248,7 +1235,9 @@ function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
           // Show percentage on the button text
           const pctInt = Math.round(pct);
           if (pctInt < 100) {
-            ctaTryBtn.textContent = `try it now (${pctInt}%)`;
+            ctaTryBtn.textContent = `try it now \u00B7 ${pctInt}% of ~925MB`;
+            const modelStatusEl = document.getElementById('model-status');
+            if (modelStatusEl) modelStatusEl.textContent = `\u231B downloading model (${pctInt}% of ~925MB)`;
           }
           if (window._setPreloadProgress) window._setPreloadProgress(progress);
           updateModelProgress(pct);
@@ -1276,6 +1265,8 @@ function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
     bar.style.width = '100%';
     announceState('Demo ready');
     setTimeout(() => { bar.style.opacity = '0'; }, 1500);
+    const modelStatusEl = document.getElementById('model-status');
+    if (modelStatusEl) modelStatusEl.textContent = '\u26A1 local model ready';
 
     // Show checkmark briefly, then revert — but only if user isn't already in demo
     if (!demoActive) {
@@ -1308,7 +1299,8 @@ qInput.addEventListener('keydown', async (e) => {
   if (question === TRACK_A_QUESTION) return;
 
   if (!window._webllmReady || !window._webllmEngine) {
-    showToast('model still loading — showing pre-generated demo');
+    showToast('showing pre-generated demo \u2014 model still loading');
+    loadTrackA();
     return;
   }
 
@@ -1354,14 +1346,15 @@ qInput.addEventListener('keydown', async (e) => {
       }
       addClaimCard(area, card);
     });
-    initClaimCardKeyboard(area);
+  
     compileBtn.disabled = false;
 
   } catch (err) {
     console.warn('Inference failed:', err);
+    window._liveClaims = null;
     area.innerHTML = '';
     area.classList.add('empty');
-    showToast('inference failed — loading demo data');
+    showToast('inference failed \u2014 loading demo data');
     loadTrackA();
   } finally {
     // Resume shader after inference
@@ -1424,6 +1417,11 @@ window.addEventListener('popstate', (e) => {
   }
 });
 
+// Escape key exits demo
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && demoLayer.classList.contains('active')) exitDemo();
+});
+
 // Hash-based question loading + auto-enter demo for #q= links
 (function loadFromHash() {
   const hash = location.hash;
@@ -1436,7 +1434,10 @@ window.addEventListener('popstate', (e) => {
       requestAnimationFrame(() => enterDemo());
     }
   } else if (hash === '#demo') {
-    requestAnimationFrame(() => enterDemo());
+    requestAnimationFrame(() => {
+      enterDemo();
+      history.replaceState({ phase: 'demo' }, '', '/');
+    });
   }
 })();
 
