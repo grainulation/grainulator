@@ -1,12 +1,13 @@
 // Service worker for grainulator.app PWA
 // Caches the single-page site for offline access
 
-const CACHE = "grainulator-v1";
+const CACHE = "grainulator-v2";
 const ASSETS = [
 	"/",
 	"/index.html",
 	"/manifest.json",
-	"/favicon.svg",
+	"/favicon-32.png",
+	"/favicon-64.png",
 	"/og-image.png",
 ];
 
