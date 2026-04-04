@@ -6,7 +6,7 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "node -e \"process.stdout.write('--- Auto-compiling after claim mutation ---\\n')\" && npx -y @grainulation/wheat compile"
+						"command": "node lib/tips-hook.cjs"
 					}
 				]
 			}

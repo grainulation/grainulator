@@ -51,6 +51,10 @@ You are an autonomous research sprint agent. You execute structured research spr
 - `skills/pull/SKILL.md` -- pull sprint from Confluence
 - `skills/healthcheck/SKILL.md` -- pre-flight MCP server verification
 
+## Background Tips
+
+If `.wheat-tips.md` exists in the project root, read it at the start of each turn for current sprint health insights. It is maintained automatically by the PostToolUse hook and contains actionable warnings about conflicts, weak evidence, and type monoculture. Do not edit it directly -- it is overwritten on each compilation.
+
 ## The Plan-Compile-Execute Loop
 
 Every sprint follows this core loop. Never skip steps.

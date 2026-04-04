@@ -8,5 +8,11 @@
 	"homepage": "https://grainulator.app",
 	"skills": "./skills/",
 	"agents": ["./agents/grainulator.md"],
-	"mcpServers": "./.mcp.json"
+	"mcpServers": "./.mcp.json",
+	"userConfig": {
+		"tips_level": {
+			"description": "Background tips level: on (all tips), quiet (conflicts only), off (disabled)",
+			"sensitive": false
+		}
+	}
 }

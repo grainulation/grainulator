@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Try Grainulator — Research that compiles</title>
+<meta name="description" content="Try a wheat research sprint in your browser. No install needed. Evidence-tracked claims, compiled into a decision-ready brief.">
+<link rel="canonical" href="https://grainulator.app/try">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Grainulator">
+<meta property="og:title" content="Try Grainulator — Research that compiles">
+<meta property="og:description" content="Try a wheat research sprint in your browser. No install needed.">
+<meta property="og:image" content="https://grainulator.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://grainulator.app/try">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Try Grainulator — Research that compiles">
+<meta name="twitter:description" content="Try a wheat research sprint in your browser. No install needed.">
+<meta name="twitter:image" content="https://grainulator.app/og-image.png">
+
+<meta name="theme-color" content="#000000">
+<meta name="color-scheme" content="dark">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="favicon-64.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --green: rgba(57, 255, 20, 0.8);
+  --green-dim: rgba(57, 255, 20, 0.3);
+  --green-glow: rgba(57, 255, 20, 0.15);
+  --bg: #000;
+  --surface: #0a0a0a;
+  --surface-hover: #111;
+  --border: #1a1a1a;
+  --text: #e0e0e0;
+  --text-dim: #888;
+  --mono: "SF Mono", "Cascadia Code", "Fira Code", Consolas, monospace;
+  --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --constraint: #ff4444;
+  --factual: #4488ff;
+  --risk: #ffaa22;
+  --recommendation: #44cc66;
+  --estimate: #aa66ff;
+  --feedback: #888;
+}
+
+html { font-size: 16px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--green); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Layout */
+.container { max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+/* Header */
+.header {
+  text-align: center;
+  padding: 3rem 0 2rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2rem;
+}
+.header h1 {
+  font-family: var(--sans);
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+.header .tagline {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  color: var(--green);
+}
+.header .back {
+  display: inline-block;
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+/* GPU Info */
+.gpu-info {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 2rem;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+.gpu-info .gpu-label { color: var(--green); font-weight: 600; }
+.gpu-info .gpu-model { color: var(--text); }
+.gpu-info .gpu-note { margin-top: 0.5rem; font-size: 0.75rem; }
+
+/* Track Tabs */
+.track-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 2rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.track-tab {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  text-align: center;
+  background: var(--surface);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  border: none;
+  transition: background 0.2s, color 0.2s;
+}
+.track-tab:first-child { border-right: 1px solid var(--border); }
+.track-tab.active {
+  background: var(--green-glow);
+  color: var(--green);
+  font-weight: 600;
+}
+.track-tab:hover:not(.active) { background: var(--surface-hover); }
+.track-tab:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Sprint Header */
+.sprint-header {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.sprint-question {
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+.sprint-meta {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-family: var(--mono);
+}
+
+/* Claims */
+.claims-list { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem; }
+
+.claim-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.claim-card:hover { border-color: #333; background: var(--surface-hover); }
+.claim-card.expanded { border-color: var(--green-dim); }
+
+.claim-top {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.claim-id {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  min-width: 3rem;
+}
+
+/* Type Badges */
+.type-badge {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  color: #fff;
+}
+.type-badge.constraint { background: var(--constraint); }
+.type-badge.factual { background: var(--factual); }
+.type-badge.risk { background: var(--risk); color: #000; }
+.type-badge.recommendation { background: var(--recommendation); color: #000; }
+.type-badge.estimate { background: var(--estimate); }
+.type-badge.feedback { background: var(--feedback); }
+
+/* Evidence Tier Pills */
+.evidence-pill {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  border: 1px solid;
+}
+.evidence-pill.stated { color: #666; border-color: #333; background: #111; }
+.evidence-pill.web { color: #888; border-color: #444; background: #1a1a1a; }
+.evidence-pill.documented { color: #aaa; border-color: #555; background: #222; }
+.evidence-pill.tested { color: #ccc; border-color: #777; background: #2a2a2a; }
+.evidence-pill.production { color: #fff; border-color: var(--green-dim); background: var(--green-glow); }
+
+.claim-text {
+  flex: 1;
+  font-size: 0.85rem;
+  color: var(--text);
+  min-width: 200px;
+}
+.claim-detail {
+  display: none;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  line-height: 1.7;
+}
+.claim-card.expanded .claim-detail { display: block; }
+.claim-detail strong { color: var(--text); }
+
+/* Compile Button */
+.compile-section { text-align: center; margin: 2rem 0; }
+.compile-btn {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.75rem 2rem;
+  background: transparent;
+  color: var(--green);
+  border: 2px solid var(--green);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.compile-btn:hover {
+  background: var(--green-glow);
+  box-shadow: 0 0 20px var(--green-glow);
+}
+.compile-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Compile Output */
+.compile-output {
+  display: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-top: 1.5rem;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+}
+.compile-output.visible { display: block; }
+
+.compile-pass {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+  color: var(--text-dim);
+}
+.compile-pass.done { color: var(--green); }
+.compile-pass.running { color: var(--text); }
+.compile-pass .pass-icon { width: 1.2rem; text-align: center; }
+.compile-pass .pass-name { flex: 1; }
+.compile-pass .pass-time { font-size: 0.7rem; color: var(--text-dim); }
+
+.compile-result {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+.compile-stat {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem 0;
+  font-size: 0.8rem;
+}
+.compile-stat .stat-label { color: var(--text-dim); }
+.compile-stat .stat-value { color: var(--text); }
+.compile-stat .stat-value.pass { color: var(--green); }
+.compile-stat .stat-value.warn { color: var(--risk); }
+.compile-stat .stat-value.fail { color: var(--constraint); }
+
+.compile-warnings {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+.compile-warning {
+  padding: 0.3rem 0;
+  font-size: 0.75rem;
+  color: var(--risk);
+}
+
+/* Track B */
+.track-b-panel { display: none; }
+.track-b-panel.visible { display: block; }
+
+.question-input {
+  width: 100%;
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  color: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: none;
+  margin-bottom: 1rem;
+  transition: border-color 0.2s;
+}
+.question-input:focus { border-color: var(--green-dim); }
+.question-input::placeholder { color: #444; }
+
+.model-select-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.model-select {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  outline: none;
+  flex: 1;
+  min-width: 200px;
+}
+.model-select:focus { border-color: var(--green-dim); }
+.model-rec {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
+
+.start-btn {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.6rem 1.5rem;
+  background: var(--green);
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.start-btn:hover { opacity: 0.85; }
+.start-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Progress */
+.progress-bar {
+  display: none;
+  margin-bottom: 1.5rem;
+}
+.progress-bar.visible { display: block; }
+.progress-track {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--green);
+  width: 0%;
+  transition: width 0.3s;
+  border-radius: 2px;
+}
+.progress-text {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  margin-top: 0.4rem;
+}
+
+/* Stream Area */
+.stream-area {
+  display: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.stream-area.visible { display: block; }
+
+/* CTA */
+.cta-section {
+  text-align: center;
+  padding: 3rem 0 2rem;
+  border-top: 1px solid var(--border);
+  margin-top: 3rem;
+}
+.cta-section h2 {
+  font-family: var(--sans);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+.cta-section p {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-bottom: 1.5rem;
+}
+.cta-install {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  padding: 0.6rem 1.5rem;
+  background: var(--green);
+  color: #000;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: opacity 0.2s;
+}
+.cta-install:hover { opacity: 0.85; text-decoration: none; }
+
+.footer {
+  text-align: center;
+  padding: 1.5rem 0;
+  font-size: 0.75rem;
+  color: #444;
+  font-family: var(--mono);
+}
+
+@media (max-width: 600px) {
+  .container { padding: 1rem; }
+  .header h1 { font-size: 1.4rem; }
+  .claim-top { gap: 0.5rem; }
+  .model-select-row { flex-direction: column; align-items: stretch; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <h1>Try Grainulator</h1>
+    <div class="tagline">Research that compiles.</div>
+    <a href="https://grainulator.app" class="back">&larr; grainulator.app</a>
+  </div>
+
+  <!-- GPU Detection -->
+  <div class="gpu-info" id="gpuInfo">
+    <span class="gpu-label">GPU:</span>
+    <span class="gpu-model" id="gpuName">Detecting...</span>
+    <div class="gpu-note" id="gpuNote"></div>
+  </div>
+
+  <!-- Track Tabs -->
+  <div class="track-tabs">
+    <button class="track-tab active" id="tabA" onclick="switchTrack('a')">Demo Sprint</button>
+    <button class="track-tab" id="tabB" onclick="switchTrack('b')">Run Your Own</button>
+  </div>
+
+  <!-- ============ TRACK A ============ -->
+  <div id="trackA">
+    <div class="sprint-header">
+      <div class="sprint-question">"Should we migrate from PostgreSQL to CockroachDB?"</div>
+      <div class="sprint-meta">5 claims &middot; 3 evidence tiers &middot; pre-generated demo</div>
+    </div>
+
+    <div class="claims-list" id="claimsA"></div>
+
+    <div class="compile-section">
+      <button class="compile-btn" id="compileBtnA" onclick="runCompile('a')">wheat compile</button>
+    </div>
+
+    <div class="compile-output" id="compileOutputA"></div>
+  </div>
+
+  <!-- ============ TRACK B ============ -->
+  <div id="trackB" class="track-b-panel">
+    <input type="text" class="question-input" id="questionInput"
+           placeholder="Enter a research question..."
+           maxlength="200">
+
+    <div class="model-select-row">
+      <select class="model-select" id="modelSelect">
+        <option value="Phi-3.5-mini-instruct-q4f16_1-MLC">Phi-3.5 Mini 3.8B (q4f16) &mdash; recommended for 4GB+ VRAM</option>
+        <option value="SmolLM2-1.7B-Instruct-q4f16_1-MLC">SmolLM2 1.7B (q4f16) &mdash; 2-4GB VRAM</option>
+        <option value="SmolLM2-360M-Instruct-q4f16_1-MLC">SmolLM2 360M (q4f16) &mdash; low-end / mobile</option>
+      </select>
+      <span class="model-rec" id="modelRec"></span>
+    </div>
+
+    <div style="display:flex;gap:0.75rem;margin-bottom:1.5rem;">
+      <button class="start-btn" id="startBtn" onclick="startLiveSprint()">Start Sprint</button>
+    </div>
+
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">Loading model...</div>
+    </div>
+
+    <div class="stream-area" id="streamArea"></div>
+
+    <div class="claims-list" id="claimsB"></div>
+
+    <div class="compile-section" style="display:none" id="compileSectionB">
+      <button class="compile-btn" id="compileBtnB" onclick="runCompile('b')">wheat compile</button>
+    </div>
+
+    <div class="compile-output" id="compileOutputB"></div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <h2>Ready to run real sprints?</h2>
+    <p>Install the Grainulator plugin for Claude Code. Zero dependencies, MIT licensed.</p>
+    <a href="https://grainulator.app/#install" class="cta-install">Install Plugin &rarr;</a>
+  </div>
+
+  <div class="footer">
+    <a href="https://grainulator.app">grainulator.app</a> &middot; MIT
+  </div>
+</div>
+
+<script type="module">
+// ── Demo Claims (Track A) ──────────────────────────────────────────────
+const DEMO_CLAIMS = [
+  {
+    id: "r001",
+    type: "constraint",
+    claim: "Production database serves 12M requests/day with p99 latency SLA of 50ms — any migration must maintain this without downtime.",
+    evidence: "documented",
+    source: "Internal SLA dashboard, ADR-047",
+    detail: "The current PostgreSQL cluster handles 12M req/day across 3 read replicas. The p99 target of 50ms is contractual for enterprise clients. CockroachDB's multi-region consensus adds inherent latency that must be benchmarked against this target."
+  },
+  {
+    id: "r002",
+    type: "factual",
+    claim: "CockroachDB achieves PostgreSQL wire-protocol compatibility for ~95% of queries but lacks support for CTEs with DML, some PL/pgSQL features, and advisory locks.",
+    evidence: "documented",
+    source: "CockroachDB compatibility docs v24.1",
+    detail: "Our codebase uses advisory locks in the job queue (3 call sites) and CTE+DML in 2 reporting queries. These would need rewriting. The remaining ~400 queries are compatible per automated analysis."
+  },
+  {
+    id: "r003",
+    type: "factual",
+    claim: "CockroachDB's distributed SQL architecture provides automatic horizontal scaling and multi-region survivability without application-level sharding logic.",
+    evidence: "web",
+    source: "CockroachDB architecture docs, Jepsen 2023 report",
+    detail: "Jepsen testing confirmed CockroachDB's serializable isolation guarantees. Multi-region deployments survive zone failures with RPO=0. This eliminates our planned 6-month sharding project."
+  },
+  {
+    id: "r004",
+    type: "risk",
+    claim: "Migration from PostgreSQL to CockroachDB carries a 3-6 month transition period during which both databases run in parallel, doubling infrastructure costs.",
+    evidence: "stated",
+    source: "Platform team estimate based on similar migrations at Notion, DoorDash",
+    detail: "Dual-write period is necessary for validation. Estimated additional cloud spend: $8K-15K/month during transition. Rollback plan requires maintaining PostgreSQL replicas for 90 days post-cutover."
+  },
+  {
+    id: "r005",
+    type: "recommendation",
+    claim: "Run a 4-week shadow-traffic pilot on the read-heavy analytics workload before committing to full migration — this validates latency characteristics with zero production risk.",
+    evidence: "tested",
+    source: "Prototype shadow-proxy built in sprint prototype phase",
+    detail: "The shadow proxy (prototype p001) replays anonymized read traffic to a 3-node CockroachDB cluster. After 1 week of testing, p99 read latency was 38ms (within SLA) but write latency for batch inserts was 2.1x slower than PostgreSQL."
+  }
+];
+
+// ── Compiler (simplified 7-pass, in-browser) ───────────────────────────
+const COMPILER_PASSES = [
+  { name: "Parse & validate claims", key: "parse" },
+  { name: "Conflict detection", key: "conflicts" },
+  { name: "Evidence coverage analysis", key: "evidence" },
+  { name: "Type diversity check", key: "types" },
+  { name: "Topic clustering", key: "topics" },
+  { name: "Confidence scoring", key: "confidence" },
+  { name: "Certificate generation", key: "certificate" }
+];
+
+function compileClaims(claims) {
+  const result = { warnings: [], status: "pass", coverage: {}, stats: {} };
+
+  // Pass 1: Parse & validate
+  const valid = claims.filter(c => c.id && c.type && c.claim && c.evidence);
+  if (valid.length < claims.length) {
+    result.warnings.push(`${claims.length - valid.length} claim(s) failed validation`);
+  }
+
+  // Pass 2: Conflict detection
+  const types = valid.map(c => c.type);
+  const hasConstraint = types.includes("constraint");
+  const hasRecommendation = types.includes("recommendation");
+  const hasRisk = types.includes("risk");
+  if (hasConstraint && hasRecommendation) {
+    // Simple heuristic: check for tension
+    const constraints = valid.filter(c => c.type === "constraint");
+    const recs = valid.filter(c => c.type === "recommendation");
+    let tensions = 0;
+    for (const con of constraints) {
+      for (const rec of recs) {
+        if (con.claim.toLowerCase().includes("latency") && rec.claim.toLowerCase().includes("pilot")) {
+          tensions++;
+        }
+      }
+    }
+    if (tensions > 0) {
+      result.warnings.push(`${tensions} tension(s) detected between constraints and recommendations — review advised`);
+    }
+  }
+
+  // Pass 3: Evidence coverage
+  const tiers = ["stated", "web", "documented", "tested", "production"];
+  const tierCounts = {};
+  for (const t of tiers) tierCounts[t] = 0;
+  for (const c of valid) {
+    if (tierCounts[c.evidence] !== undefined) tierCounts[c.evidence]++;
+  }
+  result.coverage.tiers = tierCounts;
+  const maxTier = Math.max(...Object.values(tierCounts));
+  const coveredTiers = Object.values(tierCounts).filter(v => v > 0).length;
+  if (coveredTiers < 3) {
+    result.warnings.push(`Evidence diversity: only ${coveredTiers}/5 tiers represented`);
+  }
+
+  // Pass 4: Type diversity
+  const typeCounts = {};
+  const allTypes = ["constraint", "factual", "risk", "recommendation", "estimate", "feedback"];
+  for (const t of allTypes) typeCounts[t] = 0;
+  for (const c of valid) {
+    if (typeCounts[c.type] !== undefined) typeCounts[c.type]++;
+  }
+  result.coverage.types = typeCounts;
+  const coveredTypes = Object.values(typeCounts).filter(v => v > 0).length;
+  if (coveredTypes < 3) {
+    result.warnings.push(`Type monoculture: only ${coveredTypes}/6 claim types used`);
+  }
+  if (!hasRisk && valid.length >= 3) {
+    result.warnings.push("No risk claims — consider adversarial analysis");
+  }
+  if (!hasConstraint && valid.length >= 3) {
+    result.warnings.push("No constraint claims — boundaries undefined");
+  }
+
+  // Pass 5: Topic clustering (keyword extraction)
+  const keywords = {};
+  for (const c of valid) {
+    const words = c.claim.toLowerCase()
+      .replace(/[^a-z0-9\s]/g, "")
+      .split(/\s+/)
+      .filter(w => w.length > 4 && !["should", "would", "could", "about", "which", "their", "there", "these", "those", "without", "between", "during"].includes(w));
+    for (const w of words) {
+      keywords[w] = (keywords[w] || 0) + 1;
+    }
+  }
+  const topTopics = Object.entries(keywords)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([word, count]) => ({ word, count }));
+  result.coverage.topics = topTopics;
+
+  // Pass 6: Confidence scoring
+  const tierWeights = { stated: 1, web: 2, documented: 3, tested: 4, production: 5 };
+  const totalWeight = valid.reduce((sum, c) => sum + (tierWeights[c.evidence] || 1), 0);
+  const maxWeight = valid.length * 5;
+  const confidence = maxWeight > 0 ? Math.round((totalWeight / maxWeight) * 100) : 0;
+  result.stats.confidence = confidence;
+  result.stats.claimsTotal = valid.length;
+  result.stats.typesUsed = coveredTypes;
+  result.stats.tiersUsed = coveredTiers;
+
+  if (confidence < 40) {
+    result.warnings.push(`Low confidence (${confidence}%) — strengthen evidence`);
+    result.status = "warn";
+  } else if (confidence < 60) {
+    result.status = "warn";
+  }
+
+  // Pass 7: Certificate
+  const hash = btoa(JSON.stringify(valid).slice(0, 100)).slice(0, 12);
+  result.stats.hash = hash;
+  result.stats.timestamp = new Date().toISOString();
+
+  if (result.warnings.length > 3) result.status = "warn";
+  if (valid.length < 2) result.status = "blocked";
+
+  return result;
+}
+
+// ── Render Helpers ─────────────────────────────────────────────────────
+function renderClaim(claim, container) {
+  const card = document.createElement("div");
+  card.className = "claim-card";
+  card.onclick = () => card.classList.toggle("expanded");
+  card.innerHTML = `
+    <div class="claim-top">
+      <span class="claim-id">${claim.id}</span>
+      <span class="type-badge ${claim.type}">${claim.type}</span>
+      <span class="evidence-pill ${claim.evidence}">${claim.evidence}</span>
+      <span class="claim-text">${claim.claim}</span>
+    </div>
+    <div class="claim-detail">
+      <strong>Source:</strong> ${claim.source || "—"}<br>
+      <strong>Detail:</strong> ${claim.detail || "—"}
+    </div>
+  `;
+  container.appendChild(card);
+}
+
+function renderClaims(claims, containerId) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = "";
+  for (const claim of claims) {
+    renderClaim(claim, container);
+  }
+}
+
+async function renderCompile(claims, outputId, btnId) {
+  const output = document.getElementById(outputId);
+  const btn = document.getElementById(btnId);
+  btn.disabled = true;
+  output.innerHTML = "";
+  output.classList.add("visible");
+
+  // Animate passes
+  const passEls = [];
+  for (const pass of COMPILER_PASSES) {
+    const el = document.createElement("div");
+    el.className = "compile-pass";
+    el.innerHTML = `
+      <span class="pass-icon">&#9744;</span>
+      <span class="pass-name">${pass.name}</span>
+      <span class="pass-time"></span>
+    `;
+    output.appendChild(el);
+    passEls.push(el);
+  }
+
+  // Run passes with animation
+  for (let i = 0; i < COMPILER_PASSES.length; i++) {
+    passEls[i].classList.add("running");
+    passEls[i].querySelector(".pass-icon").textContent = "\u25B6";
+    const delay = 200 + Math.random() * 300;
+    await new Promise(r => setTimeout(r, delay));
+    passEls[i].classList.remove("running");
+    passEls[i].classList.add("done");
+    passEls[i].querySelector(".pass-icon").textContent = "\u2713";
+    passEls[i].querySelector(".pass-time").textContent = `${Math.round(delay)}ms`;
+  }
+
+  // Show result
+  const result = compileClaims(claims);
+  const statusClass = result.status === "pass" ? "pass" : result.status === "warn" ? "warn" : "fail";
+  const statusLabel = result.status === "pass" ? "PASS" : result.status === "warn" ? "WARN" : "BLOCKED";
+
+  const resultDiv = document.createElement("div");
+  resultDiv.className = "compile-result";
+  resultDiv.innerHTML = `
+    <div class="compile-stat">
+      <span class="stat-label">Status</span>
+      <span class="stat-value ${statusClass}">${statusLabel}</span>
+    </div>
+    <div class="compile-stat">
+      <span class="stat-label">Claims compiled</span>
+      <span class="stat-value">${result.stats.claimsTotal}</span>
+    </div>
+    <div class="compile-stat">
+      <span class="stat-label">Confidence</span>
+      <span class="stat-value ${result.stats.confidence >= 60 ? 'pass' : 'warn'}">${result.stats.confidence}%</span>
+    </div>
+    <div class="compile-stat">
+      <span class="stat-label">Evidence tiers</span>
+      <span class="stat-value">${result.stats.tiersUsed}/5</span>
+    </div>
+    <div class="compile-stat">
+      <span class="stat-label">Claim types</span>
+      <span class="stat-value">${result.stats.typesUsed}/6</span>
+    </div>
+    <div class="compile-stat">
+      <span class="stat-label">Hash</span>
+      <span class="stat-value" style="font-size:0.7rem">${result.stats.hash}</span>
+    </div>
+  `;
+
+  if (result.warnings.length > 0) {
+    const warnDiv = document.createElement("div");
+    warnDiv.className = "compile-warnings";
+    for (const w of result.warnings) {
+      const wd = document.createElement("div");
+      wd.className = "compile-warning";
+      wd.textContent = "\u26A0 " + w;
+      warnDiv.appendChild(wd);
+    }
+    resultDiv.appendChild(warnDiv);
+  }
+
+  output.appendChild(resultDiv);
+  btn.disabled = false;
+}
+
+// ── Track Switching ────────────────────────────────────────────────────
+window.switchTrack = (track) => {
+  document.getElementById("tabA").classList.toggle("active", track === "a");
+  document.getElementById("tabB").classList.toggle("active", track === "b");
+  document.getElementById("trackA").style.display = track === "a" ? "block" : "none";
+  document.getElementById("trackB").classList.toggle("visible", track === "b");
+};
+
+window.runCompile = (track) => {
+  if (track === "a") {
+    renderCompile(DEMO_CLAIMS, "compileOutputA", "compileBtnA");
+  } else {
+    renderCompile(liveClaims, "compileOutputB", "compileBtnB");
+  }
+};
+
+// ── Init Track A ───────────────────────────────────────────────────────
+renderClaims(DEMO_CLAIMS, "claimsA");
+
+// ── GPU Detection ──────────────────────────────────────────────────────
+let gpuTier = "none";
+let gpuDesc = "No WebGPU";
+
+async function detectGPU() {
+  const nameEl = document.getElementById("gpuName");
+  const noteEl = document.getElementById("gpuNote");
+  const tabB = document.getElementById("tabB");
+
+  if (!navigator.gpu) {
+    nameEl.textContent = "WebGPU not available";
+    noteEl.textContent = "Your browser doesn't support WebGPU. You can still explore the demo sprint above.";
+    tabB.disabled = true;
+    tabB.title = "WebGPU required";
+    return;
+  }
+
+  try {
+    const adapter = await navigator.gpu.requestAdapter();
+    if (!adapter) {
+      nameEl.textContent = "No GPU adapter found";
+      noteEl.textContent = "WebGPU is supported but no adapter was found. Demo mode only.";
+      tabB.disabled = true;
+      return;
+    }
+
+    let info = null;
+    try {
+      info = await adapter.requestAdapterInfo();
+    } catch {
+      try { info = adapter.info; } catch { /* fallback */ }
+    }
+
+    const vendor = info?.vendor || "";
+    const arch = info?.architecture || "";
+    const device = info?.device || "";
+    const desc = info?.description || "";
+    const label = [vendor, arch, device, desc].filter(Boolean).join(" ") || "Unknown GPU";
+
+    nameEl.textContent = label;
+    gpuDesc = label;
+
+    const limits = adapter.limits;
+    const maxBuffer = limits?.maxBufferSize || 0;
+    const maxStorageBuffer = limits?.maxStorageBufferBindingSize || 0;
+    const estimatedVRAM = Math.max(maxBuffer, maxStorageBuffer);
+
+    // Heuristic: Apple Silicon or large VRAM
+    const isApple = vendor.toLowerCase().includes("apple") || label.toLowerCase().includes("apple");
+    const isHighEnd = estimatedVRAM > 2_000_000_000 || isApple;
+    const isMidRange = estimatedVRAM > 500_000_000;
+
+    let recommended;
+    if (isHighEnd) {
+      recommended = "Phi-3.5-mini-instruct-q4f16_1-MLC";
+      gpuTier = "high";
+      noteEl.textContent = "Recommended: Phi-3.5 Mini 3.8B (best quality)";
+    } else if (isMidRange) {
+      recommended = "SmolLM2-1.7B-Instruct-q4f16_1-MLC";
+      gpuTier = "mid";
+      noteEl.textContent = "Recommended: SmolLM2 1.7B (balanced)";
+    } else {
+      recommended = "SmolLM2-360M-Instruct-q4f16_1-MLC";
+      gpuTier = "low";
+      noteEl.textContent = "Recommended: SmolLM2 360M (lightweight)";
+    }
+
+    document.getElementById("modelSelect").value = recommended;
+    document.getElementById("modelRec").textContent = `auto-selected for ${gpuTier} tier`;
+  } catch (err) {
+    nameEl.textContent = "Detection failed";
+    noteEl.textContent = `Error: ${err.message}. Demo mode available.`;
+    tabB.disabled = true;
+  }
+}
+
+detectGPU();
+
+// ── Track B: Live Sprint with WebLLM ───────────────────────────────────
+let liveClaims = [];
+let engine = null;
+
+const SYSTEM_PROMPT = `You are a research analyst running a wheat research sprint. Given a question, generate 3-5 typed claims as a JSON array.
+
+Each claim object has these fields:
+- "id": string, format "r001", "r002", etc.
+- "type": one of "constraint", "factual", "risk", "recommendation", "estimate"
+- "claim": string, 1-2 sentence factual statement
+- "evidence": one of "stated", "web", "documented", "tested", "production"
+- "source": string, brief source attribution
+- "detail": string, 2-3 sentence explanation
+
+Rules:
+- Include at least 2 different claim types
+- Include at least 2 different evidence tiers
+- Claims should represent different perspectives on the question
+- Be specific and actionable, not vague
+
+Respond ONLY with a valid JSON array. No markdown, no explanation, just the JSON array.`;
+
+window.startLiveSprint = async () => {
+  const question = document.getElementById("questionInput").value.trim();
+  if (!question) {
+    document.getElementById("questionInput").focus();
+    return;
+  }
+
+  const modelId = document.getElementById("modelSelect").value;
+  const startBtn = document.getElementById("startBtn");
+  const progressBar = document.getElementById("progressBar");
+  const progressFill = document.getElementById("progressFill");
+  const progressText = document.getElementById("progressText");
+  const streamArea = document.getElementById("streamArea");
+  const claimsContainer = document.getElementById("claimsB");
+  const compileSection = document.getElementById("compileSectionB");
+
+  startBtn.disabled = true;
+  progressBar.classList.add("visible");
+  streamArea.classList.add("visible");
+  streamArea.textContent = "";
+  claimsContainer.innerHTML = "";
+  compileSection.style.display = "none";
+  document.getElementById("compileOutputB").classList.remove("visible");
+
+  try {
+    // Dynamic import of WebLLM
+    progressText.textContent = "Loading WebLLM runtime...";
+    const webllm = await import("https://esm.run/@mlc-ai/web-llm");
+
+    // Create engine
+    progressText.textContent = `Downloading ${modelId.split("-").slice(0, -1).join(" ")}...`;
+
+    engine = await webllm.CreateMLCEngine(modelId, {
+      initProgressCallback: (report) => {
+        const pct = Math.round(report.progress * 100);
+        progressFill.style.width = pct + "%";
+        progressText.textContent = report.text || `Loading model... ${pct}%`;
+      }
+    });
+
+    progressFill.style.width = "100%";
+    progressText.textContent = "Model loaded. Generating claims...";
+
+    // Generate claims
+    const response = await engine.chat.completions.create({
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: question }
+      ],
+      temperature: 0.7,
+      max_tokens: 1500,
+      stream: true
+    });
+
+    let fullText = "";
+    for await (const chunk of response) {
+      const delta = chunk.choices[0]?.delta?.content || "";
+      fullText += delta;
+      streamArea.textContent = fullText;
+      streamArea.scrollTop = streamArea.scrollHeight;
+    }
+
+    progressBar.classList.remove("visible");
+    progressText.textContent = "";
+
+    // Parse claims from output
+    let parsed = null;
+    try {
+      // Try to extract JSON array from the response
+      const jsonMatch = fullText.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+        parsed = JSON.parse(jsonMatch[0]);
+      }
+    } catch (e) {
+      streamArea.textContent += "\n\n[Parse error: could not extract valid JSON claims from model output]";
+    }
+
+    if (parsed && Array.isArray(parsed) && parsed.length > 0) {
+      liveClaims = parsed.map((c, i) => ({
+        id: c.id || `r${String(i + 1).padStart(3, "0")}`,
+        type: c.type || "factual",
+        claim: c.claim || "",
+        evidence: c.evidence || "stated",
+        source: c.source || "model-generated",
+        detail: c.detail || ""
+      }));
+
+      renderClaims(liveClaims, "claimsB");
+      compileSection.style.display = "block";
+
+      streamArea.textContent += `\n\n--- Parsed ${liveClaims.length} claims ---`;
+    } else {
+      streamArea.textContent += "\n\n[No valid claims parsed. Try a more specific question, or use the demo sprint.]";
+    }
+  } catch (err) {
+    progressBar.classList.remove("visible");
+    streamArea.textContent = `Error: ${err.message}\n\nThis may happen if:\n- Your browser doesn't support WebGPU\n- The model couldn't be downloaded\n- GPU memory was insufficient\n\nTry switching to a smaller model, or explore the demo sprint instead.`;
+  }
+
+  startBtn.disabled = false;
+};
+
+</script>
+</body>
+</html>
