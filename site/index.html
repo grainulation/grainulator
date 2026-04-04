@@ -873,8 +873,6 @@ function loadTrackA() {
   const area = document.getElementById('claimsArea');
   area.innerHTML = '';
   area.classList.remove('empty');
-  const modelStatusEl = document.getElementById('model-status');
-  if (modelStatusEl && !window._webllmReady) modelStatusEl.textContent = '\uD83D\uDCCB pre-generated demo';
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -1185,13 +1183,15 @@ function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
     return;
   }
 
-  // WebGPU available: show try button (secondary) + privacy note
-  ctaTryBtn.removeAttribute('hidden');
+  // WebGPU available: keep try button HIDDEN until model is ready
   privacyNote.removeAttribute('hidden');
 
-  if (tier === 'network-constrained') {
+  if (tier === 'network-constrained' || navigator.connection?.saveData) {
+    // Slow connection: show Track A demo button immediately, no model download
+    ctaTryBtn.removeAttribute('hidden');
+    ctaTryBtn.textContent = 'try demo';
     ctaTryBtn.classList.add('ready');
-    ctaTryBtn.setAttribute('aria-label', 'Try the demo (pre-generated data, slow connection detected)');
+    ctaTryBtn.setAttribute('aria-label', 'Try the demo');
     return;
   }
 
@@ -1200,19 +1200,11 @@ function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
     ? 'SmolLM2-1.7B-Instruct-q4f16_1-MLC'
     : 'SmolLM2-360M-Instruct-q4f16_1-MLC';
 
-  // shouldPreload gate
-  if (navigator.connection?.saveData) {
-    ctaTryBtn.classList.add('ready');
-    ctaTryBtn.setAttribute('aria-label', 'Try the demo (pre-generated data)');
-    return;
-  }
-
   // Lazy load WebLLM with 20s timeout + cancel button
   let engine = null;
   const cancelBtn = document.getElementById('cancel-btn');
   const abortController = new AbortController();
 
-  cancelBtn.style.display = 'inline-flex';
   cancelBtn.addEventListener('click', () => {
     abortController.abort();
     cancelBtn.style.display = 'none';
@@ -1228,13 +1220,6 @@ function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
           const progress = report.progress || 0;
           const pct = progress * 100;
           bar.style.width = `${pct}%`;
-          // Show percentage on the button text
-          const pctInt = Math.round(pct);
-          if (pctInt < 100) {
-            ctaTryBtn.textContent = `try it now \u00B7 ${pctInt}% of ~925MB`;
-            const modelStatusEl = document.getElementById('model-status');
-            if (modelStatusEl) modelStatusEl.textContent = `\u231B downloading model (${pctInt}% of ~925MB)`;
-          }
           if (window._setPreloadProgress) window._setPreloadProgress(progress);
           updateModelProgress(pct);
           announceProgress(pct);
@@ -1256,28 +1241,21 @@ function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
     window._webllmReady = true;
     cancelBtn.style.display = 'none';
 
+    // NOW show the button — model is ready
+    ctaTryBtn.removeAttribute('hidden');
     ctaTryBtn.classList.add('ready');
-    ctaTryBtn.setAttribute('aria-label', 'Try the demo (AI model ready)');
-    bar.style.width = '100%';
+    ctaTryBtn.textContent = 'try it now';
+    ctaTryBtn.setAttribute('aria-label', 'Try the demo');
     announceState('Demo ready');
-    setTimeout(() => { bar.style.opacity = '0'; }, 1500);
-    const modelStatusEl = document.getElementById('model-status');
-    if (modelStatusEl) modelStatusEl.textContent = '\u26A1 local model ready';
-
-    // Show checkmark briefly, then revert — but only if user isn't already in demo
-    if (!demoActive) {
-      ctaTryBtn.textContent = 'try it now \u2713';
-      setTimeout(() => { ctaTryBtn.textContent = 'try it now'; }, 2000);
-    } else {
-      showToast('model ready \u2014 ask your own question');
-    }
 
   } catch (err) {
     console.warn('WebLLM load failed/timeout, using Track A:', err);
     cancelBtn.style.display = 'none';
+    // Model failed — still show button for Track A demo
+    ctaTryBtn.removeAttribute('hidden');
+    ctaTryBtn.textContent = 'try demo';
     ctaTryBtn.classList.add('ready');
-    ctaTryBtn.setAttribute('aria-label', 'Try the demo (pre-generated data)');
-    announceState('Demo ready with pre-generated data');
+    ctaTryBtn.setAttribute('aria-label', 'Try the demo');
   }
 })();
 
@@ -1293,10 +1271,8 @@ qInput.addEventListener('keydown', async (e) => {
   if (!question) return;
 
   if (!window._webllmReady || !window._webllmEngine) {
-    // Model not ready — show Track A demo for any question
+    // No model — just load Track A silently
     loadTrackA();
-    const modelStatusEl = document.getElementById('model-status');
-    if (modelStatusEl) modelStatusEl.textContent = '\uD83D\uDCCB pre-generated demo \u2014 model still loading';
     compileBtn.disabled = false;
     return;
   }
@@ -1308,8 +1284,6 @@ qInput.addEventListener('keydown', async (e) => {
   area.innerHTML = '<div style="text-align:center;font-family:monospace;font-size:0.7rem;color:rgba(141,246,255,0.6);padding:2rem"><span style="display:inline-block;animation:pulse-teal 1.5s ease-in-out infinite">\u26A1</span> running local inference\u2026</div>';
   area.classList.remove('empty');
   compileBtn.disabled = true;
-  const modelStatusEl = document.getElementById('model-status');
-  if (modelStatusEl) modelStatusEl.textContent = '\u26A1 generating claims with local model\u2026';
 
   // GPU contention: pause shader during inference
   pauseShader();
