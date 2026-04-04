@@ -110,16 +110,16 @@ canvas.dimmed{opacity:0.3}
 .cta-row{display:flex;gap:0.8rem;justify-content:center;align-items:center;flex-wrap:wrap}
 .cta-btn{font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:clamp(0.65rem,1.2vw,0.8rem);padding:0.75rem 1.2rem;min-height:48px;border-radius:3px;transition:all 0.4s;display:inline-flex;align-items:center;text-decoration:none;cursor:pointer;border:none;background:none}
 
-.cta-try{color:rgba(57,255,20,0.4);border:1px solid rgba(57,255,20,0.15);pointer-events:none;position:relative;overflow:hidden}
-.cta-try.ready{color:#39FF14;border-color:rgba(57,255,20,0.5);pointer-events:auto;cursor:pointer;animation:pulse-green 2s ease-in-out infinite}
-.cta-try.ready:hover,.cta-try.ready:focus-visible{box-shadow:0 0 30px rgba(57,255,20,0.25);text-shadow:0 0 7px #39FF14;outline:none}
-.cta-try .progress-bar{position:absolute;bottom:0;left:0;height:2px;background:#39FF14;transition:width 0.3s ease;width:0}
+.cta-try{color:rgba(141,246,255,0.4);border:1px solid rgba(141,246,255,0.15);pointer-events:none;position:relative;overflow:hidden}
+.cta-try.ready{color:#8df6ff;border-color:rgba(141,246,255,0.5);pointer-events:auto;cursor:pointer;animation:pulse-teal 2s ease-in-out infinite}
+.cta-try.ready:hover,.cta-try.ready:focus-visible{box-shadow:0 0 30px rgba(141,246,255,0.25);text-shadow:0 0 7px #8df6ff;outline:none}
+.cta-try .progress-bar{position:absolute;bottom:0;left:0;height:2px;background:#8df6ff;transition:width 0.3s ease;width:0}
 
 .cta-install{color:#8df6ff;border:1px solid rgba(141,246,255,0.4);padding:0.9rem 1.5rem;font-size:clamp(0.7rem,1.3vw,0.85rem);font-weight:700;text-shadow:0 0 7px #8df6ff,0 0 20px rgba(141,246,255,0.3)}
 .cta-install:hover,.cta-install:focus-visible{color:#8df6ff;border-color:rgba(141,246,255,0.6);box-shadow:0 0 30px rgba(141,246,255,0.25);outline:none;text-shadow:0 0 7px #8df6ff,0 0 20px rgba(141,246,255,0.4)}
 
 @keyframes appear{to{opacity:1}}
-@keyframes pulse-green{0%,100%{box-shadow:0 0 8px rgba(57,255,20,0.1)}50%{box-shadow:0 0 20px rgba(57,255,20,0.3)}}
+@keyframes pulse-teal{0%,100%{box-shadow:0 0 8px rgba(141,246,255,0.1)}50%{box-shadow:0 0 20px rgba(141,246,255,0.3)}}
 
 /* Toast */
 .toast{position:fixed;bottom:1.5vh;left:50%;transform:translateX(-50%) translateY(40px);font-family:monospace;font-size:0.7rem;color:#8df6ff;opacity:0.5;z-index:99;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none}
@@ -139,7 +139,7 @@ canvas.dimmed{opacity:0.3}
   radial-gradient(ellipse 45% 55% at 70% 30%,rgba(32,80,10,0.15) 0%,transparent 65%),
   radial-gradient(ellipse 60% 40% at 50% 50%,rgba(20,60,20,0.12) 0%,transparent 60%),
   linear-gradient(to top,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0.7) 50%,rgba(0,0,0,0.85) 100%)}
-.demo-layer.active{opacity:1;pointer-events:auto;overflow-y:auto}
+.demo-layer.active{opacity:1;pointer-events:auto;overflow-y:auto;z-index:20}
 
 .demo-ui{max-width:720px;margin:0 auto;padding:2rem 1.5rem 4rem;display:flex;flex-direction:column;gap:1.5rem;min-height:100vh}
 
@@ -152,8 +152,8 @@ canvas.dimmed{opacity:0.3}
 .glass{background:rgba(255,255,255,0.04);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:1.2rem;position:relative}
 
 /* Question input */
-.q-input{font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:0.85rem;color:#fff;background:rgba(0,0,0,0.3);border:1px solid rgba(57,255,20,0.3);border-radius:6px;padding:0.9rem 1rem;width:100%;outline:none;transition:border-color 0.3s,box-shadow 0.3s;text-align:center}
-.q-input:focus{border-color:rgba(57,255,20,0.6);box-shadow:0 0 20px rgba(57,255,20,0.1)}
+.q-input{font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:0.85rem;color:#fff;background:rgba(0,0,0,0.3);border:1px solid rgba(141,246,255,0.3);border-radius:6px;padding:0.9rem 1rem;width:100%;outline:none;transition:border-color 0.3s,box-shadow 0.3s;text-align:center}
+.q-input:focus{border-color:rgba(141,246,255,0.6);box-shadow:0 0 20px rgba(141,246,255,0.1)}
 .q-input::placeholder{color:rgba(255,255,255,0.25)}
 
 /* Claim cards */
@@ -178,14 +178,14 @@ canvas.dimmed{opacity:0.3}
 .tier-web{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.45)}
 .tier-documented{background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.6)}
 .tier-tested{background:rgba(255,255,255,0.18);color:rgba(255,255,255,0.75)}
-.tier-production{background:rgba(57,255,20,0.15);color:rgba(57,255,20,0.8)}
+.tier-production{background:rgba(141,246,255,0.15);color:rgba(141,246,255,0.8)}
 
 .claim-text{font-family:monospace;font-size:0.75rem;color:rgba(255,255,255,0.75);line-height:1.5}
 
 /* Compile button + progress */
 .compile-row{display:flex;align-items:center;gap:1rem}
-.compile-btn{font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:0.8rem;color:#39FF14;background:none;border:1px solid rgba(57,255,20,0.3);padding:0.7rem 1.5rem;border-radius:4px;cursor:pointer;transition:all 0.3s;min-height:44px;white-space:nowrap}
-.compile-btn:hover:not(:disabled){border-color:rgba(57,255,20,0.6);box-shadow:0 0 20px rgba(57,255,20,0.15)}
+.compile-btn{font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:0.8rem;color:#8df6ff;background:none;border:1px solid rgba(141,246,255,0.3);padding:0.7rem 1.5rem;border-radius:4px;cursor:pointer;transition:all 0.3s;min-height:44px;white-space:nowrap}
+.compile-btn:hover:not(:disabled){border-color:rgba(141,246,255,0.6);box-shadow:0 0 20px rgba(141,246,255,0.15)}
 .compile-btn:disabled{opacity:0.3;cursor:not-allowed}
 .compile-status{font-family:monospace;font-size:0.65rem;color:rgba(255,255,255,0.4);flex:1}
 
@@ -194,11 +194,11 @@ canvas.dimmed{opacity:0.3}
 .compiler-output.expanded{max-height:600px}
 .pass-line{font-family:monospace;font-size:0.7rem;color:rgba(255,255,255,0.5);padding:0.3rem 0;opacity:0;transform:translateX(-8px);transition:all 0.3s ease}
 .pass-line.done{opacity:1;transform:translateX(0)}
-.pass-line .check{color:#39FF14;margin-right:0.4rem}
+.pass-line .check{color:#8df6ff;margin-right:0.4rem}
 .pass-line .fail{color:#f43f5e;margin-right:0.4rem}
 
-.verdict-card{margin-top:0.5rem;border-color:rgba(57,255,20,0.2)}
-.verdict-title{font-family:monospace;font-size:0.7rem;color:#39FF14;margin-bottom:0.4rem;font-weight:700}
+.verdict-card{margin-top:0.5rem;border-color:rgba(141,246,255,0.2)}
+.verdict-title{font-family:monospace;font-size:0.7rem;color:#8df6ff;margin-bottom:0.4rem;font-weight:700}
 .verdict-body{font-family:monospace;font-size:0.7rem;color:rgba(255,255,255,0.65);line-height:1.6}
 .conflict-flag{color:#fbbf24}
 
@@ -322,7 +322,7 @@ canvas.dimmed{opacity:0.3}
         class="q-input"
         id="demo-question"
         type="text"
-        placeholder="ask a research question... (500 char limit)"
+        placeholder="Ask a research question..."
         autocomplete="off"
         spellcheck="false"
         maxlength="500"
@@ -1143,6 +1143,7 @@ compileBtn.addEventListener('click', async () => {
   againBtn.className = 'handoff-btn';
   againBtn.type = 'button';
   againBtn.textContent = 'Ask another question';
+  againBtn.style.cssText = 'opacity:0.5;border-color:rgba(141,246,255,0.1);font-size:0.6rem;';
   againBtn.addEventListener('click', () => {
     qInput.value = '';
     qInput.focus();
@@ -1244,6 +1245,11 @@ function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
           const progress = report.progress || 0;
           const pct = progress * 100;
           bar.style.width = `${pct}%`;
+          // Show percentage on the button text
+          const pctInt = Math.round(pct);
+          if (pctInt < 100) {
+            ctaTryBtn.textContent = `try it now (${pctInt}%)`;
+          }
           if (window._setPreloadProgress) window._setPreloadProgress(progress);
           updateModelProgress(pct);
           announceProgress(pct);
@@ -1271,7 +1277,13 @@ function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
     announceState('Demo ready');
     setTimeout(() => { bar.style.opacity = '0'; }, 1500);
 
-    if (demoActive) showToast('model ready — ask your own question');
+    // Show checkmark briefly, then revert — but only if user isn't already in demo
+    if (!demoActive) {
+      ctaTryBtn.textContent = 'try it now \u2713';
+      setTimeout(() => { ctaTryBtn.textContent = 'try it now'; }, 2000);
+    } else {
+      showToast('model ready \u2014 ask your own question');
+    }
 
   } catch (err) {
     console.warn('WebLLM load failed/timeout, using Track A:', err);
@@ -1304,7 +1316,7 @@ qInput.addEventListener('keydown', async (e) => {
   qInput.disabled = true;
 
   const area = document.getElementById('claimsArea');
-  area.innerHTML = '<div style="text-align:center;font-family:monospace;font-size:0.7rem;color:rgba(57,255,20,0.5);padding:2rem">researching...</div>';
+  area.innerHTML = '<div style="text-align:center;font-family:monospace;font-size:0.7rem;color:rgba(141,246,255,0.5);padding:2rem">researching...</div>';
   area.classList.remove('empty');
   compileBtn.disabled = true;
 
