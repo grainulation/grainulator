@@ -103,7 +103,7 @@ canvas.dimmed{opacity:0.3}
 
 /* === LANDING PHASE === */
 .ui{position:fixed;bottom:6vh;left:50%;transform:translateX(-50%);z-index:10;text-align:center;opacity:0;animation:appear 1s ease 0.5s forwards;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;transition:opacity 0.4s ease,transform 0.5s cubic-bezier(0.4,0,0.2,1)}
-.ui.hidden{opacity:0;pointer-events:none;transform:translateX(-50%) translateY(30px)}
+.ui.hidden{display:none}
 .ui-logo{width:clamp(60px,15vw,120px);height:auto;margin-bottom:0;opacity:0.9;filter:drop-shadow(0 0 12px rgba(141,246,255,0.3))}
 .ui-title{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:clamp(0.7rem,1.5vw,0.9rem);font-weight:700;color:#8df6ff;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:0.6rem;user-select:text;text-shadow:0 0 7px #8df6ff,0 0 20px rgba(141,246,255,0.6),0 0 40px rgba(141,246,255,0.3),0 0 80px rgba(141,246,255,0.15)}
 
@@ -127,21 +127,17 @@ canvas.dimmed{opacity:0.3}
 
 /* Footer */
 .site-footer{position:fixed;bottom:1.5vh;left:50%;transform:translateX(-50%);z-index:10;text-align:center;opacity:0;animation:appear 1s ease 1s forwards;transition:opacity 0.4s}
-.site-footer.hidden{opacity:0;pointer-events:none}
+.site-footer.hidden{display:none}
 .site-footer a{font-family:monospace;font-size:0.6rem;color:rgba(255,255,255,0.45);padding:0.5rem 0.4rem;min-height:48px;display:inline-flex;align-items:center;text-decoration:none;transition:color 0.3s}
 .site-footer a:hover,.site-footer a:focus-visible{color:rgba(255,255,255,0.65);outline:none}
 .site-footer span{color:rgba(255,255,255,0.2);font-size:0.6rem;margin:0 0.3rem}
 
 /* === DEMO PHASE === */
 .demo-layer{position:fixed;inset:0;z-index:5;pointer-events:none;opacity:0;transition:opacity 0.5s ease;overflow:hidden}
-.demo-layer::before{content:'';position:absolute;inset:0;background:
-  radial-gradient(ellipse 50% 60% at 30% 70%,rgba(30,80,90,0.15) 0%,transparent 70%),
-  radial-gradient(ellipse 45% 55% at 70% 30%,rgba(20,60,70,0.12) 0%,transparent 65%),
-  radial-gradient(ellipse 60% 40% at 50% 50%,rgba(15,50,60,0.10) 0%,transparent 60%),
-  linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.75) 50%,rgba(0,0,0,0.9) 100%)}
+.demo-layer::before{content:'';position:absolute;inset:0;background:rgba(0,0,0,0.92)}
 .demo-layer.active{opacity:1;pointer-events:auto;overflow-y:auto;z-index:20}
 
-.demo-ui{max-width:720px;margin:0 auto;padding:2rem 1.5rem 4rem;display:flex;flex-direction:column;gap:1.5rem;min-height:100vh}
+.demo-ui{max-width:720px;margin:0 auto;padding:2rem 1.5rem calc(4rem + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:1.5rem;min-height:100dvh}
 
 .demo-header{display:flex;align-items:center;justify-content:space-between;padding:0.8rem 0}
 .demo-back{font-family:monospace;font-size:0.75rem;color:rgba(141,246,255,0.6);background:none;border:1px solid rgba(141,246,255,0.15);padding:0.4rem 0.8rem;border-radius:3px;cursor:pointer;transition:all 0.3s;min-height:44px}
@@ -214,14 +210,14 @@ canvas.dimmed{opacity:0.3}
   .cta-install{display:none}
   .site-footer{bottom:calc(3vh + env(safe-area-inset-bottom,0px))}
   .site-footer a{min-height:44px;padding:0.4rem 0.5rem;font-size:0.55rem}
-  .demo-ui{padding:1.5rem 1rem 3rem}
+  .demo-ui{padding:1.5rem 1rem calc(3rem + env(safe-area-inset-bottom,0px))}
   .cta-row{flex-direction:column;gap:0.5rem}
 }
 
 /* Landscape mobile */
 @media(max-height:500px){
   .ui{bottom:auto;top:50%;transform:translateX(-50%) translateY(-60%)}
-  .ui.hidden{transform:translateX(-50%) translateY(-60%) translateY(30px)}
+  .ui.hidden{display:none}
   .ui-logo{width:50px}
   .ui-title{font-size:0.65rem;margin-bottom:0.3rem}
   .cta-btn{padding:0.4rem 0.8rem;min-height:36px;font-size:0.6rem}
@@ -233,7 +229,7 @@ canvas.dimmed{opacity:0.3}
 @media(prefers-reduced-motion:reduce){
   canvas{display:none}
   .ui{opacity:1;animation:none;position:fixed;top:50%;bottom:auto;transform:translate(-50%,-50%)}
-  .ui.hidden{transform:translate(-50%,-50%) translateY(30px)}
+  .ui.hidden{display:none}
   .ui-title{color:#8df6ff}
   html body .cta-row .cta-btn{transition:none;animation:none;box-shadow:0 0 20px rgba(255,255,255,0.15)}
   .cta-try.ready{animation:none}
@@ -793,15 +789,15 @@ function enterDemo() {
   // Update skip link target
   const skipLink = document.querySelector('.skip-link');
   if (skipLink) skipLink.setAttribute('href', '#demo-question');
-  // After transition, focus input
+  // After transition, load claims + focus input
   demoLayer.addEventListener('transitionend', function handler() {
     demoLayer.removeEventListener('transitionend', handler);
     demoLayer.removeAttribute('aria-busy');
+    if (!document.querySelector('.claim-card')) loadTrackA();
     const qEl = document.getElementById('demo-question');
     if (qEl) qEl.focus();
   }, { once: true });
   if (window._shaderWake) window._shaderWake();
-  if (!document.querySelector('.claim-card')) loadTrackA();
 }
 
 function exitDemo() {
