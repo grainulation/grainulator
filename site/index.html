@@ -187,8 +187,8 @@ canvas.dimmed{opacity:0.3}
 .compile-status{font-family:monospace;font-size:0.65rem;color:rgba(255,255,255,0.4);flex:1}
 
 /* Compiler output */
-.compiler-output{max-height:0;overflow:hidden;transition:max-height 0.5s ease}
-.compiler-output.expanded{max-height:600px}
+.compiler-output{max-height:0;overflow:hidden;transition:max-height 0.5s ease;padding:0;border:none;background:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+.compiler-output.expanded{max-height:600px;padding:1.2rem;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .pass-line{font-family:monospace;font-size:0.7rem;color:rgba(255,255,255,0.5);padding:0.3rem 0;opacity:0;transform:translateX(-8px);transition:all 0.3s ease}
 .pass-line.done{opacity:1;transform:translateX(0)}
 .pass-line .check{color:#8df6ff;margin-right:0.4rem}
@@ -789,14 +789,21 @@ function enterDemo() {
   // Update skip link target
   const skipLink = document.querySelector('.skip-link');
   if (skipLink) skipLink.setAttribute('href', '#demo-question');
-  // After transition, load claims + focus input
-  demoLayer.addEventListener('transitionend', function handler() {
-    demoLayer.removeEventListener('transitionend', handler);
+  // Load claims + focus input after overlay is visible
+  // Use setTimeout as fallback — transitionend may not fire if transition is skipped
+  const onReady = () => {
     demoLayer.removeAttribute('aria-busy');
     if (!document.querySelector('.claim-card')) loadTrackA();
     const qEl = document.getElementById('demo-question');
     if (qEl) qEl.focus();
+  };
+  let transitionFired = false;
+  demoLayer.addEventListener('transitionend', function handler() {
+    demoLayer.removeEventListener('transitionend', handler);
+    transitionFired = true;
+    onReady();
   }, { once: true });
+  setTimeout(() => { if (!transitionFired) onReady(); }, 600);
   if (window._shaderWake) window._shaderWake();
 }
 
@@ -1185,15 +1192,6 @@ function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
   // WebGPU available: keep try button HIDDEN until model is ready
   privacyNote.removeAttribute('hidden');
-
-  if (tier === 'network-constrained' || navigator.connection?.saveData) {
-    // Slow connection: show Track A demo button immediately, no model download
-    ctaTryBtn.removeAttribute('hidden');
-    ctaTryBtn.textContent = 'try demo';
-    ctaTryBtn.classList.add('ready');
-    ctaTryBtn.setAttribute('aria-label', 'Try the demo');
-    return;
-  }
 
   // Determine model by tier
   const modelId = tier === 'full'
