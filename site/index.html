@@ -111,10 +111,16 @@ canvas.active{opacity:1}
 /* Splash — big ghost shrinks into install button */
 .app-header{display:flex;align-items:center;justify-content:center;gap:0.8rem;padding:0.6rem 1rem;z-index:15;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);transition:all 0.6s cubic-bezier(0.4,0,0.2,1)}
 .app.chat-active .app-header{position:relative;top:auto;left:auto;transform:none;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.04)}
-.splash-logo{width:22px;height:22px;opacity:0.9;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(5.5);z-index:16;filter:drop-shadow(0 0 20px rgba(141,246,255,0.3));transition:transform 1.2s cubic-bezier(0.4,0,0.2,1),filter 1s ease,opacity 0.4s ease}
-.splash-logo.shrunk{transform:translate(-50%,-50%) scale(1);filter:none}
-.splash-logo.in-btn{position:static;transform:none;transition:none}
-.header-btn{font-size:0.65rem;padding:0.35rem 0.8rem;height:36px;color:rgba(141,246,255,0.7);border:1px solid transparent;border-radius:3px;background:none;cursor:pointer;font-family:inherit;transition:all 0.6s cubic-bezier(0.4,0,0.2,1);display:inline-flex;align-items:center;gap:0.5rem;text-decoration:none;white-space:nowrap;overflow:hidden}
+.splash-logo{width:22px;height:22px;opacity:0.9;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(5.5);z-index:16;filter:drop-shadow(0 0 20px rgba(141,246,255,0.3))}
+.splash-logo.animating{animation:splash-shrink 1.6s cubic-bezier(0.4,0,0.2,1) forwards}
+.splash-logo.in-btn{position:static;transform:none;animation:none;filter:none;width:28px;height:28px}
+.app.chat-active .splash-logo.in-btn{width:20px;height:20px}
+@keyframes splash-shrink{
+  0%{transform:translate(-50%,-50%) scale(5.5);filter:drop-shadow(0 0 20px rgba(141,246,255,0.3))}
+  100%{transform:translate(-50%,-50%) scale(1);filter:drop-shadow(0 0 4px rgba(141,246,255,0.1))}
+}
+.header-btn{font-size:clamp(0.7rem,1.2vw,0.9rem);padding:0.5rem 1.2rem;height:auto;min-height:44px;color:rgba(141,246,255,0.7);border:1px solid transparent;border-radius:4px;background:none;cursor:pointer;font-family:inherit;transition:all 0.6s cubic-bezier(0.4,0,0.2,1);display:inline-flex;align-items:center;gap:0.6rem;text-decoration:none;white-space:nowrap;overflow:hidden}
+.app.chat-active .header-btn{font-size:0.6rem;padding:0.3rem 0.7rem;min-height:32px;gap:0.4rem}
 .header-btn.revealed{border-color:rgba(141,246,255,0.2)}
 .header-btn:hover{border-color:rgba(141,246,255,0.4);color:#8df6ff}
 .header-btn .btn-text{max-width:0;opacity:0;overflow:hidden;transition:max-width 0.6s ease 0.3s,opacity 0.4s ease 0.5s}
@@ -230,8 +236,7 @@ canvas.active{opacity:1}
 #flash-overlay{position:fixed;inset:0;z-index:200;pointer-events:none;opacity:0;transition:opacity 300ms ease-out}
 
 /* Toast */
-.toast{position:fixed;bottom:calc(5rem + env(safe-area-inset-bottom,0px) + var(--kb-offset,0px));left:50%;transform:translateX(-50%) translateY(40px);font-family:monospace;font-size:0.65rem;color:#8df6ff;background:rgba(0,0,0,0.85);border:1px solid rgba(141,246,255,0.15);border-radius:12px;padding:0.4rem 0.8rem;z-index:99;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none}
-.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+/* toast removed */
 
 /* Noscript fallback */
 .noscript-fallback{display:none}
@@ -327,7 +332,7 @@ canvas.active{opacity:1}
 <button id="cancel-btn" type="button" style="display:none;position:fixed;bottom:calc(70px + env(safe-area-inset-bottom,0px));right:16px;z-index:9999;background:none;color:#f43f5e;border:1px solid rgba(244,63,94,0.3);border-radius:3px;padding:0.5rem 0.8rem;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:0.6rem;cursor:pointer;min-height:36px;align-items:center;justify-content:center" aria-label="Cancel model download">cancel</button>
 <!-- motion-toggle removed — shader pauses automatically on chat, resumes on new chat -->
 
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<!-- toast removed -->
 
 <script>
 // ===================================================================
@@ -347,18 +352,18 @@ let inferenceRunning = false;
 let uxState = 'LAVA_ONLY';
 let modelReady = false;
 
-// Splash animation: big ghost → shrink → border → text
+// Splash: big ghost → shrink → snap into button (one fluid motion)
 (function runSplash() {
   var logo = document.getElementById('splashLogo');
   var installBtn = document.getElementById('ctaInstall');
-  // 1s: start shrinking (smooth scale transition)
-  setTimeout(function() { logo.classList.add('shrunk'); }, 1000);
-  // 2.2s: move into button (after scale transition completes)
+  // 1s: start the single shrink animation
+  setTimeout(function() { logo.classList.add('animating'); }, 1000);
+  // 2.6s: animation done → snap into button, reveal text
   setTimeout(function() {
     logo.classList.add('in-btn');
     installBtn.insertBefore(logo, installBtn.firstChild);
     installBtn.classList.add('revealed');
-  }, 2200);
+  }, 2600);
 })();
 
 function transitionTo(newState) {
@@ -982,12 +987,7 @@ requestAnimationFrame(function() {
 
 // Install button — links to GitHub (native <a> tag)
 
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 1600);
-}
+function showToast() { /* removed */ }
 
 // ===================================================================
 // TRACK A — PRE-GENERATED DEMO DATA (PostgreSQL vs CockroachDB)
