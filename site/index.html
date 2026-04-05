@@ -1896,7 +1896,7 @@ function fallbackToCascade(question, cascadeStart) {
       accumulate: true,
       setQuestion: false
     });
-    showToast('matched from demo library');
+    // silent — no toast for track A matches
   } else {
     // No close match — always generate template claims from user's keywords
     // Layer 0b: Template fallback
@@ -1909,7 +1909,7 @@ function fallbackToCascade(question, cascadeStart) {
       isTemplate: true,
       setQuestion: false
     });
-    showToast('generated template claims');
+    // silent — no toast for template fallback
   }
 }
 
@@ -1932,25 +1932,8 @@ if ('serviceWorker' in navigator) {
 })();
 
 // ===================================================================
-// OFFLINE DETECTION — toast when WebLLM CDN unreachable
-// ===================================================================
-(function initOfflineDetection() {
-  let offlineToastShown = false;
-  function checkOffline() {
-    if (offlineToastShown) return;
-    if (!navigator.onLine) {
-      offlineToastShown = true;
-      showToast('Offline mode \u2014 using pre-generated demos');
-    }
-  }
-  window.addEventListener('offline', checkOffline);
-  // Also check when WebLLM import fails (caught in initWebLLM error handler)
-  window._onWebLLMOffline = function() {
-    if (offlineToastShown) return;
-    offlineToastShown = true;
-    showToast('Offline mode \u2014 using pre-generated demos');
-  };
-})();
+// Offline — silent, no toast (Track A works without network after first cache)
+window._onWebLLMOffline = function() {};
 
 // Zero-dep local analytics — IndexedDB event log
 (function initLocalAnalytics() {
