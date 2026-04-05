@@ -111,8 +111,9 @@ canvas.active{opacity:1}
 /* Splash — big ghost shrinks into install button */
 .app-header{display:flex;align-items:center;justify-content:center;gap:0.8rem;padding:0.6rem 1rem;z-index:15;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);transition:all 0.6s cubic-bezier(0.4,0,0.2,1)}
 .app.chat-active .app-header{position:relative;top:auto;left:auto;transform:none;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.04)}
-.splash-logo{width:120px;height:120px;opacity:0.9;transition:all 0.8s cubic-bezier(0.4,0,0.2,1);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:16;filter:drop-shadow(0 0 20px rgba(141,246,255,0.3))}
-.splash-logo.shrunk{width:22px;height:22px;position:static;transform:none;filter:none}
+.splash-logo{width:22px;height:22px;opacity:0.9;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(5.5);z-index:16;filter:drop-shadow(0 0 20px rgba(141,246,255,0.3));transition:transform 1.2s cubic-bezier(0.4,0,0.2,1),filter 1s ease,opacity 0.4s ease}
+.splash-logo.shrunk{transform:translate(-50%,-50%) scale(1);filter:none}
+.splash-logo.in-btn{position:static;transform:none;transition:none}
 .header-btn{font-size:0.65rem;padding:0.35rem 0.8rem;height:36px;color:rgba(141,246,255,0.7);border:1px solid transparent;border-radius:3px;background:none;cursor:pointer;font-family:inherit;transition:all 0.6s cubic-bezier(0.4,0,0.2,1);display:inline-flex;align-items:center;gap:0.5rem;text-decoration:none;white-space:nowrap;overflow:hidden}
 .header-btn.revealed{border-color:rgba(141,246,255,0.2)}
 .header-btn:hover{border-color:rgba(141,246,255,0.4);color:#8df6ff}
@@ -324,7 +325,7 @@ canvas.active{opacity:1}
 
 <div id="flash-overlay"></div>
 <button id="cancel-btn" type="button" style="display:none;position:fixed;bottom:calc(70px + env(safe-area-inset-bottom,0px));right:16px;z-index:9999;background:none;color:#f43f5e;border:1px solid rgba(244,63,94,0.3);border-radius:3px;padding:0.5rem 0.8rem;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:0.6rem;cursor:pointer;min-height:36px;align-items:center;justify-content:center" aria-label="Cancel model download">cancel</button>
-<button id="motion-toggle" type="button" aria-label="Pause background animation" aria-pressed="false" style="display:none;position:fixed;bottom:calc(70px + env(safe-area-inset-bottom,0px));left:16px;z-index:9999;background:none;color:rgba(141,246,255,0.4);border:1px solid rgba(141,246,255,0.1);border-radius:3px;padding:0.5rem 0.8rem;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:0.6rem;cursor:pointer;min-height:36px;align-items:center;justify-content:center">pause</button>
+<!-- motion-toggle removed — shader pauses automatically on chat, resumes on new chat -->
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -350,12 +351,14 @@ let modelReady = false;
 (function runSplash() {
   var logo = document.getElementById('splashLogo');
   var installBtn = document.getElementById('ctaInstall');
-  // After 1.2s: shrink ghost into the button, reveal border + text
+  // 1s: start shrinking (smooth scale transition)
+  setTimeout(function() { logo.classList.add('shrunk'); }, 1000);
+  // 2.2s: move into button (after scale transition completes)
   setTimeout(function() {
-    logo.classList.add('shrunk');
+    logo.classList.add('in-btn');
     installBtn.insertBefore(logo, installBtn.firstChild);
     installBtn.classList.add('revealed');
-  }, 1200);
+  }, 2200);
 })();
 
 function transitionTo(newState) {
@@ -781,8 +784,7 @@ const chatArea = document.getElementById('main-content');
 const chatInput = document.getElementById('chatInput');
 const sendBtn = document.getElementById('sendBtn');
 
-// Show motion-toggle on all devices (shader runs everywhere)
-document.getElementById('motion-toggle').style.display = 'inline-flex';
+// motion-toggle removed — shader auto-pauses on chat
 
 function addMessage(type, content, safe) {
   const div = document.createElement('div');
@@ -1969,34 +1971,11 @@ if ('serviceWorker' in navigator) {
   window._trackEvent('page_view', { referrer: document.referrer, tier: document.documentElement.getAttribute('data-tier') });
 })();
 
-// Motion toggle (BUG #10: fix desync with reduced-motion)
-(function initMotionToggle() {
-  const btn = document.getElementById('motion-toggle');
-  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  btn.addEventListener('click', () => {
-    motionTogglePaused = !motionTogglePaused;
-    btn.setAttribute('aria-pressed', String(motionTogglePaused));
-    if (motionTogglePaused) {
-      pauseShader();
-      btn.textContent = 'play';
-      btn.setAttribute('aria-label', 'Enable background animation');
-    } else {
-      btn.textContent = 'pause';
-      btn.setAttribute('aria-label', 'Pause background animation');
-      resumeShader();
-    }
-  });
-
-  // If user prefers reduced motion, start paused with correct label
-  if (prefersReduced) {
-    motionTogglePaused = true;
-    btn.setAttribute('aria-pressed', 'true');
-    btn.textContent = 'play';
-    btn.setAttribute('aria-label', 'Enable background animation');
-    pauseShader();
-  }
-})();
+// Reduced motion: pause shader at start
+if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  motionTogglePaused = true;
+  pauseShader();
+}
 
 // Page Visibility API pause
 document.addEventListener('visibilitychange', () => {
