@@ -164,10 +164,10 @@ canvas.active{opacity:1}
 .chat-input{width:100%;font-family:inherit;font-size:max(1rem,16px);color:#fff;background:rgba(255,255,255,0.06);border:1px solid rgba(141,246,255,0.2);border-radius:20px;padding:0.7rem 3rem 0.7rem 1rem;outline:none;transition:border-color 0.3s;resize:none;overflow:hidden;min-height:44px;max-height:120px}
 .chat-input:focus{border-color:rgba(141,246,255,0.5)}
 .chat-input::placeholder{color:rgba(255,255,255,0.25)}
-.send-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:rgba(141,246,255,0.15);border:none;color:#8df6ff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s}
-.send-btn:disabled{display:none}
-.send-btn:not(:disabled):active{background:rgba(141,246,255,0.35)}
-.send-btn svg{width:18px;height:18px}
+.send-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:none;border:none;color:#8df6ff;cursor:pointer;display:none;align-items:center;justify-content:center}
+.send-btn.active{display:flex}
+.send-btn:active{color:#fff}
+.send-btn svg{width:20px;height:20px}
 
 /* Model progress bar (system message style) */
 .model-bar{width:100%;height:3px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:0.3rem;overflow:hidden}
@@ -307,7 +307,7 @@ canvas.active{opacity:1}
         disabled
       ></textarea>
       <div class="char-counter" id="charCounter"></div>
-      <button class="send-btn" id="sendBtn" type="button" disabled aria-label="Send">
+      <button class="send-btn" id="sendBtn" type="button" aria-label="Send">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
       </button>
     </div>
@@ -896,7 +896,7 @@ document.getElementById('newChatBtn').addEventListener('click', function() {
   chatArea.innerHTML = '';
   chatInput.value = '';
   chatInput.focus();
-  sendBtn.disabled = true;
+  sendBtn.classList.remove('active');
   // Reset UX state — resume shader, remove chat overlay
   var appEl = document.getElementById('app');
   appEl.classList.remove('chat-active');
@@ -907,7 +907,8 @@ document.getElementById('newChatBtn').addEventListener('click', function() {
 
 // Send button + input wiring
 chatInput.addEventListener('input', function() {
-  sendBtn.disabled = chatInput.value.trim().length === 0 && !_attachedFileText;
+  var hasContent = chatInput.value.trim().length > 0 || !!_attachedFileText;
+  sendBtn.classList.toggle('active', hasContent);
   // Auto-expand textarea
   this.style.height = 'auto';
   this.style.height = Math.min(this.scrollHeight, 120) + 'px';
@@ -947,11 +948,11 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
     removeBtn.className = 'remove';
     removeBtn.setAttribute('role', 'button');
     removeBtn.textContent = '\u00d7';
-    removeBtn.addEventListener('click', function() { _attachedFileText = ''; _attachedFileName = ''; chip.remove(); sendBtn.disabled = chatInput.value.trim().length === 0; });
+    removeBtn.addEventListener('click', function() { _attachedFileText = ''; _attachedFileName = ''; chip.remove(); sendBtn.classList.toggle('active', !!chatInput.value.trim()); });
     chip.appendChild(nameSpan);
     chip.appendChild(removeBtn);
     document.getElementById('inputBar').insertBefore(chip, document.querySelector('.input-wrap'));
-    sendBtn.disabled = false;
+    sendBtn.classList.add('active');
   };
   reader.readAsText(file);
   e.target.value = '';
@@ -1351,7 +1352,7 @@ function restoreSession(session) {
     var last = session.conversationHistory[session.conversationHistory.length - 1];
     // Don't pre-fill input on restore (x627)
     chatInput.value = '';
-    sendBtn.disabled = true;
+    sendBtn.classList.remove('active');
   }
 }
 
@@ -1777,7 +1778,7 @@ if (CASCADE_OFF) { /* skip */ } else {
     // If a question was queued from #q= hash, auto-submit
     if (window._queuedQuestion) {
       chatInput.value = window._queuedQuestion;
-      sendBtn.disabled = false;
+      sendBtn.classList.add('active');
       window._queuedQuestion = null;
       chatInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
     }
@@ -1818,7 +1819,7 @@ qInput.addEventListener('keydown', async (e) => {
   // Clear input immediately
   qInput.value = '';
   qInput.style.height = 'auto';
-  sendBtn.disabled = true;
+  sendBtn.classList.remove('active');
 
   const cascadeStart = performance.now();
 
@@ -2011,7 +2012,7 @@ document.addEventListener('visibilitychange', () => {
     if (q) {
       window._queuedQuestion = q;
       chatInput.value = q;
-      sendBtn.disabled = false;
+      sendBtn.classList.add('active');
     }
   } else if (hash === '#demo') {
     setTimeout(function() { chatInput.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 500);
