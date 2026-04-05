@@ -126,7 +126,7 @@ canvas{display:none;position:fixed;inset:0;width:100%;height:100%}
 @keyframes dot-pulse{0%,80%,100%{opacity:0.3;transform:scale(0.8)}40%{opacity:1;transform:scale(1.2)}}
 
 /* Claims toggle (2-level disclosure) */
-.claims-toggle{font-size:0.65rem;color:rgba(141,246,255,0.6);background:none;border:1px solid rgba(141,246,255,0.12);border-radius:4px;padding:0.3rem 0.6rem;cursor:pointer;margin-top:0.5rem;font-family:inherit;transition:all 0.2s}
+.claims-toggle{font-size:0.7rem;color:rgba(141,246,255,0.6);background:none;border:1px solid rgba(141,246,255,0.12);border-radius:4px;min-height:36px;padding:0.4rem 0.8rem;cursor:pointer;margin-top:0.5rem;font-family:inherit;transition:all 0.2s}
 .claims-toggle[aria-expanded="true"]{color:#8df6ff;border-color:rgba(141,246,255,0.3)}
 .claims-panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows 0.3s ease}
 .claims-panel.open{grid-template-rows:1fr}
@@ -145,11 +145,11 @@ canvas{display:none;position:fixed;inset:0;width:100%;height:100%}
 /* Input bar — sticky bottom */
 .input-bar{flex-shrink:0;display:flex;align-items:center;padding:0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom,0px) + var(--kb-offset, 0px));background:rgba(10,10,15,0.95);border-top:1px solid rgba(255,255,255,0.06)}
 .input-wrap{position:relative;flex:1}
-.chat-input{width:100%;font-family:inherit;font-size:max(1rem,16px);color:#fff;background:rgba(255,255,255,0.06);border:1px solid rgba(141,246,255,0.2);border-radius:20px;padding:0.7rem 3rem 0.7rem 1rem;outline:none;transition:border-color 0.3s}
+.chat-input{width:100%;font-family:inherit;font-size:max(1rem,16px);color:#fff;background:rgba(255,255,255,0.06);border:1px solid rgba(141,246,255,0.2);border-radius:20px;padding:0.7rem 3rem 0.7rem 1rem;outline:none;transition:border-color 0.3s;resize:none;overflow:hidden;min-height:44px;max-height:120px}
 .chat-input:focus{border-color:rgba(141,246,255,0.5)}
 .chat-input::placeholder{color:rgba(255,255,255,0.25)}
 .send-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:rgba(141,246,255,0.15);border:none;color:#8df6ff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s}
-.send-btn:disabled{opacity:0.2;cursor:not-allowed}
+.send-btn:disabled{opacity:0;pointer-events:none}
 .send-btn:not(:disabled):active{background:rgba(141,246,255,0.35)}
 .send-btn svg{width:18px;height:18px}
 
@@ -234,6 +234,16 @@ canvas{display:none;position:fixed;inset:0;width:100%;height:100%}
 @keyframes lava-drift{0%{--blob1-x:30%;--blob1-y:70%;--blob2-x:70%;--blob2-y:30%;--blob3-x:50%;--blob3-y:50%}25%{--blob1-x:45%;--blob1-y:55%;--blob2-x:55%;--blob2-y:60%;--blob3-x:35%;--blob3-y:40%}50%{--blob1-x:60%;--blob1-y:40%;--blob2-x:40%;--blob2-y:70%;--blob3-x:65%;--blob3-y:60%}75%{--blob1-x:35%;--blob1-y:65%;--blob2-x:65%;--blob2-y:45%;--blob3-x:45%;--blob3-y:35%}100%{--blob1-x:30%;--blob1-y:70%;--blob2-x:70%;--blob2-y:30%;--blob3-x:50%;--blob3-y:50%}}
 @keyframes lava-drift-2{0%{--blob2-x:70%;--blob1-y:70%}50%{--blob2-x:40%;--blob1-y:40%}100%{--blob2-x:70%;--blob1-y:70%}}
 @media(prefers-reduced-motion:reduce){.webgl-fallback::before,.webgl-fallback::after{animation:none!important}}
+
+/* Character counter */
+.char-counter{font-size:0.5rem;color:rgba(255,255,255,0.25);text-align:right;padding:0.1rem 0.5rem;display:none}
+
+/* File attachment */
+.attach-btn{width:36px;height:36px;border-radius:50%;background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color 0.2s;flex-shrink:0}
+.attach-btn:hover{color:rgba(141,246,255,0.7)}
+.file-chip{font-size:0.6rem;color:rgba(141,246,255,0.7);background:rgba(141,246,255,0.08);border:1px solid rgba(141,246,255,0.15);border-radius:12px;padding:0.2rem 0.6rem;display:inline-flex;align-items:center;gap:0.3rem}
+.file-chip .remove{cursor:pointer;opacity:0.5}
+.file-chip .remove:hover{opacity:1}
 </style>
 
 <noscript>
@@ -258,29 +268,32 @@ canvas{display:none;position:fixed;inset:0;width:100%;height:100%}
 
 <div class="app" id="app">
   <header class="app-header">
-    <a class="cta-install" id="ctaInstall" href="https://github.com/grainulation/grainulator" rel="noopener" aria-label="View on GitHub"><img src="glitchy.png" alt="" width="28" height="28">/plugin install grainulator</a>
+    <a class="cta-install" id="ctaInstall" href="https://github.com/grainulation/grainulator" target="_blank" rel="noopener" aria-label="View on GitHub"><img src="glitchy.png" alt="" width="28" height="28">/plugin install grainulator</a>
     <button class="new-chat-btn" id="newChatBtn" type="button" aria-label="New chat">new chat</button>
   </header>
 
   <main id="main-content" class="chat-area" role="log" aria-label="Research conversation">
     <!-- Welcome message -->
-    <div class="msg msg-system" id="welcomeMsg">Ask any research question. Claims are generated instantly from a library of 50 topics.</div>
+    <div class="msg msg-system" id="welcomeMsg">What do you want to research?</div>
     <div class="msg msg-system" id="modelStatus"></div>
   </main>
 
   <div class="input-bar" id="inputBar">
+    <button class="attach-btn" id="attachBtn" type="button" aria-label="Attach file"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg></button>
+    <input type="file" id="fileInput" accept=".txt,.md,.json,.csv" class="sr-only">
     <div class="input-wrap">
       <label for="chatInput" class="sr-only">Research question</label>
-      <input
+      <textarea
         class="chat-input"
         id="chatInput"
-        type="text"
+        rows="1"
         placeholder="Should we use Postgres or Mongo?"
         autocomplete="off"
         spellcheck="false"
         enterkeyhint="send"
-        maxlength="500"
-      >
+        maxlength="5000"
+      ></textarea>
+      <div class="char-counter" id="charCounter"></div>
       <button class="send-btn" id="sendBtn" type="button" disabled aria-label="Send">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
       </button>
@@ -303,6 +316,11 @@ canvas{display:none;position:fixed;inset:0;width:100%;height:100%}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
+// ===================================================================
+// XSS HELPER — escape user-supplied strings before inserting into HTML
+// ===================================================================
+function escapeHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
 // ===================================================================
 // SHADER PAUSE STATE — declared early to avoid temporal dead zone (BUG #8)
 // ===================================================================
@@ -342,7 +360,8 @@ function isSoftwareRenderer(g) {
 }
 
 if (isMobileDevice) {
-  // Skip shader on mobile — dark background only
+  // Skip shader on mobile — use CSS fallback blobs
+  document.body.classList.add('webgl-fallback');
 } else if (!gl || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
   if (!gl) activateFallback();
 } else if (isSoftwareRenderer(gl)) {
@@ -703,11 +722,15 @@ if (!isMobileDevice) {
   document.getElementById('motion-toggle').style.display = 'inline-flex';
 }
 
-function addMessage(type, content) {
+function addMessage(type, content, safe) {
   const div = document.createElement('div');
   div.className = 'msg msg-' + type;
   if (typeof content === 'string') {
-    div.innerHTML = content;
+    if (safe !== false && type !== 'user') {
+      div.innerHTML = content;
+    } else {
+      div.textContent = content;
+    }
   } else {
     div.appendChild(content);
   }
@@ -730,7 +753,7 @@ function removeThinking() {
 function autoScroll() {
   // Always scroll unless user has scrolled up significantly (>200px from bottom)
   const distFromBottom = chatArea.scrollHeight - chatArea.scrollTop - chatArea.clientHeight;
-  if (distFromBottom < 200) {
+  if (distFromBottom < 50) {
     requestAnimationFrame(() => chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' }));
   }
 }
@@ -743,7 +766,7 @@ function synthesizeSummary(claims, question) {
   const constraints = claims.filter(function(c) { return c.type === 'constraint'; });
 
   var summary = 'Based on ' + claims.length + ' findings';
-  if (question) summary += ' about <strong>' + question.replace(/</g,'&lt;') + '</strong>';
+  if (question) summary += ' about <strong>' + escapeHtml(question) + '</strong>';
   summary += ':<br><br>';
 
   if (constraints.length > 0) summary += constraints[0].text + '<br><br>';
@@ -759,7 +782,7 @@ function renderClaimsToggle(claims) {
   var btn = document.createElement('button');
   btn.className = 'claims-toggle';
   btn.setAttribute('aria-expanded', 'false');
-  btn.textContent = 'View ' + claims.length + ' claims';
+  btn.textContent = '\u25B8 View ' + claims.length + ' claims';
 
   var panel = document.createElement('div');
   panel.className = 'claims-panel';
@@ -769,7 +792,13 @@ function renderClaimsToggle(claims) {
   claims.forEach(function(c) {
     var row = document.createElement('div');
     row.className = 'claim-row';
-    row.innerHTML = '<span class="badge badge-' + c.type + '">' + c.type + '</span><span>' + (c.text || '') + '</span>';
+    var badge = document.createElement('span');
+    badge.className = 'badge badge-' + c.type;
+    badge.textContent = c.type + (c.unverified ? ' (ai)' : '');
+    var textSpan = document.createElement('span');
+    textSpan.textContent = c.text || '';
+    row.appendChild(badge);
+    row.appendChild(textSpan);
     inner.appendChild(row);
   });
 
@@ -779,7 +808,7 @@ function renderClaimsToggle(claims) {
     var expanded = btn.getAttribute('aria-expanded') === 'true';
     btn.setAttribute('aria-expanded', String(!expanded));
     panel.classList.toggle('open');
-    btn.textContent = expanded ? 'View ' + claims.length + ' claims' : 'Hide claims';
+    btn.textContent = expanded ? '\u25B8 View ' + claims.length + ' claims' : '\u25BE Hide claims';
   });
 
   wrapper.appendChild(btn);
@@ -791,19 +820,22 @@ function showCompileButton() {
   // Only show once
   if (document.getElementById('compileMsgBtn')) return;
   if (window._allClaims.length < 3) return;
-  var compileMsg = addMessage('system', '<button class="compile-msg-btn" id="compileMsgBtn">wheat compile &rarr; verdict</button>');
+  var compileMsg = addMessage('system', '<button class="compile-msg-btn" id="compileMsgBtn">compile findings</button>');
   document.getElementById('compileMsgBtn').addEventListener('click', runCompile);
 }
 
 // New chat button
 document.getElementById('newChatBtn').addEventListener('click', function() {
+  if (window._allClaims && window._allClaims.length > 0) {
+    if (!confirm('Start new chat? (' + window._allClaims.length + ' claims will be cleared)')) return;
+  }
   resetExploreState();
   clearSession();
   // Clear chat area, keep welcome message
   chatArea.innerHTML = '';
   var welcome = document.createElement('div');
   welcome.className = 'msg msg-system';
-  welcome.textContent = 'Ask any research question. Claims are generated instantly from a library of 50 topics.';
+  welcome.textContent = 'What do you want to research?';
   chatArea.appendChild(welcome);
   chatInput.value = '';
   chatInput.focus();
@@ -812,11 +844,54 @@ document.getElementById('newChatBtn').addEventListener('click', function() {
 
 // Send button + input wiring
 chatInput.addEventListener('input', function() {
-  sendBtn.disabled = chatInput.value.trim().length === 0;
+  sendBtn.disabled = chatInput.value.trim().length === 0 && !_attachedFileText;
+  // Auto-expand textarea
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+  // Character counter
+  var counter = document.getElementById('charCounter');
+  if (this.value.length > 4000) {
+    counter.style.display = 'block';
+    counter.textContent = this.value.length + '/5000';
+  } else {
+    counter.style.display = 'none';
+  }
 });
 
 sendBtn.addEventListener('click', function() {
   chatInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+});
+
+// File attachment
+var _attachedFileText = '';
+var _attachedFileName = '';
+document.getElementById('attachBtn').addEventListener('click', function() { document.getElementById('fileInput').click(); });
+document.getElementById('fileInput').addEventListener('change', function(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 1048576) { showToast('File too large (1MB max)'); return; }
+  var reader = new FileReader();
+  reader.onload = function(evt) {
+    _attachedFileText = evt.target.result;
+    _attachedFileName = file.name;
+    var old = document.querySelector('.file-chip');
+    if (old) old.remove();
+    var chip = document.createElement('div');
+    chip.className = 'file-chip';
+    var nameSpan = document.createElement('span');
+    nameSpan.textContent = file.name;
+    var removeBtn = document.createElement('span');
+    removeBtn.className = 'remove';
+    removeBtn.setAttribute('role', 'button');
+    removeBtn.textContent = '\u00d7';
+    removeBtn.addEventListener('click', function() { _attachedFileText = ''; _attachedFileName = ''; chip.remove(); sendBtn.disabled = chatInput.value.trim().length === 0; });
+    chip.appendChild(nameSpan);
+    chip.appendChild(removeBtn);
+    document.getElementById('inputBar').insertBefore(chip, document.querySelector('.input-wrap'));
+    sendBtn.disabled = false;
+  };
+  reader.readAsText(file);
+  e.target.value = '';
 });
 
 // iOS keyboard fix
@@ -1083,7 +1158,9 @@ function loadDemo(demo, opts) {
     const reIdClaims = demo.claims.map(function(c) {
       const idx = window._nextClaimIndex++;
       const newId = 'd' + String(idx).padStart(3, '0');
-      return { id: newId, type: c.type, tier: c.tier, text: c.text };
+      var claim = { id: newId, type: c.type, tier: c.tier, text: c.text };
+      if (c.unverified) claim.unverified = true;
+      return claim;
     });
 
     // Append to persistent array
@@ -1664,12 +1741,23 @@ const qInput = chatInput;
 
 qInput.addEventListener('keydown', async (e) => {
   if (e.key !== 'Enter') return;
+  if (e.shiftKey) return; // Shift+Enter adds newline
+  e.preventDefault();
   if (inferenceRunning) return;
-  const question = qInput.value.trim();
-  if (!question) return;
+  var question = qInput.value.trim();
+  if (!question && !_attachedFileText) return;
+
+  // Prepend file content if attached
+  if (_attachedFileText) {
+    question = '[File: ' + _attachedFileName + ']\n' + _attachedFileText.substring(0, 4000) + '\n\nQuestion: ' + question;
+    _attachedFileText = ''; _attachedFileName = '';
+    var fchip = document.querySelector('.file-chip');
+    if (fchip) fchip.remove();
+  }
 
   // Clear input immediately
   qInput.value = '';
+  qInput.style.height = 'auto';
   sendBtn.disabled = true;
 
   const cascadeStart = performance.now();
@@ -1700,6 +1788,8 @@ qInput.addEventListener('keydown', async (e) => {
       if (!jsonMatch) throw new Error('No JSON array in response');
 
       const claims = JSON.parse(jsonMatch[0]);
+      // Mark Track B (WebLLM) claims as unverified
+      claims.forEach(function(c) { c.unverified = true; });
 
       // Rx7: accumulate claims instead of replacing
       loadDemo({ question: question, claims: claims }, {
