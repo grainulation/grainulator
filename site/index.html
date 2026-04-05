@@ -105,7 +105,7 @@ canvas.dimmed{opacity:0}
 .ui{position:fixed;inset:0;z-index:10;text-align:center;opacity:0;animation:appear 1s ease 0.5s forwards;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;overflow-y:auto;overflow-x:hidden;padding:max(30vh, 180px) 1.5rem calc(4rem + env(safe-area-inset-bottom,0px)) 1.5rem;display:flex;flex-direction:column;align-items:center;gap:1rem;max-width:100%;background:radial-gradient(ellipse 80% 70% at 50% 45%,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.4) 60%,transparent 100%)}
 .ui.hidden{display:none}
 .ui-logo{width:clamp(60px,15vw,120px);height:auto;margin-bottom:0;opacity:0.9;filter:drop-shadow(0 0 12px rgba(141,246,255,0.3))}
-.ui-title{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:clamp(0.7rem,1.5vw,0.9rem);font-weight:700;color:#8df6ff;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:0.6rem;user-select:text;text-shadow:0 0 7px #8df6ff,0 0 20px rgba(141,246,255,0.6),0 0 40px rgba(141,246,255,0.3),0 0 80px rgba(141,246,255,0.15)}
+/* .ui-title removed — logo only, no text title */
 
 .cta-row{display:flex;gap:0.8rem;justify-content:center;align-items:center;flex-wrap:wrap}
 .cta-btn{font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:clamp(0.65rem,1.2vw,0.8rem);padding:0.75rem 1.2rem;min-height:48px;border-radius:3px;transition:all 0.4s;display:inline-flex;align-items:center;text-decoration:none;cursor:pointer;border:none;background:none}
@@ -142,7 +142,9 @@ canvas.dimmed{opacity:0}
 .q-input::placeholder{color:rgba(255,255,255,0.25)}
 .q-input:disabled{opacity:0.5;cursor:not-allowed;border-color:rgba(141,246,255,0.15)}
 .q-input:disabled::placeholder{color:rgba(141,246,255,0.3)}
-.model-status{font-family:monospace;font-size:0.65rem;color:#8df6ff;text-align:center;margin-top:0.5rem;min-height:1em}
+.model-status{font-family:monospace;font-size:0.6rem;color:rgba(141,246,255,0.6);text-align:center;margin-top:0.5rem;min-height:1em;transition:opacity 1s ease}
+.model-bar{width:100%;height:3px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:0.4rem;overflow:hidden}
+.model-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,rgba(141,246,255,0.4),rgba(141,246,255,0.8));border-radius:2px;transition:width 0.4s ease}
 
 /* Claim cards */
 .claims-area{display:flex;flex-direction:column;gap:0.8rem;min-height:0;width:100%;max-width:720px}
@@ -249,7 +251,7 @@ canvas.dimmed{opacity:0}
 @media(max-height:500px){
   .ui{padding-top:max(10vh, 60px)}
   .ui-logo{width:50px}
-  .ui-title{font-size:0.65rem;margin-bottom:0.3rem}
+  /* .ui-title removed */
   .cta-btn{padding:0.4rem 0.8rem;min-height:44px;font-size:0.6rem}
   .site-footer a{min-height:44px;padding:0.3rem 0.4rem;font-size:0.5rem}
   .q-input{padding:0.6rem 0.8rem}
@@ -262,7 +264,7 @@ canvas.dimmed{opacity:0}
 @media(prefers-reduced-motion:reduce){
   canvas{display:none}
   .ui{opacity:1;animation:none;padding-top:2rem}
-  .ui-title{color:#8df6ff}
+  /* .ui-title removed */
   html body .cta-row .cta-btn{transition:none;animation:none;box-shadow:0 0 20px rgba(255,255,255,0.15)}
   .site-footer{opacity:1;animation:none}
   html body .claim-card{animation:none;transition:none;opacity:1;transform:none}
@@ -333,7 +335,7 @@ canvas.dimmed{opacity:0}
 <style>
   canvas{display:none!important}
   .ui{opacity:1!important;animation:none!important;position:fixed!important;top:50%!important;bottom:auto!important;transform:translate(-50%,-50%)!important}
-  .ui-title{color:#8df6ff!important}
+  /* .ui-title removed */
   .cta-btn{color:#8df6ff!important;border-color:rgba(141,246,255,0.3)!important;cursor:default!important}
   .site-footer{opacity:1!important;animation:none!important}
   .toast{display:none!important}
@@ -357,9 +359,8 @@ canvas.dimmed{opacity:0}
 
 <main id="main-content">
   <div class="ui" id="landingUI" role="region" aria-label="Product information">
-    <img src="glitchy.png" alt="Glitchy mascot" class="ui-logo">
-    <h1 class="ui-title">grainulator</h1>
-    <h2 class="sr-only">Research that compiles</h2>
+    <img src="glitchy.png" alt="Grainulator — research that compiles" class="ui-logo">
+    <h1 class="sr-only">Grainulator — Research that compiles</h1>
     <p class="sr-only">Evidence-tracked research sprints for Claude Code. Ask any question, get a decision-ready brief. Open source, zero dependencies, MIT licensed.</p>
     <div class="cta-row">
       <button class="cta-btn cta-install" id="ctaInstall" type="button" aria-label="Copy install command: /plugin install grainulator">
@@ -1865,7 +1866,13 @@ if (CASCADE_OFF) { /* skip */ } else {
         if (abortController.signal.aborted) throw new Error('Cancelled');
         const pct = Math.round((report.progress || 0) * 100);
         if (modelStatusEl && pct < 100) {
-          modelStatusEl.textContent = 'downloading model (' + pct + '%)...';
+          if (!document.getElementById('model-bar')) {
+            modelStatusEl.innerHTML = '<span id="model-pct">loading local ai\u2026</span><div class="model-bar"><div class="model-bar-fill" id="model-bar"></div></div>';
+          }
+          const bar = document.getElementById('model-bar');
+          const label = document.getElementById('model-pct');
+          if (bar) bar.style.width = pct + '%';
+          if (label) label.textContent = pct > 0 ? (pct + '% \u2014 local ai') : 'loading local ai\u2026';
         }
         if (window._setPreloadProgress) window._setPreloadProgress(report.progress || 0);
         updateModelProgress(pct);
@@ -1879,8 +1886,11 @@ if (CASCADE_OFF) { /* skip */ } else {
     cancelBtn.style.display = 'none';
     if (motionBtn) { motionBtn.style.left = ''; motionBtn.style.right = '16px'; }
     const qi = document.getElementById('demo-question');
-    qi.placeholder = 'Ask your own question (local AI ready)...';
-    if (modelStatusEl) modelStatusEl.textContent = '\u26A1 local model ready';
+    qi.placeholder = 'Ask anything (local AI ready)...';
+    if (modelStatusEl) {
+      modelStatusEl.innerHTML = '\u26A1 local ai ready';
+      setTimeout(() => { if (modelStatusEl) modelStatusEl.style.opacity = '0'; }, 3000);
+    }
     announceState('Live inference ready');
     // Input-first: always available, focus only if document is visible
     if (!document.hidden) qi.focus();
@@ -2165,7 +2175,7 @@ function updateCascadeDebug(opts) {
       if (v) {
         const qi = document.getElementById('demo-question');
         stopPlaceholderCycle();
-        qi.placeholder = 'Ask your own question (local AI ready)...';
+        qi.placeholder = 'Ask anything (local AI ready)...';
       }
     },
     configurable: true,
