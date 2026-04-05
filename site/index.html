@@ -108,14 +108,17 @@ canvas.active{opacity:1}
 /* App shell — flexbox column, full viewport height, iOS safe */
 .app{display:flex;flex-direction:column;height:100vh;height:100dvh;height:-webkit-fill-available;position:relative;z-index:10;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace}
 
-/* Header — centered splash initially, moves to top when chat opens */
+/* Splash — big ghost shrinks into install button */
 .app-header{display:flex;align-items:center;justify-content:center;gap:0.8rem;padding:0.6rem 1rem;z-index:15;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);transition:all 0.6s cubic-bezier(0.4,0,0.2,1)}
 .app.chat-active .app-header{position:relative;top:auto;left:auto;transform:none;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.04)}
-.header-btn{font-size:0.65rem;padding:0.35rem 0.8rem;height:36px;color:rgba(141,246,255,0.7);border:1px solid rgba(141,246,255,0.2);border-radius:3px;background:none;cursor:pointer;font-family:inherit;transition:all 0.3s;display:inline-flex;align-items:center;gap:0.5rem;text-decoration:none;white-space:nowrap}
+.splash-logo{width:120px;height:120px;opacity:0.9;transition:all 0.8s cubic-bezier(0.4,0,0.2,1);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:16;filter:drop-shadow(0 0 20px rgba(141,246,255,0.3))}
+.splash-logo.shrunk{width:22px;height:22px;position:static;transform:none;filter:none}
+.header-btn{font-size:0.65rem;padding:0.35rem 0.8rem;height:36px;color:rgba(141,246,255,0.7);border:1px solid transparent;border-radius:3px;background:none;cursor:pointer;font-family:inherit;transition:all 0.6s cubic-bezier(0.4,0,0.2,1);display:inline-flex;align-items:center;gap:0.5rem;text-decoration:none;white-space:nowrap;overflow:hidden}
+.header-btn.revealed{border-color:rgba(141,246,255,0.2)}
 .header-btn:hover{border-color:rgba(141,246,255,0.4);color:#8df6ff}
-.header-btn img{width:22px;height:22px;opacity:0.9}
+.header-btn .btn-text{max-width:0;opacity:0;overflow:hidden;transition:max-width 0.6s ease 0.3s,opacity 0.4s ease 0.5s}
+.header-btn.revealed .btn-text{max-width:300px;opacity:1}
 .new-chat-btn{display:none}
-.app.chat-active .new-chat-btn{display:inline-flex}
 .app.chat-active .new-chat-btn{display:inline-flex}
 .new-chat-btn:hover{color:#8df6ff;border-color:rgba(141,246,255,0.3)}
 
@@ -279,13 +282,13 @@ canvas.active{opacity:1}
 
 <div class="app" id="app">
   <header class="app-header">
-    <a class="header-btn" id="ctaInstall" href="https://github.com/grainulation/grainulator" target="_blank" rel="noopener" aria-label="View on GitHub"><img src="glitchy.png" alt="" width="22" height="22">/plugin install grainulator</a>
-    <button class="header-btn new-chat-btn" id="newChatBtn" type="button" aria-label="New chat">new chat</button>
+    <img src="glitchy.png" alt="Grainulator" class="splash-logo" id="splashLogo">
+    <a class="header-btn" id="ctaInstall" href="https://github.com/grainulation/grainulator" target="_blank" rel="noopener" aria-label="View on GitHub"><span class="btn-text">/plugin install grainulator</span></a>
+    <button class="header-btn new-chat-btn" id="newChatBtn" type="button" aria-label="New chat"><span class="btn-text">new chat</span></button>
   </header>
 
   <main id="main-content" class="chat-area" role="log" aria-label="Research conversation">
-    <!-- Welcome message -->
-    <div class="msg msg-system" id="welcomeMsg">What do you want to research?</div>
+    <!-- Messages render here -->
   </main>
 
   <div class="input-bar" id="inputBar">
@@ -296,11 +299,12 @@ canvas.active{opacity:1}
         class="chat-input"
         id="chatInput"
         rows="1"
-        placeholder="Ask a question..."
+        placeholder="loading..."
         autocomplete="off"
         spellcheck="false"
         enterkeyhint="send"
         maxlength="5000"
+        disabled
       ></textarea>
       <div class="char-counter" id="charCounter"></div>
       <button class="send-btn" id="sendBtn" type="button" disabled aria-label="Send">
@@ -340,16 +344,32 @@ let inferenceRunning = false;
 
 // UX State Machine: LAVA_ONLY -> LAVA_WITH_INPUT -> CHAT_ACTIVE
 let uxState = 'LAVA_ONLY';
+let modelReady = false;
+
+// Splash animation: big ghost → shrink → border → text
+(function runSplash() {
+  var logo = document.getElementById('splashLogo');
+  var installBtn = document.getElementById('ctaInstall');
+  // After 1.2s: shrink ghost into the button, reveal border + text
+  setTimeout(function() {
+    logo.classList.add('shrunk');
+    installBtn.insertBefore(logo, installBtn.firstChild);
+    installBtn.classList.add('revealed');
+  }, 1200);
+})();
 
 function transitionTo(newState) {
   if (uxState === newState) return;
   uxState = newState;
-  const appEl = document.getElementById('app');
-  const dimOverlay = document.getElementById('dimOverlay');
-  const inputBarEl = document.getElementById('inputBar');
-  const chatInputEl = document.getElementById('chatInput');
+  var appEl = document.getElementById('app');
+  var dimOverlay = document.getElementById('dimOverlay');
+  var inputBarEl = document.getElementById('inputBar');
+  var chatInputEl = document.getElementById('chatInput');
 
   if (newState === 'LAVA_WITH_INPUT') {
+    modelReady = true;
+    chatInputEl.disabled = false;
+    chatInputEl.placeholder = 'Ask a question...';
     inputBarEl.classList.add('visible');
     if (!document.hidden) chatInputEl.focus();
   }
@@ -873,12 +893,7 @@ document.getElementById('newChatBtn').addEventListener('click', function() {
   }
   resetExploreState();
   clearSession();
-  // Clear chat area, keep welcome message
   chatArea.innerHTML = '';
-  var welcome = document.createElement('div');
-  welcome.className = 'msg msg-system';
-  welcome.textContent = 'What do you want to research?';
-  chatArea.appendChild(welcome);
   chatInput.value = '';
   chatInput.focus();
   sendBtn.disabled = true;
