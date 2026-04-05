@@ -94,22 +94,30 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;overflow:hidden;background:#0a0a0f;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
-/* Canvas — hidden on mobile, visible on desktop */
-canvas{display:none;position:fixed;inset:0;width:100%;height:100%}
-@media(min-width:769px) and (hover:hover) and (pointer:fine){canvas{display:block}}
+/* Canvas — always visible, full-screen behind everything */
+canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0}
 
-/* App shell — flexbox column, full viewport height */
-.app{display:flex;flex-direction:column;height:100dvh;height:100vh;position:relative;z-index:10;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace}
+/* Dim overlay — JS controls opacity for CHAT_ACTIVE / focus mode */
+.dim-overlay{position:fixed;inset:0;z-index:1;background:#0a0a0f;opacity:0;transition:opacity 0.6s ease;pointer-events:none}
 
-/* Header */
-.app-header{flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:0.8rem;padding:0.6rem 1rem;border-bottom:1px solid rgba(255,255,255,0.04)}
+/* Top progress bar — model download */
+.top-progress{position:fixed;top:0;left:0;right:0;height:2px;z-index:20;pointer-events:none;transition:opacity 0.4s ease}
+.top-progress-fill{height:100%;width:0%;background:#8df6ff;transition:width 0.4s ease;opacity:0.6}
+
+/* App shell — flexbox column, full viewport height, iOS safe */
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh;height:-webkit-fill-available;position:relative;z-index:10;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace}
+
+/* Header — floats over lava, border only in chat-active */
+.app-header{flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:0.8rem;padding:0.6rem 1rem;z-index:15;position:relative}
+.app.chat-active .app-header{border-bottom:1px solid rgba(255,255,255,0.04)}
 .app-header .cta-install{font-size:0.65rem;padding:0.35rem 0.8rem 0.35rem 0.5rem;min-height:36px;color:rgba(141,246,255,0.7);border:1px solid rgba(141,246,255,0.2);border-radius:3px;background:none;cursor:pointer;font-family:inherit;transition:all 0.3s;display:inline-flex;align-items:center;gap:0.5rem;text-decoration:none}
 .app-header .cta-install img{width:28px;height:28px;opacity:0.9}
 .new-chat-btn{background:none;border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.35);font-size:0.65rem;padding:0.35rem 0.8rem;min-height:36px;border-radius:3px;cursor:pointer;display:inline-flex;align-items:center;transition:all 0.2s;font-family:inherit;white-space:nowrap}
 .new-chat-btn:hover{color:#8df6ff;border-color:rgba(141,246,255,0.3)}
 
-/* Chat area */
-.chat-area{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:0.8rem;scroll-behavior:smooth}
+/* Chat area — hidden until CHAT_ACTIVE */
+.chat-area{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:0.8rem;scroll-behavior:smooth;opacity:0;transition:opacity 0.4s ease}
+.app.chat-active .chat-area{opacity:1}
 
 /* Messages */
 .msg{max-width:85%;border-radius:12px;padding:0.8rem 1rem;font-size:0.8rem;line-height:1.6;animation:msg-in 0.3s ease forwards;opacity:0}
@@ -142,8 +150,9 @@ canvas{display:none;position:fixed;inset:0;width:100%;height:100%}
 .badge-estimate{background:rgba(167,139,250,0.15);color:#a78bfa}
 .badge-feedback{background:rgba(156,163,175,0.15);color:#9ca3af}
 
-/* Input bar — sticky bottom */
-.input-bar{flex-shrink:0;display:flex;align-items:center;padding:0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom,0px) + var(--kb-offset, 0px));background:rgba(10,10,15,0.95);border-top:1px solid rgba(255,255,255,0.06)}
+/* Input bar — blooms up from bottom with spring animation */
+.input-bar{flex-shrink:0;display:flex;align-items:center;padding:0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom,0px) + var(--kb-offset, 0px));background:rgba(10,10,15,0.95);border-top:1px solid rgba(255,255,255,0.06);transform:translateY(100%);transition:transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)}
+.input-bar.visible{transform:translateY(0)}
 .input-wrap{position:relative;flex:1}
 .chat-input{width:100%;font-family:inherit;font-size:max(1rem,16px);color:#fff;background:rgba(255,255,255,0.06);border:1px solid rgba(141,246,255,0.2);border-radius:20px;padding:0.7rem 3rem 0.7rem 1rem;outline:none;transition:border-color 0.3s;resize:none;overflow:hidden;min-height:44px;max-height:120px}
 .chat-input:focus{border-color:rgba(141,246,255,0.5)}
@@ -200,7 +209,6 @@ canvas{display:none;position:fixed;inset:0;width:100%;height:100%}
 
 /* Reduced motion */
 @media(prefers-reduced-motion:reduce){
-  canvas{display:none!important}
   .msg,.thinking-dots span{animation:none!important;opacity:1}
 }
 
@@ -248,7 +256,6 @@ canvas{display:none;position:fixed;inset:0;width:100%;height:100%}
 
 <noscript>
 <style>
-  canvas{display:none!important}
   .app{display:none!important}
   .toast{display:none!important}
   .noscript-fallback{display:block!important;position:fixed;top:35%;left:50%;transform:translate(-50%,-50%);text-align:center;z-index:5}
@@ -258,7 +265,9 @@ canvas{display:none;position:fixed;inset:0;width:100%;height:100%}
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
+<div class="top-progress" id="topProgress"><div class="top-progress-fill" id="topProgressFill"></div></div>
 <canvas id="c" aria-hidden="true" role="presentation"></canvas>
+<div class="dim-overlay" id="dimOverlay"></div>
 
 <!-- A11y live regions -->
 <div role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="AI model download progress" class="sr-only" id="model-progress"></div>
@@ -275,7 +284,6 @@ canvas{display:none;position:fixed;inset:0;width:100%;height:100%}
   <main id="main-content" class="chat-area" role="log" aria-label="Research conversation">
     <!-- Welcome message -->
     <div class="msg msg-system" id="welcomeMsg">What do you want to research?</div>
-    <div class="msg msg-system" id="modelStatus"></div>
   </main>
 
   <div class="input-bar" id="inputBar">
@@ -329,6 +337,34 @@ let shaderPaused = false;
 let motionTogglePaused = false;
 let inferenceRunning = false;
 
+// UX State Machine: LAVA_ONLY -> LAVA_WITH_INPUT -> CHAT_ACTIVE
+let uxState = 'LAVA_ONLY';
+
+function transitionTo(newState) {
+  if (uxState === newState) return;
+  uxState = newState;
+  const appEl = document.getElementById('app');
+  const dimOverlay = document.getElementById('dimOverlay');
+  const inputBarEl = document.getElementById('inputBar');
+  const chatInputEl = document.getElementById('chatInput');
+
+  if (newState === 'LAVA_WITH_INPUT') {
+    inputBarEl.classList.add('visible');
+    if (!document.hidden) chatInputEl.focus();
+  }
+
+  if (newState === 'CHAT_ACTIVE') {
+    appEl.classList.add('chat-active');
+    const isMob = window.matchMedia('(max-width:768px)').matches;
+    dimOverlay.style.opacity = isMob ? '0.85' : '0.75';
+  }
+}
+
+function enterFocusMode() {
+  const dimOverlay = document.getElementById('dimOverlay');
+  dimOverlay.style.opacity = '0.92';
+}
+
 // ===================================================================
 // Rx7: MULTI-TURN EXPLORE — claim accumulation + turn tracking
 // ===================================================================
@@ -345,8 +381,9 @@ const CASCADE_OFF = new URLSearchParams(location.search).has('cascade') && new U
 // WEBGL SHADER — preserved from v1
 // ===================================================================
 const c = document.getElementById('c');
-const gl = c.getContext('webgl', { preserveDrawingBuffer: true });
 const isMobileDevice = window.matchMedia('(max-width:768px)').matches || navigator.maxTouchPoints > 0;
+// Mobile: no preserveDrawingBuffer for perf
+const gl = c.getContext('webgl', { preserveDrawingBuffer: !isMobileDevice });
 
 function activateFallback() {
   document.body.classList.add('webgl-fallback');
@@ -359,14 +396,14 @@ function isSoftwareRenderer(g) {
   return /swiftshader|llvmpipe|software|basic render/i.test(renderer);
 }
 
-if (isMobileDevice) {
-  // Skip shader on mobile — use CSS fallback blobs
-  document.body.classList.add('webgl-fallback');
-} else if (!gl || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-  if (!gl) activateFallback();
+if (!gl) {
+  // WebGL failed — CSS fallback blobs
+  activateFallback();
 } else if (isSoftwareRenderer(gl)) {
   activateFallback();
-} else {
+}
+
+if (gl && !document.body.classList.contains('webgl-fallback')) {
 
 // Context loss handler (w711) — stop rAF loop + CSS fallback
 c.addEventListener('webglcontextlost', (e) => { e.preventDefault(); pauseShader(); activateFallback(); });
@@ -610,7 +647,7 @@ const seedVal = Math.random();
 gl.uniform1f(seedLoc, seedVal);
 gl.uniform1f(preloadLoc, 0.0);
 
-const dpr = isMobile ? Math.min(devicePixelRatio, 1.0) : Math.min(devicePixelRatio, 1.0);
+const dpr = isMobileDevice ? Math.min(devicePixelRatio, 1.5) : Math.min(devicePixelRatio, 2);
 
 const resize = () => {
   c.width = innerWidth * dpr;
@@ -630,10 +667,11 @@ document.addEventListener('touchstart', wake);
 document.addEventListener('click', wake);
 
 window._shaderRender = null; // hoisted reference
+const FRAME_INTERVAL = isMobileDevice ? 66 : 33; // 15fps mobile, 30fps desktop
 const render = (time) => {
   if (shaderPaused) return;
   if (Date.now() - lastInteraction > 15000) { paused = true; return; }
-  if (time - lastFrame < 33) { shaderAnimId = requestAnimationFrame(render); return; }
+  if (time - lastFrame < FRAME_INTERVAL) { shaderAnimId = requestAnimationFrame(render); return; }
   lastFrame = time;
   gl.uniform1f(tLoc, time * 0.001);
   gl.uniform2f(rLoc, c.width, c.height);
@@ -717,10 +755,8 @@ const chatArea = document.getElementById('main-content');
 const chatInput = document.getElementById('chatInput');
 const sendBtn = document.getElementById('sendBtn');
 
-// Show motion-toggle only on desktop
-if (!isMobileDevice) {
-  document.getElementById('motion-toggle').style.display = 'inline-flex';
-}
+// Show motion-toggle on all devices (shader runs everywhere)
+document.getElementById('motion-toggle').style.display = 'inline-flex';
 
 function addMessage(type, content, safe) {
   const div = document.createElement('div');
@@ -735,6 +771,8 @@ function addMessage(type, content, safe) {
     div.appendChild(content);
   }
   chatArea.appendChild(div);
+  // Focus mode after 5+ user messages
+  if (chatArea.querySelectorAll('.msg-user').length >= 5) enterFocusMode();
   autoScroll();
   return div;
 }
@@ -840,6 +878,11 @@ document.getElementById('newChatBtn').addEventListener('click', function() {
   chatInput.value = '';
   chatInput.focus();
   sendBtn.disabled = true;
+  // Reset UX state to LAVA_WITH_INPUT
+  var appEl = document.getElementById('app');
+  appEl.classList.remove('chat-active');
+  document.getElementById('dimOverlay').style.opacity = '0';
+  uxState = 'LAVA_WITH_INPUT';
 });
 
 // Send button + input wiring
@@ -902,11 +945,15 @@ if (window.visualViewport) {
   });
 }
 
-// Input-first: only restore saved session on load
+// Input-first: restore session + trigger LAVA_WITH_INPUT immediately
+// Track A is always ready (fuzzy match works instantly)
 requestAnimationFrame(function() {
   var saved = loadSavedSession();
   if (saved && saved.allClaims && saved.allClaims.length > 0) {
     restoreSession(saved);
+    transitionTo('CHAT_ACTIVE');
+  } else {
+    transitionTo('LAVA_WITH_INPUT');
   }
 });
 
@@ -1625,7 +1672,6 @@ function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 // Input starts disabled. Model downloads silently. Input enables when ready.
 if (CASCADE_OFF) { /* skip */ } else {
 (async function initWebLLM() {
-  const modelStatusEl = document.getElementById('modelStatus');
   const cancelBtn = document.getElementById('cancel-btn');
 
   // Tier detection — skip network speed (Chrome caps at 10Mbps)
@@ -1654,9 +1700,8 @@ if (CASCADE_OFF) { /* skip */ } else {
   document.documentElement.setAttribute('data-tier', tier);
   if (likelyCached) document.documentElement.setAttribute('data-model-cached', 'true');
 
-  // No WebGPU — ERROR state, Track A only
+  // No WebGPU — Track A still works (fuzzy match), just no live inference
   if (tier === 'minimal') {
-    if (modelStatusEl) modelStatusEl.textContent = 'Demo requires WebGPU (Chrome/Edge desktop).';
     return;
   }
 
@@ -1676,7 +1721,7 @@ if (CASCADE_OFF) { /* skip */ } else {
     cancelBtn.style.display = 'none';
     if (motionBtn) { motionBtn.style.left = ''; motionBtn.style.right = '16px'; }
     // Move to ERROR state
-    if (modelStatusEl) modelStatusEl.textContent = '';
+    document.getElementById('topProgress').style.opacity = '0';
   });
 
   try {
@@ -1687,15 +1732,9 @@ if (CASCADE_OFF) { /* skip */ } else {
       initProgressCallback: (report) => {
         if (abortController.signal.aborted) throw new Error('Cancelled');
         const pct = Math.round((report.progress || 0) * 100);
-        if (modelStatusEl && pct < 100) {
-          if (!document.getElementById('model-bar')) {
-            modelStatusEl.innerHTML = '<span id="model-pct">loading local ai\u2026</span><div class="model-bar"><div class="model-bar-fill" id="model-bar"></div></div>';
-          }
-          const bar = document.getElementById('model-bar');
-          const label = document.getElementById('model-pct');
-          if (bar) bar.style.width = pct + '%';
-          if (label) label.textContent = pct > 0 ? (pct + '% \u2014 local ai') : 'loading local ai\u2026';
-        }
+        // Update top progress bar
+        var fill = document.getElementById('topProgressFill');
+        if (fill) fill.style.width = pct + '%';
         if (window._setPreloadProgress) window._setPreloadProgress(report.progress || 0);
         updateModelProgress(pct);
         announceProgress(pct);
@@ -1708,10 +1747,8 @@ if (CASCADE_OFF) { /* skip */ } else {
     cancelBtn.style.display = 'none';
     if (motionBtn) { motionBtn.style.left = ''; motionBtn.style.right = '16px'; }
     chatInput.placeholder = 'Ask anything (local AI ready)...';
-    if (modelStatusEl) {
-      modelStatusEl.textContent = '\u26A1 local ai ready';
-      setTimeout(function() { if (modelStatusEl) modelStatusEl.style.opacity = '0'; }, 3000);
-    }
+    // Fade out top progress bar
+    document.getElementById('topProgress').style.opacity = '0';
     announceState('Live inference ready');
     if (!document.hidden) chatInput.focus();
     // If a question was queued from #q= hash, auto-submit
@@ -1727,7 +1764,7 @@ if (CASCADE_OFF) { /* skip */ } else {
     cancelBtn.style.display = 'none';
     if (motionBtn) { motionBtn.style.left = ''; motionBtn.style.right = '16px'; }
     // → ERROR state — Track A is already loaded
-    if (modelStatusEl) modelStatusEl.textContent = '';
+    document.getElementById('topProgress').style.opacity = '0';
     // Notify offline detection
     if (typeof window._onWebLLMOffline === 'function') window._onWebLLMOffline();
   }
@@ -1761,6 +1798,9 @@ qInput.addEventListener('keydown', async (e) => {
   sendBtn.disabled = true;
 
   const cascadeStart = performance.now();
+
+  // Transition to CHAT_ACTIVE on first message
+  if (uxState !== 'CHAT_ACTIVE') transitionTo('CHAT_ACTIVE');
 
   // ── Layer 1: Live inference (model cached and ready) ──────────
   if (window._webllmReady && window._webllmEngine) {
