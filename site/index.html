@@ -281,6 +281,8 @@ canvas.dimmed{opacity:0}
 /* Visually hidden */
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
+#cancel-btn{display:none}
+
 /* Compiler text fallback (hidden by default, shown for reduced-motion) */
 .compiler-text-fallback{display:none}
 
@@ -354,6 +356,7 @@ canvas.dimmed{opacity:0}
   <div class="demo-ui">
     <div class="demo-header">
       <button class="demo-back" id="demoBack" type="button" aria-label="Return to landing page">&larr; back</button>
+      <button class="demo-back" id="newSprint" type="button" style="margin-left:auto;margin-right:0.5rem">new sprint</button>
       <div class="demo-title">grainulator demo</div>
       <a class="pwa-claude-link" id="pwaClaude" href="https://github.com/grainulation/grainulator#install" aria-label="Open in Claude Code">claude code &rarr;</a>
     </div>
@@ -392,10 +395,6 @@ canvas.dimmed{opacity:0}
     <h1 class="ui-title">grainulator</h1>
     <h2 class="sr-only">Research that compiles</h2>
     <p class="sr-only">Evidence-tracked research sprints for Claude Code. Ask any question, get a decision-ready brief. Open source, zero dependencies, MIT licensed.</p>
-    <div style="margin:0.8rem 0;font-family:monospace;font-size:0.6rem;color:rgba(255,255,255,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:1.5rem 2rem;text-align:center;">
-      <span style="font-size:1.2rem;display:block;margin-bottom:0.3rem;">▶</span>
-      30s demo video — coming soon
-    </div>
     <div class="cta-row">
       <button class="cta-btn cta-install" id="ctaInstall" type="button" aria-label="Copy install command: /plugin install grainulator">
         /plugin install grainulator
@@ -403,8 +402,8 @@ canvas.dimmed{opacity:0}
       <button class="cta-btn cta-try" id="ctaTry" type="button" aria-label="Explore the demo">
         explore demo
       </button>
+      <button class="cta-btn" id="cancel-btn" type="button" style="color:#f43f5e;border:1px solid rgba(244,63,94,0.3);font-size:0.6rem;padding:0.4rem 0.8rem;margin-top:0.3rem" tabindex="0">cancel model download</button>
     </div>
-    <button class="cta-btn" id="cancel-btn" type="button" style="display:none;color:#f43f5e;border:1px solid rgba(244,63,94,0.3);font-size:0.6rem;padding:0.4rem 0.8rem;margin-top:0.3rem" tabindex="0">cancel model download</button>
     <p class="privacy-note" id="privacyNote" hidden>Model runs locally in your browser. Weights downloaded from HuggingFace CDN on first use.</p>
     <p class="privacy-note" id="noWebGPUNote" hidden>Demo requires WebGPU (Chrome/Edge desktop).</p>
     <h2 class="sr-only">Install</h2>
@@ -451,7 +450,6 @@ window._turnCount = 0;
 window._nextClaimIndex = 1; // generates d001, d002, ...
 window._conversationHistory = [];
 window._compilationResult = null;
-window._isFirstTurn = true; // only overwrite input on first turn (enterDemo auto-load)
 
 // Feature flag: ?cascade=off disables all cascade/model logic
 const CASCADE_OFF = new URLSearchParams(location.search).has('cascade') && new URLSearchParams(location.search).get('cascade') === 'off';
@@ -460,16 +458,16 @@ const CASCADE_OFF = new URLSearchParams(location.search).has('cascade') && new U
 // WEBGL SHADER — preserved from v1
 // ===================================================================
 const c = document.getElementById('c');
-const gl = c.getContext('webgl');
+const gl = c.getContext('webgl', { preserveDrawingBuffer: true });
 
 function activateFallback() {
   document.body.classList.add('webgl-fallback');
 }
 
 function isSoftwareRenderer(g) {
-  var ext = g.getExtension('WEBGL_debug_renderer_info');
+  const ext = g.getExtension('WEBGL_debug_renderer_info');
   if (!ext) return false;
-  var renderer = g.getParameter(ext.UNMASKED_RENDERER_WEBGL) || '';
+  const renderer = g.getParameter(ext.UNMASKED_RENDERER_WEBGL) || '';
   return /swiftshader|llvmpipe|software|basic render/i.test(renderer);
 }
 
@@ -881,6 +879,23 @@ function exitDemo() {
 ctaTry.addEventListener('click', enterDemo);
 demoBack.addEventListener('click', exitDemo);
 
+document.getElementById('newSprint').addEventListener('click', () => {
+  resetExploreState();
+  clearSession();
+  const area = document.getElementById('claimsArea');
+  area.innerHTML = '';
+  area.classList.add('empty');
+  document.getElementById('passLines').innerHTML = '';
+  document.getElementById('verdictArea').innerHTML = '';
+  document.getElementById('compileStatus').textContent = '';
+  document.getElementById('compilerOutput').classList.remove('expanded');
+  compileBtn.disabled = true;
+  qInput.value = '';
+  qInput.disabled = false;
+  qInput.placeholder = 'Ask a research question...';
+  qInput.focus();
+});
+
 // Install button — copy command
 ctaInstall.addEventListener('click', (e) => {
   window._trackEvent?.('install_copy');
@@ -1003,13 +1018,13 @@ function significantWords(text) {
 // ── Core: Score a query against a single library entry ───────────────────────
 
 function scoreEntry(queryWords, queryNorm, entry) {
-  var entryWords = significantWords(entry.question);
-  var entryNorm = normalize(entry.question);
+  const entryWords = significantWords(entry.question);
+  const entryNorm = normalize(entry.question);
 
   // Word overlap: Jaccard-like — shared significant words / total unique words
-  var querySet = {};
-  var entrySet = {};
-  var shared = 0;
+  const querySet = {};
+  const entrySet = {};
+  let shared = 0;
 
   queryWords.forEach(function (w) { querySet[w] = true; });
   entryWords.forEach(function (w) { entrySet[w] = true; });
@@ -1018,18 +1033,18 @@ function scoreEntry(queryWords, queryNorm, entry) {
     if (entrySet[w]) shared++;
   });
 
-  var totalUnique = Object.keys(
+  const totalUnique = Object.keys(
     Object.assign({}, querySet, entrySet)
   ).length;
 
-  var wordOverlap = totalUnique > 0 ? shared / totalUnique : 0;
+  const wordOverlap = totalUnique > 0 ? shared / totalUnique : 0;
 
   // Normalized Levenshtein distance (0 = identical, 1 = completely different)
-  var maxLen = Math.max(queryNorm.length, entryNorm.length);
-  var levDist = maxLen > 0 ? levenshtein(queryNorm, entryNorm) / maxLen : 0;
+  const maxLen = Math.max(queryNorm.length, entryNorm.length);
+  const levDist = maxLen > 0 ? levenshtein(queryNorm, entryNorm) / maxLen : 0;
 
   // Composite score: word overlap weighted heavily, Levenshtein as tiebreaker
-  var score = 0.7 * wordOverlap + 0.3 * (1 - levDist);
+  const score = 0.7 * wordOverlap + 0.3 * (1 - levDist);
 
   return score;
 }
@@ -1052,24 +1067,24 @@ const DEMO_SHOWCASE = [
 function fuzzyMatchDemo(query, library) {
   if (!query || !library || library.length === 0) return null;
 
-  var queryWords = significantWords(query);
-  var queryNorm = normalize(query);
+  const queryWords = significantWords(query);
+  const queryNorm = normalize(query);
 
   if (queryWords.length === 0) return null;
 
-  var bestScore = 0;
-  var bestEntry = null;
+  let bestScore = 0;
+  let bestEntry = null;
 
-  for (var i = 0; i < library.length; i++) {
-    var score = scoreEntry(queryWords, queryNorm, library[i]);
+  for (let i = 0; i < library.length; i++) {
+    const score = scoreEntry(queryWords, queryNorm, library[i]);
     if (score > bestScore) {
       bestScore = score;
       bestEntry = library[i];
     }
   }
 
-  // Threshold: require minimum 0.15 score to avoid nonsense matches
-  if (bestScore > 0.15 && bestEntry) {
+  // Threshold: require minimum 0.25 score to avoid nonsense matches
+  if (bestScore > 0.25 && bestEntry) {
     return { match: bestEntry, score: bestScore };
   }
 
@@ -1079,10 +1094,10 @@ function fuzzyMatchDemo(query, library) {
 // ── Public: Template fallback for unmatched queries ──────────────────────────
 
 function templateFallback(query) {
-  var words = significantWords(query);
+  const words = significantWords(query);
 
   // Pick 2-3 most significant keywords (longest words tend to be most specific)
-  var keywords = words
+  const keywords = words
     .slice()
     .sort(function (a, b) { return b.length - a.length; })
     .slice(0, 3);
@@ -1091,12 +1106,12 @@ function templateFallback(query) {
     keywords = ['this approach'];
   }
 
-  var topic = keywords.join(' ');
-  var topicCap = topic.charAt(0).toUpperCase() + topic.slice(1);
-  var kw0 = keywords[0];
-  var kw0Cap = kw0.charAt(0).toUpperCase() + kw0.slice(1);
+  const topic = keywords.join(' ');
+  const topicCap = topic.charAt(0).toUpperCase() + topic.slice(1);
+  const kw0 = keywords[0];
+  const kw0Cap = kw0.charAt(0).toUpperCase() + kw0.slice(1);
 
-  var claims = [
+  const claims = [
     {
       id: 'r001',
       type: 'constraint',
@@ -1138,11 +1153,11 @@ function templateFallback(query) {
 
 function loadDemo(demo, opts) {
   opts = opts || {};
-  var accumulate = opts.accumulate || false;
+  const accumulate = opts.accumulate || false;
   const qEl = document.getElementById('demo-question');
 
-  // Only overwrite input on first turn (enterDemo auto-load) or non-accumulate
-  if (!accumulate || window._isFirstTurn) {
+  // Only overwrite input when explicitly requested via setQuestion (defaults to true)
+  if (opts.setQuestion !== false) {
     qEl.value = demo.question;
   }
 
@@ -1151,9 +1166,9 @@ function loadDemo(demo, opts) {
 
   if (accumulate) {
     // Re-assign IDs in app code based on _nextClaimIndex
-    var reIdClaims = demo.claims.map(function(c) {
-      var idx = window._nextClaimIndex++;
-      var newId = 'd' + String(idx).padStart(3, '0');
+    const reIdClaims = demo.claims.map(function(c) {
+      const idx = window._nextClaimIndex++;
+      const newId = 'd' + String(idx).padStart(3, '0');
       return { id: newId, type: c.type, tier: c.tier, text: c.text };
     });
 
@@ -1170,7 +1185,7 @@ function loadDemo(demo, opts) {
     area.innerHTML = '';
     area.classList.remove('empty');
     window._allClaims.forEach(function(claim, i) {
-      var card = createClaimCard(claim);
+      const card = createClaimCard(claim);
       card.style.animationDelay = (i * 0.12) + 's';
       if (!reducedMotion) {
         card.classList.add('drifting');
@@ -1187,8 +1202,6 @@ function loadDemo(demo, opts) {
 
     // Save session to localStorage
     saveSession();
-
-    if (window._isFirstTurn) window._isFirstTurn = false;
   } else {
     // Original behavior: replace all
     area.innerHTML = '';
@@ -1197,7 +1210,7 @@ function loadDemo(demo, opts) {
     window._liveClaims = demo.claims;
 
     demo.claims.forEach(function(claim, i) {
-      var card = createClaimCard(claim);
+      const card = createClaimCard(claim);
       card.style.animationDelay = (i * 0.12) + 's';
       if (!reducedMotion) {
         card.classList.add('drifting');
@@ -1216,9 +1229,9 @@ function loadDemo(demo, opts) {
 }
 
 function buildHandoffDeepLink() {
-  var question = (document.getElementById('demo-question') || {}).value || TRACK_A_QUESTION;
-  var claimCount = (window._allClaims || []).length || (window._liveClaims || []).length;
-  var prompt = 'I explored a research question in the grainulator.app demo and want to continue with the full wheat plugin.\n\nQuestion: ' + question.trim() + '\nClaims so far: ' + claimCount + '\n\nPlease install the wheat plugin (/plugin install grainulator) and continue this research sprint.';
+  const question = (document.getElementById('demo-question') || {}).value || TRACK_A_QUESTION;
+  const claimCount = (window._allClaims || []).length || (window._liveClaims || []).length;
+  const prompt = 'I explored a research question in the grainulator.app demo and want to continue with the full wheat plugin.\n\nQuestion: ' + question.trim() + '\nClaims so far: ' + claimCount + '\n\nPlease install the wheat plugin (/plugin install grainulator) and continue this research sprint.';
   return 'claude-cli://open?q=' + encodeURIComponent(prompt.substring(0, 1300));
 }
 
@@ -1234,25 +1247,25 @@ function handleNudgeHandoff(e) {
 }
 
 function renderTurnCounter() {
-  var existing = document.getElementById('turnCounter');
+  const existing = document.getElementById('turnCounter');
   if (existing) existing.remove();
   // Remove old nudges/banners
-  var oldNudge = document.getElementById('handoffNudge');
+  const oldNudge = document.getElementById('handoffNudge');
   if (oldNudge) oldNudge.remove();
-  var oldBanner = document.getElementById('handoffBanner');
+  const oldBanner = document.getElementById('handoffBanner');
   if (oldBanner) oldBanner.remove();
 
   if (window._turnCount < 1) return;
-  var counter = document.createElement('div');
+  const counter = document.createElement('div');
   counter.id = 'turnCounter';
   counter.className = 'turn-counter';
   counter.textContent = 'Turn ' + window._turnCount + ' of ~5 \u2014 explore more or compile';
-  var area = document.getElementById('claimsArea');
+  const area = document.getElementById('claimsArea');
   area.parentNode.insertBefore(counter, area.nextSibling);
 
   // Rx10: Turn 3 nudge
   if (window._turnCount === 3) {
-    var nudge = document.createElement('div');
+    const nudge = document.createElement('div');
     nudge.id = 'handoffNudge';
     nudge.className = 'handoff-nudge';
     nudge.innerHTML = 'Want deeper research? <a href="#" id="nudge-handoff">Continue in Claude Code \u2192</a>';
@@ -1262,8 +1275,8 @@ function renderTurnCounter() {
 
   // Rx10: Turn 5 banner
   if (window._turnCount >= 5) {
-    var claimCount = (window._allClaims || []).length;
-    var banner = document.createElement('div');
+    const claimCount = (window._allClaims || []).length;
+    const banner = document.createElement('div');
     banner.id = 'handoffBanner';
     banner.className = 'handoff-banner';
     banner.innerHTML = '<p>You\'ve explored ' + window._turnCount + ' questions. For multi-source evidence and production-grade sprints:</p><div class="handoff-section" style="justify-content:center;margin-top:0;padding-top:0;border-top:none"><button class="handoff-primary" id="banner-deeplink" type="button">Open in Claude Code</button><button class="handoff-secondary" id="banner-clipboard" type="button">Copy to clipboard</button></div>';
@@ -1272,9 +1285,9 @@ function renderTurnCounter() {
     document.getElementById('banner-deeplink').addEventListener('click', handleNudgeHandoff);
     document.getElementById('banner-clipboard').addEventListener('click', function() {
       window._trackEvent?.('handoff_click', { type: 'clipboard' });
-      var question = (document.getElementById('demo-question') || {}).value || TRACK_A_QUESTION;
-      var claimSummaries = (window._allClaims || []).slice(0, 10).map(function(c) { return '- [' + c.type + '] ' + c.text; }).join('\n');
-      var prompt = 'I explored a research question in the grainulator.app demo and want to continue with the full wheat plugin.\n\nQuestion: ' + question.trim() + '\nClaims so far: ' + claimCount + '\n\nClaim summaries:\n' + claimSummaries + '\n\nPlease install the wheat plugin (/plugin install grainulator) and continue this research sprint.';
+      const question = (document.getElementById('demo-question') || {}).value || TRACK_A_QUESTION;
+      const claimSummaries = (window._allClaims || []).slice(0, 10).map(function(c) { return '- [' + c.type + '] ' + c.text; }).join('\n');
+      const prompt = 'I explored a research question in the grainulator.app demo and want to continue with the full wheat plugin.\n\nQuestion: ' + question.trim() + '\nClaims so far: ' + claimCount + '\n\nClaim summaries:\n' + claimSummaries + '\n\nPlease install the wheat plugin (/plugin install grainulator) and continue this research sprint.';
       navigator.clipboard.writeText(prompt).then(function() { showToast('prompt copied to clipboard.'); }).catch(function() { showToast('copy failed'); });
     });
   }
@@ -1285,7 +1298,7 @@ function renderTurnCounter() {
 // ===================================================================
 function saveSession() {
   try {
-    var session = {
+    const session = {
       allClaims: window._allClaims,
       conversationHistory: window._conversationHistory,
       compilationResult: window._compilationResult,
@@ -1303,11 +1316,11 @@ function clearSession() {
 
 function loadSavedSession() {
   try {
-    var raw = localStorage.getItem('grainulator-session');
+    const raw = localStorage.getItem('grainulator-session');
     if (!raw) return null;
-    var session = JSON.parse(raw);
+    const session = JSON.parse(raw);
     // Check if < 7 days old
-    var sevenDays = 7 * 24 * 60 * 60 * 1000;
+    const sevenDays = 7 * 24 * 60 * 60 * 1000;
     if (Date.now() - session.savedAt > sevenDays) {
       clearSession();
       return null;
@@ -1323,16 +1336,14 @@ function restoreSession(session) {
   window._turnCount = session.turnCount || 0;
   window._nextClaimIndex = session.nextClaimIndex || (window._allClaims.length + 1);
   window._liveClaims = window._allClaims.length > 0 ? window._allClaims : null;
-  window._isFirstTurn = window._turnCount === 0;
-
   // Re-render claims
-  var area = document.getElementById('claimsArea');
+  const area = document.getElementById('claimsArea');
   area.innerHTML = '';
   if (window._allClaims.length > 0) {
     area.classList.remove('empty');
-    var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     window._allClaims.forEach(function(claim, i) {
-      var card = createClaimCard(claim);
+      const card = createClaimCard(claim);
       if (!reducedMotion) {
         card.classList.add('drifting');
         card.style.animationDelay = '0s, ' + (i * 7) + 's';
@@ -1347,27 +1358,27 @@ function restoreSession(session) {
 
   // Set question to last conversation entry
   if (session.conversationHistory && session.conversationHistory.length > 0) {
-    var last = session.conversationHistory[session.conversationHistory.length - 1];
+    const last = session.conversationHistory[session.conversationHistory.length - 1];
     document.getElementById('demo-question').value = last.question || '';
   }
 }
 
 function loadTrackA() {
   // Check for saved session first
-  var saved = loadSavedSession();
+  const saved = loadSavedSession();
   if (saved && saved.allClaims && saved.allClaims.length > 0) {
     // Offer resume link instead of loading Track A
     restoreSession(saved);
-    var modelStatusEl = document.getElementById('model-status');
+    const modelStatusEl = document.getElementById('model-status');
     if (modelStatusEl && !modelStatusEl.querySelector('.resume-session')) {
-      var resumeLink = document.createElement('div');
+      const resumeLink = document.createElement('div');
       resumeLink.className = 'resume-session';
       resumeLink.textContent = 'Resume previous session? (' + saved.allClaims.length + ' claims, ' + (saved.turnCount || 0) + ' turns)';
       resumeLink.addEventListener('click', function() {
         restoreSession(saved);
         resumeLink.remove();
       });
-      var dismissLink = document.createElement('div');
+      const dismissLink = document.createElement('div');
       dismissLink.className = 'resume-session';
       dismissLink.style.opacity = '0.3';
       dismissLink.textContent = 'Start fresh';
@@ -1375,8 +1386,7 @@ function loadTrackA() {
         clearSession();
         resetExploreState();
         window._liveClaims = null;
-        loadDemo({ question: TRACK_A_QUESTION, claims: TRACK_A_CLAIMS }, { cascadeLayer: 'default', score: null, timing: 0, accumulate: true });
-        window._isFirstTurn = false;
+        loadDemo({ question: TRACK_A_QUESTION, claims: TRACK_A_CLAIMS }, { cascadeLayer: 'default', score: null, timing: 0, accumulate: true, setQuestion: true });
         resumeLink.remove();
         dismissLink.remove();
       });
@@ -1387,8 +1397,7 @@ function loadTrackA() {
   }
   // No saved session — load Track A with accumulation
   resetExploreState();
-  loadDemo({ question: TRACK_A_QUESTION, claims: TRACK_A_CLAIMS }, { cascadeLayer: 'default', score: null, timing: 0, accumulate: true });
-  window._isFirstTurn = false;
+  loadDemo({ question: TRACK_A_QUESTION, claims: TRACK_A_CLAIMS }, { cascadeLayer: 'default', score: null, timing: 0, accumulate: true, setQuestion: true });
 }
 
 function resetExploreState() {
@@ -1397,9 +1406,8 @@ function resetExploreState() {
   window._nextClaimIndex = 1;
   window._conversationHistory = [];
   window._compilationResult = null;
-  window._isFirstTurn = true;
   window._liveClaims = null;
-  var counter = document.getElementById('turnCounter');
+  const counter = document.getElementById('turnCounter');
   if (counter) counter.remove();
 }
 
@@ -1514,12 +1522,12 @@ const COMPILER_PASSES = [
 // Rx8: FOLLOW-UP CHIP GENERATION
 // ===================================================================
 function generateFollowUpChips(compilerResults) {
-  var chips = [];
+  const chips = [];
   // compilerResults: [parse, typeDistribution, evidenceStrength, tensions, coverage, confidence, verdict]
-  var typeDist = compilerResults[1];
-  var evidenceStr = compilerResults[2];
-  var tensions = compilerResults[3];
-  var coverage = compilerResults[4];
+  const typeDist = compilerResults[1];
+  const evidenceStr = compilerResults[2];
+  const tensions = compilerResults[3];
+  const coverage = compilerResults[4];
 
   // Missing claim types
   if (coverage.missing && coverage.missing.length > 0) {
@@ -1544,7 +1552,7 @@ function generateFollowUpChips(compilerResults) {
 
   // Tensions detected
   if (tensions.tensions && tensions.tensions.length > 0) {
-    var t = tensions.tensions[0];
+    const t = tensions.tensions[0];
     chips.push('Resolve tension between ' + t.pair[0] + ' and ' + t.pair[1]);
   }
 
@@ -1651,8 +1659,8 @@ compileBtn.addEventListener('click', async () => {
   // Handoff: deep link to Claude Code
   document.getElementById('handoff-deeplink').addEventListener('click', function() {
     window._trackEvent?.('handoff_click', { type: 'deeplink' });
-    var encoded = encodeURIComponent(shortPrompt.substring(0, 1300));
-    var url = 'claude-cli://open?q=' + encoded;
+    const encoded = encodeURIComponent(shortPrompt.substring(0, 1300));
+    const url = 'claude-cli://open?q=' + encoded;
     try {
       window.location.href = url;
       // If no handler, after a delay show fallback toast
@@ -1677,12 +1685,12 @@ compileBtn.addEventListener('click', async () => {
   saveSession();
 
   // ── Rx8: Follow-up chips based on compiler gaps ──
-  var chips = generateFollowUpChips(results);
+  const chips = generateFollowUpChips(results);
   if (chips.length > 0) {
-    var chipsContainer = document.createElement('div');
+    const chipsContainer = document.createElement('div');
     chipsContainer.className = 'follow-up-chips';
     chips.forEach(function(chipText) {
-      var btn = document.createElement('button');
+      const btn = document.createElement('button');
       btn.className = 'chip';
       btn.type = 'button';
       btn.textContent = chipText;
@@ -1721,7 +1729,7 @@ compileBtn.addEventListener('click', async () => {
     verdictArea.innerHTML = '';
     compileStatus.textContent = '';
     compileBtn.disabled = true;
-    var area = document.getElementById('claimsArea');
+    const area = document.getElementById('claimsArea');
     area.innerHTML = '';
     area.classList.add('empty');
   });
@@ -1865,7 +1873,7 @@ qInput.addEventListener('keydown', async (e) => {
 
     const area = document.getElementById('claimsArea');
     // Rx7: don't wipe existing claims — append a loading indicator
-    var inferenceLoader = document.createElement('div');
+    const inferenceLoader = document.createElement('div');
     inferenceLoader.id = 'inference-loader';
     inferenceLoader.style.cssText = 'text-align:center;font-family:monospace;font-size:0.7rem;color:rgba(141,246,255,0.6);padding:1rem';
     inferenceLoader.innerHTML = '<span style="display:inline-block;animation:pulse-teal 1.5s ease-in-out infinite">\u26A1</span> running local inference\u2026';
@@ -1892,7 +1900,7 @@ qInput.addEventListener('keydown', async (e) => {
       const claims = JSON.parse(jsonMatch[0]);
 
       // Remove inference loader
-      var loader = document.getElementById('inference-loader');
+      const loader = document.getElementById('inference-loader');
       if (loader) loader.remove();
 
       // Rx7: accumulate claims instead of replacing
@@ -1900,12 +1908,13 @@ qInput.addEventListener('keydown', async (e) => {
         cascadeLayer: 1,
         score: null,
         timing: performance.now() - cascadeStart,
-        accumulate: true
+        accumulate: true,
+        setQuestion: false
       });
 
     } catch (err) {
       console.warn('Inference failed:', err);
-      var loader2 = document.getElementById('inference-loader');
+      const loader2 = document.getElementById('inference-loader');
       if (loader2) loader2.remove();
       // Fall through to Layer 0
       fallbackToCascade(question, cascadeStart);
@@ -1923,16 +1932,22 @@ qInput.addEventListener('keydown', async (e) => {
 function fallbackToCascade(question, cascadeStart) {
   const fuzzyResult = fuzzyMatchDemo(question, DEMO_LIBRARY);
 
-  if (fuzzyResult && fuzzyResult.score > 0.15) {
+  if (fuzzyResult && fuzzyResult.score > 0.25) {
     // Layer 0a: Fuzzy match found — accumulate, don't overwrite input on subsequent turns
     loadDemo(fuzzyResult.match, {
       cascadeLayer: '0a-fuzzy',
       score: fuzzyResult.score,
       timing: performance.now() - cascadeStart,
-      accumulate: true
+      accumulate: true,
+      setQuestion: false
     });
     showToast('matched from demo library');
   } else {
+    // No close match — if claims already exist, just toast; otherwise template fallback
+    if (window._allClaims.length > 0) {
+      showToast('No close match found — try a more specific question');
+      return;
+    }
     // Layer 0b: Template fallback
     const fallback = templateFallback(question);
     loadDemo(fallback, {
@@ -1940,7 +1955,8 @@ function fallbackToCascade(question, cascadeStart) {
       score: null,
       timing: performance.now() - cascadeStart,
       accumulate: true,
-      isTemplate: true
+      isTemplate: true,
+      setQuestion: false
     });
     showToast('generated template claims');
   }
@@ -2014,11 +2030,9 @@ if ('serviceWorker' in navigator) {
     btn.setAttribute('aria-pressed', String(motionTogglePaused));
     if (motionTogglePaused) {
       pauseShader();
-      canvas.style.display = 'none';
       btn.textContent = 'Enable motion';
       btn.setAttribute('aria-label', 'Enable background animation');
     } else {
-      canvas.style.display = '';
       btn.textContent = 'Pause motion';
       btn.setAttribute('aria-label', 'Pause background animation');
       resumeShader();
@@ -2032,7 +2046,6 @@ if ('serviceWorker' in navigator) {
     btn.textContent = 'Enable motion';
     btn.setAttribute('aria-label', 'Enable background animation');
     pauseShader();
-    canvas.style.display = 'none';
   }
 })();
 
@@ -2100,7 +2113,7 @@ function updateCascadeDebug(opts) {
     panel.style.cssText = 'position:fixed;top:8px;right:8px;z-index:9999;background:rgba(0,0,0,0.85);border:1px solid rgba(141,246,255,0.3);border-radius:6px;padding:0.6rem 0.8rem;font-family:monospace;font-size:0.6rem;color:rgba(141,246,255,0.8);max-width:260px;pointer-events:none;';
     document.body.appendChild(panel);
   }
-  var lines = [];
+  const lines = [];
   lines.push('cascade layer: ' + (opts.cascadeLayer || '?'));
   if (opts.score !== null && opts.score !== undefined) lines.push('fuzzy score: ' + opts.score.toFixed(3));
   lines.push('timing: ' + (opts.timing || 0).toFixed(1) + 'ms');
@@ -2113,8 +2126,6 @@ function updateCascadeDebug(opts) {
 // ===================================================================
 let attractMode = false;
 let attractTimeouts = [];
-let attractCurrentDemo = 0;
-let attractAborted = false;
 
 function clearAttractTimeouts() {
   attractTimeouts.forEach(id => clearTimeout(id));
@@ -2133,7 +2144,6 @@ function attractTimeout(fn, ms) {
 function stopAttractMode() {
   if (!attractMode) return;
   attractMode = false;
-  attractAborted = true;
   clearAttractTimeouts();
   // Remove attract indicator
   const indicator = document.querySelector('.attract-indicator');
@@ -2149,8 +2159,6 @@ function startAttractMode() {
   if (typeof DEMO_SHOWCASE === 'undefined' || !DEMO_SHOWCASE.length) return;
 
   attractMode = true;
-  attractAborted = false;
-  attractCurrentDemo = 0;
 
   // Add attract indicator
   const demoUI = document.querySelector('.demo-ui');
@@ -2162,7 +2170,8 @@ function startAttractMode() {
     demoUI.insertBefore(indicator, demoUI.children[1]);
   }
 
-  runAttractDemo(0);
+  // Delay attract mode by 3s so Track A claims are visible first
+  setTimeout(() => { if (attractMode) runAttractDemo(0); }, 3000);
 }
 
 function runAttractDemo(index) {
@@ -2175,7 +2184,6 @@ function runAttractDemo(index) {
     return;
   }
 
-  attractCurrentDemo = index;
   const demo = DEMO_SHOWCASE[index];
   const qEl = document.getElementById('demo-question');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2194,7 +2202,7 @@ function runAttractDemo(index) {
   if (reducedMotion) {
     // Skip typewriter — show demo as static cards
     qEl.value = demo.question;
-    loadDemo(demo, { cascadeLayer: 'attract', score: null, timing: 0 });
+    loadDemo(demo, { cascadeLayer: 'attract', score: null, timing: 0, setQuestion: true });
     // Wait, then compile, then next
     attractTimeout(() => {
       if (!attractMode) return;
@@ -2216,7 +2224,7 @@ function runAttractDemo(index) {
       // Typewriter done — wait 500ms, then load claims
       attractTimeout(() => {
         if (!attractMode) return;
-        loadDemo(demo, { cascadeLayer: 'attract', score: null, timing: 0 });
+        loadDemo(demo, { cascadeLayer: 'attract', score: null, timing: 0, setQuestion: true });
 
         // Wait 2s for user to read, then auto-compile
         attractTimeout(() => {
