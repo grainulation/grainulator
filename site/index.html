@@ -16,7 +16,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 
 <title>Grainulator — Research that compiles.</title>
@@ -111,16 +111,18 @@ canvas.dimmed{opacity:0}
 .cta-btn{font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:clamp(0.65rem,1.2vw,0.8rem);padding:0.75rem 1.2rem;min-height:48px;border-radius:3px;transition:all 0.4s;display:inline-flex;align-items:center;text-decoration:none;cursor:pointer;border:none;background:none}
 
 .cta-try{color:#8df6ff;border:1px solid rgba(141,246,255,0.4);cursor:pointer}
-.cta-try:hover,.cta-try:focus-visible{box-shadow:0 0 30px rgba(141,246,255,0.25);text-shadow:0 0 7px #8df6ff;outline:none}
+.cta-try:hover{box-shadow:0 0 30px rgba(141,246,255,0.25);text-shadow:0 0 7px #8df6ff}
+.cta-try:focus-visible{box-shadow:0 0 30px rgba(141,246,255,0.25);text-shadow:0 0 7px #8df6ff;outline:2px solid #8df6ff;outline-offset:2px}
 
 .cta-install{color:#8df6ff;border:1px solid rgba(141,246,255,0.4);padding:0.9rem 1.5rem;font-size:clamp(0.7rem,1.3vw,0.85rem);font-weight:700;text-shadow:0 0 7px #8df6ff,0 0 20px rgba(141,246,255,0.3)}
-.cta-install:hover,.cta-install:focus-visible{color:#8df6ff;border-color:rgba(141,246,255,0.6);box-shadow:0 0 30px rgba(141,246,255,0.25);outline:none;text-shadow:0 0 7px #8df6ff,0 0 20px rgba(141,246,255,0.4)}
+.cta-install:hover{color:#8df6ff;border-color:rgba(141,246,255,0.6);box-shadow:0 0 30px rgba(141,246,255,0.25);text-shadow:0 0 7px #8df6ff,0 0 20px rgba(141,246,255,0.4)}
+.cta-install:focus-visible{color:#8df6ff;border-color:rgba(141,246,255,0.6);box-shadow:0 0 30px rgba(141,246,255,0.25);text-shadow:0 0 7px #8df6ff,0 0 20px rgba(141,246,255,0.4);outline:2px solid #8df6ff;outline-offset:2px}
 
 @keyframes appear{to{opacity:1}}
 @keyframes pulse-teal{0%,100%{box-shadow:0 0 8px rgba(141,246,255,0.1)}50%{box-shadow:0 0 20px rgba(141,246,255,0.3)}}
 
 /* Toast */
-.toast{position:fixed;bottom:1.5vh;left:50%;transform:translateX(-50%) translateY(40px);font-family:monospace;font-size:0.7rem;color:#8df6ff;opacity:0.5;z-index:99;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none}
+.toast{position:fixed;bottom:calc(1.5vh + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%) translateY(40px);font-family:monospace;font-size:0.7rem;color:#8df6ff;opacity:0.5;z-index:99;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:0.9}
 
 /* Footer */
@@ -151,7 +153,7 @@ canvas.dimmed{opacity:0}
 .glass{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:1.2rem;position:relative}
 
 /* Question input */
-.q-input{font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:0.85rem;color:#fff;background:rgba(0,0,0,0.3);border:1px solid rgba(141,246,255,0.3);border-radius:6px;padding:0.9rem 1rem;width:100%;outline:none;transition:border-color 0.3s,box-shadow 0.3s;text-align:center}
+.q-input{font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:max(1rem,16px);color:#fff;background:rgba(0,0,0,0.3);border:1px solid rgba(141,246,255,0.3);border-radius:6px;padding:0.9rem 1rem;width:100%;outline:none;transition:border-color 0.3s,box-shadow 0.3s;text-align:center}
 .q-input:focus{border-color:rgba(141,246,255,0.6);box-shadow:0 0 20px rgba(141,246,255,0.1)}
 .q-input::placeholder{color:rgba(255,255,255,0.25)}
 .q-input:disabled{opacity:0.5;cursor:not-allowed;border-color:rgba(141,246,255,0.15)}
@@ -160,13 +162,13 @@ canvas.dimmed{opacity:0}
 
 /* Claim cards */
 .claims-area{display:flex;flex-direction:column;gap:0.8rem;min-height:120px}
-.claims-area.empty::after{content:'Claims will appear here...';display:block;text-align:center;font-family:monospace;font-size:0.7rem;color:rgba(255,255,255,0.15);padding:2rem}
+.claims-area.empty::after{content:'Claims will appear here...';display:block;text-align:center;font-family:monospace;font-size:0.7rem;color:rgba(255,255,255,0.4);padding:2rem}
 
 .claim-card{padding:1rem 1.2rem;animation:card-in 0.4s ease forwards;opacity:0;transform:translateY(10px)}
 @keyframes card-in{to{opacity:1;transform:translateY(0)}}
 
 .claim-header{display:flex;align-items:center;gap:0.6rem;margin-bottom:0.5rem;flex-wrap:wrap}
-.claim-id{font-family:monospace;font-size:0.65rem;color:rgba(255,255,255,0.35)}
+.claim-id{font-family:monospace;font-size:0.65rem;color:rgba(255,255,255,0.55)}
 .claim-type{font-family:monospace;font-size:0.6rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:3px;text-transform:uppercase;letter-spacing:0.05em}
 .type-constraint{background:rgba(244,63,94,0.15);color:#f43f5e}
 .type-factual{background:rgba(59,130,246,0.15);color:#3b82f6}
@@ -175,14 +177,15 @@ canvas.dimmed{opacity:0}
 .type-estimate{background:rgba(167,139,250,0.15);color:#a78bfa}
 .type-feedback{background:rgba(156,163,175,0.15);color:#9ca3af}
 
-.evidence-tier{font-family:monospace;font-size:0.55rem;padding:0.1rem 0.4rem;border-radius:2px;margin-left:auto}
-.tier-stated{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.6)}
+.evidence-tier{font-family:monospace;font-size:0.65rem;padding:0.15rem 0.5rem;border-radius:2px;margin-left:auto}
+.tier-stated{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.75)}
 .tier-web{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7)}
 .tier-documented{background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.6)}
 .tier-tested{background:rgba(255,255,255,0.18);color:rgba(255,255,255,0.75)}
 .tier-production{background:rgba(141,246,255,0.15);color:rgba(141,246,255,0.8)}
 
-.claim-text{font-family:monospace;font-size:0.75rem;color:rgba(255,255,255,0.75);line-height:1.5}
+.claim-text{font-family:monospace;font-size:0.75rem;color:rgba(255,255,255,0.75);line-height:1.5;cursor:text;user-select:text}
+.demo-ui{cursor:default}
 
 /* Compile button + progress */
 .compile-row{display:flex;align-items:center;gap:1rem}
@@ -210,7 +213,7 @@ canvas.dimmed{opacity:0}
 .chip:hover{color:#8df6ff;border-color:rgba(141,246,255,0.5);box-shadow:0 0 12px rgba(141,246,255,0.1)}
 
 /* Turn counter */
-.turn-counter{font-family:monospace;font-size:0.6rem;color:rgba(255,255,255,0.3);text-align:center;margin-top:0.3rem}
+.turn-counter{font-family:monospace;font-size:0.6rem;color:rgba(255,255,255,0.5);text-align:center;margin-top:0.3rem}
 
 /* Resume session link */
 .resume-session{font-family:monospace;font-size:0.6rem;color:rgba(141,246,255,0.4);text-align:center;margin-top:0.3rem;cursor:pointer;text-decoration:underline;transition:color 0.3s}
@@ -421,7 +424,7 @@ canvas.dimmed{opacity:0}
 </main>
 
 <div id="flash-overlay"></div>
-<button id="motion-toggle" type="button" aria-label="Pause background animation" aria-pressed="false" style="position:fixed;bottom:16px;right:16px;z-index:9999;background:rgba(0,0,0,0.7);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:8px 14px;font-size:14px;cursor:pointer;backdrop-filter:blur(8px);">Pause motion</button>
+<button id="motion-toggle" type="button" aria-label="Pause background animation" aria-pressed="false" style="position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));right:16px;z-index:9999;background:rgba(0,0,0,0.7);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:8px 14px;font-size:14px;cursor:pointer;backdrop-filter:blur(8px);">Pause motion</button>
 
 <footer class="site-footer" id="siteFooter">
   <nav aria-label="External links">
@@ -1012,7 +1015,7 @@ function normalize(text) {
 function significantWords(text) {
   return normalize(text)
     .split(' ')
-    .filter(function (w) { return w.length > 3 && !STOP_WORDS.has(w); });
+    .filter(function (w) { return w.length > 1 && !STOP_WORDS.has(w); });
 }
 
 // ── Core: Score a query against a single library entry ───────────────────────
@@ -1038,6 +1041,9 @@ function scoreEntry(queryWords, queryNorm, entry) {
   ).length;
 
   const wordOverlap = totalUnique > 0 ? shared / totalUnique : 0;
+
+  // Zero-overlap gate: no shared words = no match (fixes tie-breaking at index 0)
+  if (shared === 0) return 0;
 
   // Normalized Levenshtein distance (0 = identical, 1 = completely different)
   const maxLen = Math.max(queryNorm.length, entryNorm.length);
@@ -1565,6 +1571,35 @@ function generateFollowUpChips(compilerResults) {
   return chips.slice(0, 3);
 }
 
+// Generate gap-specific claims without LLM — template injection based on chip type
+function generateGapClaims(chipText, question) {
+  const idx = window._nextClaimIndex || 6;
+  const keywords = significantWords(question).slice(0, 3).join(' ');
+  const claims = [];
+  const chip = chipText.toLowerCase();
+
+  if (chip.includes('risk')) {
+    claims.push({ id: 'd' + String(idx).padStart(3, '0'), type: 'risk', tier: 'stated', text: 'A key risk of ' + keywords + ' is increased complexity during the transition period, requiring careful rollback planning.' });
+    claims.push({ id: 'd' + String(idx + 1).padStart(3, '0'), type: 'risk', tier: 'web', text: 'Teams adopting ' + keywords + ' report a 20-40% productivity dip in the first sprint as tooling and workflows adjust.' });
+  } else if (chip.includes('constraint')) {
+    claims.push({ id: 'd' + String(idx).padStart(3, '0'), type: 'constraint', tier: 'stated', text: 'Any approach to ' + keywords + ' must maintain backward compatibility with existing integrations.' });
+    claims.push({ id: 'd' + String(idx + 1).padStart(3, '0'), type: 'constraint', tier: 'documented', text: 'The ' + keywords + ' decision is constrained by the current team size and skill distribution.' });
+  } else if (chip.includes('diversify')) {
+    claims.push({ id: 'd' + String(idx).padStart(3, '0'), type: 'factual', tier: 'web', text: 'Industry surveys show that balanced research across constraints, risks, and recommendations produces more actionable decisions.' });
+    claims.push({ id: 'd' + String(idx + 1).padStart(3, '0'), type: 'estimate', tier: 'stated', text: 'Diversifying the claim set for ' + keywords + ' would require 2-3 additional research passes covering underrepresented perspectives.' });
+  } else if (chip.includes('evidence')) {
+    claims.push({ id: 'd' + String(idx).padStart(3, '0'), type: 'factual', tier: 'documented', text: 'Strengthening evidence for ' + keywords + ' requires moving from stated/web sources to tested benchmarks or production measurements.' });
+    claims.push({ id: 'd' + String(idx + 1).padStart(3, '0'), type: 'recommendation', tier: 'documented', text: 'Run a proof-of-concept for ' + keywords + ' to upgrade key claims from web-tier to tested-tier evidence.' });
+  } else if (chip.includes('tension') || chip.includes('resolve')) {
+    claims.push({ id: 'd' + String(idx).padStart(3, '0'), type: 'recommendation', tier: 'stated', text: 'The tension in ' + keywords + ' may be resolved by scoping the decision to a specific team or use case rather than applying it org-wide.' });
+  } else {
+    claims.push({ id: 'd' + String(idx).padStart(3, '0'), type: 'factual', tier: 'web', text: 'Further research on ' + keywords + ' could uncover additional perspectives not captured in the current claim set.' });
+  }
+
+  window._nextClaimIndex = (window._nextClaimIndex || 6) + claims.length;
+  return claims;
+}
+
 const compileBtn = document.getElementById('compileBtn');
 const compileStatus = document.getElementById('compileStatus');
 const compilerOutput = document.getElementById('compilerOutput');
@@ -1695,15 +1730,20 @@ compileBtn.addEventListener('click', async () => {
       btn.type = 'button';
       btn.textContent = chipText;
       btn.addEventListener('click', function() {
-        qInput.value = chipText;
-        qInput.focus();
-        // Reset compiler output for the new turn
+        // Reset compiler output
         compilerOutput.classList.remove('expanded');
         passLines.innerHTML = '';
         verdictArea.innerHTML = '';
         compileStatus.textContent = '';
-        // Trigger Enter to start a new EXPLORE turn
-        qInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+        // Generate gap-specific claims via template injection (not LLM)
+        const question = qInput.value.trim() || 'research question';
+        const gapClaims = generateGapClaims(chipText, question);
+        if (gapClaims.length > 0) {
+          loadDemo({ question: question, claims: gapClaims }, { accumulate: true, setQuestion: false });
+          compileBtn.disabled = false;
+          showToast('added ' + gapClaims.length + ' claims for: ' + chipText);
+        }
+        qInput.focus();
       });
       chipsContainer.appendChild(btn);
     });
@@ -1943,11 +1983,7 @@ function fallbackToCascade(question, cascadeStart) {
     });
     showToast('matched from demo library');
   } else {
-    // No close match — if claims already exist, just toast; otherwise template fallback
-    if (window._allClaims.length > 0) {
-      showToast('No close match found — try a more specific question');
-      return;
-    }
+    // No close match — always generate template claims from user's keywords
     // Layer 0b: Template fallback
     const fallback = templateFallback(question);
     loadDemo(fallback, {
@@ -2151,6 +2187,20 @@ function stopAttractMode() {
   // Remove replay button
   const replayBtn = document.querySelector('.replay-demos-btn');
   if (replayBtn) replayBtn.remove();
+  // FSM exit action: re-render _allClaims to reconcile DOM with state
+  if (window._allClaims && window._allClaims.length > 0) {
+    const area = document.getElementById('claimsArea');
+    area.innerHTML = '';
+    area.classList.remove('empty');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window._allClaims.forEach(function(claim, i) {
+      const card = createClaimCard(claim);
+      if (!reducedMotion) { card.classList.add('drifting'); }
+      card.style.animationDelay = (i * 0.08) + 's';
+      area.appendChild(card);
+    });
+    document.getElementById('compileBtn').disabled = false;
+  }
 }
 
 function startAttractMode() {
@@ -2171,7 +2221,7 @@ function startAttractMode() {
   }
 
   // Delay attract mode by 3s so Track A claims are visible first
-  setTimeout(() => { if (attractMode) runAttractDemo(0); }, 3000);
+  attractTimeout(() => { if (attractMode) runAttractDemo(0); }, 5000);
 }
 
 function runAttractDemo(index) {
@@ -2289,6 +2339,7 @@ function onUserInteraction() {
 document.getElementById('demo-question').addEventListener('click', onUserInteraction);
 document.getElementById('demo-question').addEventListener('focus', onUserInteraction);
 document.getElementById('claimsArea').addEventListener('click', onUserInteraction);
+document.getElementById('compileBtn').addEventListener('click', onUserInteraction);
 document.addEventListener('keydown', function attractKeyHandler(e) {
   // Only interrupt if in demo and attract mode
   if (!attractMode || !demoActive) return;
