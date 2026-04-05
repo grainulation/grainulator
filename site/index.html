@@ -1205,8 +1205,9 @@ function restoreSession(session) {
   // Set input to last conversation entry
   if (session.conversationHistory && session.conversationHistory.length > 0) {
     var last = session.conversationHistory[session.conversationHistory.length - 1];
-    chatInput.value = last.question || '';
-    sendBtn.disabled = !chatInput.value.trim();
+    // Don't pre-fill input on restore (x627)
+    chatInput.value = '';
+    sendBtn.disabled = true;
   }
 }
 
