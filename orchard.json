@@ -1,52 +1,52 @@
 {
   "sprints": [
     {
-      "path": "./.wheat/sprints/build-phase0",
-      "question": "Phase 0: Ship video embed, zero-dep analytics (IndexedDB + GH traffic cron), mobile fix (show install button), feature flag (?cascade=off)",
-      "depends_on": [],
-      "assigned_to": "claude",
-      "deadline": "2026-04-04",
-      "status": "active"
-    },
-    {
-      "path": "./.wheat/sprints/build-demo-library",
-      "question": "Rx5: Generate 50 pre-computed question-answer demo sets with Claude, build custom fuzzy matcher (~150 LOC), template fallback for unmatched queries",
+      "path": "./.wheat/sprints/input-first-surgery",
+      "question": "Phase 1 — HTML/CSS Surgery: Delete demo-layer overlay (lines 136-138, 235, 339, 358-393), delete attract mode FSM (lines 2161-2370), delete enterDemo/exitDemo (lines 836-880), delete hash route handler (lines 2108-2118). Move #demo-question input into .ui landing. Move #claimsArea, .compile-row, .compiler-output into landing flow. Update .ui to position:fixed;inset:0;overflow-y:auto;padding-top:35vh. Claim cards use background:rgba(0,0,0,0.85) not backdrop-filter. Per cal026, cal027, w2540, x572, x580.",
       "depends_on": [],
       "assigned_to": "claude",
       "deadline": "2026-04-05",
-      "status": "active"
+      "status": "done"
     },
     {
-      "path": "./.wheat/sprints/build-cascade",
-      "question": "Rx6: Implement 3-layer zero-dep cascade (Library instant → Cached model ~2s → Downloading background), return visitor fast path, debug panel",
-      "depends_on": ["./.wheat/sprints/build-demo-library"],
+      "path": "./.wheat/sprints/input-first-js-rewire",
+      "question": "Phase 2 — JS Rewire (completed in Phase 1 surgery)",
+      "depends_on": ["./.wheat/sprints/input-first-surgery"],
       "assigned_to": "claude",
       "deadline": "2026-04-05",
-      "status": "active"
+      "status": "done"
     },
     {
-      "path": "./.wheat/sprints/build-conversational",
-      "question": "Rx7+Rx8: Build 2-3 EXPLORE turns with XGrammar JSON enforcement, follow-up chips after compile, claim accumulation, sliding window context. GATE: test 360M output quality on Day 2",
-      "depends_on": ["./.wheat/sprints/build-cascade"],
+      "path": "./.wheat/sprints/input-first-mobile",
+      "question": "Phase 3 — Mobile + PWA (completed in Phase 1 surgery)",
+      "depends_on": ["./.wheat/sprints/input-first-surgery"],
+      "assigned_to": "claude",
+      "deadline": "2026-04-05",
+      "status": "done"
+    },
+    {
+      "path": "./.wheat/sprints/input-first-a11y",
+      "question": "Phase 4 — Accessibility (completed in Phase 1 surgery)",
+      "depends_on": ["./.wheat/sprints/input-first-js-rewire"],
       "assigned_to": "claude",
       "deadline": "2026-04-06",
-      "status": "active"
+      "status": "done"
     },
     {
-      "path": "./.wheat/sprints/build-handoff",
-      "question": "Rx9+Rx10: Dual handoff buttons (claude-cli:// deep link + clipboard copy), human-readable summary payload (~1300 chars), handoff nudge at turn 3, prominent at turn 5",
-      "depends_on": ["./.wheat/sprints/build-conversational"],
+      "path": "./.wheat/sprints/input-first-handoff",
+      "question": "Phase 5 — Handoff + Share (Web Share API added)",
+      "depends_on": ["./.wheat/sprints/input-first-js-rewire"],
       "assigned_to": "claude",
       "deadline": "2026-04-06",
-      "status": "active"
+      "status": "done"
     },
     {
-      "path": "./.wheat/sprints/build-engagement",
-      "question": "Rx11-14: Border glow peek (8px margin), shader blob progress amplification, 3 demo topics with varied compiler behavior, attract mode auto-play (1 rotation + replay)",
-      "depends_on": ["./.wheat/sprints/build-cascade"],
+      "path": "./.wheat/sprints/input-first-viewport-polish",
+      "question": "Phase 6 — Viewport Polish: Apply remaining UI audit fixes — landscape overrides (issues 10-13), tablet breakpoint fix 768→767px (issue 14), 4K scaling (issues 20-21), hover/focus split with @media(hover:hover) (issue 25), cursor:text on claim-text (issue 26). Card box-shadow for visual separation from shader. Staggered compile reveal animation. Per x583, grainulator-app-ui-audit.md issues 10-27.",
+      "depends_on": ["./.wheat/sprints/input-first-mobile", "./.wheat/sprints/input-first-a11y"],
       "assigned_to": "claude",
-      "deadline": "2026-04-07",
-      "status": "active"
+      "deadline": "2026-04-06",
+      "status": "pending"
     }
   ],
   "settings": {

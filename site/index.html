@@ -207,21 +207,35 @@ canvas.dimmed{opacity:0}
 @keyframes card-drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
 .claim-card.drifting{animation:card-in 0.4s ease forwards,card-drift 50s ease-in-out infinite}
 
-/* Mobile */
-@media(max-width:768px){
+/* Mobile (issue 14: 768→767px) */
+@media(max-width:767px){
   .ui{padding-top:max(20vh, 120px)}
   .cta-btn{padding:0.5rem 1rem;min-height:44px;font-size:0.7rem}
   .site-footer{bottom:calc(3vh + env(safe-area-inset-bottom,0px))}
-  .site-footer a{min-height:44px;padding:0.4rem 0.5rem;font-size:0.55rem}
+  .site-footer a{min-height:44px;padding:0.6rem 0.6rem;font-size:0.55rem}
   .site-footer{padding-bottom:env(safe-area-inset-bottom,0px)}
   .cta-row{flex-direction:column;gap:0.5rem}
-  .chip{min-height:44px;display:inline-flex;align-items:center}
-  .claim-card.glass{margin-left:-1rem;margin-right:-1rem;border-radius:0;padding:1rem}
+  .chip{min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center}
+  .claim-card.glass{margin-left:-0.75rem;margin-right:-0.75rem;border-radius:0;padding:1rem 0.75rem}
 }
 
-/* Claim card border glow — desktop 8px, mobile 4px */
-.claim-card{box-shadow:0 0 8px rgba(141,246,255,0.1)}
-@media(max-width:768px){.claim-card{box-shadow:0 0 4px rgba(141,246,255,0.1)}}
+/* Tablet (issues 15-16) */
+@media(min-width:768px) and (max-width:1024px){
+  #inputPanel{max-width:calc(100% - 4rem)}
+  .claims-area{max-width:calc(100% - 4rem)}
+  .cta-install{padding:0.75rem 1.2rem}
+  .cta-btn{padding:0.6rem 1rem}
+}
+
+/* 4K+ scaling (issues 20-21) */
+@media(min-width:1440px){#inputPanel,.claims-area,.compile-row{max-width:860px}}
+@media(min-width:1920px){#inputPanel,.claims-area,.compile-row{max-width:960px}}
+@media(min-width:2560px){
+  #inputPanel,.claims-area,.compile-row{max-width:1100px}
+  .claim-text{font-size:0.85rem}
+  .q-input{font-size:1rem}
+  .compile-btn{font-size:0.9rem}
+}
 
 /* PWA standalone mode — hide install, show Claude Code shortcut */
 .pwa-standalone .cta-install{display:none}
@@ -233,14 +247,18 @@ canvas.dimmed{opacity:0}
 /* Offline toast */
 .toast-offline{background:rgba(0,0,0,0.85);border:1px solid rgba(141,246,255,0.2);border-radius:6px;padding:0.5rem 1rem}
 
-/* Landscape mobile */
+/* Landscape mobile (issues 10-13) */
 @media(max-height:500px){
   .ui{padding-top:max(10vh, 60px)}
   .ui-logo{width:50px}
   .ui-title{font-size:0.65rem;margin-bottom:0.3rem}
-  .cta-btn{padding:0.4rem 0.8rem;min-height:36px;font-size:0.6rem}
+  .cta-btn{padding:0.4rem 0.8rem;min-height:44px;font-size:0.6rem}
   .site-footer{bottom:0.5vh}
-  .site-footer a{min-height:36px;padding:0.2rem 0.3rem;font-size:0.5rem}
+  .site-footer a{min-height:44px;padding:0.3rem 0.4rem;font-size:0.5rem}
+  .q-input{padding:0.6rem 0.8rem}
+  .claims-area{min-height:60px}
+  .claim-card{padding:0.7rem 0.8rem}
+  .claim-text{font-size:0.65rem;line-height:1.4}
 }
 
 /* Reduced motion */
@@ -255,6 +273,13 @@ canvas.dimmed{opacity:0}
   .flip-target,[data-flip]{transition-duration:0s}
   .compiler-text-fallback{display:block}
   .webgl-fallback::before,.webgl-fallback::after{animation:none}
+}
+
+/* Sticky hover prevention for touch devices (issue 25) */
+@media(hover:hover){
+  .cta-install:hover{color:#8df6ff;border-color:rgba(141,246,255,0.6);box-shadow:0 0 30px rgba(141,246,255,0.25)}
+  .pwa-claude-link:hover{color:#8df6ff;border-color:rgba(141,246,255,0.4)}
+  .compile-btn:hover:not(:disabled){border-color:rgba(141,246,255,0.6);box-shadow:0 0 20px rgba(141,246,255,0.15)}
 }
 
 /* Focus indicator */
@@ -1647,7 +1672,10 @@ compileBtn.addEventListener('click', async () => {
 
   const handoff = document.createElement('div');
   handoff.className = 'handoff-section';
-  handoff.innerHTML = '<button class="handoff-primary" id="handoff-deeplink" type="button">Open in Claude Code</button><button class="handoff-secondary" id="handoff-clipboard" type="button">Copy to clipboard</button>';
+  const hasShare = typeof navigator.share === 'function';
+  handoff.innerHTML = '<button class="handoff-primary" id="handoff-deeplink" type="button">Open in Claude Code</button>' +
+    (hasShare ? '<button class="handoff-secondary" id="handoff-share" type="button">Share</button>' : '') +
+    '<button class="handoff-secondary" id="handoff-clipboard" type="button">Copy to clipboard</button>';
   verdictArea.appendChild(handoff);
 
   // Handoff: deep link to Claude Code
@@ -1663,6 +1691,17 @@ compileBtn.addEventListener('click', async () => {
       showToast('Install Claude Code first \u2014 claude.ai/download');
     }
   });
+
+  // Handoff: Web Share API (w2513)
+  const shareBtn = document.getElementById('handoff-share');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', function() {
+      window._trackEvent?.('handoff_click', { type: 'share' });
+      navigator.share({ title: 'Grainulator Sprint', text: shortPrompt, url: location.origin + '/#q=' + encodeURIComponent(question) })
+        .then(() => showToast('shared.'))
+        .catch((err) => { if (err.name !== 'AbortError') showToast('share failed'); });
+    });
+  }
 
   // Handoff: copy to clipboard
   document.getElementById('handoff-clipboard').addEventListener('click', function() {
