@@ -806,8 +806,9 @@ function pauseShader() {
 function resumeShader() {
   if (!motionTogglePaused && shaderPaused) {
     shaderPaused = false;
+    // Always restart the render loop — wake handles idle, but we also need direct restart
     if (window._shaderWake) window._shaderWake();
-    else if (window._shaderRender) shaderAnimId = requestAnimationFrame(window._shaderRender);
+    if (!shaderAnimId && window._shaderRender) shaderAnimId = requestAnimationFrame(window._shaderRender);
   }
 }
 
