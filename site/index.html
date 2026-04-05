@@ -92,208 +92,84 @@
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;overflow:hidden;background:#000;cursor:crosshair;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-/* html.demo-active removed — input-first, no overlay */
-canvas{position:fixed;inset:0;width:100%;height:100%;transition:opacity 0.6s ease}
-canvas.dimmed{opacity:0}
+html,body{height:100%;overflow:hidden;background:#0a0a0f;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
-/* Skip link for accessibility */
-.skip-link{position:absolute;top:-100%;left:50%;transform:translateX(-50%);background:#8df6ff;color:#000;padding:0.5rem 1rem;font-family:monospace;font-size:0.85rem;z-index:200;border-radius:0 0 4px 4px;text-decoration:none;font-weight:700}
-.skip-link:focus{top:0}
+/* Canvas — hidden on mobile, visible on desktop */
+canvas{display:none;position:fixed;inset:0;width:100%;height:100%}
+@media(min-width:769px) and (hover:hover) and (pointer:fine){canvas{display:block}}
 
-/* === LANDING PHASE === */
-.ui{position:fixed;inset:0;z-index:10;text-align:center;opacity:0;animation:appear 1s ease 0.5s forwards;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;overflow-y:auto;overflow-x:hidden;padding:max(30vh, 180px) 1.5rem calc(4rem + env(safe-area-inset-bottom,0px)) 1.5rem;display:flex;flex-direction:column;align-items:center;gap:1rem;max-width:100%;background:radial-gradient(ellipse 80% 70% at 50% 45%,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.4) 60%,transparent 100%)}
-.ui.hidden{display:none}
-.ui-logo{width:clamp(60px,15vw,120px);height:auto;margin-bottom:0;opacity:0.9;filter:drop-shadow(0 0 12px rgba(141,246,255,0.3))}
-/* .ui-title removed — logo only, no text title */
+/* App shell — flexbox column, full viewport height */
+.app{display:flex;flex-direction:column;height:100dvh;height:100vh;position:relative;z-index:10;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace}
 
-.cta-row{display:flex;gap:0.8rem;justify-content:center;align-items:center;flex-wrap:wrap}
-.cta-btn{font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:clamp(0.65rem,1.2vw,0.8rem);padding:0.75rem 1.2rem;min-height:48px;border-radius:3px;transition:all 0.4s;display:inline-flex;align-items:center;text-decoration:none;cursor:pointer;border:none;background:none}
+/* Header */
+.app-header{flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:0.8rem;padding:0.8rem 1rem;border-bottom:1px solid rgba(255,255,255,0.04)}
+.app-header img{width:36px;height:auto;opacity:0.9}
+.app-header .cta-install{font-size:0.65rem;padding:0.4rem 0.8rem;min-height:36px;color:rgba(141,246,255,0.7);border:1px solid rgba(141,246,255,0.2);border-radius:3px;background:none;cursor:pointer;font-family:inherit;transition:all 0.3s}
 
-/* .cta-try removed — input-first, no explore button */
+/* Chat area */
+.chat-area{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:0.8rem;scroll-behavior:smooth}
 
-.cta-install{color:#8df6ff;border:1px solid rgba(141,246,255,0.4);padding:0.9rem 1.5rem;font-size:clamp(0.7rem,1.3vw,0.85rem);font-weight:700;text-shadow:0 0 7px #8df6ff,0 0 20px rgba(141,246,255,0.3)}
-.cta-install:hover{color:#8df6ff;border-color:rgba(141,246,255,0.6);box-shadow:0 0 30px rgba(141,246,255,0.25);text-shadow:0 0 7px #8df6ff,0 0 20px rgba(141,246,255,0.4)}
-.cta-install:focus-visible{color:#8df6ff;border-color:rgba(141,246,255,0.6);box-shadow:0 0 30px rgba(141,246,255,0.25);text-shadow:0 0 7px #8df6ff,0 0 20px rgba(141,246,255,0.4);outline:2px solid #8df6ff;outline-offset:2px}
+/* Messages */
+.msg{max-width:85%;border-radius:12px;padding:0.8rem 1rem;font-size:0.8rem;line-height:1.6;animation:msg-in 0.3s ease forwards;opacity:0}
+@keyframes msg-in{to{opacity:1}}
+.msg-user{align-self:flex-end;background:rgba(141,246,255,0.1);color:#fff;border:1px solid rgba(141,246,255,0.15)}
+.msg-ai{align-self:flex-start;background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.85);border:1px solid rgba(255,255,255,0.06)}
+.msg-system{align-self:center;background:none;color:rgba(141,246,255,0.5);font-size:0.65rem;text-align:center;max-width:100%;padding:0.4rem}
 
-@keyframes appear{to{opacity:1}}
-@keyframes pulse-teal{0%,100%{box-shadow:0 0 8px rgba(141,246,255,0.1)}50%{box-shadow:0 0 20px rgba(141,246,255,0.3)}}
+/* Thinking dots */
+.thinking-dots{display:flex;gap:4px;padding:0.5rem 0}
+.thinking-dots span{width:6px;height:6px;border-radius:50%;background:rgba(141,246,255,0.4);animation:dot-pulse 1.4s ease-in-out infinite}
+.thinking-dots span:nth-child(2){animation-delay:0.2s}
+.thinking-dots span:nth-child(3){animation-delay:0.4s}
+@keyframes dot-pulse{0%,80%,100%{opacity:0.3;transform:scale(0.8)}40%{opacity:1;transform:scale(1.2)}}
 
-/* Toast */
-.toast{position:fixed;bottom:calc(1.5vh + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%) translateY(40px);font-family:monospace;font-size:0.7rem;color:#8df6ff;opacity:0.5;z-index:99;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none}
-.toast.show{transform:translateX(-50%) translateY(0);opacity:0.9}
+/* Claims toggle (2-level disclosure) */
+.claims-toggle{font-size:0.65rem;color:rgba(141,246,255,0.6);background:none;border:1px solid rgba(141,246,255,0.12);border-radius:4px;padding:0.3rem 0.6rem;cursor:pointer;margin-top:0.5rem;font-family:inherit;transition:all 0.2s}
+.claims-toggle[aria-expanded="true"]{color:#8df6ff;border-color:rgba(141,246,255,0.3)}
+.claims-panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows 0.3s ease}
+.claims-panel.open{grid-template-rows:1fr}
+.claims-panel-inner{overflow:hidden}
+.claim-row{font-size:0.7rem;color:rgba(255,255,255,0.6);padding:0.4rem 0;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;gap:0.5rem;align-items:baseline}
+.claim-row .badge{font-size:0.55rem;padding:0.1rem 0.35rem;border-radius:2px;text-transform:uppercase;font-weight:700;flex-shrink:0}
 
-/* Footer */
-.site-footer{text-align:center;opacity:0;animation:appear 1s ease 1s forwards;transition:opacity 0.4s;padding:2rem 0 1rem;width:100%}
-.site-footer.hidden{display:none}
-.site-footer a{font-family:monospace;font-size:0.6rem;color:rgba(255,255,255,0.45);padding:0.5rem 0.4rem;min-height:48px;display:inline-flex;align-items:center;text-decoration:none;transition:color 0.3s}
-.site-footer a:hover,.site-footer a:focus-visible{color:rgba(255,255,255,0.65);outline:none}
-.site-footer span{color:rgba(255,255,255,0.2);font-size:0.6rem;margin:0 0.3rem}
+/* Claim type badges */
+.badge-constraint{background:rgba(244,63,94,0.15);color:#f43f5e}
+.badge-factual{background:rgba(59,130,246,0.15);color:#3b82f6}
+.badge-risk{background:rgba(251,191,36,0.15);color:#fbbf24}
+.badge-recommendation{background:rgba(34,197,94,0.15);color:#22c55e}
+.badge-estimate{background:rgba(167,139,250,0.15);color:#a78bfa}
+.badge-feedback{background:rgba(156,163,175,0.15);color:#9ca3af}
 
-/* === INLINE DEMO (input-first) === */
+/* Input bar — sticky bottom */
+.input-bar{flex-shrink:0;display:flex;align-items:center;gap:0.5rem;padding:0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom,0px) + var(--kb-offset, 0px));background:rgba(10,10,15,0.95);border-top:1px solid rgba(255,255,255,0.06)}
+.chat-input{flex:1;font-family:inherit;font-size:max(1rem,16px);color:#fff;background:rgba(255,255,255,0.06);border:1px solid rgba(141,246,255,0.2);border-radius:20px;padding:0.7rem 3rem 0.7rem 1rem;outline:none;transition:border-color 0.3s}
+.chat-input:focus{border-color:rgba(141,246,255,0.5)}
+.chat-input::placeholder{color:rgba(255,255,255,0.25)}
+.input-wrap{position:relative;flex:1}
+.send-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:rgba(141,246,255,0.15);border:none;color:#8df6ff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s}
+.send-btn:disabled{opacity:0.2;cursor:not-allowed}
+.send-btn:not(:disabled):active{background:rgba(141,246,255,0.35)}
+.send-btn svg{width:18px;height:18px}
 
-/* Glass panels */
-.glass{background:rgba(0,0,0,0.85);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:1.2rem;position:relative}
-#inputPanel{width:100%;max-width:720px}
-
-/* Question input */
-.q-input{font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:max(1rem,16px);color:#fff;background:rgba(0,0,0,0.3);border:1px solid rgba(141,246,255,0.3);border-radius:6px;padding:0.9rem 1rem;width:100%;outline:none;transition:border-color 0.3s,box-shadow 0.3s;text-align:center}
-.q-input:focus{border-color:rgba(141,246,255,0.6);box-shadow:0 0 20px rgba(141,246,255,0.1)}
-.q-input::placeholder{color:rgba(255,255,255,0.25)}
-.q-input:disabled{opacity:0.5;cursor:not-allowed;border-color:rgba(141,246,255,0.15)}
-.q-input:disabled::placeholder{color:rgba(141,246,255,0.3)}
-.model-status{font-family:monospace;font-size:0.6rem;color:rgba(141,246,255,0.6);text-align:center;margin-top:0.5rem;min-height:1em;transition:opacity 1s ease}
-.model-bar{width:100%;height:3px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:0.4rem;overflow:hidden}
+/* Model progress bar (system message style) */
+.model-bar{width:100%;height:3px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:0.3rem;overflow:hidden}
 .model-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,rgba(141,246,255,0.4),rgba(141,246,255,0.8));border-radius:2px;transition:width 0.4s ease}
 
-/* Claim cards */
-.claims-area{display:flex;flex-direction:column;gap:0.8rem;min-height:0;width:100%;max-width:720px}
-.claims-area.empty::after{content:'Type a question above and press Enter \2193';display:block;text-align:center;font-family:monospace;font-size:0.7rem;color:rgba(255,255,255,0.25);padding:1.5rem}
+/* Compile system message */
+.compile-msg-btn{font-family:inherit;font-size:0.7rem;color:#8df6ff;background:rgba(141,246,255,0.08);border:1px solid rgba(141,246,255,0.2);padding:0.5rem 1rem;border-radius:4px;cursor:pointer;transition:all 0.3s;min-height:44px}
+.compile-msg-btn:hover{border-color:rgba(141,246,255,0.5)}
+.compile-msg-btn:disabled{opacity:0.3;cursor:not-allowed}
 
-.claim-card{padding:1rem 1.2rem;animation:card-in 0.4s ease forwards;opacity:0;transform:translateY(10px);background:rgba(0,0,0,0.85);box-shadow:0 0 12px rgba(0,0,0,0.8)}
-@keyframes card-in{to{opacity:1;transform:translateY(0)}}
-
-.claim-header{display:flex;align-items:center;gap:0.6rem;margin-bottom:0.5rem;flex-wrap:wrap}
-.claim-id{font-family:monospace;font-size:0.65rem;color:rgba(255,255,255,0.55)}
-.claim-type{font-family:monospace;font-size:0.6rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:3px;text-transform:uppercase;letter-spacing:0.05em}
-.type-constraint{background:rgba(244,63,94,0.15);color:#f43f5e}
-.type-factual{background:rgba(59,130,246,0.15);color:#3b82f6}
-.type-risk{background:rgba(251,191,36,0.15);color:#fbbf24}
-.type-recommendation{background:rgba(34,197,94,0.15);color:#22c55e}
-.type-estimate{background:rgba(167,139,250,0.15);color:#a78bfa}
-.type-feedback{background:rgba(156,163,175,0.15);color:#9ca3af}
-
-.evidence-tier{font-family:monospace;font-size:0.65rem;padding:0.15rem 0.5rem;border-radius:2px;margin-left:auto}
-.tier-stated{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.75)}
-.tier-web{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7)}
-.tier-documented{background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.6)}
-.tier-tested{background:rgba(255,255,255,0.18);color:rgba(255,255,255,0.75)}
-.tier-production{background:rgba(141,246,255,0.15);color:rgba(141,246,255,0.8)}
-
-.claim-text{font-family:monospace;font-size:0.75rem;color:rgba(255,255,255,0.75);line-height:1.5;cursor:text;user-select:text}
-.demo-ui{cursor:default}
-
-/* Compile button + progress */
-.compile-row{display:flex;align-items:center;gap:1rem;width:100%;max-width:720px}
-.compile-btn{font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:0.8rem;color:#8df6ff;background:none;border:1px solid rgba(141,246,255,0.3);padding:0.7rem 1.5rem;border-radius:4px;cursor:pointer;transition:all 0.3s;min-height:44px;white-space:nowrap}
-.compile-btn:hover:not(:disabled){border-color:rgba(141,246,255,0.6);box-shadow:0 0 20px rgba(141,246,255,0.15)}
-.compile-btn:disabled{opacity:0.3;cursor:not-allowed}
-.compile-status{font-family:monospace;font-size:0.65rem;color:rgba(255,255,255,0.4);flex:1}
-
-/* Compiler output */
-.compiler-output{max-height:0;overflow:hidden;transition:max-height 0.5s ease;padding:0;border:none;background:none;backdrop-filter:none;-webkit-backdrop-filter:none}
-.compiler-output.expanded{max-height:600px;padding:1.2rem;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+/* Compiler pass lines in chat */
 .pass-line{font-family:monospace;font-size:0.7rem;color:rgba(255,255,255,0.5);padding:0.3rem 0;opacity:0;transform:translateX(-8px);transition:all 0.3s ease}
 .pass-line.done{opacity:1;transform:translateX(0)}
 .pass-line .check{color:#8df6ff;margin-right:0.4rem}
 .pass-line .fail{color:#f43f5e;margin-right:0.4rem}
 
-.verdict-card{margin-top:0.5rem;border-color:rgba(141,246,255,0.2)}
+/* Verdict */
 .verdict-title{font-family:monospace;font-size:0.7rem;color:#8df6ff;margin-bottom:0.4rem;font-weight:700}
 .verdict-body{font-family:monospace;font-size:0.7rem;color:rgba(255,255,255,0.65);line-height:1.6}
 .conflict-flag{color:#fbbf24}
-
-/* Follow-up chips */
-.follow-up-chips{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.8rem}
-.chip{font-family:monospace;font-size:0.65rem;color:rgba(141,246,255,0.7);background:none;border:1px solid rgba(141,246,255,0.2);padding:0.4rem 0.8rem;border-radius:12px;cursor:pointer;transition:all 0.3s;min-height:36px}
-.chip:hover{color:#8df6ff;border-color:rgba(141,246,255,0.5);box-shadow:0 0 12px rgba(141,246,255,0.1)}
-
-/* Turn counter */
-.turn-counter{font-family:monospace;font-size:0.6rem;color:rgba(255,255,255,0.5);text-align:center;margin-top:0.3rem;width:100%;max-width:720px}
-
-/* Resume session link */
-.resume-session{font-family:monospace;font-size:0.6rem;color:rgba(141,246,255,0.4);text-align:center;margin-top:0.3rem;cursor:pointer;text-decoration:underline;transition:color 0.3s}
-.resume-session:hover{color:rgba(141,246,255,0.7)}
-
-/* Card drift animation */
-@keyframes card-drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
-.claim-card.drifting{animation:card-in 0.4s ease forwards,card-drift 50s ease-in-out infinite}
-
-/* Mobile (issue 14: 768→767px) */
-@media(max-width:767px){
-  .ui{padding-top:max(20vh, 120px)}
-  .cta-btn{padding:0.5rem 1rem;min-height:44px;font-size:0.7rem}
-  .site-footer a{min-height:44px;padding:0.6rem 0.6rem;font-size:0.55rem}
-  .cta-row{flex-direction:column;gap:0.5rem}
-  .chip{min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center}
-  .claim-card.glass{margin-left:-0.75rem;margin-right:-0.75rem;border-radius:0;padding:1rem 0.75rem}
-}
-
-/* Tablet (issues 15-16) */
-@media(min-width:768px) and (max-width:1024px){
-  #inputPanel{max-width:calc(100% - 4rem)}
-  .claims-area{max-width:calc(100% - 4rem)}
-  .cta-install{padding:0.75rem 1.2rem}
-  .cta-btn{padding:0.6rem 1rem}
-}
-
-/* 4K+ scaling (issues 20-21) */
-@media(min-width:1440px){#inputPanel,.claims-area,.compile-row{max-width:860px}}
-@media(min-width:1920px){#inputPanel,.claims-area,.compile-row{max-width:960px}}
-@media(min-width:2560px){
-  #inputPanel,.claims-area,.compile-row{max-width:1100px}
-  .claim-text{font-size:0.85rem}
-  .q-input{font-size:1rem}
-  .compile-btn{font-size:0.9rem}
-}
-
-/* PWA standalone mode — hide install, show Claude Code shortcut */
-.pwa-standalone .cta-install{display:none}
-/* .pwa-standalone .cta-try removed — no explore button */
-.pwa-claude-link{display:none;font-family:monospace;font-size:0.65rem;color:rgba(141,246,255,0.6);background:none;border:1px solid rgba(141,246,255,0.15);padding:0.4rem 0.8rem;border-radius:3px;cursor:pointer;transition:all 0.3s;min-height:44px;text-decoration:none;align-items:center}
-.pwa-claude-link:hover{color:#8df6ff;border-color:rgba(141,246,255,0.4)}
-.pwa-standalone .pwa-claude-link{display:inline-flex}
-
-/* Offline toast */
-.toast-offline{background:rgba(0,0,0,0.85);border:1px solid rgba(141,246,255,0.2);border-radius:6px;padding:0.5rem 1rem}
-
-/* Landscape mobile (issues 10-13) */
-@media(max-height:500px){
-  .ui{padding-top:max(10vh, 60px)}
-  .ui-logo{width:50px}
-  /* .ui-title removed */
-  .cta-btn{padding:0.4rem 0.8rem;min-height:44px;font-size:0.6rem}
-  .site-footer a{min-height:44px;padding:0.3rem 0.4rem;font-size:0.5rem}
-  .q-input{padding:0.6rem 0.8rem}
-  .claims-area{min-height:60px}
-  .claim-card{padding:0.7rem 0.8rem}
-  .claim-text{font-size:0.65rem;line-height:1.4}
-}
-
-/* Reduced motion */
-@media(prefers-reduced-motion:reduce){
-  canvas{display:none}
-  .ui{opacity:1;animation:none;padding-top:2rem}
-  /* .ui-title removed */
-  html body .cta-row .cta-btn{transition:none;animation:none;box-shadow:0 0 20px rgba(255,255,255,0.15)}
-  .site-footer{opacity:1;animation:none}
-  html body .claim-card{animation:none;transition:none;opacity:1;transform:none}
-  html body .claim-card.drifting{animation:none}
-  .flip-target,[data-flip]{transition-duration:0s}
-  .compiler-text-fallback{display:block}
-  .webgl-fallback::before,.webgl-fallback::after{animation:none}
-}
-
-/* Sticky hover prevention for touch devices (issue 25) */
-@media(hover:hover){
-  .cta-install:hover{color:#8df6ff;border-color:rgba(141,246,255,0.6);box-shadow:0 0 30px rgba(141,246,255,0.25)}
-  .pwa-claude-link:hover{color:#8df6ff;border-color:rgba(141,246,255,0.4)}
-  .compile-btn:hover:not(:disabled){border-color:rgba(141,246,255,0.6);box-shadow:0 0 20px rgba(141,246,255,0.15)}
-}
-
-/* Focus indicator */
-*:focus-visible{outline:2px solid #fff;outline-offset:2px}
-
-/* Visually hidden */
-.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-
-/* cancel-btn shown dynamically during model download */
-
-/* Compiler text fallback (hidden by default, shown for reduced-motion) */
-.compiler-text-fallback{display:none}
-
-/* Flash overlay */
-#flash-overlay{position:fixed;inset:0;z-index:200;pointer-events:none;opacity:0;transition:opacity 300ms ease-out}
 
 /* Handoff section */
 .handoff-section{display:flex;flex-wrap:wrap;gap:0.6rem;margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.06)}
@@ -303,14 +179,44 @@ canvas.dimmed{opacity:0}
 .handoff-primary:hover{background:rgba(141,246,255,0.15);border-color:rgba(141,246,255,0.5)}
 .handoff-secondary{font-family:monospace;font-size:0.65rem;color:rgba(255,255,255,0.5);background:none;border:1px solid rgba(255,255,255,0.1);padding:0.5rem 0.8rem;border-radius:4px;cursor:pointer;transition:all 0.3s;min-height:44px}
 .handoff-secondary:hover{color:rgba(255,255,255,0.7);border-color:rgba(255,255,255,0.2)}
-.handoff-nudge{font-family:monospace;font-size:0.6rem;color:rgba(141,246,255,0.4);text-align:center;margin-top:0.5rem}
-.handoff-nudge a{color:rgba(141,246,255,0.6);text-decoration:none}
-.handoff-nudge a:hover{color:#8df6ff;text-decoration:underline}
-.handoff-banner{background:rgba(141,246,255,0.05);border:1px solid rgba(141,246,255,0.15);border-radius:8px;padding:1rem;margin-bottom:1rem;text-align:center}
-.handoff-banner p{font-family:monospace;font-size:0.7rem;color:rgba(255,255,255,0.6);margin-bottom:0.8rem}
 
-/* Privacy disclosure */
-.privacy-note{font-family:monospace;font-size:0.65rem;color:rgba(255,255,255,0.5);text-align:center;margin-top:0.3rem;line-height:1.4;background:rgba(0,0,0,0.5);border-radius:4px;padding:0.5rem 0.8rem;max-width:720px}
+/* Follow-up chips */
+.follow-up-chips{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.8rem}
+.chip{font-family:monospace;font-size:0.65rem;color:rgba(141,246,255,0.7);background:none;border:1px solid rgba(141,246,255,0.2);padding:0.4rem 0.8rem;border-radius:12px;cursor:pointer;transition:all 0.3s;min-height:36px}
+.chip:hover{color:#8df6ff;border-color:rgba(141,246,255,0.5);box-shadow:0 0 12px rgba(141,246,255,0.1)}
+
+/* Footer in header area */
+.app-footer{font-size:0.55rem;display:flex;gap:0.3rem;align-items:center}
+.app-footer a{color:rgba(255,255,255,0.35);text-decoration:none;padding:0.2rem}
+.app-footer span{color:rgba(255,255,255,0.15)}
+
+/* Desktop enhancements */
+@media(min-width:769px){
+  .app{max-width:800px;margin:0 auto;background:rgba(0,0,0,0.85);border-left:1px solid rgba(255,255,255,0.04);border-right:1px solid rgba(255,255,255,0.04)}
+  .msg{max-width:75%}
+}
+
+/* PWA */
+.pwa-standalone .cta-install{display:none}
+
+/* Reduced motion */
+@media(prefers-reduced-motion:reduce){
+  canvas{display:none!important}
+  .msg,.thinking-dots span{animation:none!important;opacity:1}
+}
+
+/* Accessibility */
+.skip-link{position:absolute;top:-100%;left:50%;transform:translateX(-50%);background:#8df6ff;color:#000;padding:0.5rem 1rem;font-family:monospace;font-size:0.85rem;z-index:200;border-radius:0 0 4px 4px;text-decoration:none;font-weight:700}
+.skip-link:focus{top:0}
+*:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* Flash overlay */
+#flash-overlay{position:fixed;inset:0;z-index:200;pointer-events:none;opacity:0;transition:opacity 300ms ease-out}
+
+/* Toast */
+.toast{position:fixed;bottom:calc(5rem + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%) translateY(40px);font-family:monospace;font-size:0.7rem;color:#8df6ff;opacity:0.5;z-index:99;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:0.9}
 
 /* Noscript fallback */
 .noscript-fallback{display:none}
@@ -334,12 +240,8 @@ canvas.dimmed{opacity:0}
 <noscript>
 <style>
   canvas{display:none!important}
-  .ui{opacity:1!important;animation:none!important;position:fixed!important;top:50%!important;bottom:auto!important;transform:translate(-50%,-50%)!important}
-  /* .ui-title removed */
-  .cta-btn{color:#8df6ff!important;border-color:rgba(141,246,255,0.3)!important;cursor:default!important}
-  .site-footer{opacity:1!important;animation:none!important}
+  .app{display:none!important}
   .toast{display:none!important}
-  /* demo-layer removed — input-first */
   .noscript-fallback{display:block!important;position:fixed;top:35%;left:50%;transform:translate(-50%,-50%);text-align:center;z-index:5}
   .noscript-fallback p{font-family:monospace;font-size:0.75rem;color:rgba(255,255,255,0.3);margin-bottom:0.5rem}
 </style>
@@ -347,85 +249,66 @@ canvas.dimmed{opacity:0}
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
-
 <canvas id="c" aria-hidden="true" role="presentation"></canvas>
 
-<!-- A11y: hidden progressbar for model download -->
+<!-- A11y live regions -->
 <div role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="AI model download progress" class="sr-only" id="model-progress"></div>
-<!-- A11y: live regions -->
 <div aria-live="polite" id="progress-announcer" class="sr-only"></div>
 <div aria-live="assertive" id="state-announcer" class="sr-only"></div>
 <div aria-live="polite" id="compiler-announcer" class="sr-only"></div>
 
-<main id="main-content">
-  <div class="ui" id="landingUI" role="region" aria-label="Product information">
-    <img src="glitchy.png" alt="Grainulator — research that compiles" class="ui-logo">
-    <h1 class="sr-only">Grainulator — Research that compiles</h1>
-    <p class="sr-only">Evidence-tracked research sprints for Claude Code. Ask any question, get a decision-ready brief. Open source, zero dependencies, MIT licensed.</p>
-    <div class="cta-row">
-      <button class="cta-btn cta-install" id="ctaInstall" type="button" aria-label="Copy install command: /plugin install grainulator">
-        /plugin install grainulator
-      </button>
-      <a class="pwa-claude-link" id="pwaClaude" href="https://github.com/grainulation/grainulator#install" aria-label="Open in Claude Code">claude code &rarr;</a>
-    </div>
+<div class="app" id="app">
+  <header class="app-header">
+    <img src="glitchy.png" alt="Grainulator" width="36" height="36">
+    <button class="cta-install" id="ctaInstall" type="button" aria-label="Copy install command">/plugin install grainulator</button>
+    <nav class="app-footer" aria-label="Links">
+      <a href="https://github.com/grainulation/grainulator" rel="noopener">github</a>
+      <span aria-hidden="true">&middot;</span>
+      <a href="https://deepwiki.com/grainulation/grainulator" rel="noopener">docs</a>
+      <span aria-hidden="true">&middot;</span>
+      <a href="https://opensource.org/licenses/MIT" rel="noopener">mit</a>
+    </nav>
+  </header>
 
-    <div class="glass" id="inputPanel">
-      <label for="demo-question" class="sr-only">Research question</label>
+  <main id="main-content" class="chat-area" role="log" aria-label="Research conversation">
+    <!-- Welcome message -->
+    <div class="msg msg-system" id="welcomeMsg">Ask any research question. Claims are generated instantly from a library of 50 topics.</div>
+    <div class="msg msg-system" id="modelStatus"></div>
+  </main>
+
+  <div class="input-bar" id="inputBar">
+    <div class="input-wrap">
+      <label for="chatInput" class="sr-only">Research question</label>
       <input
-        class="q-input"
-        id="demo-question"
+        class="chat-input"
+        id="chatInput"
         type="text"
         placeholder="Should we use Postgres or Mongo?"
         autocomplete="off"
         spellcheck="false"
+        enterkeyhint="send"
         maxlength="500"
       >
-      <div id="model-status" class="model-status"></div>
+      <button class="send-btn" id="sendBtn" type="button" disabled aria-label="Send">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+      </button>
     </div>
-
-    <div class="claims-area empty" id="claimsArea" role="region" aria-label="Research claims" aria-live="polite">
-      <h2 class="sr-only">Research Claims</h2>
-    </div>
-
-    <div class="compile-row" id="compileRow" style="display:none">
-      <button class="compile-btn" id="compileBtn" type="button" disabled>wheat compile &rarr; verdict</button>
-      <div class="compile-status" id="compileStatus"></div>
-    </div>
-
-    <div class="compiler-output glass" id="compilerOutput">
-      <div id="passLines"></div>
-      <div id="verdictArea"></div>
-    </div>
-
-    <button class="cta-btn" id="newSprint" type="button" style="display:none;margin-top:0.5rem;font-size:0.65rem;color:rgba(141,246,255,0.5);border:1px solid rgba(141,246,255,0.15)">new sprint</button>
-    <p class="privacy-note" id="privacyNote" hidden>Model runs locally in your browser. Weights downloaded from HuggingFace CDN on first use.</p>
-    <p class="privacy-note" id="noWebGPUNote" hidden>Demo requires WebGPU (Chrome/Edge desktop).</p>
-
-    <footer class="site-footer" id="siteFooter">
-      <nav aria-label="External links">
-        <a href="https://github.com/grainulation/grainulator" rel="noopener">github</a>
-        <span aria-hidden="true">&middot;</span>
-        <a href="https://deepwiki.com/grainulation/grainulator" rel="noopener">docs</a>
-        <span aria-hidden="true">&middot;</span>
-        <a href="https://opensource.org/licenses/MIT" rel="noopener">mit</a>
-      </nav>
-    </footer>
   </div>
+</div>
 
-  <noscript>
-    <div class="noscript-fallback">
-      <p><strong>Grainulator</strong></p>
-      <p>Evidence-tracked research sprints for Claude Code. Ask any question, get a decision-ready brief.</p>
-      <p>Install: /plugin install grainulator</p>
-    </div>
-  </noscript>
-
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
-</main>
+<noscript>
+  <div class="noscript-fallback">
+    <p><strong>Grainulator</strong></p>
+    <p>Evidence-tracked research sprints for Claude Code. Ask any question, get a decision-ready brief.</p>
+    <p>Install: /plugin install grainulator</p>
+  </div>
+</noscript>
 
 <div id="flash-overlay"></div>
-<button id="cancel-btn" type="button" style="display:none;position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));right:16px;z-index:9999;background:none;color:#f43f5e;border:1px solid rgba(244,63,94,0.3);border-radius:3px;padding:0.6rem 1rem;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:clamp(0.6rem,1vw,0.75rem);cursor:pointer;min-height:44px;align-items:center;justify-content:center" aria-label="Cancel model download">cancel download</button>
-<button id="motion-toggle" type="button" aria-label="Pause background animation" aria-pressed="false" style="position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));right:16px;z-index:9999;background:none;color:rgba(141,246,255,0.6);border:1px solid rgba(141,246,255,0.2);border-radius:3px;padding:0.6rem 1rem;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:clamp(0.6rem,1vw,0.75rem);cursor:pointer;min-height:44px">pause motion</button>
+<button id="cancel-btn" type="button" style="display:none;position:fixed;bottom:calc(70px + env(safe-area-inset-bottom,0px));right:16px;z-index:9999;background:none;color:#f43f5e;border:1px solid rgba(244,63,94,0.3);border-radius:3px;padding:0.5rem 0.8rem;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:0.6rem;cursor:pointer;min-height:36px;align-items:center;justify-content:center" aria-label="Cancel model download">cancel</button>
+<button id="motion-toggle" type="button" aria-label="Pause background animation" aria-pressed="false" style="display:none;position:fixed;bottom:calc(70px + env(safe-area-inset-bottom,0px));left:16px;z-index:9999;background:none;color:rgba(141,246,255,0.4);border:1px solid rgba(141,246,255,0.1);border-radius:3px;padding:0.5rem 0.8rem;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:0.6rem;cursor:pointer;min-height:36px;align-items:center;justify-content:center">pause</button>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 // ===================================================================
@@ -453,6 +336,7 @@ const CASCADE_OFF = new URLSearchParams(location.search).has('cascade') && new U
 // ===================================================================
 const c = document.getElementById('c');
 const gl = c.getContext('webgl', { preserveDrawingBuffer: true });
+const isMobileDevice = window.matchMedia('(max-width:768px)').matches || navigator.maxTouchPoints > 0;
 
 function activateFallback() {
   document.body.classList.add('webgl-fallback');
@@ -465,7 +349,9 @@ function isSoftwareRenderer(g) {
   return /swiftshader|llvmpipe|software|basic render/i.test(renderer);
 }
 
-if (!gl || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+if (isMobileDevice) {
+  // Skip shader on mobile — dark background only
+} else if (!gl || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
   if (!gl) activateFallback();
 } else if (isSoftwareRenderer(gl)) {
   activateFallback();
@@ -813,82 +699,132 @@ function resumeShader() {
 }
 
 // ===================================================================
-// INPUT-FIRST LANDING — no overlay, no phases
+// CHAT UI — mobile-first chat interface
 // ===================================================================
-const landingUI = document.getElementById('landingUI');
-const siteFooter = document.getElementById('siteFooter');
 const ctaInstall = document.getElementById('ctaInstall');
-const canvas = document.getElementById('c');
+const chatArea = document.getElementById('main-content');
+const chatInput = document.getElementById('chatInput');
+const sendBtn = document.getElementById('sendBtn');
 
-// Animated placeholder cycling (x576, x581)
-const PLACEHOLDER_EXAMPLES = [
-  'Should we use Postgres or Mongo?',
-  'How does React Server Components work?',
-  'What auth strategy for our API?',
-  'Monorepo or polyrepo for 5 services?',
-  'Is GraphQL worth it for our team size?',
-  'How do we migrate from REST to gRPC?'
-];
-let _placeholderIndex = 0;
-let _placeholderTimer = null;
-const _placeholderInput = document.getElementById('demo-question');
-const _placeholderAnnouncer = document.getElementById('progress-announcer');
-
-function startPlaceholderCycle() {
-  if (_placeholderTimer) return;
-  _placeholderTimer = setInterval(() => {
-    _placeholderIndex = (_placeholderIndex + 1) % PLACEHOLDER_EXAMPLES.length;
-    _placeholderInput.placeholder = PLACEHOLDER_EXAMPLES[_placeholderIndex];
-    _placeholderInput.setAttribute('aria-label', 'Research question — example: ' + PLACEHOLDER_EXAMPLES[_placeholderIndex]);
-    if (_placeholderAnnouncer) _placeholderAnnouncer.textContent = 'Example: ' + PLACEHOLDER_EXAMPLES[_placeholderIndex];
-  }, 4000);
+// Show motion-toggle only on desktop
+if (!isMobileDevice) {
+  document.getElementById('motion-toggle').style.display = 'inline-flex';
 }
 
-function stopPlaceholderCycle() {
-  if (_placeholderTimer) { clearInterval(_placeholderTimer); _placeholderTimer = null; }
-}
-
-_placeholderInput.addEventListener('input', () => {
-  if (_placeholderInput.value.length > 0) stopPlaceholderCycle();
-});
-_placeholderInput.addEventListener('blur', () => {
-  if (_placeholderInput.value.length === 0) startPlaceholderCycle();
-});
-_placeholderInput.addEventListener('focus', function() {
-  setTimeout(() => this.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300);
-});
-
-// Start cycling after page load
-setTimeout(startPlaceholderCycle, 2000);
-
-// Input-first: only restore saved session on load, don't auto-load Track A
-requestAnimationFrame(() => {
-  const saved = loadSavedSession();
-  if (saved && saved.allClaims && saved.allClaims.length > 0) {
-    loadTrackA(); // restore previous session
+function addMessage(type, content) {
+  const div = document.createElement('div');
+  div.className = 'msg msg-' + type;
+  if (typeof content === 'string') {
+    div.innerHTML = content;
+  } else {
+    div.appendChild(content);
   }
-  // Otherwise: empty input with animated placeholder — user types first
+  chatArea.appendChild(div);
+  autoScroll();
+  return div;
+}
+
+function addThinking() {
+  const div = addMessage('ai', '<div class="thinking-dots"><span></span><span></span><span></span></div>');
+  div.id = 'thinkingMsg';
+  return div;
+}
+
+function removeThinking() {
+  const t = document.getElementById('thinkingMsg');
+  if (t) t.remove();
+}
+
+function autoScroll() {
+  const isNearBottom = chatArea.scrollHeight - chatArea.scrollTop - chatArea.clientHeight < 80;
+  if (isNearBottom) {
+    chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' });
+  }
+}
+
+function synthesizeSummary(claims, question) {
+  if (!claims || claims.length === 0) return 'No claims found for this query.';
+  const risks = claims.filter(function(c) { return c.type === 'risk'; });
+  const recs = claims.filter(function(c) { return c.type === 'recommendation'; });
+  const facts = claims.filter(function(c) { return c.type === 'factual'; });
+  const constraints = claims.filter(function(c) { return c.type === 'constraint'; });
+
+  var summary = 'Based on ' + claims.length + ' findings';
+  if (question) summary += ' about <strong>' + question.replace(/</g,'&lt;') + '</strong>';
+  summary += ':<br><br>';
+
+  if (constraints.length > 0) summary += constraints[0].text + '<br><br>';
+  if (facts.length > 0) summary += facts[0].text + '<br><br>';
+  if (risks.length > 0) summary += '<span style="color:#fbbf24">Risk:</span> ' + risks[0].text + '<br><br>';
+  if (recs.length > 0) summary += '<span style="color:#22c55e">Recommendation:</span> ' + recs[0].text;
+
+  return summary;
+}
+
+function renderClaimsToggle(claims) {
+  var wrapper = document.createElement('div');
+  var btn = document.createElement('button');
+  btn.className = 'claims-toggle';
+  btn.setAttribute('aria-expanded', 'false');
+  btn.textContent = 'View ' + claims.length + ' claims';
+
+  var panel = document.createElement('div');
+  panel.className = 'claims-panel';
+  var inner = document.createElement('div');
+  inner.className = 'claims-panel-inner';
+
+  claims.forEach(function(c) {
+    var row = document.createElement('div');
+    row.className = 'claim-row';
+    row.innerHTML = '<span class="badge badge-' + c.type + '">' + c.type + '</span><span>' + (c.text || '') + '</span>';
+    inner.appendChild(row);
+  });
+
+  panel.appendChild(inner);
+
+  btn.addEventListener('click', function() {
+    var expanded = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!expanded));
+    panel.classList.toggle('open');
+    btn.textContent = expanded ? 'View ' + claims.length + ' claims' : 'Hide claims';
+  });
+
+  wrapper.appendChild(btn);
+  wrapper.appendChild(panel);
+  return wrapper;
+}
+
+function showCompileButton() {
+  // Only show once
+  if (document.getElementById('compileMsgBtn')) return;
+  if (window._allClaims.length < 3) return;
+  var compileMsg = addMessage('system', '<button class="compile-msg-btn" id="compileMsgBtn">wheat compile &rarr; verdict</button>');
+  document.getElementById('compileMsgBtn').addEventListener('click', runCompile);
+}
+
+// Send button + input wiring
+chatInput.addEventListener('input', function() {
+  sendBtn.disabled = chatInput.value.trim().length === 0;
 });
 
-document.getElementById('newSprint').addEventListener('click', () => {
-  resetExploreState();
-  clearSession();
-  const area = document.getElementById('claimsArea');
-  area.innerHTML = '';
-  area.classList.add('empty');
-  document.getElementById('passLines').innerHTML = '';
-  document.getElementById('verdictArea').innerHTML = '';
-  document.getElementById('compileStatus').textContent = '';
-  document.getElementById('compilerOutput').classList.remove('expanded');
-  document.getElementById('compileBtn').disabled = true;
-  document.getElementById('compileRow').style.display = 'none';
-  document.getElementById('newSprint').style.display = 'none';
-  const qi = document.getElementById('demo-question');
-  qi.value = '';
-  qi.disabled = false;
-  qi.placeholder = PLACEHOLDER_EXAMPLES[0];
-  qi.focus();
-  startPlaceholderCycle();
+sendBtn.addEventListener('click', function() {
+  chatInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+});
+
+// iOS keyboard fix
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', function() {
+    var kbOffset = window.innerHeight - window.visualViewport.height;
+    document.documentElement.style.setProperty('--kb-offset', Math.max(0, kbOffset) + 'px');
+  });
+}
+
+// Input-first: only restore saved session on load
+requestAnimationFrame(function() {
+  var saved = loadSavedSession();
+  if (saved && saved.allClaims && saved.allClaims.length > 0) {
+    restoreSession(saved);
+  }
 });
 
 // Install button — copy command
@@ -1143,15 +1079,6 @@ function templateFallback(query) {
 function loadDemo(demo, opts) {
   opts = opts || {};
   const accumulate = opts.accumulate || false;
-  const qEl = document.getElementById('demo-question');
-
-  // Only overwrite input when explicitly requested via setQuestion (defaults to true)
-  if (opts.setQuestion !== false) {
-    qEl.value = demo.question;
-  }
-
-  const area = document.getElementById('claimsArea');
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   if (accumulate) {
     // Re-assign IDs in app code based on _nextClaimIndex
@@ -1166,52 +1093,32 @@ function loadDemo(demo, opts) {
     window._turnCount++;
     window._conversationHistory.push({
       turn: window._turnCount,
-      question: demo.question || qEl.value.trim(),
+      question: demo.question || chatInput.value.trim(),
       source: opts.cascadeLayer || 'unknown'
-    });
-
-    // Re-render ALL claims
-    area.innerHTML = '';
-    area.classList.remove('empty');
-    window._allClaims.forEach(function(claim, i) {
-      const card = createClaimCard(claim);
-      card.style.animationDelay = (i * 0.12) + 's';
-      if (!reducedMotion) {
-        card.classList.add('drifting');
-        card.style.animationDelay = (i * 0.12) + 's, ' + (i * 7) + 's';
-      }
-      addClaimCard(area, card);
     });
 
     // Update _liveClaims to the full accumulated set
     window._liveClaims = window._allClaims;
 
-    // Show turn counter
-    renderTurnCounter();
+    // Render as chat: remove thinking, show AI summary + claims toggle
+    removeThinking();
+    var summary = synthesizeSummary(reIdClaims, demo.question || chatInput.value.trim());
+    var aiMsg = addMessage('ai', summary);
+    aiMsg.appendChild(renderClaimsToggle(reIdClaims));
+
+    // Show compile button as system message after 3+ claims
+    showCompileButton();
 
     // Save session to localStorage
     saveSession();
   } else {
-    // Original behavior: replace all
-    area.innerHTML = '';
-    area.classList.remove('empty');
-
     window._liveClaims = demo.claims;
 
-    demo.claims.forEach(function(claim, i) {
-      const card = createClaimCard(claim);
-      card.style.animationDelay = (i * 0.12) + 's';
-      if (!reducedMotion) {
-        card.classList.add('drifting');
-        card.style.animationDelay = (i * 0.12) + 's, ' + (i * 7) + 's';
-      }
-      addClaimCard(area, card);
-    });
+    removeThinking();
+    var summary2 = synthesizeSummary(demo.claims, demo.question);
+    var aiMsg2 = addMessage('ai', summary2);
+    aiMsg2.appendChild(renderClaimsToggle(demo.claims));
   }
-
-  document.getElementById('compileBtn').disabled = false;
-  document.getElementById('compileRow').style.display = 'flex';
-  document.getElementById('newSprint').style.display = 'block';
 
   // Debug cascade panel
   if (opts.cascadeLayer !== undefined) {
@@ -1220,7 +1127,7 @@ function loadDemo(demo, opts) {
 }
 
 function buildHandoffDeepLink() {
-  const question = (document.getElementById('demo-question') || {}).value || TRACK_A_QUESTION;
+  const question = (document.getElementById('chatInput') || {}).value || TRACK_A_QUESTION;
   const claimCount = (window._allClaims || []).length || (window._liveClaims || []).length;
   const prompt = 'I explored a research question in the grainulator.app demo and want to continue with the full wheat plugin.\n\nQuestion: ' + question.trim() + '\nClaims so far: ' + claimCount + '\n\nPlease install the wheat plugin (/plugin install grainulator) and continue this research sprint.';
   return 'claude-cli://open?q=' + encodeURIComponent(prompt.substring(0, 1300));
@@ -1238,54 +1145,10 @@ function handleNudgeHandoff(e) {
 }
 
 function renderTurnCounter() {
-  const existing = document.getElementById('turnCounter');
-  if (existing) existing.remove();
-  // Remove old nudges/banners
-  const oldNudge = document.getElementById('handoffNudge');
-  if (oldNudge) oldNudge.remove();
-  const oldBanner = document.getElementById('handoffBanner');
-  if (oldBanner) oldBanner.remove();
-
-  if (window._turnCount < 1) return;
-  const claimTotal = (window._allClaims || []).length;
-  const counter = document.createElement('div');
-  counter.id = 'turnCounter';
-  counter.className = 'turn-counter';
-  if (window._turnCount === 1) {
-    counter.innerHTML = claimTotal + ' claims gathered \u2014 <strong>ask another question</strong> to explore deeper, or hit <strong>wheat compile</strong> below';
-  } else {
-    counter.innerHTML = claimTotal + ' claims across ' + window._turnCount + ' questions \u2014 ask more or compile \u2193';
-  }
-  const area = document.getElementById('claimsArea');
-  area.parentNode.insertBefore(counter, area.nextSibling);
-
-  // Rx10: Turn 3 nudge
+  // In chat UI, turn tracking is implicit in the conversation flow.
+  // Show handoff nudge as a system message at turn 3
   if (window._turnCount === 3) {
-    const nudge = document.createElement('div');
-    nudge.id = 'handoffNudge';
-    nudge.className = 'handoff-nudge';
-    nudge.innerHTML = 'Want deeper research? <a href="#" id="nudge-handoff">Continue in Claude Code \u2192</a>';
-    counter.parentNode.insertBefore(nudge, counter.nextSibling);
-    document.getElementById('nudge-handoff').addEventListener('click', handleNudgeHandoff);
-  }
-
-  // Rx10: Turn 5 banner
-  if (window._turnCount >= 5) {
-    const claimCount = (window._allClaims || []).length;
-    const banner = document.createElement('div');
-    banner.id = 'handoffBanner';
-    banner.className = 'handoff-banner';
-    banner.innerHTML = '<p>You\'ve explored ' + window._turnCount + ' questions. For multi-source evidence and production-grade sprints:</p><div class="handoff-section" style="justify-content:center;margin-top:0;padding-top:0;border-top:none"><button class="handoff-primary" id="banner-deeplink" type="button">Open in Claude Code</button><button class="handoff-secondary" id="banner-clipboard" type="button">Copy to clipboard</button></div>';
-    area.parentNode.insertBefore(banner, area);
-
-    document.getElementById('banner-deeplink').addEventListener('click', handleNudgeHandoff);
-    document.getElementById('banner-clipboard').addEventListener('click', function() {
-      window._trackEvent?.('handoff_click', { type: 'clipboard' });
-      const question = (document.getElementById('demo-question') || {}).value || TRACK_A_QUESTION;
-      const claimSummaries = (window._allClaims || []).slice(0, 10).map(function(c) { return '- [' + c.type + '] ' + c.text; }).join('\n');
-      const prompt = 'I explored a research question in the grainulator.app demo and want to continue with the full wheat plugin.\n\nQuestion: ' + question.trim() + '\nClaims so far: ' + claimCount + '\n\nClaim summaries:\n' + claimSummaries + '\n\nPlease install the wheat plugin (/plugin install grainulator) and continue this research sprint.';
-      navigator.clipboard.writeText(prompt).then(function() { showToast('prompt copied to clipboard.'); }).catch(function() { showToast('copy failed'); });
-    });
+    addMessage('system', 'Want deeper research? <a href="#" onclick="handleNudgeHandoff(event);return false;" style="color:#8df6ff">Continue in Claude Code</a>');
   }
 }
 
@@ -1332,70 +1195,31 @@ function restoreSession(session) {
   window._turnCount = session.turnCount || 0;
   window._nextClaimIndex = session.nextClaimIndex || (window._allClaims.length + 1);
   window._liveClaims = window._allClaims.length > 0 ? window._allClaims : null;
-  // Re-render claims
-  const area = document.getElementById('claimsArea');
-  area.innerHTML = '';
+
   if (window._allClaims.length > 0) {
-    area.classList.remove('empty');
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    window._allClaims.forEach(function(claim, i) {
-      const card = createClaimCard(claim);
-      if (!reducedMotion) {
-        card.classList.add('drifting');
-        card.style.animationDelay = '0s, ' + (i * 7) + 's';
-      }
-      card.style.opacity = '1';
-      card.style.transform = 'translateY(0)';
-      addClaimCard(area, card);
-    });
-    document.getElementById('compileBtn').disabled = false;
-  document.getElementById('compileRow').style.display = 'flex';
-  document.getElementById('newSprint').style.display = 'block';
-    renderTurnCounter();
+    // Render restored claims as a single AI message with toggle
+    addMessage('system', 'Restored session: ' + window._allClaims.length + ' claims across ' + (window._turnCount || 1) + ' questions');
+    var aiMsg = addMessage('ai', synthesizeSummary(window._allClaims, (session.conversationHistory && session.conversationHistory.length > 0) ? session.conversationHistory[session.conversationHistory.length - 1].question : ''));
+    aiMsg.appendChild(renderClaimsToggle(window._allClaims));
+    showCompileButton();
   }
 
-  // Set question to last conversation entry
+  // Set input to last conversation entry
   if (session.conversationHistory && session.conversationHistory.length > 0) {
-    const last = session.conversationHistory[session.conversationHistory.length - 1];
-    document.getElementById('demo-question').value = last.question || '';
+    var last = session.conversationHistory[session.conversationHistory.length - 1];
+    chatInput.value = last.question || '';
+    sendBtn.disabled = !chatInput.value.trim();
   }
 }
 
 function loadTrackA() {
   // Check for saved session first
-  const saved = loadSavedSession();
+  var saved = loadSavedSession();
   if (saved && saved.allClaims && saved.allClaims.length > 0) {
-    // Offer resume link instead of loading Track A
     restoreSession(saved);
-    const modelStatusEl = document.getElementById('model-status');
-    if (modelStatusEl && !modelStatusEl.querySelector('.resume-session')) {
-      const resumeLink = document.createElement('div');
-      resumeLink.className = 'resume-session';
-      resumeLink.textContent = 'Resume previous session? (' + saved.allClaims.length + ' claims, ' + (saved.turnCount || 0) + ' turns)';
-      resumeLink.addEventListener('click', function() {
-        restoreSession(saved);
-        resumeLink.remove();
-      });
-      const dismissLink = document.createElement('div');
-      dismissLink.className = 'resume-session';
-      dismissLink.style.opacity = '0.3';
-      dismissLink.textContent = 'Start fresh';
-      dismissLink.addEventListener('click', function() {
-        clearSession();
-        resetExploreState();
-        window._liveClaims = null;
-        loadDemo({ question: TRACK_A_QUESTION, claims: TRACK_A_CLAIMS }, { cascadeLayer: 'default', score: null, timing: 0, accumulate: true, setQuestion: true });
-        resumeLink.remove();
-        dismissLink.remove();
-      });
-      modelStatusEl.appendChild(resumeLink);
-      modelStatusEl.appendChild(dismissLink);
-    }
     return;
   }
-  // No saved session — load Track A with accumulation
-  resetExploreState();
-  loadDemo({ question: TRACK_A_QUESTION, claims: TRACK_A_CLAIMS }, { cascadeLayer: 'default', score: null, timing: 0, accumulate: true, setQuestion: true });
+  // No saved session — chat UI starts empty, waiting for user input
 }
 
 function resetExploreState() {
@@ -1409,45 +1233,9 @@ function resetExploreState() {
   if (counter) counter.remove();
 }
 
-function createClaimCard(claim) {
-  const card = document.createElement('div');
-  card.className = 'claim-card glass';
-  card.setAttribute('aria-label', `Claim: ${claim.id} — ${claim.type} — ${claim.text.slice(0, 80)}`);
-
-  const header = document.createElement('div');
-  header.className = 'claim-header';
-
-  const idEl = document.createElement('span');
-  idEl.className = 'claim-id';
-  idEl.textContent = claim.id;
-
-  const typeEl = document.createElement('span');
-  typeEl.className = `claim-type type-${claim.type}`;
-  typeEl.textContent = claim.type;
-
-  const tierEl = document.createElement('span');
-  tierEl.className = `evidence-tier tier-${claim.tier}`;
-  tierEl.textContent = claim.tier;
-
-  header.appendChild(idEl);
-  header.appendChild(typeEl);
-  header.appendChild(tierEl);
-
-  const text = document.createElement('div');
-  text.className = 'claim-text claim-title';
-  text.textContent = claim.text;
-
-  card.appendChild(header);
-  card.appendChild(text);
-  return card;
-}
-
-// A11y: announce new claim cards
-function addClaimCard(container, cardEl) {
-  container.appendChild(cardEl);
-  const announcer = document.getElementById('compiler-announcer');
-  if (announcer) announcer.textContent = 'New claim: ' + (cardEl.querySelector('.claim-title')?.textContent || 'generated');
-}
+// Legacy stubs — claim cards replaced by chat bubble rendering
+function createClaimCard(claim) { return document.createElement('div'); }
+function addClaimCard(container, cardEl) { }
 
 
 // ===================================================================
@@ -1592,22 +1380,25 @@ function generateGapClaims(chipText, question) {
   return claims;
 }
 
-const compileBtn = document.getElementById('compileBtn');
-const compileStatus = document.getElementById('compileStatus');
-const compilerOutput = document.getElementById('compilerOutput');
-const passLines = document.getElementById('passLines');
-const verdictArea = document.getElementById('verdictArea');
-
-compileBtn.addEventListener('click', async () => {
+async function runCompile() {
   window._trackEvent?.('compile_run');
-  compileBtn.disabled = true;
-  compileStatus.textContent = 'compiling...';
-  passLines.innerHTML = '';
-  verdictArea.innerHTML = '';
-  compilerOutput.classList.add('expanded');
+
+  // Disable the compile button
+  var compileMsgBtn = document.getElementById('compileMsgBtn');
+  if (compileMsgBtn) compileMsgBtn.disabled = true;
+
+  // Add thinking indicator
+  addThinking();
 
   const claims = currentClaims();
   const results = [];
+
+  // Create a pass-lines container in an AI message
+  removeThinking();
+  var compileContainer = document.createElement('div');
+  var passLinesDiv = document.createElement('div');
+  compileContainer.appendChild(passLinesDiv);
+  var compileMsg = addMessage('ai', compileContainer);
 
   for (let i = 0; i < COMPILER_PASSES.length; i++) {
     const pass = COMPILER_PASSES[i];
@@ -1619,24 +1410,24 @@ compileBtn.addEventListener('click', async () => {
     const line = document.createElement('div');
     line.className = 'pass-line';
     const icon = result.ok ? '<span class="check">&#10003;</span>' : '<span class="fail">&#10007;</span>';
-    line.innerHTML = `${icon}pass ${i+1}/7: ${pass.name}`;
-    passLines.appendChild(line);
-    requestAnimationFrame(() => line.classList.add('done'));
-    // A11y: announce compiler pass
-    announceCompilerPass(`Pass ${i+1} of 7: ${pass.name} — ${result.ok ? 'passed' : 'issue detected'}`);
+    line.innerHTML = icon + 'pass ' + (i+1) + '/7: ' + pass.name;
+    passLinesDiv.appendChild(line);
+    requestAnimationFrame(function() { line.classList.add('done'); });
+    announceCompilerPass('Pass ' + (i+1) + ' of 7: ' + pass.name + ' — ' + (result.ok ? 'passed' : 'issue detected'));
+    autoScroll();
   }
 
   await delay(300);
 
-  // Render verdict (BUG #1: XSS-safe DOM construction)
+  // Render verdict
   const final = results[6];
-  const vCard = document.createElement('div');
-  vCard.className = 'verdict-card glass';
+  var verdictDiv = document.createElement('div');
+  verdictDiv.style.marginTop = '0.8rem';
 
   const vTitle = document.createElement('div');
   vTitle.className = 'verdict-title';
   vTitle.textContent = 'compilation complete \u2014 confidence: ' + final.score + '/100';
-  vCard.appendChild(vTitle);
+  verdictDiv.appendChild(vTitle);
 
   const vBody = document.createElement('div');
   vBody.className = 'verdict-body';
@@ -1649,32 +1440,27 @@ compileBtn.addEventListener('click', async () => {
     tensionLabel.className = 'conflict-flag';
     tensionLabel.textContent = 'Tensions detected:';
     vBody.appendChild(tensionLabel);
-    final.tensions.forEach(t => {
+    final.tensions.forEach(function(t) {
       vBody.appendChild(document.createElement('br'));
-      const tensionLine = document.createTextNode('\u00A0\u00A0' + t.pair[0] + ' vs ' + t.pair[1] + ' (shared: ' + t.overlap.join(', ') + ')');
-      vBody.appendChild(tensionLine);
+      vBody.appendChild(document.createTextNode('\u00A0\u00A0' + t.pair[0] + ' vs ' + t.pair[1] + ' (shared: ' + t.overlap.join(', ') + ')'));
     });
   }
   if (final.missing.length > 0) {
     vBody.appendChild(document.createElement('br'));
     vBody.appendChild(document.createElement('br'));
-    const missingLine = document.createTextNode('Missing claim types: ' + final.missing.join(', '));
-    vBody.appendChild(missingLine);
+    vBody.appendChild(document.createTextNode('Missing claim types: ' + final.missing.join(', ')));
   }
-  vCard.appendChild(vBody);
-  verdictArea.appendChild(vCard);
+  verdictDiv.appendChild(vBody);
+  compileContainer.appendChild(verdictDiv);
 
-  // Rx9: Handoff UI — dual buttons (deep link + clipboard)
-  const question = document.getElementById('demo-question').value.trim() || TRACK_A_QUESTION;
+  // Handoff UI
+  const question = chatInput.value.trim() || TRACK_A_QUESTION;
   const claimCount = claims.length;
   const topicSet = new Set();
   claims.forEach(function(c) { (c.text || '').split(/\s+/).slice(0, 3).forEach(function(w) { if (w.length > 4) topicSet.add(w.toLowerCase()); }); });
   const topicCount = Math.max(1, Math.min(topicSet.size, claimCount));
 
-  // Build handoff prompt (short version for deep link, under 1300 chars)
   const shortPrompt = 'I explored a research question in the grainulator.app demo and want to continue with the full wheat plugin.\n\nQuestion: ' + question + '\nKey findings: ' + final.verdict + '\nClaims so far: ' + claimCount + ' claims across ' + topicCount + ' topics\nConfidence: ' + final.score + '/100\n\nPlease install the wheat plugin (/plugin install grainulator) and continue this research sprint.';
-
-  // Long version for clipboard (includes claim summaries)
   const claimSummaries = claims.slice(0, 10).map(function(c) { return '- [' + c.type + '] ' + c.text; }).join('\n');
   const longPrompt = 'I explored a research question in the grainulator.app demo and want to continue with the full wheat plugin.\n\nQuestion: ' + question + '\nKey findings: ' + final.verdict + '\nClaims so far: ' + claimCount + ' claims across ' + topicCount + ' topics\nConfidence: ' + final.score + '/100\n\nClaim summaries:\n' + claimSummaries + '\n\nPlease install the wheat plugin (/plugin install grainulator) and continue this research sprint.';
 
@@ -1684,48 +1470,40 @@ compileBtn.addEventListener('click', async () => {
   handoff.innerHTML = '<button class="handoff-primary" id="handoff-deeplink" type="button">Open in Claude Code</button>' +
     (hasShare ? '<button class="handoff-secondary" id="handoff-share" type="button">Share</button>' : '') +
     '<button class="handoff-secondary" id="handoff-clipboard" type="button">Copy to clipboard</button>';
-  verdictArea.appendChild(handoff);
+  compileContainer.appendChild(handoff);
 
-  // Handoff: deep link to Claude Code
   document.getElementById('handoff-deeplink').addEventListener('click', function() {
     window._trackEvent?.('handoff_click', { type: 'deeplink' });
-    const encoded = encodeURIComponent(shortPrompt.substring(0, 1300));
-    const url = 'claude-cli://open?q=' + encoded;
     try {
-      window.location.href = url;
-      // If no handler, after a delay show fallback toast
+      window.location.href = 'claude-cli://open?q=' + encodeURIComponent(shortPrompt.substring(0, 1300));
       setTimeout(function() { showToast('Install Claude Code first \u2014 claude.ai/download'); }, 1500);
     } catch(e) {
       showToast('Install Claude Code first \u2014 claude.ai/download');
     }
   });
 
-  // Handoff: Web Share API (w2513)
-  const shareBtn = document.getElementById('handoff-share');
+  var shareBtn = document.getElementById('handoff-share');
   if (shareBtn) {
     shareBtn.addEventListener('click', function() {
       window._trackEvent?.('handoff_click', { type: 'share' });
       navigator.share({ title: 'Grainulator Sprint', text: shortPrompt, url: location.origin + '/#q=' + encodeURIComponent(question) })
-        .then(() => showToast('shared.'))
-        .catch((err) => { if (err.name !== 'AbortError') showToast('share failed'); });
+        .then(function() { showToast('shared.'); })
+        .catch(function(err) { if (err.name !== 'AbortError') showToast('share failed'); });
     });
   }
 
-  // Handoff: copy to clipboard
   document.getElementById('handoff-clipboard').addEventListener('click', function() {
     window._trackEvent?.('handoff_click', { type: 'clipboard' });
     navigator.clipboard.writeText(longPrompt).then(function() { showToast('prompt copied to clipboard.'); }).catch(function() { showToast('copy failed'); });
   });
 
-  compileStatus.textContent = `done. score: ${final.score}/100`;
-  compileBtn.disabled = false;
   announceState('Compilation complete. Confidence score: ' + final.score + ' out of 100.');
 
-  // Rx7: save compilation result
+  // Save compilation result
   window._compilationResult = { score: final.score, verdict: final.verdict, tensions: final.tensions, missing: final.missing };
   saveSession();
 
-  // ── Rx8: Follow-up chips based on compiler gaps ──
+  // Follow-up chips
   const chips = generateFollowUpChips(results);
   if (chips.length > 0) {
     const chipsContainer = document.createElement('div');
@@ -1736,55 +1514,25 @@ compileBtn.addEventListener('click', async () => {
       btn.type = 'button';
       btn.textContent = chipText;
       btn.addEventListener('click', function() {
-        // Reset compiler output
-        compilerOutput.classList.remove('expanded');
-        passLines.innerHTML = '';
-        verdictArea.innerHTML = '';
-        compileStatus.textContent = '';
-        // Generate gap-specific claims via template injection (not LLM)
-        const question = qInput.value.trim() || 'research question';
-        const gapClaims = generateGapClaims(chipText, question);
+        // Add user message for the chip click
+        addMessage('user', chipText);
+        addThinking();
+        var gapQuestion = chatInput.value.trim() || 'research question';
+        var gapClaims = generateGapClaims(chipText, gapQuestion);
         if (gapClaims.length > 0) {
-          loadDemo({ question: question, claims: gapClaims }, { accumulate: true, setQuestion: false });
-          compileBtn.disabled = false;
+          loadDemo({ question: gapQuestion, claims: gapClaims }, { accumulate: true, setQuestion: false });
           showToast('added ' + gapClaims.length + ' claims for: ' + chipText);
         }
-        qInput.focus();
+        chatInput.focus();
       });
       chipsContainer.appendChild(btn);
     });
-    verdictArea.appendChild(chipsContainer);
+    compileContainer.appendChild(chipsContainer);
   }
 
-  // UX: "Ask another question" prompt for conversational feel
-  const againRow = document.createElement('div');
-  againRow.style.cssText = 'text-align:center;margin-top:1rem;';
-  const againBtn = document.createElement('button');
-  againBtn.className = 'handoff-btn';
-  againBtn.type = 'button';
-  againBtn.textContent = 'Ask another question';
-  againBtn.style.cssText = 'opacity:0.5;border-color:rgba(141,246,255,0.1);font-size:0.6rem;';
-  againBtn.addEventListener('click', () => {
-    // Rx7: clear accumulated state + localStorage
-    resetExploreState();
-    clearSession();
-    qInput.value = '';
-    qInput.focus();
-    compilerOutput.classList.remove('expanded');
-    passLines.innerHTML = '';
-    verdictArea.innerHTML = '';
-    compileStatus.textContent = '';
-    compileBtn.disabled = true;
-    const area = document.getElementById('claimsArea');
-    area.innerHTML = '';
-    area.classList.add('empty');
-  });
-  againRow.appendChild(againBtn);
-  verdictArea.appendChild(againRow);
-
-  // Keep question input visible and focused for refinement
-  qInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-});
+  autoScroll();
+  chatInput.focus();
+}
 
 function currentClaims() {
   // Rx7: return accumulated claims if any, else live claims, else Track A
@@ -1801,9 +1549,7 @@ function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 // Input starts disabled. Model downloads silently. Input enables when ready.
 if (CASCADE_OFF) { /* skip */ } else {
 (async function initWebLLM() {
-  const privacyNote = document.getElementById('privacyNote');
-  const noWebGPUNote = document.getElementById('noWebGPUNote');
-  const modelStatusEl = document.getElementById('model-status');
+  const modelStatusEl = document.getElementById('modelStatus');
   const cancelBtn = document.getElementById('cancel-btn');
 
   // Tier detection — skip network speed (Chrome caps at 10Mbps)
@@ -1834,13 +1580,12 @@ if (CASCADE_OFF) { /* skip */ } else {
 
   // No WebGPU — ERROR state, Track A only
   if (tier === 'minimal') {
-    noWebGPUNote.removeAttribute('hidden');
-    if (modelStatusEl) modelStatusEl.textContent = '';
+    if (modelStatusEl) modelStatusEl.textContent = 'Demo requires WebGPU (Chrome/Edge desktop).';
     return;
   }
 
   // WebGPU available — start in NOT_READY state, download model silently
-  privacyNote.removeAttribute('hidden');
+  // Privacy note shown in model status
   const modelId = tier === 'full'
     ? 'SmolLM2-1.7B-Instruct-q4f16_1-MLC'
     : 'SmolLM2-360M-Instruct-q4f16_1-MLC';
@@ -1886,20 +1631,19 @@ if (CASCADE_OFF) { /* skip */ } else {
     window._webllmReady = true;
     cancelBtn.style.display = 'none';
     if (motionBtn) { motionBtn.style.left = ''; motionBtn.style.right = '16px'; }
-    const qi = document.getElementById('demo-question');
-    qi.placeholder = 'Ask anything (local AI ready)...';
+    chatInput.placeholder = 'Ask anything (local AI ready)...';
     if (modelStatusEl) {
-      modelStatusEl.innerHTML = '\u26A1 local ai ready';
-      setTimeout(() => { if (modelStatusEl) modelStatusEl.style.opacity = '0'; }, 3000);
+      modelStatusEl.textContent = '\u26A1 local ai ready';
+      setTimeout(function() { if (modelStatusEl) modelStatusEl.style.opacity = '0'; }, 3000);
     }
     announceState('Live inference ready');
-    // Input-first: always available, focus only if document is visible
-    if (!document.hidden) qi.focus();
+    if (!document.hidden) chatInput.focus();
     // If a question was queued from #q= hash, auto-submit
     if (window._queuedQuestion) {
-      qi.value = window._queuedQuestion;
+      chatInput.value = window._queuedQuestion;
+      sendBtn.disabled = false;
       window._queuedQuestion = null;
-      qi.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+      chatInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
     }
 
   } catch (err) {
@@ -1917,7 +1661,7 @@ if (CASCADE_OFF) { /* skip */ } else {
 // ===================================================================
 // LIVE INFERENCE (Track B) — when model is ready + user submits question
 // ===================================================================
-const qInput = document.getElementById('demo-question');
+const qInput = chatInput;
 
 qInput.addEventListener('keydown', async (e) => {
   if (e.key !== 'Enter') return;
@@ -1932,15 +1676,9 @@ qInput.addEventListener('keydown', async (e) => {
     inferenceRunning = true;
     qInput.disabled = true;
 
-    const area = document.getElementById('claimsArea');
-    // Rx7: don't wipe existing claims — append a loading indicator
-    const inferenceLoader = document.createElement('div');
-    inferenceLoader.id = 'inference-loader';
-    inferenceLoader.style.cssText = 'text-align:center;font-family:monospace;font-size:0.7rem;color:rgba(141,246,255,0.6);padding:1rem';
-    inferenceLoader.innerHTML = '<span style="display:inline-block;animation:pulse-teal 1.5s ease-in-out infinite">\u26A1</span> running local inference\u2026';
-    area.appendChild(inferenceLoader);
-    area.classList.remove('empty');
-    compileBtn.disabled = true;
+    // Show user message + thinking dots
+    addMessage('user', question);
+    addThinking();
 
     try {
       const systemPrompt = `You are a research analyst. Given a question, produce exactly 5 research claims as a JSON array. Each claim has: id (r001-r005), type (one of: constraint, factual, risk, recommendation, estimate), tier (one of: stated, web, documented, tested), text (one sentence, factual). Return ONLY valid JSON array, no markdown.`;
@@ -1960,10 +1698,6 @@ qInput.addEventListener('keydown', async (e) => {
 
       const claims = JSON.parse(jsonMatch[0]);
 
-      // Remove inference loader
-      const loader = document.getElementById('inference-loader');
-      if (loader) loader.remove();
-
       // Rx7: accumulate claims instead of replacing
       loadDemo({ question: question, claims: claims }, {
         cascadeLayer: 1,
@@ -1975,8 +1709,7 @@ qInput.addEventListener('keydown', async (e) => {
 
     } catch (err) {
       console.warn('Inference failed:', err);
-      const loader2 = document.getElementById('inference-loader');
-      if (loader2) loader2.remove();
+      removeThinking();
       // Fall through to Layer 0
       fallbackToCascade(question, cascadeStart);
     } finally {
@@ -1987,6 +1720,8 @@ qInput.addEventListener('keydown', async (e) => {
   }
 
   // ── Layer 0: Fuzzy match / template fallback (model not ready) ──
+  addMessage('user', question);
+  addThinking();
   fallbackToCascade(question, cascadeStart);
 });
 
@@ -2087,10 +1822,10 @@ if ('serviceWorker' in navigator) {
     btn.setAttribute('aria-pressed', String(motionTogglePaused));
     if (motionTogglePaused) {
       pauseShader();
-      btn.textContent = 'Enable motion';
+      btn.textContent = 'play';
       btn.setAttribute('aria-label', 'Enable background animation');
     } else {
-      btn.textContent = 'Pause motion';
+      btn.textContent = 'pause';
       btn.setAttribute('aria-label', 'Pause background animation');
       resumeShader();
     }
@@ -2100,7 +1835,7 @@ if ('serviceWorker' in navigator) {
   if (prefersReduced) {
     motionTogglePaused = true;
     btn.setAttribute('aria-pressed', 'true');
-    btn.textContent = 'Enable motion';
+    btn.textContent = 'play';
     btn.setAttribute('aria-label', 'Enable background animation');
     pauseShader();
   }
@@ -2119,13 +1854,11 @@ document.addEventListener('visibilitychange', () => {
     const q = decodeURIComponent(hash.slice(3));
     if (q) {
       window._queuedQuestion = q;
-      const qi = document.getElementById('demo-question');
-      qi.value = q;
-      stopPlaceholderCycle();
+      chatInput.value = q;
+      sendBtn.disabled = false;
     }
   } else if (hash === '#demo') {
-    const qi = document.getElementById('demo-question');
-    setTimeout(() => qi.scrollIntoView({ block: 'center', behavior: 'smooth' }), 500);
+    setTimeout(function() { chatInput.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 500);
     history.replaceState(null, '', '/');
   }
 })();
@@ -2174,9 +1907,7 @@ function updateCascadeDebug(opts) {
     set(v) {
       _val = v;
       if (v) {
-        const qi = document.getElementById('demo-question');
-        stopPlaceholderCycle();
-        qi.placeholder = 'Ask anything (local AI ready)...';
+        chatInput.placeholder = 'Ask anything (local AI ready)...';
       }
     },
     configurable: true,

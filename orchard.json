@@ -1,52 +1,44 @@
 {
   "sprints": [
     {
-      "path": "./.wheat/sprints/input-first-surgery",
-      "question": "Phase 1 — HTML/CSS Surgery: Delete demo-layer overlay (lines 136-138, 235, 339, 358-393), delete attract mode FSM (lines 2161-2370), delete enterDemo/exitDemo (lines 836-880), delete hash route handler (lines 2108-2118). Move #demo-question input into .ui landing. Move #claimsArea, .compile-row, .compiler-output into landing flow. Update .ui to position:fixed;inset:0;overflow-y:auto;padding-top:35vh. Claim cards use background:rgba(0,0,0,0.85) not backdrop-filter. Per cal026, cal027, w2540, x572, x580.",
+      "path": "./.wheat/sprints/chat-ux-plan",
+      "question": "Step 1 — Plan: Research mobile-first chat UX patterns (ChatGPT, Perplexity, Claude.ai), mobile input best practices, progressive disclosure, loader transitions. Produce prescriptive spec.",
       "depends_on": [],
       "assigned_to": "claude",
       "deadline": "2026-04-05",
       "status": "done"
     },
     {
-      "path": "./.wheat/sprints/input-first-js-rewire",
-      "question": "Phase 2 — JS Rewire (completed in Phase 1 surgery)",
-      "depends_on": ["./.wheat/sprints/input-first-surgery"],
+      "path": "./.wheat/sprints/chat-ux-witness",
+      "question": "Step 2 — Witness: 11 claims (w2600-w2610). Critical: dvh≠keyboard, hover:none fails Samsung.",
+      "depends_on": ["./.wheat/sprints/chat-ux-plan"],
       "assigned_to": "claude",
       "deadline": "2026-04-05",
       "status": "done"
     },
     {
-      "path": "./.wheat/sprints/input-first-mobile",
-      "question": "Phase 3 — Mobile + PWA (completed in Phase 1 surgery)",
-      "depends_on": ["./.wheat/sprints/input-first-surgery"],
+      "path": "./.wheat/sprints/chat-ux-prescribe",
+      "question": "Step 3 — Prescribe: cal040 final prescription with all witness corrections.",
+      "depends_on": ["./.wheat/sprints/chat-ux-witness"],
       "assigned_to": "claude",
       "deadline": "2026-04-05",
       "status": "done"
     },
     {
-      "path": "./.wheat/sprints/input-first-a11y",
-      "question": "Phase 4 — Accessibility (completed in Phase 1 surgery)",
-      "depends_on": ["./.wheat/sprints/input-first-js-rewire"],
+      "path": "./.wheat/sprints/chat-ux-implement",
+      "question": "Step 4 — Implement: Built mobile-first chat interface. 2170→1919 lines.",
+      "depends_on": ["./.wheat/sprints/chat-ux-prescribe"],
       "assigned_to": "claude",
       "deadline": "2026-04-06",
       "status": "done"
     },
     {
-      "path": "./.wheat/sprints/input-first-handoff",
-      "question": "Phase 5 — Handoff + Share (Web Share API added)",
-      "depends_on": ["./.wheat/sprints/input-first-js-rewire"],
+      "path": "./.wheat/sprints/chat-ux-verify",
+      "question": "Step 5 — Witness implementation: Verify the built code matches the prescription. Check mobile Safari, desktop Chrome, PWA, reduced-motion, keyboard nav.",
+      "depends_on": ["./.wheat/sprints/chat-ux-implement"],
       "assigned_to": "claude",
       "deadline": "2026-04-06",
-      "status": "done"
-    },
-    {
-      "path": "./.wheat/sprints/input-first-viewport-polish",
-      "question": "Phase 6 — Viewport Polish (completed)",
-      "depends_on": ["./.wheat/sprints/input-first-mobile", "./.wheat/sprints/input-first-a11y"],
-      "assigned_to": "claude",
-      "deadline": "2026-04-06",
-      "status": "done"
+      "status": "pending"
     }
   ],
   "settings": {
