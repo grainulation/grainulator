@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demo Redesign Brief -- grainulator.app</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #0a0a0f; color: #e0e0e0; line-height: 1.6; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+.skip-nav { position: absolute; top: -100%; left: 1rem; z-index: 1000; padding: 0.75rem 1.5rem; background: #4ecdc4; color: #0a0a0f; font-weight: 700; text-decoration: none; border-radius: 0 0 0.5rem 0.5rem; transition: top 0.2s; }
+.skip-nav:focus { top: 0; }
+:focus-visible { outline: 2px solid #4ecdc4; outline-offset: 2px; }
+:focus:not(:focus-visible) { outline: none; }
+.layout { display: flex; min-height: 100vh; }
+.sidebar { width: 260px; flex-shrink: 0; padding: 2rem 1rem; background: #111118; border-right: 1px solid #222; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.sidebar a { display: block; padding: 0.375rem 0.75rem; color: #999; text-decoration: none; border-radius: 0.25rem; font-size: 0.875rem; }
+.sidebar a:hover, .sidebar a:focus-visible { color: #fff; background: #1a1a24; }
+.sidebar a[aria-current="page"] { color: #4ecdc4; background: rgba(78,205,196,0.1); font-weight: 600; }
+.sidebar .nav-group { margin-bottom: 1.5rem; }
+.sidebar .nav-group-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: #555; padding: 0 0.75rem; margin-bottom: 0.25rem; }
+.content { flex: 1; padding: 3rem 4rem; max-width: 900px; }
+h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; color: #fff; }
+h2 { font-size: 1.5rem; font-weight: 700; margin: 2.5rem 0 1rem; color: #fff; }
+h3 { font-size: 1.125rem; font-weight: 600; margin: 1.5rem 0 0.75rem; color: #e0e0e0; }
+.gradient-text { background: linear-gradient(135deg, #4ecdc4, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+@supports not (-webkit-background-clip: text) { .gradient-text { color: #4ecdc4; } }
+.subtitle { font-size: 1rem; color: #888; margin-bottom: 2rem; }
+p, ul, ol { margin-bottom: 1rem; }
+ul, ol { padding-left: 1.5rem; }
+li { margin-bottom: 0.35rem; }
+code { font-family: 'JetBrains Mono', 'SF Mono', monospace; font-size: 0.85em; background: rgba(255,255,255,0.06); padding: 0.15em 0.4em; border-radius: 3px; }
+pre { background: rgba(255,255,255,0.04); border: 1px solid #222; border-radius: 6px; padding: 1rem; overflow-x: auto; margin: 1rem 0; font-size: 0.85rem; line-height: 1.5; }
+pre code { background: none; padding: 0; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+caption { text-align: left; font-weight: 600; margin-bottom: 0.5rem; color: #ccc; }
+th, td { padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid #222; }
+th { font-weight: 600; color: #aaa; font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.sev { display: inline-flex; align-items: center; gap: 0.25rem; font-weight: 600; font-size: 0.8125rem; }
+.sev::before { content: ''; display: inline-block; width: 0.5rem; height: 0.5rem; border-radius: 50%; }
+.sev--critical::before { background: #ff6b6b; }
+.sev--high::before { background: #f5a623; }
+.sev--medium::before { background: #4ecdc4; }
+.sev--low::before { background: #666; }
+.tag { display: inline-block; padding: 0.125rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 600; }
+.tag--tested { background: rgba(78,205,196,0.2); color: #4ecdc4; }
+.tag--risk { background: rgba(255,107,107,0.2); color: #ff6b6b; }
+.tag--built { background: rgba(167,139,250,0.2); color: #a78bfa; }
+.tag--cut { background: rgba(100,100,100,0.2); color: #888; }
+.rx-box { background: rgba(78,205,196,0.06); border: 1px solid rgba(78,205,196,0.2); border-radius: 8px; padding: 1.25rem 1.5rem; margin: 1rem 0; }
+.rx-box h3 { margin-top: 0; color: #4ecdc4; }
+.rx-box code { color: #4ecdc4; }
+.phase-tag { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 3px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 0.5rem; }
+.phase-0 { background: rgba(78,205,196,0.2); color: #4ecdc4; }
+.phase-1 { background: rgba(167,139,250,0.2); color: #a78bfa; }
+.phase-2 { background: rgba(251,191,36,0.2); color: #fbbf24; }
+@media (max-width: 900px) {
+  .layout { flex-direction: column; }
+  .sidebar { display: none; }
+  .sidebar-mobile { display: block; padding: 1rem; background: #111118; border-bottom: 1px solid #222; }
+  .sidebar-mobile summary { font-weight: 600; color: #4ecdc4; cursor: pointer; padding: 0.5rem 0; }
+  .sidebar-mobile a { display: block; padding: 0.25rem 0.75rem; color: #999; text-decoration: none; font-size: 0.875rem; }
+  .content { padding: 2rem 1.5rem; }
+}
+@media (min-width: 901px) { .sidebar-mobile { display: none; } }
+</style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-nav">Skip to content</a>
+
+<header role="banner" class="sr-only">
+  <h1>grainulator.app Demo Redesign Brief</h1>
+</header>
+
+<!-- Mobile sidebar -->
+<details class="sidebar-mobile">
+  <summary>Table of contents</summary>
+  <nav aria-label="Table of contents">
+    <a href="#executive-summary">Executive Summary</a>
+    <a href="#prescriptions">Prescriptions</a>
+    <a href="#phase-0">Phase 0: Video + Bugs</a>
+    <a href="#phase-1">Phase 1: MVP Demo</a>
+    <a href="#phase-2">Phase 2: Enhancement</a>
+    <a href="#cut-list">Cut List</a>
+    <a href="#risks">Risks &amp; Mitigations</a>
+    <a href="#dependencies">External Dependencies</a>
+    <a href="#evidence">Evidence Appendix</a>
+  </nav>
+</details>
+
+<div class="layout">
+
+<!-- Desktop sidebar -->
+<aside class="sidebar" aria-label="Table of contents">
+  <nav aria-label="Table of contents">
+    <div class="nav-group">
+      <div class="nav-group-title">Brief</div>
+      <a href="#executive-summary">Executive Summary</a>
+      <a href="#prescriptions">Prescriptions</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Phases</div>
+      <a href="#phase-0">Phase 0: Video + Bugs</a>
+      <a href="#phase-1">Phase 1: MVP Demo</a>
+      <a href="#phase-2">Phase 2: Enhancement</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Analysis</div>
+      <a href="#cut-list">Cut List</a>
+      <a href="#risks">Risks &amp; Mitigations</a>
+      <a href="#dependencies">Dependencies</a>
+      <a href="#evidence">Evidence Appendix</a>
+    </div>
+  </nav>
+</aside>
+
+<main id="main-content" role="main" class="content">
+
+  <h1><span class="gradient-text">grainulator.app</span> Demo Redesign</h1>
+  <p class="subtitle">Decision brief from 8 research sprints, 4 witness passes, 1 blind-spot, 1 calibration &mdash; 150+ claims</p>
+
+  <!-- ============================================================ -->
+  <h2 id="executive-summary">Executive Summary</h2>
+
+  <p>The current grainulator.app demo is broken: the try button appears before the model loads (CSS <code>display:inline-flex</code> overrides HTML <code>hidden</code>), claim cards are invisible (<code>.drifting</code> animation replaces <code>card-in</code>), and pressing Enter rebuilds identical DOM. These are now fixed in production.</p>
+
+  <p>The deeper problem: downloading a 200-900MB model for a single-use demo is bad UX. Users wait 30-120 seconds, get one response from a 360M-parameter model, and can&rsquo;t continue a conversation. The real product (wheat in Claude Code) runs on Opus and is vastly more capable.</p>
+
+  <p><strong>The recommendation:</strong> Ship in 3 phases. Phase 0 (1 day) ships a video of the real product + fixes remaining bugs. Phase 1 (6.5 days) builds the cascade + conversational demo + handoff. Phase 2 (2 days) adds engagement polish. Critical gate on Day 2: if SmolLM2-360M + XGrammar produces embarrassing output, pivot to library-only conversational (fuzzy-matched pre-generated demos for all turns).</p>
+
+  <!-- ============================================================ -->
+  <h2 id="prescriptions">Prescriptions</h2>
+
+  <table>
+    <caption>Prescription summary &mdash; ordered by phase and priority</caption>
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Prescription</th>
+        <th scope="col">Phase</th>
+        <th scope="col">Effort</th>
+        <th scope="col">Evidence</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Rx1</td><td>Record 30s video of real wheat sprint in Claude Code</td><td><span class="phase-tag phase-0">Phase 0</span></td><td>1 hour</td><td>x018, x019</td></tr>
+      <tr><td>Rx2</td><td>Zero-dep analytics: GitHub traffic cron + IndexedDB local engagement + npm installs</td><td><span class="phase-tag phase-0">Phase 0</span></td><td>2 hours</td><td>x010, r5208</td></tr>
+      <tr><td>Rx3</td><td>Fix mobile: show install button, add copy-to-clipboard</td><td><span class="phase-tag phase-0">Phase 0</span></td><td>2 hours</td><td>x008, x009</td></tr>
+      <tr><td>Rx4</td><td>Add <code>?cascade=off</code> feature flag for rollback</td><td><span class="phase-tag phase-0">Phase 0</span></td><td>1 hour</td><td>x014</td></tr>
+      <tr><td>Rx5</td><td>Pre-generated demo library (50 questions, fuzzy matched)</td><td><span class="phase-tag phase-1">Phase 1</span></td><td>1.5 days</td><td>r5201, r5202, r5218</td></tr>
+      <tr><td>Rx6</td><td>3-layer zero-dep cascade (Library &rarr; Cached model &rarr; Downloading)</td><td><span class="phase-tag phase-1">Phase 1</span></td><td>1 day</td><td>r5211, r5212, r5217</td></tr>
+      <tr><td>Rx7</td><td>Build 2-3 EXPLORE turns with XGrammar JSON enforcement</td><td><span class="phase-tag phase-1">Phase 1</span></td><td>2 days</td><td>w2102, w2105, w2108</td></tr>
+      <tr><td>Rx8</td><td>Add follow-up chips after compile (gap-driven)</td><td><span class="phase-tag phase-1">Phase 1</span></td><td>0.5 day</td><td>Sprint 2 UX claims</td></tr>
+      <tr><td>Rx9</td><td>Build dual handoff: <code>claude-cli://</code> + clipboard</td><td><span class="phase-tag phase-1">Phase 1</span></td><td>1 day</td><td>w2200-w2215</td></tr>
+      <tr><td>Rx10</td><td>Handoff nudge at turn 3, prominent at turn 5</td><td><span class="phase-tag phase-1">Phase 1</span></td><td>0.5 day</td><td>Sprint 2 turn limits</td></tr>
+      <tr><td>Rx11</td><td>Border glow peek (8px margin on overlay)</td><td><span class="phase-tag phase-2">Phase 2</span></td><td>0.5 day</td><td>w2403</td></tr>
+      <tr><td>Rx12</td><td>Amplify shader blob growth for visible progress</td><td><span class="phase-tag phase-2">Phase 2</span></td><td>15 min</td><td>w2406</td></tr>
+      <tr><td>Rx13</td><td>3 pre-generated demo topics with varied compiler behavior</td><td><span class="phase-tag phase-2">Phase 2</span></td><td>1 day</td><td>w2404, x012</td></tr>
+      <tr><td>Rx14</td><td>Attract mode auto-play (1 rotation + replay)</td><td><span class="phase-tag phase-2">Phase 2</span></td><td>1 day</td><td>w2400, w2408</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ============================================================ -->
+  <h2 id="phase-0">Phase 0: Video + Bugs <span class="tag tag--tested">Tested: 1 day</span></h2>
+
+  <p>Ship before any cascade work. Highest ROI per hour.</p>
+
+  <div class="rx-box">
+    <h3>Rx1 &mdash; Record a video of the real product</h3>
+    <p>A 30-second screen recording of a real wheat sprint running in Claude Code. Shows the ACTUAL product: multi-agent research, real evidence tiers, compiler catching conflicts, decision brief output. Embed above the fold on the landing page. The video creates desire; the demo creates familiarity.</p>
+    <p><strong>Why:</strong> Interactive demos convert 1.8x better than passive content (x019), but only when the demo is good. A 360M model demo risks showing users a crippled version of the product. The video shows the real thing.</p>
+    <p><strong>Format:</strong> MP4, autoplay muted, loop. Dark terminal aesthetic matches the lava lamp. No narration needed &mdash; the terminal output speaks for itself.</p>
+  </div>
+
+  <div class="rx-box">
+    <h3>Rx2 &mdash; Zero-dep analytics</h3>
+    <p>No third-party analytics service. Measure via proxy signals + local engagement:</p>
+    <ul>
+      <li><strong>Aggregate:</strong> GitHub Pages traffic (Settings &rarr; Traffic, 14-day window). Archive weekly via GitHub Actions cron job.</li>
+      <li><strong>Install conversion:</strong> npm weekly download count via <code>npm-stat.com</code> &mdash; the real conversion metric. Public, no code needed.</li>
+      <li><strong>Repo engagement:</strong> Stars, forks, watchers via GitHub API.</li>
+      <li><strong>Per-user engagement:</strong> IndexedDB in service worker tracks session events (demo_enter, question_submitted, compile_run, handoff_click). Powers gamification badges locally. Data stays on device &mdash; zero privacy concern.</li>
+    </ul>
+    <p><strong>Why:</strong> Aggregate analytics is unknowable on static hosting without a third party. Accept this. The true conversion metric is npm installs/week, which is public.</p>
+  </div>
+
+  <div class="rx-box">
+    <h3>Rx3 &mdash; Fix mobile</h3>
+    <p>Currently: install button hidden on mobile (line 214: <code>.cta-install{display:none}</code>). 40-60% of traffic sees no conversion path (x008, x009).</p>
+    <p><strong>Fix:</strong> Show install button on mobile. Change it to copy <code>/plugin install grainulator</code> to clipboard with a toast &ldquo;copied &mdash; paste in Claude Code.&rdquo; The &ldquo;explore demo&rdquo; button loads Track A (works without WebGPU).</p>
+  </div>
+
+  <div class="rx-box">
+    <h3>Rx4 &mdash; Feature flag</h3>
+    <p>Add <code>?cascade=off</code> URL parameter. When present, skip all cascade logic and use the current simple demo (Track A + local model if available). This is the rollback path if anything breaks post-deploy (x014).</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 id="phase-1">Phase 1: MVP Demo <span class="tag tag--built">Built: 6.5 days</span></h2>
+
+  <p>The core redesign. Gate on Day 2: test XGrammar + 360M output quality.</p>
+
+  <div class="rx-box">
+    <h3>Rx5 &mdash; Pre-generated demo library (50 questions)</h3>
+    <p>Build-time artifact: 50 pre-computed question-answer sets generated by Claude. Each is a complete sprint: question, 4-6 typed claims with varied evidence tiers, compiler output with tensions/warnings. ~20KB gzipped. Zero runtime dependencies.</p>
+    <p><strong>Build step:</strong> Run a Claude script that generates 50 diverse engineering research questions and full claim sets. Store as JSON inlined in the HTML or loaded from a <code>demos.json</code> file cached by the service worker. Topics cover: architecture decisions, technology comparisons, scaling strategies, migration planning, build-vs-buy, team processes.</p>
+    <p><strong>Fuzzy matcher:</strong> ~150 lines of custom Levenshtein + word overlap scoring. When user types a question and hits Enter (before model is ready), match to closest library entry in &lt;1ms. Display the matched demo instantly.</p>
+    <p><strong>Template fallback:</strong> For questions matching nothing: extract keywords, fill placeholder claims labeled honestly as &ldquo;Placeholder claims &mdash; local model loading for live analysis...&rdquo;</p>
+    <p><strong>Why zero-dep?</strong> No CORS, no privacy disclosure, no free tier limits, no outage risk. Claude-quality demos at build time &gt; small-model inference at runtime. Everything runs locally.</p>
+  </div>
+
+  <div class="rx-box">
+    <h3>Rx6 &mdash; 3-layer zero-dep cascade</h3>
+    <p>All layers run locally. No external calls at inference time:</p>
+    <pre><code>Layer 0 (INSTANT, 0ms):  Fuzzy-matched pre-generated demo from library
+Layer 1 (CACHED, ~2s):   WebLLM model from Cache Storage (return visitors)
+Layer 2 (DOWNLOADING):   WebLLM model via CDN in background (first visit)</code></pre>
+    <p><strong>On Enter:</strong> If local model is ready (Layer 1), run live inference. Otherwise, fuzzy-match to the pre-generated library (Layer 0). The user gets an instant, Claude-quality response while the model downloads silently.</p>
+    <p><strong>Return visitor fast path:</strong> Check Cache Storage on page load. If model is cached, skip pre-generated content &mdash; enable input immediately. Return visits feel like opening a local app (~2s).</p>
+    <p><strong>Context continuity:</strong> When the model finishes downloading mid-session, inject accumulated claims into the system prompt. The local model adds to (never replaces) library-generated claims.</p>
+    <p><strong>Debug panel:</strong> <code>?debug=cascade</code> shows which layer was selected, match score, and allows force-selecting layers.</p>
+  </div>
+
+  <div class="rx-box">
+    <h3>Rx7 &mdash; 2-3 EXPLORE turns with XGrammar</h3>
+    <p><strong>Critical gate:</strong> On Day 2, test SmolLM2-360M with XGrammar constrained decoding. If output is embarrassing, pivot to library-only conversational (fuzzy-matched pre-generated demos for all interactions).</p>
+    <p><strong>Turn model:</strong> EXPLORE only. No CHALLENGE turns (360M cannot self-critique, MT-Bench 3.66/10 &mdash; w2103). Each turn adds 3-5 claims to the accumulated set. Claim IDs generated in application code, not model output (w2110: GSM8K 7.4%).</p>
+    <p><strong>Context window:</strong> System prompt (~500 tokens) + compressed claim summary (~50 tokens/claim, max 15 claims = 750 tokens) + last 2 user turns. Total: ~2000 tokens of context, leaving ~6000 for generation.</p>
+    <p><strong>XGrammar enforcement:</strong> Use WebLLM&rsquo;s JSON mode with schema constraint. Do NOT fall back to regex parsing. If generation fails, show error toast, don&rsquo;t silently load Track A (x022).</p>
+    <p><strong>State:</strong> Persist in <code>localStorage</code>: claims[], conversationHistory[], compilationResult. 7-day expiry. Resume/fresh prompt on return.</p>
+  </div>
+
+  <div class="rx-box">
+    <h3>Rx8 &mdash; Follow-up chips after compile</h3>
+    <p>After compilation, the verdict surfaces gaps. Convert gaps into clickable action chips:</p>
+    <ul>
+      <li>Missing risk claims &rarr; chip: &ldquo;Find risks&rdquo;</li>
+      <li>Type monoculture &rarr; chip: &ldquo;Diversify evidence&rdquo;</li>
+      <li>Low evidence tier &rarr; chip: &ldquo;Strengthen evidence&rdquo;</li>
+      <li>Tension detected &rarr; chip: &ldquo;Resolve tension between r001 and r003&rdquo;</li>
+    </ul>
+    <p>Clicking a chip submits it as the next EXPLORE turn. This drives the conversation forward without requiring the user to know what to ask.</p>
+  </div>
+
+  <div class="rx-box">
+    <h3>Rx9 &mdash; Dual handoff</h3>
+    <p>After compile or at turn 3+, show two handoff buttons:</p>
+    <ol>
+      <li><strong>&ldquo;Open in Claude Code&rdquo;</strong> &mdash; Constructs <code>claude-cli://open?q=&lt;prompt&gt;</code> with a human-readable summary (~1300 chars). The prompt includes the question, a 2-3 sentence summary of findings, and an instruction to continue with wheat. Fits within Windows 2K limit (w2202).</li>
+      <li><strong>&ldquo;Copy command&rdquo;</strong> &mdash; Copies a longer <code>claude "..."</code> command to clipboard via Clipboard API. Universal fallback, no install requirement.</li>
+    </ol>
+    <p><strong>Not installed?</strong> If <code>claude-cli://</code> fails (no Claude Code installed), show a toast: &ldquo;Install Claude Code first&rdquo; with link, then the clipboard fallback.</p>
+    <p><strong>Payload format:</strong></p>
+    <pre><code>I explored a research question in the grainulator.app demo
+and want to continue with the full wheat plugin.
+
+Question: [user's question]
+Key findings: [2-3 sentence summary from compilation verdict]
+Claims so far: [count] claims across [topics] topics
+Confidence: [score]/100
+
+Please install the wheat plugin (/plugin install grainulator)
+and continue this research sprint from where I left off.</code></pre>
+  </div>
+
+  <div class="rx-box">
+    <h3>Rx10 &mdash; Handoff nudges</h3>
+    <p><strong>Turn 3:</strong> Subtle link below input: &ldquo;Want deeper research? Continue in Claude Code &rarr;&rdquo;</p>
+    <p><strong>Turn 5:</strong> Prominent banner: &ldquo;You&rsquo;ve explored 5 questions. For multi-source evidence, deeper analysis, and production-grade sprints, open in Claude Code.&rdquo; With both handoff buttons.</p>
+    <p><strong>Never block:</strong> User can always keep going. The nudge is a suggestion, not a wall.</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 id="phase-2">Phase 2: Engagement Polish <span class="tag tag--built">Built: 2 days</span></h2>
+
+  <p>Only after Phase 1 is validated via analytics.</p>
+
+  <div class="rx-box">
+    <h3>Rx11 &mdash; Border glow peek</h3>
+    <p>Replace fully opaque demo overlay with one that has 8px margin and border-radius:12px, letting the lava lamp shader bleed through the edges. The shader IS the brand &mdash; hiding it completely in the demo loses the visual signature (w2403).</p>
+    <p><strong>During model download:</strong> Use CSS-only fallback gradient (already in codebase, lines 266-279) for the border peek. Resume real shader only after model is cached. Avoids GPU contention (x020).</p>
+  </div>
+
+  <div class="rx-box">
+    <h3>Rx12 &mdash; Shader blob progress</h3>
+    <p>The shader already has <code>u_preloadProgress</code> uniform driving blob growth (line 512-516). Currently growFactor is 0.3 &mdash; amplify to 0.6 for visible expansion through the border glow peek. 15-minute change (w2406).</p>
+  </div>
+
+  <div class="rx-box">
+    <h3>Rx13 &mdash; 3 demo topics</h3>
+    <p>Replace single PostgreSQL vs CockroachDB demo with 3 topics that showcase different compiler behaviors:</p>
+    <ol>
+      <li><strong>Tension demo:</strong> &ldquo;Monorepo vs polyrepo for a 50-engineer org&rdquo; &mdash; r001 (recommendation: monorepo) conflicts with r003 (risk: CI bottleneck). Compiler flags tension.</li>
+      <li><strong>Happy path:</strong> &ldquo;When to adopt AI coding assistants&rdquo; &mdash; balanced claim types, good evidence, clean compile at 75/100.</li>
+      <li><strong>Type monoculture:</strong> &ldquo;Build vs buy for authentication&rdquo; &mdash; all recommendations, no risks. Compiler flags monoculture warning at 55/100.</li>
+    </ol>
+    <p><strong>Selection:</strong> Topics that are universally relevant to the target audience (engineers), inherently controversial (tension detection), and time-sensitive (motivation for real research) &mdash; x013.</p>
+  </div>
+
+  <div class="rx-box">
+    <h3>Rx14 &mdash; Attract mode auto-play</h3>
+    <p>While model downloads, the demo performs itself: question types in (3s) &rarr; claims animate one by one (3s) &rarr; compiler runs 7 passes (3s) &rarr; verdict appears (2s) = ~11s per cycle. Plays 1 full rotation across all 3 topics (~33s), then stops with a &ldquo;Replay&rdquo; button (w2408).</p>
+    <p><strong>Interrupt:</strong> Clicking the input or any claim card during auto-play pauses it immediately. If model is ready, input enables.</p>
+    <p><strong>Reduced motion:</strong> Skip typewriter and card animations. Show claims as static list. Respect <code>prefers-reduced-motion</code> (w2412).</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 id="cut-list">Cut List</h2>
+
+  <table>
+    <caption>Features explicitly cut from scope</caption>
+    <thead>
+      <tr>
+        <th scope="col">Feature</th>
+        <th scope="col">Reason</th>
+        <th scope="col">Evidence</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Chrome Built-in AI (Gemini Nano)</td><td>&lt;5% of users have it. Enterprise blocks it. Origin trial only. <span class="tag tag--cut">Cut: premature</span></td><td>w2301</td></tr>
+      <tr><td>1.7B background upgrade</td><td><code>engine.reload()</code> destroys current model. Peak VRAM 2.15GB during swap. Unsafe. <span class="tag tag--cut">Cut: risky</span></td><td>w2309</td></tr>
+      <tr><td>CHALLENGE turns</td><td>360M cannot self-critique. MT-Bench 3.66/10. Would show users a bad experience. <span class="tag tag--cut">Cut: impossible</span></td><td>w2103</td></tr>
+      <tr><td>Sprint timeline sidebar</td><td>Scope creep. Not needed for 2-3 turns. <span class="tag tag--cut">Cut: scope</span></td><td>cal017</td></tr>
+      <tr><td><code>wheat init --from</code></td><td>CLI work item, not demo work. Ship separately. <span class="tag tag--cut">Cut: separate</span></td><td>w2207</td></tr>
+      <tr><td>Interactive tooltips</td><td>Auto-play/tooltip interaction is a UX minefield. Phase 3. <span class="tag tag--cut">Cut: phase 3</span></td><td>w2405</td></tr>
+      <tr><td>Easter eggs</td><td>Phase 3 delight. Not needed for conversion. <span class="tag tag--cut">Cut: phase 3</span></td><td>r012</td></tr>
+      <tr><td>Scripted choose-your-own-adventure</td><td>3 pre-generated demos are simpler and sufficient. <span class="tag tag--cut">Cut: overcomplicated</span></td><td>Sprint 2 r017</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ============================================================ -->
+  <h2 id="risks">Risks &amp; Mitigations</h2>
+
+  <table>
+    <caption>Risk register</caption>
+    <thead>
+      <tr>
+        <th scope="col">Risk</th>
+        <th scope="col">Severity</th>
+        <th scope="col">Mitigation</th>
+        <th scope="col">Evidence</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>360M model output is embarrassing</td>
+        <td><span class="sev sev--critical">Critical</span></td>
+        <td>Day 2 gate. If XGrammar + 360M fails, pivot to library-only (fuzzy-matched pre-generated demos for all interactions)</td>
+        <td>w2101, w2108</td>
+      </tr>
+      <tr>
+        <td>Pre-generated library gaps</td>
+        <td><span class="sev sev--medium">Medium</span></td>
+        <td>50 questions covers most engineering topics. Template fallback for unmatched queries. Expand library over time based on IndexedDB question logs.</td>
+        <td>r5201, r5203</td>
+      </tr>
+      <tr>
+        <td>Privacy: user questions stored locally</td>
+        <td><span class="sev sev--low">Low</span></td>
+        <td>All processing is local. IndexedDB stores session data on device only. No data leaves the browser.</td>
+        <td>r5208</td>
+      </tr>
+      <tr>
+        <td>claude-cli:// not installed</td>
+        <td><span class="sev sev--medium">Medium</span></td>
+        <td>Clipboard fallback is always available. Toast: &ldquo;Install Claude Code first.&rdquo;</td>
+        <td>w2206</td>
+      </tr>
+      <tr>
+        <td>Corporate firewalls block CDN</td>
+        <td><span class="sev sev--medium">Medium</span></td>
+        <td>Pre-generated library works offline. WebLLM CDN is the only external fetch (already accepted dependency).</td>
+        <td>x026</td>
+      </tr>
+      <tr>
+        <td>Tab close loses download progress</td>
+        <td><span class="sev sev--medium">Medium</span></td>
+        <td>Accept it. Cache API makes return visits instant. Not worth Background Fetch complexity for MVP.</td>
+        <td>x005</td>
+      </tr>
+      <tr>
+        <td>GPU contention: shader + model download</td>
+        <td><span class="sev sev--low">Low</span></td>
+        <td>Download is network-bound, not GPU-bound. Contention only during inference (shader already paused).</td>
+        <td>w2401, w2402</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ============================================================ -->
+  <h2 id="dependencies">External Dependencies</h2>
+
+  <table>
+    <caption>Components that must be built outside index.html</caption>
+    <thead>
+      <tr>
+        <th scope="col">Component</th>
+        <th scope="col">Phase</th>
+        <th scope="col">Effort</th>
+        <th scope="col">Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Pre-generated demo library (50 question sets via Claude)</td><td><span class="phase-tag phase-1">Phase 1</span></td><td>4-6 hrs</td><td>Claude script to generate diverse claim sets, inline as JSON in HTML</td></tr>
+      <tr><td>Video recording of real wheat sprint</td><td><span class="phase-tag phase-0">Phase 0</span></td><td>1 hour</td><td>Screen recording, MP4, dark terminal, no narration</td></tr>
+      <tr><td>GitHub Actions cron for traffic archival</td><td><span class="phase-tag phase-0">Phase 0</span></td><td>30 min</td><td>Weekly cron to archive GitHub Pages traffic stats via API</td></tr>
+      <tr><td><code>wheat init --from</code> CLI command</td><td>Future</td><td>0.5 day</td><td>Separate PR to wheat repo. Not blocking demo.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ============================================================ -->
+  <h2 id="evidence">Evidence Appendix</h2>
+
+  <h3>Sprint sources</h3>
+  <table>
+    <caption>Research sprints and claim counts</caption>
+    <thead>
+      <tr>
+        <th scope="col">Sprint</th>
+        <th scope="col">Claims</th>
+        <th scope="col">Witnesses</th>
+        <th scope="col">Confidence</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>demo-model-loading</td><td>26 research + 13 witness</td><td>4-layer cascade feasibility</td><td>4/5</td></tr>
+      <tr><td>demo-conversational</td><td>29 research + 12 witness</td><td>360M quality, XGrammar, context window</td><td>3/5</td></tr>
+      <tr><td>demo-to-claude-handoff</td><td>29 research + 16 witness</td><td>claude-cli:// deep link, URL limits, platform support</td><td>4/5</td></tr>
+      <tr><td>demo-engagement</td><td>19 research + 14 witness</td><td>Attract mode, GPU contention, border glow</td><td>3/5</td></tr>
+      <tr><td>demo-blind-spots</td><td>28 blind-spot</td><td>&mdash;</td><td>&mdash;</td></tr>
+      <tr><td>calibration</td><td>11 calibration</td><td>&mdash;</td><td>&mdash;</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Key external sources</h3>
+  <ul>
+    <li>SmolLM2 paper (arXiv:2502.02737) &mdash; function calling removed from 360M training</li>
+    <li>Chrome Prompt API docs &mdash; Gemini Nano availability and constraints</li>
+    <li>pre-generated librarys AI pricing &mdash; 10K neurons/day free tier</li>
+    <li>Claude Code changelog &mdash; claude-cli:// deep link support (v2.1.73+)</li>
+    <li>WebLLM docs &mdash; XGrammar JSON mode, Cache Storage, model registry</li>
+    <li>WebGPU browser support (caniuse.com) &mdash; 70-77% global coverage</li>
+    <li>MDN Clipboard API &mdash; Baseline Newly Available status</li>
+  </ul>
+
+</main>
+</div>
+
+<footer role="contentinfo" style="text-align:center;padding:2rem;font-size:0.75rem;color:#555;border-top:1px solid #222;">
+  Generated by wheat &middot; 150+ claims across 8 sprints &middot; 2026-04-04
+</footer>
+
+<script>
+// Sidebar active link tracking via IntersectionObserver
+const sections = document.querySelectorAll('h2[id]');
+const navLinks = document.querySelectorAll('.sidebar a, .sidebar-mobile a');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(link => {
+        link.removeAttribute('aria-current');
+        if (link.getAttribute('href') === '#' + entry.target.id) {
+          link.setAttribute('aria-current', 'page');
+        }
+      });
+    }
+  });
+}, { rootMargin: '-20% 0px -80% 0px' });
+sections.forEach(section => observer.observe(section));
+</script>
+</body>
+</html>

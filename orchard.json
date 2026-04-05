@@ -1,0 +1,55 @@
+{
+  "sprints": [
+    {
+      "path": "./.wheat/sprints/build-phase0",
+      "question": "Phase 0: Ship video embed, zero-dep analytics (IndexedDB + GH traffic cron), mobile fix (show install button), feature flag (?cascade=off)",
+      "depends_on": [],
+      "assigned_to": "claude",
+      "deadline": "2026-04-04",
+      "status": "active"
+    },
+    {
+      "path": "./.wheat/sprints/build-demo-library",
+      "question": "Rx5: Generate 50 pre-computed question-answer demo sets with Claude, build custom fuzzy matcher (~150 LOC), template fallback for unmatched queries",
+      "depends_on": [],
+      "assigned_to": "claude",
+      "deadline": "2026-04-05",
+      "status": "active"
+    },
+    {
+      "path": "./.wheat/sprints/build-cascade",
+      "question": "Rx6: Implement 3-layer zero-dep cascade (Library instant → Cached model ~2s → Downloading background), return visitor fast path, debug panel",
+      "depends_on": ["./.wheat/sprints/build-demo-library"],
+      "assigned_to": "claude",
+      "deadline": "2026-04-05",
+      "status": "active"
+    },
+    {
+      "path": "./.wheat/sprints/build-conversational",
+      "question": "Rx7+Rx8: Build 2-3 EXPLORE turns with XGrammar JSON enforcement, follow-up chips after compile, claim accumulation, sliding window context. GATE: test 360M output quality on Day 2",
+      "depends_on": ["./.wheat/sprints/build-cascade"],
+      "assigned_to": "claude",
+      "deadline": "2026-04-06",
+      "status": "active"
+    },
+    {
+      "path": "./.wheat/sprints/build-handoff",
+      "question": "Rx9+Rx10: Dual handoff buttons (claude-cli:// deep link + clipboard copy), human-readable summary payload (~1300 chars), handoff nudge at turn 3, prominent at turn 5",
+      "depends_on": ["./.wheat/sprints/build-conversational"],
+      "assigned_to": "claude",
+      "deadline": "2026-04-06",
+      "status": "active"
+    },
+    {
+      "path": "./.wheat/sprints/build-engagement",
+      "question": "Rx11-14: Border glow peek (8px margin), shader blob progress amplification, 3 demo topics with varied compiler behavior, attract mode auto-play (1 rotation + replay)",
+      "depends_on": ["./.wheat/sprints/build-cascade"],
+      "assigned_to": "claude",
+      "deadline": "2026-04-07",
+      "status": "active"
+    }
+  ],
+  "settings": {
+    "sync_interval": "manual"
+  }
+}
