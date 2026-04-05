@@ -42,11 +42,11 @@
     },
     {
       "path": "./.wheat/sprints/input-first-viewport-polish",
-      "question": "Phase 6 — Viewport Polish: Apply remaining UI audit fixes — landscape overrides (issues 10-13), tablet breakpoint fix 768→767px (issue 14), 4K scaling (issues 20-21), hover/focus split with @media(hover:hover) (issue 25), cursor:text on claim-text (issue 26). Card box-shadow for visual separation from shader. Staggered compile reveal animation. Per x583, grainulator-app-ui-audit.md issues 10-27.",
+      "question": "Phase 6 — Viewport Polish (completed)",
       "depends_on": ["./.wheat/sprints/input-first-mobile", "./.wheat/sprints/input-first-a11y"],
       "assigned_to": "claude",
       "deadline": "2026-04-06",
-      "status": "pending"
+      "status": "done"
     }
   ],
   "settings": {
