@@ -113,14 +113,12 @@ canvas.active{opacity:1}
 /* Splash — big ghost shrinks into install button */
 .app-header{display:flex;align-items:center;justify-content:center;gap:0.8rem;padding:0.6rem 1rem;z-index:15;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);transition:all 0.6s cubic-bezier(0.4,0,0.2,1)}
 .app.chat-active .app-header{position:relative;top:auto;left:auto;transform:none;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.04)}
-.splash-logo{width:22px;height:22px;opacity:0.9;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(5.5);z-index:16;filter:drop-shadow(0 0 20px rgba(141,246,255,0.3))}
-.splash-logo.animating{animation:splash-shrink 1.6s cubic-bezier(0.4,0,0.2,1) forwards}
-.splash-logo.in-btn{position:static;transform:none;animation:none;filter:none;width:28px;height:28px}
-.app.chat-active .splash-logo.in-btn{width:20px;height:20px}
-@keyframes splash-shrink{
-  0%{transform:translate(-50%,-50%) scale(5.5);filter:drop-shadow(0 0 20px rgba(141,246,255,0.3))}
-  100%{transform:translate(-50%,-50%) scale(1);filter:drop-shadow(0 0 4px rgba(141,246,255,0.1))}
-}
+/* Splash: big centered ghost fades out, small ghost in button fades in */
+.splash-hero{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100px;height:100px;opacity:1;z-index:16;filter:drop-shadow(0 0 20px rgba(141,246,255,0.3));transition:opacity 0.8s ease}
+.splash-hero.fade{opacity:0}
+.header-btn img{width:28px;height:28px;opacity:0}
+.header-btn.revealed img{opacity:0.9;transition:opacity 0.5s ease}
+.app.chat-active .header-btn img{width:20px;height:20px}
 .header-btn{font-size:clamp(0.7rem,1.2vw,0.9rem);padding:0.5rem 1.2rem;height:auto;min-height:44px;color:rgba(141,246,255,0.7);border:1px solid transparent;border-radius:4px;background:none;cursor:pointer;font-family:inherit;transition:all 0.6s cubic-bezier(0.4,0,0.2,1);display:inline-flex;align-items:center;gap:0.6rem;text-decoration:none;white-space:nowrap;overflow:hidden}
 .app.chat-active .header-btn{font-size:0.6rem;padding:0.3rem 0.7rem;min-height:32px;gap:0.4rem}
 .header-btn.revealed{border-color:rgba(141,246,255,0.2)}
@@ -290,8 +288,8 @@ canvas.active{opacity:1}
 
 <div class="app" id="app">
   <header class="app-header">
-    <img src="glitchy.png" alt="Grainulator" class="splash-logo" id="splashLogo">
-    <a class="header-btn" id="ctaInstall" href="https://github.com/grainulation/grainulator" target="_blank" rel="noopener" aria-label="View on GitHub"><span class="btn-text">/plugin install grainulator</span></a>
+    <img src="glitchy.png" alt="Grainulator" class="splash-hero" id="splashHero">
+    <a class="header-btn" id="ctaInstall" href="https://github.com/grainulation/grainulator" target="_blank" rel="noopener" aria-label="View on GitHub"><img src="glitchy.png" alt="" width="28" height="28"><span class="btn-text">/plugin install grainulator</span></a>
     <button class="header-btn new-chat-btn" id="newChatBtn" type="button" aria-label="New chat"><span class="btn-text">new chat</span></button>
   </header>
 
@@ -354,18 +352,17 @@ let inferenceRunning = false;
 let uxState = 'LAVA_ONLY';
 let modelReady = false;
 
-// Splash: big ghost → shrink → snap into button (one fluid motion)
+// Splash: big ghost fades out, button with small ghost + text fades in
 (function runSplash() {
-  var logo = document.getElementById('splashLogo');
+  var hero = document.getElementById('splashHero');
   var installBtn = document.getElementById('ctaInstall');
-  // 1s: start the single shrink animation
-  setTimeout(function() { logo.classList.add('animating'); }, 1000);
-  // 2.6s: animation done → snap into button, reveal text
+  // 1.2s: fade out big ghost, reveal button simultaneously
   setTimeout(function() {
-    logo.classList.add('in-btn');
-    installBtn.insertBefore(logo, installBtn.firstChild);
+    hero.classList.add('fade');
     installBtn.classList.add('revealed');
-  }, 2600);
+  }, 1200);
+  // 2s: remove hero element entirely
+  setTimeout(function() { hero.remove(); }, 2000);
 })();
 
 function transitionTo(newState) {
