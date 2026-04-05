@@ -93,7 +93,7 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;overflow:hidden;background:#000;cursor:crosshair;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-html.demo-active{overflow:auto;overflow-x:hidden}
+/* html.demo-active removed — input-first, no overlay */
 canvas{position:fixed;inset:0;width:100%;height:100%;transition:opacity 0.6s ease}
 canvas.dimmed{opacity:0}
 
@@ -102,7 +102,7 @@ canvas.dimmed{opacity:0}
 .skip-link:focus{top:0}
 
 /* === LANDING PHASE === */
-.ui{position:fixed;bottom:6vh;left:50%;transform:translateX(-50%);z-index:10;text-align:center;opacity:0;animation:appear 1s ease 0.5s forwards;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;transition:opacity 0.4s ease,transform 0.5s cubic-bezier(0.4,0,0.2,1)}
+.ui{position:fixed;inset:0;z-index:10;text-align:center;opacity:0;animation:appear 1s ease 0.5s forwards;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;overflow-y:auto;overflow-x:hidden;padding:max(30vh, 180px) 1.5rem calc(4rem + env(safe-area-inset-bottom,0px)) 1.5rem;display:flex;flex-direction:column;align-items:center;gap:1rem;max-width:100%}
 .ui.hidden{display:none}
 .ui-logo{width:clamp(60px,15vw,120px);height:auto;margin-bottom:0;opacity:0.9;filter:drop-shadow(0 0 12px rgba(141,246,255,0.3))}
 .ui-title{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:clamp(0.7rem,1.5vw,0.9rem);font-weight:700;color:#8df6ff;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:0.6rem;user-select:text;text-shadow:0 0 7px #8df6ff,0 0 20px rgba(141,246,255,0.6),0 0 40px rgba(141,246,255,0.3),0 0 80px rgba(141,246,255,0.15)}
@@ -110,9 +110,7 @@ canvas.dimmed{opacity:0}
 .cta-row{display:flex;gap:0.8rem;justify-content:center;align-items:center;flex-wrap:wrap}
 .cta-btn{font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:clamp(0.65rem,1.2vw,0.8rem);padding:0.75rem 1.2rem;min-height:48px;border-radius:3px;transition:all 0.4s;display:inline-flex;align-items:center;text-decoration:none;cursor:pointer;border:none;background:none}
 
-.cta-try{color:#8df6ff;border:1px solid rgba(141,246,255,0.4);cursor:pointer}
-.cta-try:hover{box-shadow:0 0 30px rgba(141,246,255,0.25);text-shadow:0 0 7px #8df6ff}
-.cta-try:focus-visible{box-shadow:0 0 30px rgba(141,246,255,0.25);text-shadow:0 0 7px #8df6ff;outline:2px solid #8df6ff;outline-offset:2px}
+/* .cta-try removed — input-first, no explore button */
 
 .cta-install{color:#8df6ff;border:1px solid rgba(141,246,255,0.4);padding:0.9rem 1.5rem;font-size:clamp(0.7rem,1.3vw,0.85rem);font-weight:700;text-shadow:0 0 7px #8df6ff,0 0 20px rgba(141,246,255,0.3)}
 .cta-install:hover{color:#8df6ff;border-color:rgba(141,246,255,0.6);box-shadow:0 0 30px rgba(141,246,255,0.25);text-shadow:0 0 7px #8df6ff,0 0 20px rgba(141,246,255,0.4)}
@@ -132,25 +130,11 @@ canvas.dimmed{opacity:0}
 .site-footer a:hover,.site-footer a:focus-visible{color:rgba(255,255,255,0.65);outline:none}
 .site-footer span{color:rgba(255,255,255,0.2);font-size:0.6rem;margin:0 0.3rem}
 
-/* === DEMO PHASE === */
-.demo-layer{position:fixed;inset:0;z-index:5;pointer-events:none;opacity:0;transition:opacity 0.5s ease;overflow:hidden}
-.demo-layer::before{content:'';position:absolute;inset:0;background:#000;border-radius:12px}
-.demo-layer.active{opacity:1;pointer-events:auto;overflow-y:auto;z-index:20;inset:8px;border-radius:12px}
-
-
-/* Attract mode indicator */
-.attract-indicator{font-family:monospace;font-size:0.55rem;color:rgba(141,246,255,0.4);text-align:center;margin-bottom:0.5rem;animation:pulse-teal 3s ease-in-out infinite}
-.replay-demos-btn{font-family:monospace;font-size:0.65rem;color:rgba(141,246,255,0.5);background:none;border:1px solid rgba(141,246,255,0.15);padding:0.5rem 1rem;border-radius:4px;cursor:pointer;transition:all 0.3s;display:block;margin:1rem auto;min-height:44px}
-.replay-demos-btn:hover{color:#8df6ff;border-color:rgba(141,246,255,0.4)}
-.demo-ui{max-width:720px;margin:0 auto;padding:2rem 1.5rem calc(4rem + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:1.5rem;min-height:100dvh}
-
-.demo-header{display:flex;align-items:center;justify-content:space-between;padding:0.8rem 0}
-.demo-back{font-family:monospace;font-size:0.75rem;color:rgba(141,246,255,0.6);background:none;border:1px solid rgba(141,246,255,0.15);padding:0.4rem 0.8rem;border-radius:3px;cursor:pointer;transition:all 0.3s;min-height:44px}
-.demo-back:hover{color:#8df6ff;border-color:rgba(141,246,255,0.4)}
-.demo-title{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:0.75rem;font-weight:700;color:#8df6ff;letter-spacing:0.12em;text-transform:uppercase;text-shadow:0 0 7px #8df6ff}
+/* === INLINE DEMO (input-first) === */
 
 /* Glass panels */
-.glass{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:1.2rem;position:relative}
+.glass{background:rgba(0,0,0,0.85);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:1.2rem;position:relative}
+#inputPanel{width:100%;max-width:720px}
 
 /* Question input */
 .q-input{font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:max(1rem,16px);color:#fff;background:rgba(0,0,0,0.3);border:1px solid rgba(141,246,255,0.3);border-radius:6px;padding:0.9rem 1rem;width:100%;outline:none;transition:border-color 0.3s,box-shadow 0.3s;text-align:center}
@@ -161,10 +145,10 @@ canvas.dimmed{opacity:0}
 .model-status{font-family:monospace;font-size:0.65rem;color:#8df6ff;text-align:center;margin-top:0.5rem;min-height:1em}
 
 /* Claim cards */
-.claims-area{display:flex;flex-direction:column;gap:0.8rem;min-height:120px}
+.claims-area{display:flex;flex-direction:column;gap:0.8rem;min-height:0;width:100%;max-width:720px}
 .claims-area.empty::after{content:'Claims will appear here...';display:block;text-align:center;font-family:monospace;font-size:0.7rem;color:rgba(255,255,255,0.4);padding:2rem}
 
-.claim-card{padding:1rem 1.2rem;animation:card-in 0.4s ease forwards;opacity:0;transform:translateY(10px)}
+.claim-card{padding:1rem 1.2rem;animation:card-in 0.4s ease forwards;opacity:0;transform:translateY(10px);background:rgba(0,0,0,0.85);box-shadow:0 0 12px rgba(0,0,0,0.8)}
 @keyframes card-in{to{opacity:1;transform:translateY(0)}}
 
 .claim-header{display:flex;align-items:center;gap:0.6rem;margin-bottom:0.5rem;flex-wrap:wrap}
@@ -188,7 +172,7 @@ canvas.dimmed{opacity:0}
 .demo-ui{cursor:default}
 
 /* Compile button + progress */
-.compile-row{display:flex;align-items:center;gap:1rem}
+.compile-row{display:flex;align-items:center;gap:1rem;width:100%;max-width:720px}
 .compile-btn{font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:0.8rem;color:#8df6ff;background:none;border:1px solid rgba(141,246,255,0.3);padding:0.7rem 1.5rem;border-radius:4px;cursor:pointer;transition:all 0.3s;min-height:44px;white-space:nowrap}
 .compile-btn:hover:not(:disabled){border-color:rgba(141,246,255,0.6);box-shadow:0 0 20px rgba(141,246,255,0.15)}
 .compile-btn:disabled{opacity:0.3;cursor:not-allowed}
@@ -225,14 +209,11 @@ canvas.dimmed{opacity:0}
 
 /* Mobile */
 @media(max-width:768px){
-  .ui{bottom:calc(12vh + env(safe-area-inset-bottom,0px))}
+  .ui{padding-top:max(20vh, 120px)}
   .cta-btn{padding:0.5rem 1rem;min-height:44px;font-size:0.7rem}
   .site-footer{bottom:calc(3vh + env(safe-area-inset-bottom,0px))}
   .site-footer a{min-height:44px;padding:0.4rem 0.5rem;font-size:0.55rem}
-  .demo-ui{padding:1.5rem 1rem calc(3rem + env(safe-area-inset-bottom,0px))}
-  .cta-try{padding:0.9rem 1.5rem;font-size:clamp(0.7rem,1.3vw,0.85rem);font-weight:700;text-shadow:0 0 7px #8df6ff,0 0 20px rgba(141,246,255,0.3);order:-1}
   .site-footer{padding-bottom:env(safe-area-inset-bottom,0px)}
-  .demo-layer.active{inset:4px;border-radius:8px}
   .cta-row{flex-direction:column;gap:0.5rem}
   .chip{min-height:44px;display:inline-flex;align-items:center}
   .claim-card.glass{margin-left:-1rem;margin-right:-1rem;border-radius:0;padding:1rem}
@@ -244,7 +225,7 @@ canvas.dimmed{opacity:0}
 
 /* PWA standalone mode — hide install, show Claude Code shortcut */
 .pwa-standalone .cta-install{display:none}
-.pwa-standalone .cta-try{order:-1}
+/* .pwa-standalone .cta-try removed — no explore button */
 .pwa-claude-link{display:none;font-family:monospace;font-size:0.65rem;color:rgba(141,246,255,0.6);background:none;border:1px solid rgba(141,246,255,0.15);padding:0.4rem 0.8rem;border-radius:3px;cursor:pointer;transition:all 0.3s;min-height:44px;text-decoration:none;align-items:center}
 .pwa-claude-link:hover{color:#8df6ff;border-color:rgba(141,246,255,0.4)}
 .pwa-standalone .pwa-claude-link{display:inline-flex}
@@ -254,8 +235,7 @@ canvas.dimmed{opacity:0}
 
 /* Landscape mobile */
 @media(max-height:500px){
-  .ui{bottom:auto;top:50%;transform:translateX(-50%) translateY(-60%)}
-  .ui.hidden{display:none}
+  .ui{padding-top:max(10vh, 60px)}
   .ui-logo{width:50px}
   .ui-title{font-size:0.65rem;margin-bottom:0.3rem}
   .cta-btn{padding:0.4rem 0.8rem;min-height:36px;font-size:0.6rem}
@@ -266,8 +246,7 @@ canvas.dimmed{opacity:0}
 /* Reduced motion */
 @media(prefers-reduced-motion:reduce){
   canvas{display:none}
-  .ui{opacity:1;animation:none;position:fixed;top:50%;bottom:auto;transform:translate(-50%,-50%)}
-  .ui.hidden{display:none}
+  .ui{opacity:1;animation:none;padding-top:2rem}
   .ui-title{color:#8df6ff}
   html body .cta-row .cta-btn{transition:none;animation:none;box-shadow:0 0 20px rgba(255,255,255,0.15)}
   .site-footer{opacity:1;animation:none}
@@ -284,7 +263,7 @@ canvas.dimmed{opacity:0}
 /* Visually hidden */
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
-#cancel-btn{display:none}
+/* cancel-btn shown dynamically during model download */
 
 /* Compiler text fallback (hidden by default, shown for reduced-motion) */
 .compiler-text-fallback{display:none}
@@ -336,7 +315,7 @@ canvas.dimmed{opacity:0}
   .cta-btn{color:#8df6ff!important;border-color:rgba(141,246,255,0.3)!important;cursor:default!important}
   .site-footer{opacity:1!important;animation:none!important}
   .toast{display:none!important}
-  .demo-layer{display:none!important}
+  /* demo-layer removed — input-first */
   .noscript-fallback{display:block!important;position:fixed;top:35%;left:50%;transform:translate(-50%,-50%);text-align:center;z-index:5}
   .noscript-fallback p{font-family:monospace;font-size:0.75rem;color:rgba(255,255,255,0.3);margin-bottom:0.5rem}
 </style>
@@ -354,44 +333,6 @@ canvas.dimmed{opacity:0}
 <div aria-live="assertive" id="state-announcer" class="sr-only"></div>
 <div aria-live="polite" id="compiler-announcer" class="sr-only"></div>
 
-<!-- Demo gradient layer (behind glass, above canvas) -->
-<div class="demo-layer" id="demoLayer">
-  <div class="demo-ui">
-    <div class="demo-header">
-      <button class="demo-back" id="demoBack" type="button" aria-label="Return to landing page">&larr; back</button>
-      <button class="demo-back" id="newSprint" type="button" style="margin-left:auto;margin-right:0.5rem">new sprint</button>
-      <div class="demo-title">grainulator demo</div>
-      <a class="pwa-claude-link" id="pwaClaude" href="https://github.com/grainulation/grainulator#install" aria-label="Open in Claude Code">claude code &rarr;</a>
-    </div>
-
-    <div class="glass">
-      <label for="demo-question" class="sr-only">Research question</label>
-      <input
-        class="q-input"
-        id="demo-question"
-        type="text"
-        placeholder="Ask any question..."
-        autocomplete="off"
-        spellcheck="false"
-        maxlength="500"
-      >
-      <div id="model-status" class="model-status"></div>
-    </div>
-
-    <div class="claims-area empty" id="claimsArea" role="region" aria-label="Research claims" aria-live="polite"></div>
-
-    <div class="compile-row">
-      <button class="compile-btn" id="compileBtn" type="button" disabled>wheat compile</button>
-      <div class="compile-status" id="compileStatus"></div>
-    </div>
-
-    <div class="compiler-output glass" id="compilerOutput">
-      <div id="passLines"></div>
-      <div id="verdictArea"></div>
-    </div>
-  </div>
-</div>
-
 <main id="main-content">
   <div class="ui" id="landingUI" role="region" aria-label="Product information">
     <img src="glitchy.png" alt="Glitchy mascot" class="ui-logo">
@@ -402,14 +343,40 @@ canvas.dimmed{opacity:0}
       <button class="cta-btn cta-install" id="ctaInstall" type="button" aria-label="Copy install command: /plugin install grainulator">
         /plugin install grainulator
       </button>
-      <button class="cta-btn cta-try" id="ctaTry" type="button" aria-label="Explore the demo">
-        explore demo
-      </button>
-      <button class="cta-btn" id="cancel-btn" type="button" style="color:#f43f5e;border:1px solid rgba(244,63,94,0.3);font-size:0.6rem;padding:0.4rem 0.8rem;margin-top:0.3rem" tabindex="0">cancel model download</button>
+      <a class="pwa-claude-link" id="pwaClaude" href="https://github.com/grainulation/grainulator#install" aria-label="Open in Claude Code">claude code &rarr;</a>
     </div>
+
+    <div class="glass" id="inputPanel">
+      <label for="demo-question" class="sr-only">Research question</label>
+      <input
+        class="q-input"
+        id="demo-question"
+        type="text"
+        placeholder="Should we use Postgres or Mongo?"
+        autocomplete="off"
+        spellcheck="false"
+        maxlength="500"
+      >
+      <div id="model-status" class="model-status"></div>
+    </div>
+
+    <div class="claims-area empty" id="claimsArea" role="region" aria-label="Research claims" aria-live="polite">
+      <h2 class="sr-only">Research Claims</h2>
+    </div>
+
+    <div class="compile-row" id="compileRow" style="opacity:0;transform:translateY(20px);transition:opacity 0.5s ease 1.5s,transform 0.5s ease 1.5s">
+      <button class="compile-btn" id="compileBtn" type="button" disabled>wheat compile</button>
+      <div class="compile-status" id="compileStatus"></div>
+    </div>
+
+    <div class="compiler-output glass" id="compilerOutput">
+      <div id="passLines"></div>
+      <div id="verdictArea"></div>
+    </div>
+
+    <button class="cta-btn" id="newSprint" type="button" style="display:none;margin-top:0.5rem;font-size:0.65rem;color:rgba(141,246,255,0.5);border:1px solid rgba(141,246,255,0.15)">new sprint</button>
     <p class="privacy-note" id="privacyNote" hidden>Model runs locally in your browser. Weights downloaded from HuggingFace CDN on first use.</p>
     <p class="privacy-note" id="noWebGPUNote" hidden>Demo requires WebGPU (Chrome/Edge desktop).</p>
-    <h2 class="sr-only">Install</h2>
   </div>
 
   <noscript>
@@ -424,6 +391,7 @@ canvas.dimmed{opacity:0}
 </main>
 
 <div id="flash-overlay"></div>
+<button id="cancel-btn" type="button" style="display:none;position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));right:16px;z-index:9999;background:rgba(0,0,0,0.7);color:#f43f5e;border:1px solid rgba(244,63,94,0.3);border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;min-height:44px" aria-label="Cancel model download">Cancel download</button>
 <button id="motion-toggle" type="button" aria-label="Pause background animation" aria-pressed="false" style="position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));right:16px;z-index:9999;background:rgba(0,0,0,0.7);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:8px 14px;font-size:14px;cursor:pointer;backdrop-filter:blur(8px);">Pause motion</button>
 
 <footer class="site-footer" id="siteFooter">
@@ -821,66 +789,56 @@ function resumeShader() {
 }
 
 // ===================================================================
-// PHASE MANAGEMENT
+// INPUT-FIRST LANDING — no overlay, no phases
 // ===================================================================
 const landingUI = document.getElementById('landingUI');
 const siteFooter = document.getElementById('siteFooter');
-const demoLayer = document.getElementById('demoLayer');
-const ctaTry = document.getElementById('ctaTry');
 const ctaInstall = document.getElementById('ctaInstall');
-const demoBack = document.getElementById('demoBack');
 const canvas = document.getElementById('c');
 
-let demoActive = false;
+// Animated placeholder cycling (x576, x581)
+const PLACEHOLDER_EXAMPLES = [
+  'Should we use Postgres or Mongo?',
+  'How does React Server Components work?',
+  'What auth strategy for our API?',
+  'Monorepo or polyrepo for 5 services?',
+  'Is GraphQL worth it for our team size?',
+  'How do we migrate from REST to gRPC?'
+];
+let _placeholderIndex = 0;
+let _placeholderTimer = null;
+const _placeholderInput = document.getElementById('demo-question');
+const _placeholderAnnouncer = document.getElementById('progress-announcer');
 
-function enterDemo() {
-  if (demoActive) return;
-  window._trackEvent?.('demo_enter');
-  demoActive = true;
-  history.pushState({ phase: 'demo' }, '', '#demo');
-  document.documentElement.classList.add('demo-active');
-  // FLIP a11y: mark departing as inert
-  landingUI.inert = true;
-  landingUI.setAttribute('aria-hidden', 'true');
-  landingUI.classList.add('hidden');
-  siteFooter.classList.add('hidden');
-  canvas.classList.add('dimmed');
-  pauseShader();
-  demoLayer.classList.add('active');
-  // Update skip link target
-  const skipLink = document.querySelector('.skip-link');
-  if (skipLink) skipLink.setAttribute('href', '#demo-question');
-  // Always load Track A immediately — don't wait for transition
-  loadTrackA();
-  // Rx14: Start attract mode if model not ready
-  if (!window._webllmReady && typeof startAttractMode === "function") startAttractMode();
-  // Focus input only if enabled (model ready)
-  const qEl = document.getElementById('demo-question');
-  if (qEl && !qEl.disabled) qEl.focus();
+function startPlaceholderCycle() {
+  if (_placeholderTimer) return;
+  _placeholderTimer = setInterval(() => {
+    _placeholderIndex = (_placeholderIndex + 1) % PLACEHOLDER_EXAMPLES.length;
+    _placeholderInput.placeholder = PLACEHOLDER_EXAMPLES[_placeholderIndex];
+    _placeholderInput.setAttribute('aria-label', 'Research question — example: ' + PLACEHOLDER_EXAMPLES[_placeholderIndex]);
+    if (_placeholderAnnouncer) _placeholderAnnouncer.textContent = 'Example: ' + PLACEHOLDER_EXAMPLES[_placeholderIndex];
+  }, 4000);
 }
 
-function exitDemo() {
-  if (!demoActive) return;
-  // Rx14: Stop attract mode on exit
-  if (typeof stopAttractMode === "function") stopAttractMode();
-  demoActive = false;
-  history.replaceState({ phase: 'landing' }, '', '/');
-  document.documentElement.classList.remove('demo-active');
-  demoLayer.classList.remove('active');
-  canvas.classList.remove('dimmed');
-  resumeShader();
-  setTimeout(() => {
-    landingUI.inert = false;
-    landingUI.removeAttribute('aria-hidden');
-    landingUI.classList.remove('hidden');
-    siteFooter.classList.remove('hidden');
-    const skipLink = document.querySelector('.skip-link');
-    if (skipLink) skipLink.setAttribute('href', '#main-content');
-  }, 100);
+function stopPlaceholderCycle() {
+  if (_placeholderTimer) { clearInterval(_placeholderTimer); _placeholderTimer = null; }
 }
 
-ctaTry.addEventListener('click', enterDemo);
-demoBack.addEventListener('click', exitDemo);
+_placeholderInput.addEventListener('input', () => {
+  if (_placeholderInput.value.length > 0) stopPlaceholderCycle();
+});
+_placeholderInput.addEventListener('blur', () => {
+  if (_placeholderInput.value.length === 0) startPlaceholderCycle();
+});
+_placeholderInput.addEventListener('focus', function() {
+  setTimeout(() => this.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300);
+});
+
+// Start cycling after page load
+setTimeout(startPlaceholderCycle, 2000);
+
+// Load Track A on page load (session restore or default)
+requestAnimationFrame(() => { loadTrackA(); });
 
 document.getElementById('newSprint').addEventListener('click', () => {
   resetExploreState();
@@ -892,11 +850,15 @@ document.getElementById('newSprint').addEventListener('click', () => {
   document.getElementById('verdictArea').innerHTML = '';
   document.getElementById('compileStatus').textContent = '';
   document.getElementById('compilerOutput').classList.remove('expanded');
-  compileBtn.disabled = true;
-  qInput.value = '';
-  qInput.disabled = false;
-  qInput.placeholder = 'Ask a research question...';
-  qInput.focus();
+  document.getElementById('compileBtn').disabled = true;
+  document.getElementById('compileRow').style.opacity = '0';
+  document.getElementById('newSprint').style.display = 'none';
+  const qi = document.getElementById('demo-question');
+  qi.value = '';
+  qi.disabled = false;
+  qi.placeholder = PLACEHOLDER_EXAMPLES[0];
+  qi.focus();
+  startPlaceholderCycle();
 });
 
 // Install button — copy command
@@ -1060,16 +1022,7 @@ function scoreEntry(queryWords, queryNorm, entry) {
 
 // ===================================================================
 // DEMO SHOWCASE — 3 curated demos for attract mode (Rx13)
-// Indexes into DEMO_LIBRARY:
-//   6  = Django monolith -> microservices (triggers tension detection: 2 risk claims)
-//   0  = MySQL -> PostgreSQL (clean compile: 5 types, 4 tiers, high score)
-//   35 = TDD adoption (type monoculture: all recommendation, weak evidence)
 // ===================================================================
-const DEMO_SHOWCASE = [
-  DEMO_LIBRARY[6],   // tension: dual risks about microservices
-  DEMO_LIBRARY[0],   // clean: balanced types and strong evidence
-  DEMO_LIBRARY[35]   // monoculture: all recommendation type, weak tiers
-];
 function fuzzyMatchDemo(query, library) {
   if (!query || !library || library.length === 0) return null;
 
@@ -1227,6 +1180,9 @@ function loadDemo(demo, opts) {
   }
 
   document.getElementById('compileBtn').disabled = false;
+  document.getElementById('compileRow').style.opacity = '1';
+  document.getElementById('compileRow').style.transform = 'translateY(0)';
+  document.getElementById('newSprint').style.display = 'block';
 
   // Debug cascade panel
   if (opts.cascadeLayer !== undefined) {
@@ -1359,6 +1315,9 @@ function restoreSession(session) {
       addClaimCard(area, card);
     });
     document.getElementById('compileBtn').disabled = false;
+  document.getElementById('compileRow').style.opacity = '1';
+  document.getElementById('compileRow').style.transform = 'translateY(0)';
+  document.getElementById('newSprint').style.display = 'block';
     renderTurnCounter();
   }
 
@@ -1841,9 +1800,13 @@ if (CASCADE_OFF) { /* skip */ } else {
 
   const abortController = new AbortController();
   cancelBtn.style.display = 'inline-flex';
+  // Move pause-motion to left while cancel is showing (cal028)
+  const motionBtn = document.getElementById('motion-toggle');
+  if (motionBtn) { motionBtn.style.right = 'auto'; motionBtn.style.left = '16px'; }
   cancelBtn.addEventListener('click', () => {
     abortController.abort();
     cancelBtn.style.display = 'none';
+    if (motionBtn) { motionBtn.style.left = ''; motionBtn.style.right = '16px'; }
     // Move to ERROR state
     if (modelStatusEl) modelStatusEl.textContent = '';
   });
@@ -1869,12 +1832,13 @@ if (CASCADE_OFF) { /* skip */ } else {
     window._webllmEngine = engine;
     window._webllmReady = true;
     cancelBtn.style.display = 'none';
+    if (motionBtn) { motionBtn.style.left = ''; motionBtn.style.right = '16px'; }
     const qi = document.getElementById('demo-question');
     qi.placeholder = 'Ask your own question (local AI ready)...';
     if (modelStatusEl) modelStatusEl.textContent = '\u26A1 local model ready';
     announceState('Live inference ready');
-    // If user is in demo, focus input
-    if (demoActive) qi.focus();
+    // Input-first: always available, focus only if document is visible
+    if (!document.hidden) qi.focus();
     // If a question was queued from #q= hash, auto-submit
     if (window._queuedQuestion) {
       qi.value = window._queuedQuestion;
@@ -1885,7 +1849,8 @@ if (CASCADE_OFF) { /* skip */ } else {
   } catch (err) {
     console.warn('WebLLM:', err.message);
     cancelBtn.style.display = 'none';
-    // → ERROR state — Track A is already loaded, input stays disabled
+    if (motionBtn) { motionBtn.style.left = ''; motionBtn.style.right = '16px'; }
+    // → ERROR state — Track A is already loaded
     if (modelStatusEl) modelStatusEl.textContent = '';
     // Notify offline detection
     if (typeof window._onWebLLMOffline === 'function') window._onWebLLMOffline();
@@ -2091,33 +2056,21 @@ document.addEventListener('visibilitychange', () => {
   else if (!motionTogglePaused) { resumeShader(); }
 });
 
-// BUG #6: popstate listener for back button
-window.addEventListener('popstate', (e) => {
-  if (!e.state || e.state.phase === 'landing') {
-    if (demoActive) exitDemo();
-  }
-});
-
-// Escape key exits demo
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && demoLayer.classList.contains('active')) exitDemo();
-});
-
-// Hash-based question loading + auto-enter demo for #q= links
+// Hash-based question loading (input-first — #q= prefills, #demo scrolls to input)
 (function loadFromHash() {
   const hash = location.hash;
   if (hash.startsWith('#q=')) {
     const q = decodeURIComponent(hash.slice(3));
     if (q) {
-      // Queue the question — will auto-submit when model loads
       window._queuedQuestion = q;
-      requestAnimationFrame(() => enterDemo());
+      const qi = document.getElementById('demo-question');
+      qi.value = q;
+      stopPlaceholderCycle();
     }
   } else if (hash === '#demo') {
-    requestAnimationFrame(() => {
-      enterDemo();
-      history.replaceState({ phase: 'demo' }, '', '/');
-    });
+    const qi = document.getElementById('demo-question');
+    setTimeout(() => qi.scrollIntoView({ block: 'center', behavior: 'smooth' }), 500);
+    history.replaceState(null, '', '/');
   }
 })();
 
@@ -2157,211 +2110,17 @@ function updateCascadeDebug(opts) {
   panel.innerHTML = lines.join('<br>');
 }
 
-// ===================================================================
-// Rx14: ATTRACT MODE — auto-play demos during model download
-// ===================================================================
-let attractMode = false;
-let attractTimeouts = [];
-
-function clearAttractTimeouts() {
-  attractTimeouts.forEach(id => clearTimeout(id));
-  attractTimeouts = [];
-}
-
-function attractTimeout(fn, ms) {
-  const id = setTimeout(() => {
-    if (!attractMode) return;
-    fn();
-  }, ms);
-  attractTimeouts.push(id);
-  return id;
-}
-
-function stopAttractMode() {
-  if (!attractMode) return;
-  attractMode = false;
-  clearAttractTimeouts();
-  // Remove attract indicator
-  const indicator = document.querySelector('.attract-indicator');
-  if (indicator) indicator.remove();
-  // Remove replay button
-  const replayBtn = document.querySelector('.replay-demos-btn');
-  if (replayBtn) replayBtn.remove();
-  // FSM exit action: re-render _allClaims to reconcile DOM with state
-  if (window._allClaims && window._allClaims.length > 0) {
-    const area = document.getElementById('claimsArea');
-    area.innerHTML = '';
-    area.classList.remove('empty');
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    window._allClaims.forEach(function(claim, i) {
-      const card = createClaimCard(claim);
-      if (!reducedMotion) { card.classList.add('drifting'); }
-      card.style.animationDelay = (i * 0.08) + 's';
-      area.appendChild(card);
-    });
-    document.getElementById('compileBtn').disabled = false;
-  }
-}
-
-function startAttractMode() {
-  if (attractMode) return;
-  if (window._webllmReady) return; // model already ready, no need
-  if (typeof DEMO_SHOWCASE === 'undefined' || !DEMO_SHOWCASE.length) return;
-
-  attractMode = true;
-
-  // Add attract indicator
-  const demoUI = document.querySelector('.demo-ui');
-  if (demoUI && !document.querySelector('.attract-indicator')) {
-    const indicator = document.createElement('div');
-    indicator.className = 'attract-indicator';
-    indicator.textContent = 'watching demo...';
-    indicator.setAttribute('aria-live', 'polite');
-    demoUI.insertBefore(indicator, demoUI.children[1]);
-  }
-
-  // Delay attract mode by 3s so Track A claims are visible first
-  attractTimeout(() => { if (attractMode) runAttractDemo(0); }, 5000);
-}
-
-function runAttractDemo(index) {
-  if (!attractMode || index >= DEMO_SHOWCASE.length) {
-    // Rotation complete — show replay button
-    if (attractMode) {
-      attractMode = false;
-      showReplayButton();
-    }
-    return;
-  }
-
-  const demo = DEMO_SHOWCASE[index];
-  const qEl = document.getElementById('demo-question');
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  // Clear previous demo state
-  const area = document.getElementById('claimsArea');
-  area.innerHTML = '';
-  area.classList.add('empty');
-  document.getElementById('compilerOutput').classList.remove('expanded');
-  document.getElementById('passLines').innerHTML = '';
-  document.getElementById('verdictArea').innerHTML = '';
-  document.getElementById('compileStatus').textContent = '';
-  document.getElementById('compileBtn').disabled = true;
-  qEl.value = '';
-
-  if (reducedMotion) {
-    // Skip typewriter — show demo as static cards
-    qEl.value = demo.question;
-    loadDemo(demo, { cascadeLayer: 'attract', score: null, timing: 0, setQuestion: true });
-    // Wait, then compile, then next
-    attractTimeout(() => {
-      if (!attractMode) return;
-      document.getElementById('compileBtn').click();
-      attractTimeout(() => runAttractDemo(index + 1), 4000);
-    }, 2000);
-    return;
-  }
-
-  // Typewriter the question
-  let charIndex = 0;
-  function typeNextChar() {
-    if (!attractMode) return;
-    if (charIndex < demo.question.length) {
-      qEl.value = demo.question.slice(0, charIndex + 1);
-      charIndex++;
-      attractTimeout(typeNextChar, (innerWidth < 768) ? 100 : 50);
-    } else {
-      // Typewriter done — wait 500ms, then load claims
-      attractTimeout(() => {
-        if (!attractMode) return;
-        loadDemo(demo, { cascadeLayer: 'attract', score: null, timing: 0, setQuestion: true });
-
-        // Wait 2s for user to read, then auto-compile
-        attractTimeout(() => {
-          if (!attractMode) return;
-          document.getElementById('compileBtn').click();
-
-          // Wait for compile to finish (~3.5s for 7 passes) + 2s pause on verdict
-          attractTimeout(() => {
-            if (!attractMode) return;
-            runAttractDemo(index + 1);
-          }, 5500);
-        }, 2000);
-      }, 500);
-    }
-  }
-  typeNextChar();
-}
-
-function showReplayButton() {
-  const demoUI = document.querySelector('.demo-ui');
-  if (!demoUI) return;
-
-  // Remove attract indicator
-  const indicator = document.querySelector('.attract-indicator');
-  if (indicator) indicator.remove();
-
-  // Don't show if model is now ready
-  if (window._webllmReady) return;
-
-  const btn = document.createElement('button');
-  btn.className = 'replay-demos-btn';
-  btn.type = 'button';
-  btn.textContent = 'Replay demos';
-  btn.setAttribute('aria-label', 'Replay demonstration');
-  btn.addEventListener('click', () => {
-    btn.remove();
-    startAttractMode();
-  });
-  // Insert after header
-  demoUI.insertBefore(btn, demoUI.children[1]);
-}
-
-// Attract mode interruption — any user interaction stops it
-function onUserInteraction() {
-  if (!attractMode) return;
-  stopAttractMode();
-
-  const qEl = document.getElementById('demo-question');
-  if (window._webllmReady) {
-    // Model ready — enable input
-    qEl.disabled = false;
-    qEl.placeholder = 'Ask your own question (local AI ready)...';
-    qEl.focus();
-  } else {
-    // Model not ready — keep last demo's claims as static content
-    // (already displayed from loadDemo, just leave them)
-    qEl.placeholder = 'Ask any question...';
-  }
-}
-
-// Bind interruption listeners (only in demo layer)
-document.getElementById('demo-question').addEventListener('click', onUserInteraction);
-document.getElementById('demo-question').addEventListener('focus', onUserInteraction);
-document.getElementById('claimsArea').addEventListener('click', onUserInteraction);
-document.getElementById('compileBtn').addEventListener('click', onUserInteraction);
-document.addEventListener('keydown', function attractKeyHandler(e) {
-  // Only interrupt if in demo and attract mode
-  if (!attractMode || !demoActive) return;
-  // Ignore Escape (handled by exitDemo)
-  if (e.key === 'Escape') return;
-  onUserInteraction();
-});
-
-// Also stop attract mode when model finishes loading
+// Model ready watcher — update input placeholder when WebLLM loads
 (function watchModelReady() {
-  const origReady = Object.getOwnPropertyDescriptor(window, '_webllmReady');
   let _val = window._webllmReady;
   Object.defineProperty(window, '_webllmReady', {
     get() { return _val; },
     set(v) {
       _val = v;
-      if (v && attractMode) {
-        stopAttractMode();
-        const qEl = document.getElementById('demo-question');
-        qEl.disabled = false;
-        qEl.placeholder = 'Ask your own question (local AI ready)...';
-        if (demoActive) qEl.focus();
+      if (v) {
+        const qi = document.getElementById('demo-question');
+        stopPlaceholderCycle();
+        qi.placeholder = 'Ask your own question (local AI ready)...';
       }
     },
     configurable: true,

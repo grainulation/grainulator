@@ -11,9 +11,9 @@
 	"categories": ["developer", "productivity", "utilities"],
 	"shortcuts": [
 		{
-			"name": "Open Demo",
-			"short_name": "Demo",
-			"description": "Jump straight into the interactive demo",
+			"name": "Try it",
+			"short_name": "Try",
+			"description": "Ask a research question",
 			"url": "/#demo",
 			"icons": [
 				{
