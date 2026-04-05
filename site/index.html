@@ -124,7 +124,7 @@ canvas.dimmed{opacity:0}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:0.9}
 
 /* Footer */
-.site-footer{position:fixed;bottom:1.5vh;left:50%;transform:translateX(-50%);z-index:10;text-align:center;opacity:0;animation:appear 1s ease 1s forwards;transition:opacity 0.4s}
+.site-footer{text-align:center;opacity:0;animation:appear 1s ease 1s forwards;transition:opacity 0.4s;padding:2rem 0 1rem;width:100%}
 .site-footer.hidden{display:none}
 .site-footer a{font-family:monospace;font-size:0.6rem;color:rgba(255,255,255,0.45);padding:0.5rem 0.4rem;min-height:48px;display:inline-flex;align-items:center;text-decoration:none;transition:color 0.3s}
 .site-footer a:hover,.site-footer a:focus-visible{color:rgba(255,255,255,0.65);outline:none}
@@ -146,7 +146,7 @@ canvas.dimmed{opacity:0}
 
 /* Claim cards */
 .claims-area{display:flex;flex-direction:column;gap:0.8rem;min-height:0;width:100%;max-width:720px}
-.claims-area.empty::after{content:'Claims will appear here...';display:block;text-align:center;font-family:monospace;font-size:0.7rem;color:rgba(255,255,255,0.4);padding:2rem}
+.claims-area.empty::after{content:'Type a question and press Enter';display:block;text-align:center;font-family:monospace;font-size:0.7rem;color:rgba(255,255,255,0.25);padding:1.5rem}
 
 .claim-card{padding:1rem 1.2rem;animation:card-in 0.4s ease forwards;opacity:0;transform:translateY(10px);background:rgba(0,0,0,0.85);box-shadow:0 0 12px rgba(0,0,0,0.8)}
 @keyframes card-in{to{opacity:1;transform:translateY(0)}}
@@ -197,7 +197,7 @@ canvas.dimmed{opacity:0}
 .chip:hover{color:#8df6ff;border-color:rgba(141,246,255,0.5);box-shadow:0 0 12px rgba(141,246,255,0.1)}
 
 /* Turn counter */
-.turn-counter{font-family:monospace;font-size:0.6rem;color:rgba(255,255,255,0.5);text-align:center;margin-top:0.3rem}
+.turn-counter{font-family:monospace;font-size:0.6rem;color:rgba(255,255,255,0.5);text-align:center;margin-top:0.3rem;width:100%;max-width:720px}
 
 /* Resume session link */
 .resume-session{font-family:monospace;font-size:0.6rem;color:rgba(141,246,255,0.4);text-align:center;margin-top:0.3rem;cursor:pointer;text-decoration:underline;transition:color 0.3s}
@@ -211,9 +211,7 @@ canvas.dimmed{opacity:0}
 @media(max-width:767px){
   .ui{padding-top:max(20vh, 120px)}
   .cta-btn{padding:0.5rem 1rem;min-height:44px;font-size:0.7rem}
-  .site-footer{bottom:calc(3vh + env(safe-area-inset-bottom,0px))}
   .site-footer a{min-height:44px;padding:0.6rem 0.6rem;font-size:0.55rem}
-  .site-footer{padding-bottom:env(safe-area-inset-bottom,0px)}
   .cta-row{flex-direction:column;gap:0.5rem}
   .chip{min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center}
   .claim-card.glass{margin-left:-0.75rem;margin-right:-0.75rem;border-radius:0;padding:1rem 0.75rem}
@@ -253,7 +251,6 @@ canvas.dimmed{opacity:0}
   .ui-logo{width:50px}
   .ui-title{font-size:0.65rem;margin-bottom:0.3rem}
   .cta-btn{padding:0.4rem 0.8rem;min-height:44px;font-size:0.6rem}
-  .site-footer{bottom:0.5vh}
   .site-footer a{min-height:44px;padding:0.3rem 0.4rem;font-size:0.5rem}
   .q-input{padding:0.6rem 0.8rem}
   .claims-area{min-height:60px}
@@ -402,6 +399,16 @@ canvas.dimmed{opacity:0}
     <button class="cta-btn" id="newSprint" type="button" style="display:none;margin-top:0.5rem;font-size:0.65rem;color:rgba(141,246,255,0.5);border:1px solid rgba(141,246,255,0.15)">new sprint</button>
     <p class="privacy-note" id="privacyNote" hidden>Model runs locally in your browser. Weights downloaded from HuggingFace CDN on first use.</p>
     <p class="privacy-note" id="noWebGPUNote" hidden>Demo requires WebGPU (Chrome/Edge desktop).</p>
+
+    <footer class="site-footer" id="siteFooter">
+      <nav aria-label="External links">
+        <a href="https://github.com/grainulation/grainulator" rel="noopener">github</a>
+        <span aria-hidden="true">&middot;</span>
+        <a href="https://deepwiki.com/grainulation/grainulator" rel="noopener">docs</a>
+        <span aria-hidden="true">&middot;</span>
+        <a href="https://opensource.org/licenses/MIT" rel="noopener">mit</a>
+      </nav>
+    </footer>
   </div>
 
   <noscript>
@@ -418,16 +425,6 @@ canvas.dimmed{opacity:0}
 <div id="flash-overlay"></div>
 <button id="cancel-btn" type="button" style="display:none;position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));right:16px;z-index:9999;background:rgba(0,0,0,0.7);color:#f43f5e;border:1px solid rgba(244,63,94,0.3);border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;min-height:44px" aria-label="Cancel model download">Cancel download</button>
 <button id="motion-toggle" type="button" aria-label="Pause background animation" aria-pressed="false" style="position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));right:16px;z-index:9999;background:rgba(0,0,0,0.7);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:8px 14px;font-size:14px;cursor:pointer;backdrop-filter:blur(8px);">Pause motion</button>
-
-<footer class="site-footer" id="siteFooter">
-  <nav aria-label="External links">
-    <a href="https://github.com/grainulation/grainulator" rel="noopener">github</a>
-    <span aria-hidden="true">&middot;</span>
-    <a href="https://deepwiki.com/grainulation/grainulator" rel="noopener">docs</a>
-    <span aria-hidden="true">&middot;</span>
-    <a href="https://opensource.org/licenses/MIT" rel="noopener">mit</a>
-  </nav>
-</footer>
 
 <script>
 // ===================================================================
@@ -862,8 +859,14 @@ _placeholderInput.addEventListener('focus', function() {
 // Start cycling after page load
 setTimeout(startPlaceholderCycle, 2000);
 
-// Load Track A on page load (session restore or default)
-requestAnimationFrame(() => { loadTrackA(); });
+// Input-first: only restore saved session on load, don't auto-load Track A
+requestAnimationFrame(() => {
+  const saved = loadSavedSession();
+  if (saved && saved.allClaims && saved.allClaims.length > 0) {
+    loadTrackA(); // restore previous session
+  }
+  // Otherwise: empty input with animated placeholder — user types first
+});
 
 document.getElementById('newSprint').addEventListener('click', () => {
   resetExploreState();
