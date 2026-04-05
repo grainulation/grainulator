@@ -146,7 +146,7 @@ canvas.dimmed{opacity:0}
 
 /* Claim cards */
 .claims-area{display:flex;flex-direction:column;gap:0.8rem;min-height:0;width:100%;max-width:720px}
-.claims-area.empty::after{content:'Type a question and press Enter';display:block;text-align:center;font-family:monospace;font-size:0.7rem;color:rgba(255,255,255,0.25);padding:1.5rem}
+.claims-area.empty::after{content:'Type a question above and press Enter \2193';display:block;text-align:center;font-family:monospace;font-size:0.7rem;color:rgba(255,255,255,0.25);padding:1.5rem}
 
 .claim-card{padding:1rem 1.2rem;animation:card-in 0.4s ease forwards;opacity:0;transform:translateY(10px);background:rgba(0,0,0,0.85);box-shadow:0 0 12px rgba(0,0,0,0.8)}
 @keyframes card-in{to{opacity:1;transform:translateY(0)}}
@@ -386,8 +386,8 @@ canvas.dimmed{opacity:0}
       <h2 class="sr-only">Research Claims</h2>
     </div>
 
-    <div class="compile-row" id="compileRow" style="opacity:0;transform:translateY(20px);transition:opacity 0.5s ease 1.5s,transform 0.5s ease 1.5s">
-      <button class="compile-btn" id="compileBtn" type="button" disabled>wheat compile</button>
+    <div class="compile-row" id="compileRow" style="display:none">
+      <button class="compile-btn" id="compileBtn" type="button" disabled>wheat compile &rarr; verdict</button>
       <div class="compile-status" id="compileStatus"></div>
     </div>
 
@@ -423,7 +423,7 @@ canvas.dimmed{opacity:0}
 </main>
 
 <div id="flash-overlay"></div>
-<button id="cancel-btn" type="button" style="display:none;position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));right:16px;z-index:9999;background:none;color:#f43f5e;border:1px solid rgba(244,63,94,0.3);border-radius:3px;padding:0.6rem 1rem;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:clamp(0.6rem,1vw,0.75rem);cursor:pointer;min-height:44px" aria-label="Cancel model download">cancel download</button>
+<button id="cancel-btn" type="button" style="display:none;position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));right:16px;z-index:9999;background:none;color:#f43f5e;border:1px solid rgba(244,63,94,0.3);border-radius:3px;padding:0.6rem 1rem;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:clamp(0.6rem,1vw,0.75rem);cursor:pointer;min-height:44px;align-items:center;justify-content:center" aria-label="Cancel model download">cancel download</button>
 <button id="motion-toggle" type="button" aria-label="Pause background animation" aria-pressed="false" style="position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));right:16px;z-index:9999;background:none;color:rgba(141,246,255,0.6);border:1px solid rgba(141,246,255,0.2);border-radius:3px;padding:0.6rem 1rem;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:clamp(0.6rem,1vw,0.75rem);cursor:pointer;min-height:44px">pause motion</button>
 
 <script>
@@ -879,7 +879,7 @@ document.getElementById('newSprint').addEventListener('click', () => {
   document.getElementById('compileStatus').textContent = '';
   document.getElementById('compilerOutput').classList.remove('expanded');
   document.getElementById('compileBtn').disabled = true;
-  document.getElementById('compileRow').style.opacity = '0';
+  document.getElementById('compileRow').style.display = 'none';
   document.getElementById('newSprint').style.display = 'none';
   const qi = document.getElementById('demo-question');
   qi.value = '';
@@ -1208,8 +1208,7 @@ function loadDemo(demo, opts) {
   }
 
   document.getElementById('compileBtn').disabled = false;
-  document.getElementById('compileRow').style.opacity = '1';
-  document.getElementById('compileRow').style.transform = 'translateY(0)';
+  document.getElementById('compileRow').style.display = 'flex';
   document.getElementById('newSprint').style.display = 'block';
 
   // Debug cascade panel
@@ -1246,10 +1245,15 @@ function renderTurnCounter() {
   if (oldBanner) oldBanner.remove();
 
   if (window._turnCount < 1) return;
+  const claimTotal = (window._allClaims || []).length;
   const counter = document.createElement('div');
   counter.id = 'turnCounter';
   counter.className = 'turn-counter';
-  counter.textContent = 'Turn ' + window._turnCount + ' of ~5 \u2014 explore more or compile';
+  if (window._turnCount === 1) {
+    counter.innerHTML = claimTotal + ' claims gathered \u2014 <strong>ask another question</strong> to explore deeper, or hit <strong>wheat compile</strong> below';
+  } else {
+    counter.innerHTML = claimTotal + ' claims across ' + window._turnCount + ' questions \u2014 ask more or compile \u2193';
+  }
   const area = document.getElementById('claimsArea');
   area.parentNode.insertBefore(counter, area.nextSibling);
 
@@ -1343,8 +1347,7 @@ function restoreSession(session) {
       addClaimCard(area, card);
     });
     document.getElementById('compileBtn').disabled = false;
-  document.getElementById('compileRow').style.opacity = '1';
-  document.getElementById('compileRow').style.transform = 'translateY(0)';
+  document.getElementById('compileRow').style.display = 'flex';
   document.getElementById('newSprint').style.display = 'block';
     renderTurnCounter();
   }
