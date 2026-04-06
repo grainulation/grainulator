@@ -2101,9 +2101,35 @@ function fallbackToCascade(question, cascadeStart) {
     question = question.replace(/^\/\w[\w-]*\s*/, '').trim() || question;
   }
 
-  // Route "challenge" chip clicks to the challenge handler
+  // Route chip clicks to specific handlers
   if (/^challenge\b/i.test(question.trim()) && window._turnCount > 0) {
     if (handleSlashCommand('/challenge')) return;
+  }
+  if (/^(what are the risks|dig deeper)\b/i.test(question.trim()) && window._turnCount > 0) {
+    removeThinking();
+    var firstQ = window._conversationHistory.length > 0 ? window._conversationHistory[0].question : 'this topic';
+    var prevClaims = window._allClaims || [];
+    var riskAngles = [
+      'What happens if the migration takes 3× longer than estimated? Do you have a rollback plan?',
+      'Who on the team has done this before? Lack of experience is a hidden risk that compounds under pressure.',
+      'What\'s the cost of doing nothing? Sometimes the risk of change is lower than the risk of staying put.',
+      'How will this affect teams that aren\'t directly involved? Downstream dependencies often get overlooked.',
+      'What\'s the worst realistic outcome? Not worst-case fantasy — the actual bad scenario you could plausibly hit.',
+    ];
+    var angle = riskAngles[window._turnCount % riskAngles.length];
+    var text = 'Thinking about <em>' + escapeHtml(firstQ.substring(0, 60)) + '</em> from a risk angle:<br><br>' + angle;
+    var aiMsg = addMessage('ai', text);
+    var newClaim = { id: 'd' + String(window._nextClaimIndex++).padStart(3, '0'), type: 'risk', tier: 'stated', text: angle.replace(/<[^>]*>/g, '') };
+    window._allClaims.push(newClaim);
+    window._turnCount++;
+    window._conversationHistory.push({ turn: window._turnCount, question: question, source: 'risk-chip' });
+    window._liveClaims = window._allClaims;
+    aiMsg.appendChild(renderClaimsToggle([newClaim]));
+    generateNextStepChips(aiMsg);
+    showCompileButton();
+    saveSession();
+    autoScroll();
+    return;
   }
 
   // Off-topic detection (first turn only)
