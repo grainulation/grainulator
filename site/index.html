@@ -170,8 +170,9 @@ canvas.active{opacity:1}
 .badge-feedback{background:rgba(156,163,175,0.15);color:#9ca3af}
 
 /* Input bar — blooms up from bottom with spring animation */
-.input-bar{flex-shrink:0;display:flex;align-items:center;padding:0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom,0px) + var(--kb-offset, 0px));background:rgba(10,10,15,0.95);border-top:1px solid rgba(255,255,255,0.06);transform:translateY(100%);transition:transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)}
+.input-bar{position:fixed;bottom:0;left:0;right:0;z-index:15;display:flex;align-items:center;padding:0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom,0px) + var(--kb-offset, 0px));background:rgba(10,10,15,0.95);border-top:1px solid rgba(255,255,255,0.06);transform:translateY(100%);transition:transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)}
 .input-bar.visible{transform:translateY(0)}
+.app.chat-active .input-bar{position:relative;bottom:auto;left:auto;right:auto;z-index:auto;flex-shrink:0}
 .input-wrap{position:relative;flex:1}
 .chat-input{width:100%;font-family:inherit;font-size:max(1rem,16px);color:#fff;background:rgba(255,255,255,0.06);border:1px solid rgba(141,246,255,0.2);border-radius:0;padding:0.7rem 3rem 0.7rem 1rem;outline:none;transition:border-color 0.3s;resize:none;overflow:hidden;min-height:44px;max-height:120px}
 .chat-input:focus{border-color:rgba(141,246,255,0.5)}
@@ -220,7 +221,7 @@ canvas.active{opacity:1}
 /* Mobile fixes — prevent overlap, ensure chat is contained */
 @media(max-width:768px){
   .app{padding-top:env(safe-area-inset-top,0px)}
-  .chat-area{padding:0.5rem;min-height:0}
+  .chat-area{padding:0.5rem;flex:1 1 0%;overflow-y:auto}
   .msg{max-width:92%;font-size:0.75rem}
   .input-bar{gap:0.3rem}
   #ctaInstall img{width:80px;height:80px}
@@ -397,6 +398,10 @@ function transitionTo(newState) {
   }
 
   if (newState === 'CHAT_ACTIVE') {
+    // Ensure input bar is visible (may have skipped LAVA_WITH_INPUT)
+    inputBarEl.classList.add('visible');
+    chatInputEl.disabled = false;
+    if (chatInputEl.placeholder === 'loading...') chatInputEl.placeholder = 'Ask a question...';
     appEl.classList.add('chat-active');
     dimOverlay.style.opacity = '0.95';
     pauseShader();
