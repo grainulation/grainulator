@@ -982,7 +982,14 @@ function showCompileButton() {
   var bar = document.getElementById('compileBar');
   bar.classList.add('visible');
   var btn = document.getElementById('compileMsgBtn');
-  btn.textContent = 'compile ' + window._allClaims.length + ' claims';
+  // Show what's missing so user knows what to add
+  var required = ['constraint', 'factual', 'risk', 'recommendation'];
+  var missing = required.filter(function(t) { return !typeSet.has(t); });
+  if (missing.length > 0) {
+    btn.textContent = 'compile ' + window._allClaims.length + ' claims (missing: ' + missing.join(', ') + ')';
+  } else {
+    btn.textContent = 'compile ' + window._allClaims.length + ' claims';
+  }
   btn.disabled = false;
   btn.onclick = runCompile;
 }
@@ -1633,8 +1640,36 @@ async function runCompile() {
   window._compilationResult = { score: final.score, verdict: final.verdict, tensions: final.tensions, missing: final.missing };
   saveSession();
 
-  // Next steps use the conversational chip system
-  generateNextStepChips(compileMsg);
+  // Post-compile chips — specific to what's missing
+  var postChips = [];
+  if (final.missing.length > 0) {
+    final.missing.forEach(function(t) {
+      if (t === 'risk') postChips.push('what are the risks?');
+      else if (t === 'constraint') postChips.push('what are the constraints?');
+      else if (t === 'recommendation') postChips.push('what do you recommend?');
+      else if (t === 'factual') postChips.push('dig deeper');
+    });
+  }
+  if (final.tensions.length > 0) postChips.push('resolve the tensions');
+  if (postChips.length === 0) postChips.push('challenge that recommendation');
+  postChips = postChips.slice(0, 3);
+
+  document.querySelectorAll('.msg .follow-up-chips').forEach(function(el) { el.remove(); });
+  var chipsEl = document.createElement('div');
+  chipsEl.className = 'follow-up-chips';
+  postChips.forEach(function(text) {
+    var btn = document.createElement('button');
+    btn.className = 'chip';
+    btn.type = 'button';
+    btn.textContent = text;
+    btn.addEventListener('click', function() {
+      chatInput.value = text;
+      sendBtn.classList.add('active');
+      chatInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+    });
+    chipsEl.appendChild(btn);
+  });
+  compileMsg.appendChild(chipsEl);
 
   autoScroll();
   chatInput.focus();
@@ -1941,8 +1976,13 @@ qInput.addEventListener('keydown', async (e) => {
         body: JSON.stringify({
           model: 'HuggingFaceH4/zephyr-7b-beta',
           messages: [
-            { role: 'system', content: 'You are a helpful research assistant. Answer the user\'s question directly and conversationally. Be specific and informative. Keep your answer to 2-3 paragraphs.' },
-            { role: 'user', content: question.substring(0, 500) }
+            { role: 'system', content: 'You are a research assistant helping evaluate a technical decision. Stay focused on the topic. Be specific and informative. Keep your answer to 2-3 paragraphs. Do NOT discuss unrelated topics.' },
+            { role: 'user', content: (function() {
+              var ctx = question.substring(0, 400);
+              var firstQ = window._conversationHistory.length > 0 ? window._conversationHistory[0].question : '';
+              if (firstQ && firstQ !== question) ctx = 'Original question: ' + firstQ.substring(0, 200) + '\n\nFollow-up: ' + ctx;
+              return ctx;
+            })() }
           ],
           max_tokens: 400,
           temperature: 0.7,
@@ -2045,18 +2085,30 @@ function generateFollowUpResponse(question) {
       { type: 'recommendation', text: 'Define a clear go/no-go checklist for scaling from pilot to broader rollout.' }
     ];
   } else {
-    // Generic follow-up that references the original question
+    // Generic follow-up — reference compile state if we just compiled
     var firstQ = window._conversationHistory.length > 0 ? window._conversationHistory[0].question : '';
-    var cleanQ = question.replace(/^\/[\w-]+\s*/, '').trim() || question; // strip slash prefix
+    var compResult = window._compilationResult;
     text = 'Building on that';
     if (firstQ) text += ' — your original question was about <em>' + escapeHtml(firstQ.substring(0, 80)) + '</em>';
-    text += '.<br><br>So far we have ' + prevClaims.length + ' claims.';
-    if (risks.length > 0) text += ' We\'ve flagged ' + risks.length + ' risk' + (risks.length > 1 ? 's' : '') + '.';
-    if (recs.length > 0) text += ' ' + recs.length + ' recommendation' + (recs.length > 1 ? 's' : '') + '.';
-    text += '<br><br>To go deeper, try asking about a specific aspect — costs, timeline, team impact, or alternatives.';
-    claims = [
-      { type: 'factual', text: 'The conversation has covered ' + prevClaims.length + ' claims across ' + window._turnCount + ' exchanges, with ' + risks.length + ' risks identified.' }
-    ];
+    text += '.';
+
+    if (compResult && compResult.missing && compResult.missing.length > 0) {
+      // Post-compile: guide user to fill gaps
+      text += '<br><br>The last compile flagged missing claim types: <strong>' + compResult.missing.join(', ') + '</strong>. Let\'s fill those gaps.';
+      if (compResult.missing.indexOf('risk') !== -1) {
+        text += '<br><br>What could go wrong with this approach? What are the failure modes?';
+        claims = [{ type: 'risk', text: 'Failure modes and rollback scenarios have not been explored for ' + (firstQ || 'this decision') + '.' }];
+      } else {
+        text += '<br><br>Try asking about ' + compResult.missing[0] + 's specifically.';
+        claims = [];
+      }
+    } else {
+      text += '<br><br>So far we have ' + prevClaims.length + ' claims.';
+      if (risks.length > 0) text += ' We\'ve flagged ' + risks.length + ' risk' + (risks.length > 1 ? 's' : '') + '.';
+      if (recs.length > 0) text += ' ' + recs.length + ' recommendation' + (recs.length > 1 ? 's' : '') + '.';
+      text += '<br><br>To go deeper, try asking about costs, timeline, team impact, or alternatives.';
+      claims = [];
+    }
   }
 
   return { text: text, claims: claims };
