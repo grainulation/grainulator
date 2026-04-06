@@ -216,6 +216,7 @@ canvas.active{opacity:1}
   .chat-area{padding:0.5rem;flex:1 1 0%;overflow-y:auto}
   .msg{max-width:92%;font-size:0.75rem}
   .input-bar{gap:0.3rem;padding-bottom:calc(0.5rem + env(safe-area-inset-bottom,0px))}
+  .app-header{padding:0.4rem 0.5rem;justify-content:space-between;width:100%}
   .header-btn{font-size:0.6rem;padding:0.3rem 0.5rem;min-height:28px}
 }
 
@@ -1894,9 +1895,11 @@ async function loadModel(modelId) {
   window._modelTokenizer = null;
   window._activeModelId = modelId;
 
-  // Show input bar immediately (disabled, but picker is accessible)
+  // Show input bar (disabled — picker accessible, textarea locked)
   var inputBarEl = document.getElementById('inputBar');
   inputBarEl.classList.add('visible');
+  chatInput.disabled = true;
+  chatInput.placeholder = 'loading...';
 
   // Update picker label
   var m = MODELS.find(function(x) { return x.id === modelId; });
@@ -1973,9 +1976,6 @@ if (!CASCADE_OFF) {
     // Always start with smallest model (fast load), user can upgrade via picker
     loadModel(MODELS[0].id);
   })();
-
-  // Safety: if nothing has loaded after 5s, bloom input for Track A
-  setTimeout(function() { if (uxState === 'LAVA_ONLY') { transitionTo('LAVA_WITH_INPUT'); } }, 5000);
 }
 
 // ===================================================================
