@@ -94,15 +94,15 @@
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html{height:100%;overflow:hidden;background:transparent}
-body{height:100%;overflow:hidden;background:#060d10;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+html{height:100vh;overflow:hidden;background:transparent}
+body{height:100vh;overflow:hidden;background:#060d10;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
 /* Canvas — fades in after load */
-canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;opacity:0;transition:opacity 1.5s ease}
+canvas{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;opacity:0;transition:opacity 1.5s ease}
 canvas.active{opacity:1}
 
 /* Dim overlay — JS controls opacity for CHAT_ACTIVE / focus mode */
-.dim-overlay{position:fixed;inset:0;z-index:1;background:#0c1a1e;opacity:0;transition:opacity 0.6s ease;pointer-events:none}
+.dim-overlay{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:1;background:#0c1a1e;opacity:0;transition:opacity 0.6s ease;pointer-events:none}
 
 /* Top progress bar — model download */
 
