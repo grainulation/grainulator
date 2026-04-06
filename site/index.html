@@ -1757,9 +1757,9 @@ function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 // MODEL ENGINE — Transformers.js with WebGPU, model picker, streaming
 // ===================================================================
 const MODELS = [
-  { id: 'HuggingFaceTB/SmolLM2-360M-Instruct', label: 'SmolLM2 360M', size: '~200MB', tier: 'minimal' },
-  { id: 'HuggingFaceTB/SmolLM2-1.7B-Instruct', label: 'SmolLM2 1.7B', size: '~1GB', tier: 'reduced-gpu' },
-  { id: 'onnx-community/Qwen2.5-1.5B-Instruct', label: 'Qwen2.5 1.5B', size: '~900MB', tier: 'reduced-gpu' },
+  { id: 'onnx-community/SmolLM2-360M-Instruct', label: 'SmolLM2 360M', size: '~200MB', tier: 'minimal' },
+  { id: 'onnx-community/SmolLM2-1.7B-Instruct', label: 'SmolLM2 1.7B', size: '~1GB', tier: 'reduced-gpu' },
+  { id: 'onnx-community/Qwen2.5-1.5B-Instruct', label: 'Qwen2.5 1.5B', size: '~900MB', tier: 'full' },
   { id: 'onnx-community/Phi-3.5-mini-instruct-onnx-web', label: 'Phi 3.5 Mini', size: '~2.3GB', tier: 'full' },
 ];
 
@@ -1822,6 +1822,10 @@ async function loadModel(modelId) {
   window._modelTokenizer = null;
   window._activeModelId = modelId;
 
+  // Show input bar immediately (disabled, but picker is accessible)
+  var inputBarEl = document.getElementById('inputBar');
+  inputBarEl.classList.add('visible');
+
   // Update picker label
   var m = MODELS.find(function(x) { return x.id === modelId; });
   modelPicker.textContent = m ? m.label.split(' ').pop() : '···';
@@ -1842,28 +1846,39 @@ async function loadModel(modelId) {
     if (window._modelAbort.signal.aborted) throw new Error('Cancelled');
 
     var pipeline = transformers.pipeline;
-    var env = transformers.env;
 
     // Prefer WebGPU, fall back to WASM
     var device = navigator.gpu ? 'webgpu' : 'wasm';
 
+    // Track total download progress across files
+    var fileProgress = {};
+    var totalFiles = 0;
+    var doneFiles = 0;
+
     var generator = await pipeline('text-generation', modelId, {
       device: device,
-      dtype: 'q4f16',
+      dtype: device === 'webgpu' ? 'q4f16' : 'q4',
       progress_callback: function(progress) {
-        if (window._modelAbort.signal.aborted) throw new Error('Cancelled');
-        if (progress.status === 'progress' && progress.progress != null) {
-          var pct = Math.round(progress.progress);
+        if (window._modelAbort.signal.aborted) return;
+        if (progress.status === 'initiate') {
+          totalFiles++;
+        } else if (progress.status === 'progress' && progress.file) {
+          fileProgress[progress.file] = progress.progress || 0;
+          // Average progress across all tracked files
+          var sum = 0; var count = 0;
+          for (var f in fileProgress) { sum += fileProgress[f]; count++; }
+          var pct = count > 0 ? Math.round(sum / Math.max(count, totalFiles)) : 0;
           var fill = document.getElementById('topProgressFill');
           if (fill) fill.style.width = pct + '%';
-          if (window._setPreloadProgress) window._setPreloadProgress(pct / 100);
           updateModelProgress(pct);
           announceProgress(pct);
+        } else if (progress.status === 'done') {
+          doneFiles++;
         }
       }
     });
 
-    if (window._modelAbort.signal.aborted) { generator.dispose(); throw new Error('Cancelled'); }
+    if (window._modelAbort.signal.aborted) { if (generator.dispose) generator.dispose(); throw new Error('Cancelled'); }
 
     window._modelEngine = generator;
     window._modelReady = true;
@@ -1945,56 +1960,47 @@ qInput.addEventListener('keydown', async (e) => {
   // Transition to CHAT_ACTIVE on first message
   if (uxState !== 'CHAT_ACTIVE') transitionTo('CHAT_ACTIVE');
 
-  // ── Layer 1: Live inference with streaming ──────────
+  // ── Layer 1: Live inference ──────────
   if (window._modelReady && window._modelEngine) {
     inferenceRunning = true;
     qInput.disabled = true;
 
     addMessage('user', question);
-    // Create streaming AI message (replaces thinking dots)
-    var streamMsg = addMessage('ai', '<span class="stream-cursor"></span>');
-    var streamText = '';
+    addThinking();
 
     try {
-      const systemPrompt = 'You are a helpful research assistant. Answer the user\'s question directly and conversationally. Be specific and informative. If you can identify risks, constraints, or recommendations, mention them naturally in your response. Keep your answer to 2-4 paragraphs.';
-
       const messages = [
-        { role: 'system', content: systemPrompt },
+        { role: 'system', content: 'You are a helpful research assistant. Answer the user\'s question directly and conversationally. Be specific and informative. Keep your answer to 2-4 paragraphs.' },
         { role: 'user', content: question }
       ];
 
       const output = await window._modelEngine(messages, {
         max_new_tokens: 512,
         temperature: 0.7,
-        do_sample: true,
-        return_full_text: false,
-        callback_function: function(beams) {
-          // Streaming: update message with each token
-          if (beams && beams[0] && beams[0].generated_text != null) {
-            streamText = beams[0].generated_text;
-            streamMsg.innerHTML = escapeHtml(streamText).replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>') + '<span class="stream-cursor"></span>';
-            autoScroll();
-          }
-        }
+        do_sample: true
       });
 
-      // Final output
+      // Extract generated text from pipeline output
       var raw = '';
-      if (output && output[0] && output[0].generated_text) {
-        // generated_text may be string or array of messages
+      if (output && output[0]) {
         var gt = output[0].generated_text;
         if (typeof gt === 'string') {
           raw = gt.trim();
         } else if (Array.isArray(gt)) {
-          var last = gt[gt.length - 1];
-          raw = (last && last.content) ? last.content.trim() : '';
+          // Chat pipeline returns array of messages — get the last assistant message
+          for (var i = gt.length - 1; i >= 0; i--) {
+            if (gt[i].role === 'assistant' && gt[i].content) { raw = gt[i].content.trim(); break; }
+          }
+          if (!raw && gt.length > 0) {
+            var last = gt[gt.length - 1];
+            raw = (last && last.content) ? last.content.trim() : '';
+          }
         }
       }
-      if (!raw && streamText) raw = streamText.trim();
       if (!raw || raw.length < 10) throw new Error('Empty response');
 
-      // Finalize streaming message (remove cursor)
-      streamMsg.innerHTML = escapeHtml(raw).replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
+      removeThinking();
+      var aiMsg = addMessage('ai', escapeHtml(raw).replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>'));
 
       // Extract claims from the natural language response
       var extractedClaims = extractClaimsFromText(raw, question);
@@ -2006,7 +2012,7 @@ qInput.addEventListener('keydown', async (e) => {
         window._allClaims = window._allClaims.concat(reIdClaims);
         window._turnCount++;
         window._liveClaims = window._allClaims;
-        streamMsg.appendChild(renderClaimsToggle(reIdClaims));
+        aiMsg.appendChild(renderClaimsToggle(reIdClaims));
         showCompileButton();
         saveSession();
       }
@@ -2014,7 +2020,7 @@ qInput.addEventListener('keydown', async (e) => {
 
     } catch (err) {
       console.warn('Inference failed:', err);
-      if (streamMsg && streamText.length < 10) streamMsg.remove();
+      removeThinking();
       fallbackToCascade(question, cascadeStart);
     } finally {
       inferenceRunning = false;
