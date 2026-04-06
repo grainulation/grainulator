@@ -162,7 +162,7 @@ canvas.active{opacity:1}
 .app.chat-active .compile-bar{position:relative;flex-shrink:0}
 .app.chat-active .input-bar{position:relative;bottom:auto;left:auto;right:auto;z-index:auto;flex-shrink:0;padding-bottom:calc(0.5rem + env(safe-area-inset-bottom,0px))}
 .input-wrap{position:relative;flex:1}
-.chat-input{width:100%;font-family:inherit;font-size:max(1rem,16px);color:#fff;background:rgba(141,246,255,0.25);border:1px solid rgba(141,246,255,0.2);border-radius:4px;padding:0.7rem 3rem 0.7rem 1rem;outline:none;transition:border-color 0.3s;resize:none;overflow:hidden;min-height:44px;max-height:120px}
+.chat-input{width:100%;font-family:inherit;font-size:max(1rem,16px);color:rgba(141,246,255,1);background:rgba(255,255,255,0.25);border:1px solid rgba(141,246,255,0.2);border-radius:4px;padding:0.7rem 3rem 0.7rem 1rem;outline:none;transition:border-color 0.3s;resize:none;overflow:hidden;min-height:44px;max-height:120px}
 .chat-input:focus{border-color:rgba(141,246,255,0.5)}
 .chat-input::placeholder{color:rgba(255,255,255,0.25)}
 .send-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.9);border:none;color:#0c1a1e;cursor:pointer;display:none;align-items:center;justify-content:center}
@@ -2327,7 +2327,7 @@ function updateCascadeDebug(opts) {
       _val = v;
       if (v) {
         var m = MODELS.find(function(x) { return x.id === window._activeModelId; });
-        chatInput.placeholder = 'Ask anything (' + (m ? m.label : 'AI') + ')...';
+        chatInput.placeholder = 'Ask anything...';
       }
     },
     configurable: true,
