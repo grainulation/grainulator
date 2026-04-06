@@ -111,30 +111,17 @@ canvas.active{opacity:1}
 /* App shell — flexbox column, full viewport height, iOS safe */
 .app{display:flex;flex-direction:column;height:100vh;height:100dvh;height:-webkit-fill-available;position:relative;z-index:10;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace}
 
-/* Splash — big ghost shrinks into install button */
-.app-header{display:flex;align-items:center;justify-content:center;gap:0.8rem;padding:0.6rem 1rem;z-index:15;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);transition:all 0.6s cubic-bezier(0.4,0,0.2,1)}
-.app.chat-active .app-header{position:relative;top:auto;left:auto;transform:none;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.04)}
-/* Splash: big centered ghost fades out, small ghost in button fades in */
-.splash-hero{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100px;height:100px;opacity:1;z-index:16;filter:drop-shadow(0 0 20px rgba(141,246,255,0.3));transition:opacity 0.8s ease}
+/* Header — install left, new chat right */
+.app-header{display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0.8rem;z-index:15;position:relative;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.splash-hero{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100px;height:100px;opacity:1;z-index:16;filter:drop-shadow(0 0 20px rgba(141,246,255,0.3));transition:opacity 0.8s ease;pointer-events:none}
 .splash-hero.fade{opacity:0}
-.header-btn img{width:28px;height:28px;opacity:0}
-.header-btn.revealed img{opacity:0.9;transition:opacity 0.5s ease}
-.app.chat-active .header-btn img{width:20px;height:20px}
-/* Install button: logo stacked on top, bigger */
-#ctaInstall{flex-direction:column;gap:0.4rem;padding:0.8rem 1.5rem;text-align:center}
-#ctaInstall img{width:112px;height:112px}
-.app.chat-active #ctaInstall{flex-direction:row;padding:0.3rem 0.7rem;gap:0.4rem}
-.app.chat-active #ctaInstall img{width:20px;height:20px}
-.header-btn{font-size:clamp(0.7rem,1.2vw,0.9rem);padding:0.5rem 1.2rem;height:auto;min-height:44px;color:rgba(141,246,255,0.7);border:1px solid transparent;border-radius:4px;background:none;cursor:pointer;font-family:inherit;transition:all 0.6s cubic-bezier(0.4,0,0.2,1);display:inline-flex;align-items:center;gap:0.6rem;text-decoration:none;white-space:nowrap;overflow:hidden}
-.app.chat-active .header-btn{font-size:0.6rem;padding:0.3rem 0.7rem;min-height:32px;gap:0.4rem}
-.header-btn.revealed{border-color:rgba(141,246,255,0.2)}
+.header-btn{font-size:0.65rem;padding:0.35rem 0.7rem;min-height:32px;color:rgba(141,246,255,0.7);border:1px solid rgba(141,246,255,0.2);border-radius:4px;background:none;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:0.4rem;text-decoration:none;white-space:nowrap;transition:all 0.2s}
 .header-btn:hover{border-color:rgba(141,246,255,0.4);color:#8df6ff}
-.header-btn .btn-text{max-width:0;opacity:0;overflow:hidden;transition:max-width 0.6s ease 0.3s,opacity 0.4s ease 0.5s}
+.header-btn img{width:20px;height:20px;opacity:0.9}
+.header-btn .btn-text{overflow:hidden;max-width:0;opacity:0;transition:max-width 0.4s ease,opacity 0.3s ease}
 .header-btn.revealed .btn-text{max-width:300px;opacity:1}
-.new-chat-btn{display:none}
-.app.chat-active .new-chat-btn{display:inline-flex;border-color:rgba(141,246,255,0.2)}
-.app.chat-active .new-chat-btn .btn-text{max-width:300px;opacity:1}
-.new-chat-btn:hover{color:#8df6ff;border-color:rgba(141,246,255,0.3)}
+.new-chat-btn{border-color:rgba(141,246,255,0.15);color:rgba(141,246,255,0.5)}
+.new-chat-btn .btn-text{max-width:300px;opacity:1}
 
 /* Chat area — hidden until CHAT_ACTIVE */
 .chat-area{flex:1 1 0%;min-height:0;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:0.8rem;scroll-behavior:smooth;opacity:0;transition:opacity 0.4s ease}
@@ -229,8 +216,7 @@ canvas.active{opacity:1}
   .chat-area{padding:0.5rem;flex:1 1 0%;overflow-y:auto}
   .msg{max-width:92%;font-size:0.75rem}
   .input-bar{gap:0.3rem;padding-bottom:calc(0.5rem + env(safe-area-inset-bottom,0px))}
-  #ctaInstall img{width:80px;height:80px}
-  #ctaInstall{padding:0.6rem 1rem}
+  .header-btn{font-size:0.6rem;padding:0.3rem 0.5rem;min-height:28px}
 }
 
 /* Desktop enhancements */
@@ -391,17 +377,15 @@ let inferenceRunning = false;
 let uxState = 'LAVA_ONLY';
 let modelReady = false;
 
-// Splash: big ghost fades out, button with small ghost + text fades in
+// Splash: ghost fades out, install text slides in
 (function runSplash() {
   var hero = document.getElementById('splashHero');
   var installBtn = document.getElementById('ctaInstall');
-  // 1.2s: fade out big ghost, reveal button simultaneously
   setTimeout(function() {
     hero.classList.add('fade');
     installBtn.classList.add('revealed');
-  }, 1200);
-  // 2s: remove hero element entirely
-  setTimeout(function() { hero.remove(); }, 2000);
+  }, 800);
+  setTimeout(function() { hero.remove(); }, 1600);
 })();
 
 function transitionTo(newState) {
@@ -902,30 +886,7 @@ function extractClaimsFromText(text, question) {
 }
 
 function showWelcomeChips() {
-  // Natural wheat-style intro
-  var intro = addMessage('ai', 'What question are you exploring? I\'ll run a research sprint — gathering claims, grading evidence, and flagging gaps.');
-  var examples = [
-    'should we use postgres or mongo for our new service?',
-    'is serverless really cheaper at scale?',
-    'what are we missing in our auth migration plan?',
-    'how does Stripe handle idempotency?',
-  ];
-  var container = document.createElement('div');
-  container.className = 'follow-up-chips';
-  examples.forEach(function(text) {
-    var btn = document.createElement('button');
-    btn.className = 'chip';
-    btn.type = 'button';
-    btn.textContent = text;
-    btn.addEventListener('click', function() {
-      chatInput.value = text;
-      sendBtn.classList.add('active');
-      intro.remove();
-      chatInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
-    });
-    container.appendChild(btn);
-  });
-  intro.appendChild(container);
+  addMessage('ai', 'What are you exploring? Ask anything — I\'ll gather evidence, flag risks, and grade confidence.');
 }
 
 // Generate wheat-style next step chips based on current sprint state
