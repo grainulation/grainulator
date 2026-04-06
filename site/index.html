@@ -238,6 +238,10 @@ canvas.active{opacity:1}
 /* PWA */
 .pwa-standalone .cta-install{display:none}
 
+/* Streaming cursor */
+.stream-cursor{display:inline-block;width:2px;height:1em;background:#8df6ff;margin-left:2px;animation:blink 0.8s step-end infinite;vertical-align:text-bottom}
+@keyframes blink{50%{opacity:0}}
+
 /* Reduced motion */
 @media(prefers-reduced-motion:reduce){
   .msg,.thinking-dots span{animation:none!important;opacity:1}
@@ -275,6 +279,18 @@ canvas.active{opacity:1}
 
 /* Character counter */
 .char-counter{font-size:0.5rem;color:rgba(255,255,255,0.25);text-align:right;padding:0.1rem 0.5rem;display:none}
+
+/* Model picker */
+.model-picker{flex-shrink:0;width:36px;height:36px;border-radius:50%;border:1px solid rgba(141,246,255,0.2);background:none;color:rgba(141,246,255,0.6);cursor:pointer;font-family:inherit;font-size:0.55rem;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all 0.2s;position:relative}
+.model-picker:hover{border-color:rgba(141,246,255,0.5);color:#8df6ff}
+.model-picker.loading{animation:picker-pulse 2s ease-in-out infinite}
+@keyframes picker-pulse{0%,100%{opacity:0.5}50%{opacity:1}}
+.model-menu{display:none;position:absolute;bottom:calc(100% + 8px);left:0;background:rgba(12,26,30,0.97);border:1px solid rgba(141,246,255,0.2);border-radius:4px;min-width:220px;z-index:20;padding:0.3rem 0}
+.model-menu.open{display:block}
+.model-menu-item{display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0.8rem;font-family:inherit;font-size:0.65rem;color:rgba(255,255,255,0.7);background:none;border:none;width:100%;text-align:left;cursor:pointer;min-height:36px}
+.model-menu-item:hover{background:rgba(141,246,255,0.08);color:#fff}
+.model-menu-item.active{color:#8df6ff}
+.model-menu-item .model-size{margin-left:auto;color:rgba(255,255,255,0.3);font-size:0.55rem}
 
 /* File attachment (button removed, drag-drop or JS only) */
 .file-chip{font-size:0.6rem;color:rgba(141,246,255,0.7);background:rgba(141,246,255,0.08);border:1px solid rgba(141,246,255,0.15);border-radius:12px;padding:0.2rem 0.6rem;display:inline-flex;align-items:center;gap:0.3rem}
@@ -316,6 +332,7 @@ canvas.active{opacity:1}
 
   <div class="input-bar" id="inputBar">
     <input type="file" id="fileInput" accept=".txt,.md,.json,.csv" class="sr-only">
+    <button class="model-picker" id="modelPicker" type="button" aria-label="Switch model" title="Switch model"></button>
     <div class="input-wrap">
       <label for="chatInput" class="sr-only">Research question</label>
       <textarea
@@ -1737,94 +1754,130 @@ function currentClaims() {
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // ===================================================================
-// WEBLLM PRELOADING — silent, background, progressive, lazy
+// MODEL ENGINE — Transformers.js with WebGPU, model picker, streaming
 // ===================================================================
-// Three-state machine: NOT_READY → READY → ERROR
-// Input starts disabled. Model downloads silently. Input enables when ready.
-if (CASCADE_OFF) { /* skip */ } else {
-(async function initWebLLM() {
+const MODELS = [
+  { id: 'HuggingFaceTB/SmolLM2-360M-Instruct', label: 'SmolLM2 360M', size: '~200MB', tier: 'minimal' },
+  { id: 'HuggingFaceTB/SmolLM2-1.7B-Instruct', label: 'SmolLM2 1.7B', size: '~1GB', tier: 'reduced-gpu' },
+  { id: 'onnx-community/Qwen2.5-1.5B-Instruct', label: 'Qwen2.5 1.5B', size: '~900MB', tier: 'reduced-gpu' },
+  { id: 'onnx-community/Phi-3.5-mini-instruct-onnx-web', label: 'Phi 3.5 Mini', size: '~2.3GB', tier: 'full' },
+];
+
+window._modelEngine = null;
+window._modelTokenizer = null;
+window._modelReady = false;
+window._activeModelId = null;
+window._modelAbort = null;
+
+// Model picker UI
+const modelPicker = document.getElementById('modelPicker');
+const modelMenu = document.createElement('div');
+modelMenu.className = 'model-menu';
+modelMenu.id = 'modelMenu';
+modelPicker.appendChild(modelMenu);
+modelPicker.textContent = '···';
+
+function renderModelMenu() {
+  modelMenu.innerHTML = '';
+  MODELS.forEach(function(m) {
+    var btn = document.createElement('button');
+    btn.className = 'model-menu-item' + (m.id === window._activeModelId ? ' active' : '');
+    btn.type = 'button';
+    btn.innerHTML = escapeHtml(m.label) + '<span class="model-size">' + escapeHtml(m.size) + '</span>';
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      modelMenu.classList.remove('open');
+      if (m.id !== window._activeModelId) loadModel(m.id);
+    });
+    modelMenu.appendChild(btn);
+  });
+}
+renderModelMenu();
+
+modelPicker.addEventListener('click', function(e) {
+  e.stopPropagation();
+  modelMenu.classList.toggle('open');
+});
+document.addEventListener('click', function() { modelMenu.classList.remove('open'); });
+
+async function detectTier() {
+  if (!navigator.gpu) return 'minimal';
+  try {
+    const adapter = await navigator.gpu.requestAdapter();
+    if (!adapter) return 'minimal';
+    const maxBuf = adapter.limits?.maxBufferSize || Infinity;
+    if (maxBuf < 256 * 1024 * 1024) return 'reduced-gpu';
+    return 'full';
+  } catch { return 'minimal'; }
+}
+
+async function loadModel(modelId) {
   const cancelBtn = document.getElementById('cancel-btn');
 
-  // Tier detection — skip network speed (Chrome caps at 10Mbps)
-  async function detectTier() {
-    if (!navigator.gpu) return 'minimal';
-    try {
-      const adapter = await navigator.gpu.requestAdapter();
-      if (!adapter) return 'minimal';
-      const maxBuf = adapter.limits?.maxBufferSize || Infinity;
-      if (maxBuf < 256 * 1024 * 1024) return 'reduced-gpu';
-      return 'full';
-    } catch { return 'minimal'; }
-  }
+  // Abort previous load if in progress
+  if (window._modelAbort) { window._modelAbort.abort(); }
+  window._modelAbort = new AbortController();
+  window._modelReady = false;
+  window._modelEngine = null;
+  window._modelTokenizer = null;
+  window._activeModelId = modelId;
 
-  // Return visitor fast path: check if model weights are cached
-  let likelyCached = false;
-  if (window.caches) {
-    try {
-      const cache = await caches.open('webllm/model');
-      const keys = await cache.keys();
-      if (keys.length > 5) likelyCached = true;
-    } catch(e) {}
-  }
+  // Update picker label
+  var m = MODELS.find(function(x) { return x.id === modelId; });
+  modelPicker.textContent = m ? m.label.split(' ').pop() : '···';
+  modelPicker.classList.add('loading');
+  renderModelMenu();
 
-  const tier = await detectTier();
-  document.documentElement.setAttribute('data-tier', tier);
-  if (likelyCached) document.documentElement.setAttribute('data-model-cached', 'true');
-
-  // No WebGPU — Track A still works, bloom input now
-  if (tier === 'minimal') {
-    if (uxState === 'LAVA_ONLY') transitionTo('LAVA_WITH_INPUT');
-    return;
-  }
-
-  // WebGPU available — start in NOT_READY state, download model silently
-  // Privacy note shown in model status
-  const modelId = tier === 'full'
-    ? 'SmolLM2-1.7B-Instruct-q4f16_1-MLC'
-    : 'SmolLM2-360M-Instruct-q4f16_1-MLC';
-
-  const abortController = new AbortController();
   cancelBtn.style.display = 'inline-flex';
-  // Move pause-motion to left while cancel is showing (cal028)
-  const motionBtn = document.getElementById('motion-toggle');
-  if (motionBtn) { motionBtn.style.right = 'auto'; motionBtn.style.left = '16px'; }
-  cancelBtn.addEventListener('click', () => {
-    abortController.abort();
+  cancelBtn.onclick = function() {
+    if (window._modelAbort) window._modelAbort.abort();
     cancelBtn.style.display = 'none';
-    if (motionBtn) { motionBtn.style.left = ''; motionBtn.style.right = '16px'; }
-    // Move to ERROR state
+    modelPicker.classList.remove('loading');
     document.getElementById('topProgress').style.opacity = '0';
-  });
+    if (uxState === 'LAVA_ONLY') transitionTo('LAVA_WITH_INPUT');
+  };
 
   try {
-    const { CreateMLCEngine } = await import('https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.82/+esm');
-    if (abortController.signal.aborted) throw new Error('Cancelled');
+    var transformers = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.4.1/+esm');
+    if (window._modelAbort.signal.aborted) throw new Error('Cancelled');
 
-    const engine = await CreateMLCEngine(modelId, {
-      initProgressCallback: (report) => {
-        if (abortController.signal.aborted) throw new Error('Cancelled');
-        const pct = Math.round((report.progress || 0) * 100);
-        // Update top progress bar
-        var fill = document.getElementById('topProgressFill');
-        if (fill) fill.style.width = pct + '%';
-        if (window._setPreloadProgress) window._setPreloadProgress(report.progress || 0);
-        updateModelProgress(pct);
-        announceProgress(pct);
+    var pipeline = transformers.pipeline;
+    var env = transformers.env;
+
+    // Prefer WebGPU, fall back to WASM
+    var device = navigator.gpu ? 'webgpu' : 'wasm';
+
+    var generator = await pipeline('text-generation', modelId, {
+      device: device,
+      dtype: 'q4f16',
+      progress_callback: function(progress) {
+        if (window._modelAbort.signal.aborted) throw new Error('Cancelled');
+        if (progress.status === 'progress' && progress.progress != null) {
+          var pct = Math.round(progress.progress);
+          var fill = document.getElementById('topProgressFill');
+          if (fill) fill.style.width = pct + '%';
+          if (window._setPreloadProgress) window._setPreloadProgress(pct / 100);
+          updateModelProgress(pct);
+          announceProgress(pct);
+        }
       }
     });
 
-    // → READY state
-    window._webllmEngine = engine;
-    window._webllmReady = true;
+    if (window._modelAbort.signal.aborted) { generator.dispose(); throw new Error('Cancelled'); }
+
+    window._modelEngine = generator;
+    window._modelReady = true;
+    window._activeModelId = modelId;
+
     cancelBtn.style.display = 'none';
-    if (motionBtn) { motionBtn.style.left = ''; motionBtn.style.right = '16px'; }
+    modelPicker.classList.remove('loading');
     chatInput.placeholder = 'Ask anything...';
-    // Bloom input bar when model is ready
     if (uxState === 'LAVA_ONLY') transitionTo('LAVA_WITH_INPUT');
-    // Fade out top progress bar
     document.getElementById('topProgress').style.opacity = '0';
-    announceState('Live inference ready');
+    announceState('Model ready: ' + (m ? m.label : modelId));
     if (!document.hidden) chatInput.focus();
+    renderModelMenu();
+
     // If a question was queued from #q= hash, auto-submit
     if (window._queuedQuestion) {
       chatInput.value = window._queuedQuestion;
@@ -1834,15 +1887,31 @@ if (CASCADE_OFF) { /* skip */ } else {
     }
 
   } catch (err) {
-    console.warn('WebLLM:', err.message);
+    console.warn('Model load:', err.message);
     cancelBtn.style.display = 'none';
-    if (motionBtn) { motionBtn.style.left = ''; motionBtn.style.right = '16px'; }
+    modelPicker.classList.remove('loading');
     document.getElementById('topProgress').style.opacity = '0';
-    // WebLLM failed — fall back to Track A (fuzzy match + templates)
     if (uxState === 'LAVA_ONLY') transitionTo('LAVA_WITH_INPUT');
     if (typeof window._onWebLLMOffline === 'function') window._onWebLLMOffline();
   }
-})();
+}
+
+// Auto-load best model for device tier
+if (!CASCADE_OFF) {
+  (async function() {
+    var tier = await detectTier();
+    document.documentElement.setAttribute('data-tier', tier);
+
+    if (tier === 'minimal') {
+      // No WebGPU — Track A only
+      if (uxState === 'LAVA_ONLY') transitionTo('LAVA_WITH_INPUT');
+      return;
+    }
+
+    // Pick default model based on GPU tier
+    var defaultModel = MODELS.find(function(m) { return m.tier === tier; }) || MODELS[0];
+    loadModel(defaultModel.id);
+  })();
 }
 
 // ===================================================================
@@ -1876,39 +1945,60 @@ qInput.addEventListener('keydown', async (e) => {
   // Transition to CHAT_ACTIVE on first message
   if (uxState !== 'CHAT_ACTIVE') transitionTo('CHAT_ACTIVE');
 
-  // ── Layer 1: Live inference (model cached and ready) ──────────
-  if (window._webllmReady && window._webllmEngine) {
+  // ── Layer 1: Live inference with streaming ──────────
+  if (window._modelReady && window._modelEngine) {
     inferenceRunning = true;
     qInput.disabled = true;
 
-    // Show user message + thinking dots
     addMessage('user', question);
-    addThinking();
+    // Create streaming AI message (replaces thinking dots)
+    var streamMsg = addMessage('ai', '<span class="stream-cursor"></span>');
+    var streamText = '';
 
     try {
-      const systemPrompt = `You are a helpful research assistant. Answer the user's question directly and conversationally. Be specific and informative. If you can identify risks, constraints, or recommendations, mention them naturally in your response. Keep your answer to 2-4 paragraphs.`;
+      const systemPrompt = 'You are a helpful research assistant. Answer the user\'s question directly and conversationally. Be specific and informative. If you can identify risks, constraints, or recommendations, mention them naturally in your response. Keep your answer to 2-4 paragraphs.';
 
-      const response = await window._webllmEngine.chat.completions.create({
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: question }
-        ],
+      const messages = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: question }
+      ];
+
+      const output = await window._modelEngine(messages, {
+        max_new_tokens: 512,
         temperature: 0.7,
-        max_tokens: 600
+        do_sample: true,
+        return_full_text: false,
+        callback_function: function(beams) {
+          // Streaming: update message with each token
+          if (beams && beams[0] && beams[0].generated_text != null) {
+            streamText = beams[0].generated_text;
+            streamMsg.innerHTML = escapeHtml(streamText).replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>') + '<span class="stream-cursor"></span>';
+            autoScroll();
+          }
+        }
       });
 
-      const raw = response.choices[0].message.content.trim();
+      // Final output
+      var raw = '';
+      if (output && output[0] && output[0].generated_text) {
+        // generated_text may be string or array of messages
+        var gt = output[0].generated_text;
+        if (typeof gt === 'string') {
+          raw = gt.trim();
+        } else if (Array.isArray(gt)) {
+          var last = gt[gt.length - 1];
+          raw = (last && last.content) ? last.content.trim() : '';
+        }
+      }
+      if (!raw && streamText) raw = streamText.trim();
       if (!raw || raw.length < 10) throw new Error('Empty response');
 
-      // Show conversational response first
-      removeThinking();
-      var aiMsg = addMessage('ai', escapeHtml(raw).replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>'));
+      // Finalize streaming message (remove cursor)
+      streamMsg.innerHTML = escapeHtml(raw).replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
 
       // Extract claims from the natural language response
       var extractedClaims = extractClaimsFromText(raw, question);
       if (extractedClaims.length > 0) {
-        extractedClaims.forEach(function(c) { c.unverified = true; });
-        // Accumulate claims silently
         var reIdClaims = extractedClaims.map(function(c) {
           var idx = window._nextClaimIndex++;
           return { id: 'd' + String(idx).padStart(3, '0'), type: c.type, tier: 'stated', text: c.text, unverified: true };
@@ -1916,7 +2006,7 @@ qInput.addEventListener('keydown', async (e) => {
         window._allClaims = window._allClaims.concat(reIdClaims);
         window._turnCount++;
         window._liveClaims = window._allClaims;
-        aiMsg.appendChild(renderClaimsToggle(reIdClaims));
+        streamMsg.appendChild(renderClaimsToggle(reIdClaims));
         showCompileButton();
         saveSession();
       }
@@ -1924,8 +2014,7 @@ qInput.addEventListener('keydown', async (e) => {
 
     } catch (err) {
       console.warn('Inference failed:', err);
-      removeThinking();
-      // Fall through to Layer 0
+      if (streamMsg && streamText.length < 10) streamMsg.remove();
       fallbackToCascade(question, cascadeStart);
     } finally {
       inferenceRunning = false;
@@ -2155,15 +2244,16 @@ function updateCascadeDebug(opts) {
   panel.innerHTML = lines.join('<br>');
 }
 
-// Model ready watcher — update input placeholder when WebLLM loads
+// Model ready watcher — update input placeholder
 (function watchModelReady() {
-  let _val = window._webllmReady;
-  Object.defineProperty(window, '_webllmReady', {
+  let _val = window._modelReady;
+  Object.defineProperty(window, '_modelReady', {
     get() { return _val; },
     set(v) {
       _val = v;
       if (v) {
-        chatInput.placeholder = 'Ask anything (local AI ready)...';
+        var m = MODELS.find(function(x) { return x.id === window._activeModelId; });
+        chatInput.placeholder = 'Ask anything (' + (m ? m.label : 'AI') + ')...';
       }
     },
     configurable: true,
