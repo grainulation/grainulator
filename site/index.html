@@ -112,7 +112,7 @@ canvas.active{opacity:1}
 /* Header — install left, new chat right */
 .app-header{display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0.8rem;z-index:15;position:relative;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.04)}
 /* splash hero removed */
-.header-btn{font-size:0.65rem;padding:0.35rem 0.7rem;height:38px;color:rgba(141,246,255,0.7);border:1px solid rgba(141,246,255,0.2);border-radius:4px;background:rgba(255,255,255,0.5);cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:0.4rem;text-decoration:none;white-space:nowrap;transition:all 0.2s;box-sizing:border-box}
+.header-btn{font-size:0.65rem;padding:0.35rem 0.7rem;height:38px;color:rgba(141,246,255,1);border:1px solid rgba(141,246,255,0.2);border-radius:4px;background:rgba(255,255,255,0.25);cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:0.4rem;text-decoration:none;white-space:nowrap;transition:all 0.2s;box-sizing:border-box}
 .header-btn:hover{border-color:rgba(141,246,255,0.4);color:#8df6ff}
 .header-btn img{width:28px;height:28px;opacity:0.9}
 .header-btn .btn-text{overflow:hidden;max-width:0;opacity:0;transition:max-width 0.4s ease,opacity 0.3s ease}
@@ -162,7 +162,7 @@ canvas.active{opacity:1}
 .app.chat-active .compile-bar{position:relative;flex-shrink:0}
 .app.chat-active .input-bar{position:relative;bottom:auto;left:auto;right:auto;z-index:auto;flex-shrink:0;padding-bottom:calc(0.5rem + env(safe-area-inset-bottom,0px))}
 .input-wrap{position:relative;flex:1}
-.chat-input{width:100%;font-family:inherit;font-size:max(1rem,16px);color:#fff;background:rgba(255,255,255,0.5);border:1px solid rgba(141,246,255,0.2);border-radius:4px;padding:0.7rem 3rem 0.7rem 1rem;outline:none;transition:border-color 0.3s;resize:none;overflow:hidden;min-height:44px;max-height:120px}
+.chat-input{width:100%;font-family:inherit;font-size:max(1rem,16px);color:#fff;background:rgba(141,246,255,0.25);border:1px solid rgba(141,246,255,0.2);border-radius:4px;padding:0.7rem 3rem 0.7rem 1rem;outline:none;transition:border-color 0.3s;resize:none;overflow:hidden;min-height:44px;max-height:120px}
 .chat-input:focus{border-color:rgba(141,246,255,0.5)}
 .chat-input::placeholder{color:rgba(255,255,255,0.25)}
 .send-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:none;border:none;color:#8df6ff;cursor:pointer;display:none;align-items:center;justify-content:center}
@@ -194,7 +194,7 @@ canvas.active{opacity:1}
 
 /* Handoff section */
 .handoff-section{display:flex;flex-wrap:wrap;gap:0.6rem;margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.06)}
-.handoff-btn{font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:0.7rem;color:rgba(141,246,255,0.7);background:none;border:1px solid rgba(141,246,255,0.2);padding:0.6rem 1rem;border-radius:4px;cursor:pointer;transition:all 0.3s;min-height:44px}
+.handoff-btn{font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:0.7rem;color:rgba(141,246,255,1);background:none;border:1px solid rgba(141,246,255,0.2);padding:0.6rem 1rem;border-radius:4px;cursor:pointer;transition:all 0.3s;min-height:44px}
 .handoff-btn:hover,.handoff-btn:focus-visible{color:#8df6ff;border-color:rgba(141,246,255,0.5);box-shadow:0 0 15px rgba(141,246,255,0.1)}
 .handoff-primary{font-family:monospace;font-size:0.7rem;color:#8df6ff;background:rgba(141,246,255,0.08);border:1px solid rgba(141,246,255,0.3);padding:0.6rem 1rem;border-radius:4px;cursor:pointer;transition:all 0.3s;min-height:44px}
 .handoff-primary:hover{background:rgba(141,246,255,0.15);border-color:rgba(141,246,255,0.5)}
@@ -203,7 +203,7 @@ canvas.active{opacity:1}
 
 /* Follow-up chips */
 .follow-up-chips{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.8rem}
-.chip{font-family:monospace;font-size:0.65rem;color:rgba(141,246,255,0.7);background:none;border:1px solid rgba(141,246,255,0.2);padding:0.4rem 0.8rem;border-radius:12px;cursor:pointer;transition:all 0.3s;min-height:36px}
+.chip{font-family:monospace;font-size:0.65rem;color:rgba(141,246,255,1);background:none;border:1px solid rgba(141,246,255,0.2);padding:0.4rem 0.8rem;border-radius:12px;cursor:pointer;transition:all 0.3s;min-height:36px}
 .chip:hover{color:#8df6ff;border-color:rgba(141,246,255,0.5);box-shadow:0 0 12px rgba(141,246,255,0.1)}
 
 /* footer links removed — github link is the install button */
@@ -273,7 +273,7 @@ canvas.active{opacity:1}
 @keyframes picker-pulse{0%,100%{opacity:0.5}50%{opacity:1}}
 
 /* File attachment (button removed, drag-drop or JS only) */
-.file-chip{font-size:0.6rem;color:rgba(141,246,255,0.7);background:rgba(141,246,255,0.08);border:1px solid rgba(141,246,255,0.15);border-radius:12px;padding:0.2rem 0.6rem;display:inline-flex;align-items:center;gap:0.3rem}
+.file-chip{font-size:0.6rem;color:rgba(141,246,255,1);background:rgba(141,246,255,0.08);border:1px solid rgba(141,246,255,0.15);border-radius:12px;padding:0.2rem 0.6rem;display:inline-flex;align-items:center;gap:0.3rem}
 .file-chip .remove{cursor:pointer;opacity:0.5}
 .file-chip .remove:hover{opacity:1}
 </style>
