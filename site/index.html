@@ -2010,7 +2010,7 @@ function generateFollowUpResponse(question) {
   var text = '';
   var claims = [];
 
-  if (/blindspot|gap|missing|blind spot|what else/i.test(lower)) {
+  if (/blindspot|gap|missing|blind[- ]spot|what else/i.test(lower)) {
     var blindSpotAngles = [
       { text: 'What happens if this fails? Is there a rollback plan? Most teams skip this until it\'s too late.', claim: { type: 'risk', text: 'No rollback plan has been discussed — if the pilot fails, the path back needs to be defined.' } },
       { text: 'Who are the stakeholders who haven\'t weighed in yet? Decisions made without buy-in get relitigated later.', claim: { type: 'constraint', text: 'Stakeholder buy-in beyond the directly involved teams has not been validated.' } },
