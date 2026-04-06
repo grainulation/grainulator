@@ -173,9 +173,10 @@ canvas.active{opacity:1}
 /* Input bar — blooms up from bottom with spring animation */
 .input-bar{position:fixed;bottom:0;left:0;right:0;z-index:15;display:flex;align-items:center;padding:0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom,0px) + var(--kb-offset, 0px));background:rgba(12,26,30,0.95);border-top:1px solid rgba(255,255,255,0.06);transform:translateY(100%);transition:transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)}
 .input-bar.visible{transform:translateY(0)}
+.app.chat-active .compile-bar{position:relative;flex-shrink:0}
 .app.chat-active .input-bar{position:relative;bottom:auto;left:auto;right:auto;z-index:auto;flex-shrink:0}
 .input-wrap{position:relative;flex:1}
-.chat-input{width:100%;font-family:inherit;font-size:max(1rem,16px);color:#fff;background:rgba(255,255,255,0.06);border:1px solid rgba(141,246,255,0.2);border-radius:0;padding:0.7rem 3rem 0.7rem 1rem;outline:none;transition:border-color 0.3s;resize:none;overflow:hidden;min-height:44px;max-height:120px}
+.chat-input{width:100%;font-family:inherit;font-size:max(1rem,16px);color:#fff;background:rgba(255,255,255,0.06);border:1px solid rgba(141,246,255,0.2);border-radius:4px;padding:0.7rem 3rem 0.7rem 1rem;outline:none;transition:border-color 0.3s;resize:none;overflow:hidden;min-height:44px;max-height:120px}
 .chat-input:focus{border-color:rgba(141,246,255,0.5)}
 .chat-input::placeholder{color:rgba(255,255,255,0.25)}
 .send-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:none;border:none;color:#8df6ff;cursor:pointer;display:none;align-items:center;justify-content:center}
@@ -187,9 +188,11 @@ canvas.active{opacity:1}
 .model-bar{width:100%;height:3px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:0.3rem;overflow:hidden}
 .model-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,rgba(141,246,255,0.4),rgba(141,246,255,0.8));border-radius:2px;transition:width 0.4s ease}
 
-/* Compile system message */
-.compile-msg-btn{font-family:inherit;font-size:0.7rem;color:#8df6ff;background:rgba(141,246,255,0.08);border:1px solid rgba(141,246,255,0.2);padding:0.5rem 1rem;border-radius:4px;cursor:pointer;transition:all 0.3s;min-height:44px}
-.compile-msg-btn:hover{border-color:rgba(141,246,255,0.5)}
+/* Compile bar — sticky above input */
+.compile-bar{display:none;padding:0.3rem 0.5rem;background:rgba(12,26,30,0.9);border-top:1px solid rgba(141,246,255,0.1);justify-content:center}
+.compile-bar.visible{display:flex}
+.compile-msg-btn{font-family:inherit;font-size:0.65rem;color:#8df6ff;background:rgba(141,246,255,0.06);border:1px solid rgba(141,246,255,0.15);padding:0.4rem 1rem;border-radius:3px;cursor:pointer;transition:all 0.2s;min-height:32px;width:100%}
+.compile-msg-btn:hover{border-color:rgba(141,246,255,0.4)}
 .compile-msg-btn:disabled{opacity:0.3;cursor:not-allowed}
 
 /* Compiler pass lines in chat */
@@ -330,6 +333,7 @@ canvas.active{opacity:1}
     <!-- Messages render here -->
   </main>
 
+  <div class="compile-bar" id="compileBar"><button class="compile-msg-btn" id="compileMsgBtn" type="button">compile findings</button></div>
   <div class="input-bar" id="inputBar">
     <input type="file" id="fileInput" accept=".txt,.md,.json,.csv" class="sr-only">
     <button class="model-picker" id="modelPicker" type="button" aria-label="Switch model" title="Switch model"></button>
@@ -951,11 +955,13 @@ function renderClaimsToggle(claims) {
 }
 
 function showCompileButton() {
-  // Only show once
-  if (document.getElementById('compileMsgBtn')) return;
   if (window._allClaims.length < 3) return;
-  var compileMsg = addMessage('system', '<button class="compile-msg-btn" id="compileMsgBtn">compile findings</button>');
-  document.getElementById('compileMsgBtn').addEventListener('click', runCompile);
+  var bar = document.getElementById('compileBar');
+  bar.classList.add('visible');
+  var btn = document.getElementById('compileMsgBtn');
+  btn.textContent = 'compile ' + window._allClaims.length + ' claims';
+  btn.disabled = false;
+  btn.onclick = runCompile;
 }
 
 // New chat button
@@ -1771,11 +1777,13 @@ window._modelAbort = null;
 
 // Model picker UI
 const modelPicker = document.getElementById('modelPicker');
+const modelPickerLabel = document.createElement('span');
+modelPickerLabel.textContent = '···';
+modelPicker.appendChild(modelPickerLabel);
 const modelMenu = document.createElement('div');
 modelMenu.className = 'model-menu';
 modelMenu.id = 'modelMenu';
 modelPicker.appendChild(modelMenu);
-modelPicker.textContent = '···';
 
 function renderModelMenu() {
   modelMenu.innerHTML = '';
@@ -1837,7 +1845,7 @@ async function loadModel(modelId) {
 
   // Update picker label
   var m = MODELS.find(function(x) { return x.id === modelId; });
-  modelPicker.textContent = m ? m.label.split(' ').pop() : '···';
+  modelPickerLabel.textContent = m ? m.label.split(' ').pop() : '···';
   modelPicker.classList.add('loading');
   renderModelMenu();
 
@@ -1999,43 +2007,122 @@ qInput.addEventListener('keydown', async (e) => {
   fallbackToCascade(question, cascadeStart);
 });
 
+function isFollowUp(question) {
+  // Short messages that reference existing conversation
+  var lower = question.toLowerCase().trim();
+  if (lower.length < 40 && window._turnCount > 0) return true;
+  if (/^(yes|no|yeah|nah|we are|we do|we have|that|this|ok|sure|right|exactly|agreed|makes sense|any |what about|how about|can we|should we)/i.test(lower)) return true;
+  return false;
+}
+
+function generateFollowUpResponse(question) {
+  var prevClaims = window._allClaims;
+  var risks = prevClaims.filter(function(c) { return c.type === 'risk'; });
+  var recs = prevClaims.filter(function(c) { return c.type === 'recommendation'; });
+  var constraints = prevClaims.filter(function(c) { return c.type === 'constraint'; });
+  var lastQ = window._conversationHistory.length > 0 ? window._conversationHistory[window._conversationHistory.length - 1].question : '';
+
+  var lower = question.toLowerCase();
+  var text = '';
+  var claims = [];
+
+  if (/blindspot|gap|missing|blind spot|what else/i.test(lower)) {
+    text = 'Looking at the ' + prevClaims.length + ' claims so far, there are a few gaps worth noting:';
+    if (risks.length === 0) text += '<br><br>We haven\'t identified any risks yet — that\'s a significant blind spot. Every approach has downsides.';
+    if (constraints.length === 0) text += '<br><br>No constraints have been captured. What are the hard boundaries?';
+    text += '<br><br>Consider: what happens if this fails? What does rollback look like? Who are the stakeholders who haven\'t weighed in?';
+    claims = [
+      { type: 'risk', text: 'No rollback plan has been discussed — if the pilot fails, the path back to the current approach needs to be defined.' },
+      { type: 'constraint', text: 'Stakeholder buy-in beyond the pilot teams has not been validated.' }
+    ];
+  } else if (/witness|verify|evidence|prove|check/i.test(lower)) {
+    text = 'To strengthen the evidence, we\'d want to look at:';
+    text += '<br><br>1. Case studies from teams of similar size who made this change';
+    text += '<br>2. Metrics from the pilot teams — what are they actually measuring?';
+    text += '<br>3. Feedback from the 8 teams NOT in the pilot — are they bought in or resistant?';
+    claims = [
+      { type: 'recommendation', text: 'Collect quantitative metrics from pilot teams before expanding — anecdotal feedback is insufficient for org-wide decisions.' },
+      { type: 'risk', text: 'Selection bias in pilot teams (volunteers vs assigned) may not represent how the remaining teams will respond.' }
+    ];
+  } else if (/we are|we do|we have|we\'re|doing that|already/i.test(lower)) {
+    text = 'Good — that\'s noted. Building on what you\'ve shared so far:';
+    if (recs.length > 0) text += '<br><br>Given that context, the recommendation to <em>' + escapeHtml(recs[recs.length-1].text.toLowerCase().substring(0, 80)) + '</em> seems aligned with your approach.';
+    text += '<br><br>The key question now is: what\'s your success criteria? How will you know when it\'s time to expand from 2 teams to the next batch?';
+    claims = [
+      { type: 'constraint', text: 'Success criteria for the pilot phase need to be defined before expansion decisions are made.' },
+      { type: 'recommendation', text: 'Define a clear go/no-go checklist for scaling from pilot to broader rollout.' }
+    ];
+  } else {
+    // Generic follow-up that references context
+    var topicWords = [];
+    window._conversationHistory.forEach(function(h) { topicWords = topicWords.concat(significantWords(h.question)); });
+    var topic = topicWords.slice(0, 3).join(' ') || 'this';
+    text = 'Continuing on <strong>' + escapeHtml(topic) + '</strong> — ' + escapeHtml(question) + ' is a good angle to explore.';
+    text += '<br><br>Based on the ' + prevClaims.length + ' claims we\'ve gathered, the main tension is between moving quickly and making sure the foundation is solid.';
+    if (risks.length > 0) text += ' We\'ve flagged ' + risks.length + ' risk' + (risks.length > 1 ? 's' : '') + ' so far.';
+    claims = [
+      { type: 'factual', text: 'The conversation has covered ' + prevClaims.length + ' claims across ' + window._turnCount + ' exchanges, with ' + risks.length + ' risks identified.' }
+    ];
+  }
+
+  return { text: text, claims: claims };
+}
+
 function fallbackToCascade(question, cascadeStart) {
+  // Check if this is a follow-up to an existing conversation
+  if (isFollowUp(question) && window._turnCount > 0) {
+    removeThinking();
+    var followUp = generateFollowUpResponse(question);
+    var aiMsg = addMessage('ai', followUp.text);
+    var claims = followUp.claims.map(function(c) {
+      var idx = window._nextClaimIndex++;
+      return { id: 'd' + String(idx).padStart(3, '0'), type: c.type, tier: 'stated', text: c.text };
+    });
+    window._allClaims = window._allClaims.concat(claims);
+    window._turnCount++;
+    window._conversationHistory.push({ turn: window._turnCount, question: question, source: 'follow-up' });
+    window._liveClaims = window._allClaims;
+    if (claims.length > 0) aiMsg.appendChild(renderClaimsToggle(claims));
+    showCompileButton();
+    saveSession();
+    autoScroll();
+    return;
+  }
+
   const fuzzyResult = fuzzyMatchDemo(question, DEMO_LIBRARY);
 
   if (fuzzyResult && fuzzyResult.score > 0.4) {
-    // Strong fuzzy match — use pre-generated demo with conversational intro
     removeThinking();
     var demo = fuzzyResult.match;
     var intro = generateConversationalIntro(demo.claims, demo.question || question);
-    var aiMsg = addMessage('ai', intro);
-    // Re-ID and accumulate claims
+    var aiMsg2 = addMessage('ai', intro);
     var reIdClaims = demo.claims.map(function(c) {
       var idx = window._nextClaimIndex++;
       return { id: 'd' + String(idx).padStart(3, '0'), type: c.type, tier: c.tier, text: c.text };
     });
     window._allClaims = window._allClaims.concat(reIdClaims);
     window._turnCount++;
+    window._conversationHistory.push({ turn: window._turnCount, question: question, source: 'fuzzy' });
     window._liveClaims = window._allClaims;
-    aiMsg.appendChild(renderClaimsToggle(reIdClaims));
+    aiMsg2.appendChild(renderClaimsToggle(reIdClaims));
     showCompileButton();
     saveSession();
     autoScroll();
   } else {
-    // No strong match — generate a conversational template response
     removeThinking();
     var words = significantWords(question);
     var topic = words.slice().sort(function(a,b){ return b.length - a.length; }).slice(0,3).join(' ') || question;
     var response = generateConversationalFallback(topic, question);
-    var aiMsg2 = addMessage('ai', response.text);
-    // Accumulate extracted claims
-    var claims2 = response.claims.map(function(c) {
+    var aiMsg3 = addMessage('ai', response.text);
+    var claims3 = response.claims.map(function(c) {
       var idx = window._nextClaimIndex++;
       return { id: 'd' + String(idx).padStart(3, '0'), type: c.type, tier: 'stated', text: c.text };
     });
-    window._allClaims = window._allClaims.concat(claims2);
+    window._allClaims = window._allClaims.concat(claims3);
     window._turnCount++;
+    window._conversationHistory.push({ turn: window._turnCount, question: question, source: 'template' });
     window._liveClaims = window._allClaims;
-    if (claims2.length > 0) aiMsg2.appendChild(renderClaimsToggle(claims2));
+    if (claims3.length > 0) aiMsg3.appendChild(renderClaimsToggle(claims3));
     showCompileButton();
     saveSession();
     autoScroll();
