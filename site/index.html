@@ -976,7 +976,9 @@ function renderClaimsToggle(claims) {
 }
 
 function showCompileButton() {
-  if (window._allClaims.length < 3) return;
+  if (window._allClaims.length < 5) return;
+  var typeSet = new Set(); window._allClaims.forEach(function(c) { typeSet.add(c.type); });
+  if (typeSet.size < 2) return;
   var bar = document.getElementById('compileBar');
   bar.classList.add('visible');
   var btn = document.getElementById('compileMsgBtn');
@@ -1005,20 +1007,16 @@ document.getElementById('newChatBtn').addEventListener('click', function() {
 });
 
 // Send button + input wiring
+var _inputResizeTimer = null;
 chatInput.addEventListener('input', function() {
-  var hasContent = chatInput.value.trim().length > 0 || !!_attachedFileText;
-  sendBtn.classList.toggle('active', hasContent);
-  // Auto-expand textarea
-  this.style.height = 'auto';
-  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-  // Character counter
-  var counter = document.getElementById('charCounter');
-  if (this.value.length > 4000) {
-    counter.style.display = 'block';
-    counter.textContent = this.value.length + '/5000';
-  } else {
-    counter.style.display = 'none';
-  }
+  sendBtn.classList.toggle('active', chatInput.value.trim().length > 0 || !!_attachedFileText);
+  // Debounce auto-expand (avoids layout thrash on every keystroke)
+  var self = this;
+  if (_inputResizeTimer) cancelAnimationFrame(_inputResizeTimer);
+  _inputResizeTimer = requestAnimationFrame(function() {
+    self.style.height = 'auto';
+    self.style.height = Math.min(self.scrollHeight, 120) + 'px';
+  });
 });
 
 sendBtn.addEventListener('click', function() {
@@ -1257,63 +1255,7 @@ function fuzzyMatchDemo(query, library) {
 
 // ── Public: Template fallback for unmatched queries ──────────────────────────
 
-function templateFallback(query) {
-  const words = significantWords(query);
-
-  // Pick 2-3 most significant keywords (longest words tend to be most specific)
-  const keywords = words
-    .slice()
-    .sort(function (a, b) { return b.length - a.length; })
-    .slice(0, 3);
-
-  if (keywords.length === 0) {
-    keywords = ['this approach'];
-  }
-
-  const topic = keywords.join(' ');
-  const topicCap = topic.charAt(0).toUpperCase() + topic.slice(1);
-  const kw0 = keywords[0];
-  const kw0Cap = kw0.charAt(0).toUpperCase() + kw0.slice(1);
-
-  const claims = [
-    {
-      id: 'r001',
-      type: 'constraint',
-      tier: 'stated',
-      text: 'When evaluating ' + topic + ', teams must consider existing infrastructure dependencies, team expertise, and migration costs before committing to a direction.'
-    },
-    {
-      id: 'r002',
-      type: 'factual',
-      tier: 'stated',
-      text: topicCap + ' adoption has grown significantly in the past 2 years, with increasing production usage across mid-size and enterprise engineering organizations.'
-    },
-    {
-      id: 'r003',
-      type: 'risk',
-      tier: 'stated',
-      text: 'A key risk of ' + topic + ' is that early adopter enthusiasm can outpace organizational readiness, leading to partial rollouts that create maintenance burden.'
-    },
-    {
-      id: 'r004',
-      type: 'recommendation',
-      tier: 'stated',
-      text: 'For most teams, ' + kw0 + ' works best when introduced incrementally — start with a single non-critical service or project to validate assumptions before broader adoption.'
-    },
-    {
-      id: 'r005',
-      type: 'estimate',
-      tier: 'stated',
-      text: 'Migration to ' + kw0 + ' typically requires 4-8 weeks for an initial proof of concept, with full adoption spanning 2-4 months depending on team size and codebase complexity.'
-    }
-  ];
-
-  return {
-    question: query,
-    claims: claims,
-    isTemplate: true
-  };
-}
+// templateFallback removed — replaced by generateConversationalFallback
 
 function loadDemo(demo, opts) {
   opts = opts || {};
@@ -1549,78 +1491,7 @@ const COMPILER_PASSES = [
 // ===================================================================
 // Rx8: FOLLOW-UP CHIP GENERATION
 // ===================================================================
-function generateFollowUpChips(compilerResults) {
-  const chips = [];
-  // compilerResults: [parse, typeDistribution, evidenceStrength, tensions, coverage, confidence, verdict]
-  const typeDist = compilerResults[1];
-  const evidenceStr = compilerResults[2];
-  const tensions = compilerResults[3];
-  const coverage = compilerResults[4];
-
-  // Missing claim types
-  if (coverage.missing && coverage.missing.length > 0) {
-    if (coverage.missing.indexOf('risk') !== -1) {
-      chips.push('Find risks');
-    }
-    if (coverage.missing.indexOf('constraint') !== -1) {
-      chips.push('Add constraints');
-    }
-    if (coverage.missing.indexOf('recommendation') !== -1) {
-      chips.push('What should we recommend?');
-    }
-    if (coverage.missing.indexOf('factual') !== -1) {
-      chips.push('Add factual evidence');
-    }
-  }
-
-  // Type monoculture
-  if (typeDist.monoculture) {
-    chips.push('Diversify claim types');
-  }
-
-  // Tensions detected
-  if (tensions.tensions && tensions.tensions.length > 0) {
-    const t = tensions.tensions[0];
-    chips.push('Resolve tension between ' + t.pair[0] + ' and ' + t.pair[1]);
-  }
-
-  // Low evidence strength
-  if (evidenceStr.weak) {
-    chips.push('Strengthen evidence');
-  }
-
-  // Limit to 3 chips max
-  return chips.slice(0, 3);
-}
-
-// Generate gap-specific claims without LLM — template injection based on chip type
-function generateGapClaims(chipText, question) {
-  const idx = window._nextClaimIndex || 6;
-  const keywords = significantWords(question).slice(0, 3).join(' ');
-  const claims = [];
-  const chip = chipText.toLowerCase();
-
-  if (chip.includes('risk')) {
-    claims.push({ id: 'd' + String(idx).padStart(3, '0'), type: 'risk', tier: 'stated', text: 'A key risk of ' + keywords + ' is increased complexity during the transition period, requiring careful rollback planning.' });
-    claims.push({ id: 'd' + String(idx + 1).padStart(3, '0'), type: 'risk', tier: 'web', text: 'Teams adopting ' + keywords + ' report a 20-40% productivity dip in the first sprint as tooling and workflows adjust.' });
-  } else if (chip.includes('constraint')) {
-    claims.push({ id: 'd' + String(idx).padStart(3, '0'), type: 'constraint', tier: 'stated', text: 'Any approach to ' + keywords + ' must maintain backward compatibility with existing integrations.' });
-    claims.push({ id: 'd' + String(idx + 1).padStart(3, '0'), type: 'constraint', tier: 'documented', text: 'The ' + keywords + ' decision is constrained by the current team size and skill distribution.' });
-  } else if (chip.includes('diversify')) {
-    claims.push({ id: 'd' + String(idx).padStart(3, '0'), type: 'factual', tier: 'web', text: 'Industry surveys show that balanced research across constraints, risks, and recommendations produces more actionable decisions.' });
-    claims.push({ id: 'd' + String(idx + 1).padStart(3, '0'), type: 'estimate', tier: 'stated', text: 'Diversifying the claim set for ' + keywords + ' would require 2-3 additional research passes covering underrepresented perspectives.' });
-  } else if (chip.includes('evidence')) {
-    claims.push({ id: 'd' + String(idx).padStart(3, '0'), type: 'factual', tier: 'documented', text: 'Strengthening evidence for ' + keywords + ' requires moving from stated/web sources to tested benchmarks or production measurements.' });
-    claims.push({ id: 'd' + String(idx + 1).padStart(3, '0'), type: 'recommendation', tier: 'documented', text: 'Run a proof-of-concept for ' + keywords + ' to upgrade key claims from web-tier to tested-tier evidence.' });
-  } else if (chip.includes('tension') || chip.includes('resolve')) {
-    claims.push({ id: 'd' + String(idx).padStart(3, '0'), type: 'recommendation', tier: 'stated', text: 'The tension in ' + keywords + ' may be resolved by scoping the decision to a specific team or use case rather than applying it org-wide.' });
-  } else {
-    claims.push({ id: 'd' + String(idx).padStart(3, '0'), type: 'factual', tier: 'web', text: 'Further research on ' + keywords + ' could uncover additional perspectives not captured in the current claim set.' });
-  }
-
-  window._nextClaimIndex = (window._nextClaimIndex || 6) + claims.length;
-  return claims;
-}
+// generateFollowUpChips + generateGapClaims removed — replaced by generateNextStepChips
 
 async function runCompile() {
   window._trackEvent?.('compile_run');
@@ -1984,7 +1855,7 @@ qInput.addEventListener('keydown', async (e) => {
   if (e.shiftKey) return; // Shift+Enter adds newline
   e.preventDefault();
   if (inferenceRunning) return;
-  var question = qInput.value.trim();
+  var question = qInput.value.trim().substring(0, 500);
   if (!question && !_attachedFileText) return;
 
   // Prepend file content if attached
@@ -2064,10 +1935,14 @@ qInput.addEventListener('keydown', async (e) => {
 });
 
 function isFollowUp(question) {
-  // Short messages that reference existing conversation
   var lower = question.toLowerCase().trim();
-  if (lower.length < 40 && window._turnCount > 0) return true;
-  if (/^(yes|no|yeah|nah|we are|we do|we have|that|this|ok|sure|right|exactly|agreed|makes sense|any |what about|how about|can we|should we)/i.test(lower)) return true;
+  // Explicit follow-up patterns (any turn)
+  if (/^(yes|no|yeah|nah|ok|sure|right|exactly|agreed|makes sense)\b/i.test(lower)) return true;
+  if (/^(we are|we do|we have|we\'re|that\'s|this is|doing that|already)\b/i.test(lower)) return true;
+  // Wheat-style commands
+  if (/^(any blind|what are the risk|what about|how about|can we|dig deeper|challenge|witness)/i.test(lower)) return true;
+  // Short messages are follow-ups ONLY if they have fewer than 3 significant words
+  if (lower.length < 40 && window._turnCount > 0 && significantWords(question).length < 3) return true;
   return false;
 }
 
@@ -2602,15 +2477,17 @@ function updateCascadeDebug(opts) {
       { input: '/challenge', expectContains: ['challenging', 'opposite', 'disprove'] },
     ]);
 
-    // Test 6: Compile bar appears
+    // Test 6: Compile bar appears (needs 5+ claims, 2+ types)
     await runTest('Compile bar visibility', [
       { input: 'should we use graphql or rest?', expectMinClaims: 3 },
+      { input: 'what are the risks?', expectMinClaims: 4 },
+      { input: 'dig deeper', expectMinClaims: 5 },
     ]);
     var compileVisible = document.querySelector('.compile-bar.visible');
     if (compileVisible) {
-      log('Compile bar visible after 3+ claims', 'pass');
+      log('Compile bar visible after 5+ claims with 2+ types', 'pass');
     } else {
-      log('Compile bar NOT visible after 3+ claims', 'fail');
+      log('Compile bar NOT visible (need 5+ claims, 2+ types)', 'fail');
     }
 
     // Test 7: Chips don't accumulate
