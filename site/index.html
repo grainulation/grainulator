@@ -1916,63 +1916,10 @@ qInput.addEventListener('keydown', async (e) => {
   // Transition to CHAT_ACTIVE on first message
   if (uxState !== 'CHAT_ACTIVE') transitionTo('CHAT_ACTIVE');
 
-  // ── Layer 1: Live inference ──────────
-  if (window._modelReady && window._modelEngine) {
-    inferenceRunning = true;
-    qInput.disabled = true;
-
-    addMessage('user', question);
-    addThinking();
-
-    try {
-      const response = await window._modelEngine.chat.completions.create({
-        messages: [
-          { role: 'system', content: 'You are a helpful research assistant. Answer the user\'s question directly and conversationally. Be specific and informative. Keep your answer to 2-4 paragraphs.' },
-          { role: 'user', content: question }
-        ],
-        temperature: 0.7,
-        max_tokens: 512
-      });
-
-      var raw = (response.choices[0].message.content || '').trim();
-      if (!raw || raw.length < 10) throw new Error('Empty response');
-
-      removeThinking();
-      var aiMsg = addMessage('ai', escapeHtml(raw).replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>'));
-
-      // Extract claims from the natural language response
-      var extractedClaims = extractClaimsFromText(raw, question);
-      if (extractedClaims.length > 0) {
-        var reIdClaims = extractedClaims.map(function(c) {
-          var idx = window._nextClaimIndex++;
-          return { id: 'd' + String(idx).padStart(3, '0'), type: c.type, tier: 'stated', text: c.text, unverified: true };
-        });
-        window._allClaims = window._allClaims.concat(reIdClaims);
-        window._turnCount++;
-        window._liveClaims = window._allClaims;
-        aiMsg.appendChild(renderClaimsToggle(reIdClaims));
-        showCompileButton();
-        saveSession();
-      }
-      generateNextStepChips(aiMsg);
-      autoScroll();
-
-    } catch (err) {
-      console.warn('Inference failed:', err);
-      removeThinking();
-      fallbackToCascade(question, cascadeStart);
-    } finally {
-      inferenceRunning = false;
-      qInput.disabled = false;
-    }
-    return;
-  }
-
-  // ── Layer 0.5: HF Inference API (no WebGPU needed, requires network) ──
   addMessage('user', question);
   addThinking();
 
-  // Cloud LLM fallback — Pollinations GET endpoint (free, no auth, no CORS preflight)
+  // ── Layer 1: Cloud LLM (Pollinations — best quality, requires network) ──
   if (navigator.onLine && !isOffTopic(question) && !isSlashCommand(question) && !/^challenge\b/i.test(question.trim())) {
     try {
       var ctx = question.substring(0, 300);
@@ -2021,7 +1968,47 @@ qInput.addEventListener('keydown', async (e) => {
     }
   }
 
-  // ── Layer 0: Fuzzy match / template fallback ──
+  // ── Layer 2: Local WebLLM (offline fallback) ──
+  if (window._modelReady && window._modelEngine) {
+    try {
+      var localResponse = await window._modelEngine.chat.completions.create({
+        messages: [
+          { role: 'system', content: 'You are a research assistant helping evaluate a technical decision. Stay focused on the topic. Be specific. Keep your answer to 2-3 paragraphs. Do NOT discuss unrelated topics.' },
+          { role: 'user', content: question }
+        ],
+        temperature: 0.7,
+        max_tokens: 512
+      });
+      var localText = (localResponse.choices[0].message.content || '').trim();
+      if (localText && localText.length > 20) {
+        removeThinking();
+        var aiMsg = addMessage('ai', escapeHtml(localText).replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>'));
+        var extractedClaims = extractClaimsFromText(localText, question);
+        if (extractedClaims.length > 0) {
+          var reIdClaims = extractedClaims.map(function(c) {
+            var idx = window._nextClaimIndex++;
+            return { id: 'd' + String(idx).padStart(3, '0'), type: c.type, tier: 'stated', text: c.text, unverified: true };
+          });
+          window._allClaims = window._allClaims.concat(reIdClaims);
+          window._turnCount++;
+          window._conversationHistory.push({ turn: window._turnCount, question: question, source: 'local-llm' });
+          window._liveClaims = window._allClaims;
+          aiMsg.appendChild(renderClaimsToggle(reIdClaims));
+          showCompileButton();
+          saveSession();
+        }
+        generateNextStepChips(aiMsg);
+        autoScroll();
+        inferenceRunning = false;
+        qInput.disabled = false;
+        return;
+      }
+    } catch (err) {
+      console.warn('Local LLM:', err.message);
+    }
+  }
+
+  // ── Layer 3: Template fallback ──
   fallbackToCascade(question, cascadeStart);
 });
 
