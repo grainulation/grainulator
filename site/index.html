@@ -901,32 +901,65 @@ function extractClaimsFromText(text, question) {
 }
 
 function showWelcomeChips() {
+  // Natural wheat-style intro
+  var intro = addMessage('ai', 'What question are you exploring? I\'ll run a research sprint — gathering claims, grading evidence, and flagging gaps.');
   var examples = [
-    { label: '/research', text: 'should we use postgres or mongo for our new service?' },
-    { label: '/challenge', text: 'is serverless really cheaper at scale?' },
-    { label: '/blind-spot', text: 'what are we missing in our auth migration plan?' },
-    { label: '/witness', text: 'how does Stripe handle idempotency?' },
+    'should we use postgres or mongo for our new service?',
+    'is serverless really cheaper at scale?',
+    'what are we missing in our auth migration plan?',
+    'how does Stripe handle idempotency?',
   ];
   var container = document.createElement('div');
   container.className = 'follow-up-chips';
-  container.style.justifyContent = 'center';
-  container.style.marginTop = '0';
-  examples.forEach(function(ex) {
+  examples.forEach(function(text) {
     var btn = document.createElement('button');
     btn.className = 'chip';
     btn.type = 'button';
-    btn.innerHTML = '<strong>' + ex.label + '</strong> ' + escapeHtml(ex.text);
+    btn.textContent = text;
     btn.addEventListener('click', function() {
-      chatInput.value = ex.text;
+      chatInput.value = text;
       sendBtn.classList.add('active');
-      container.remove();
-      chatInput.focus();
+      intro.remove();
+      chatInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
     });
     container.appendChild(btn);
   });
-  var msg = addMessage('system', '');
-  msg.appendChild(container);
-  msg.style.maxWidth = '100%';
+  intro.appendChild(container);
+}
+
+// Generate wheat-style next step chips based on current sprint state
+function generateNextStepChips(aiMsg) {
+  var claims = window._allClaims || [];
+  var risks = claims.filter(function(c) { return c.type === 'risk'; });
+  var recs = claims.filter(function(c) { return c.type === 'recommendation'; });
+  var types = {};
+  claims.forEach(function(c) { types[c.type] = (types[c.type] || 0) + 1; });
+
+  var suggestions = [];
+  if (claims.length >= 3 && risks.length === 0) suggestions.push('what are the risks?');
+  if (claims.length >= 3 && recs.length > 0) suggestions.push('challenge that recommendation');
+  if (claims.length >= 5) suggestions.push('any blind spots?');
+  if (claims.length >= 3 && claims.length < 8) suggestions.push('dig deeper');
+  if (Object.keys(types).length <= 2 && claims.length >= 3) suggestions.push('diversify the evidence');
+
+  if (suggestions.length === 0) return;
+  suggestions = suggestions.slice(0, 3);
+
+  var container = document.createElement('div');
+  container.className = 'follow-up-chips';
+  suggestions.forEach(function(text) {
+    var btn = document.createElement('button');
+    btn.className = 'chip';
+    btn.type = 'button';
+    btn.textContent = text;
+    btn.addEventListener('click', function() {
+      chatInput.value = text;
+      sendBtn.classList.add('active');
+      chatInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+    });
+    container.appendChild(btn);
+  });
+  aiMsg.appendChild(container);
 }
 
 function synthesizeSummary(claims, question) {
@@ -2076,6 +2109,7 @@ qInput.addEventListener('keydown', async (e) => {
         showCompileButton();
         saveSession();
       }
+      generateNextStepChips(aiMsg);
       autoScroll();
 
     } catch (err) {
@@ -2171,6 +2205,7 @@ function fallbackToCascade(question, cascadeStart) {
     window._conversationHistory.push({ turn: window._turnCount, question: question, source: 'follow-up' });
     window._liveClaims = window._allClaims;
     if (claims.length > 0) aiMsg.appendChild(renderClaimsToggle(claims));
+    generateNextStepChips(aiMsg);
     showCompileButton();
     saveSession();
     autoScroll();
@@ -2193,6 +2228,7 @@ function fallbackToCascade(question, cascadeStart) {
     window._conversationHistory.push({ turn: window._turnCount, question: question, source: 'fuzzy' });
     window._liveClaims = window._allClaims;
     aiMsg2.appendChild(renderClaimsToggle(reIdClaims));
+    generateNextStepChips(aiMsg2);
     showCompileButton();
     saveSession();
     autoScroll();
@@ -2211,6 +2247,7 @@ function fallbackToCascade(question, cascadeStart) {
     window._conversationHistory.push({ turn: window._turnCount, question: question, source: 'template' });
     window._liveClaims = window._allClaims;
     if (claims3.length > 0) aiMsg3.appendChild(renderClaimsToggle(claims3));
+    generateNextStepChips(aiMsg3);
     showCompileButton();
     saveSession();
     autoScroll();
