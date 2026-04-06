@@ -892,6 +892,9 @@ function showWelcomeChips() {
 
 // Generate wheat-style next step chips based on current sprint state
 function generateNextStepChips(aiMsg) {
+  // Remove chips from ALL previous messages so they don't pile up
+  document.querySelectorAll('.msg .follow-up-chips').forEach(function(el) { el.remove(); });
+
   var claims = window._allClaims || [];
   var risks = claims.filter(function(c) { return c.type === 'risk'; });
   var recs = claims.filter(function(c) { return c.type === 'recommendation'; });
@@ -1183,10 +1186,14 @@ function normalize(text) {
     .trim();
 }
 
+// Aliases: normalize common variants so fuzzy matching works
+var WORD_ALIASES = {postgres:'postgresql',pg:'postgresql',mongo:'mongodb',k8s:'kubernetes',kube:'kubernetes',js:'javascript',ts:'typescript',py:'python',rb:'ruby',gql:'graphql',tf:'terraform',aws:'amazon',gcp:'google',ci:'continuous',cd:'continuous',ml:'machine',ai:'artificial',db:'database',api:'apis',microservice:'microservices',monolith:'monolithic',serverless:'lambda'};
+
 function significantWords(text) {
   return normalize(text)
     .split(' ')
-    .filter(function (w) { return w.length > 1 && !STOP_WORDS.has(w); });
+    .filter(function (w) { return w.length > 1 && !STOP_WORDS.has(w); })
+    .map(function(w) { return WORD_ALIASES[w] || w; });
 }
 
 // ── Core: Score a query against a single library entry ───────────────────────
@@ -2113,13 +2120,14 @@ function generateFollowUpResponse(question) {
       { type: 'recommendation', text: 'Define a clear go/no-go checklist for scaling from pilot to broader rollout.' }
     ];
   } else {
-    // Generic follow-up that references context
-    var topicWords = [];
-    window._conversationHistory.forEach(function(h) { topicWords = topicWords.concat(significantWords(h.question)); });
-    var topic = topicWords.slice(0, 3).join(' ') || 'this';
-    text = 'Continuing on <strong>' + escapeHtml(topic) + '</strong> — ' + escapeHtml(question) + ' is a good angle to explore.';
-    text += '<br><br>Based on the ' + prevClaims.length + ' claims we\'ve gathered, the main tension is between moving quickly and making sure the foundation is solid.';
-    if (risks.length > 0) text += ' We\'ve flagged ' + risks.length + ' risk' + (risks.length > 1 ? 's' : '') + ' so far.';
+    // Generic follow-up that references the original question
+    var firstQ = window._conversationHistory.length > 0 ? window._conversationHistory[0].question : '';
+    text = 'Building on that — <em>' + escapeHtml(question) + '</em>';
+    if (firstQ) text += ' connects back to your original question about <em>' + escapeHtml(firstQ) + '</em>.';
+    text += '<br><br>So far we have ' + prevClaims.length + ' claims.';
+    if (risks.length > 0) text += ' We\'ve flagged ' + risks.length + ' risk' + (risks.length > 1 ? 's' : '') + '.';
+    if (recs.length > 0) text += ' ' + recs.length + ' recommendation' + (recs.length > 1 ? 's' : '') + '.';
+    text += ' What angle would strengthen the analysis?';
     claims = [
       { type: 'factual', text: 'The conversation has covered ' + prevClaims.length + ' claims across ' + window._turnCount + ' exchanges, with ' + risks.length + ' risks identified.' }
     ];
@@ -2128,7 +2136,94 @@ function generateFollowUpResponse(question) {
   return { text: text, claims: claims };
 }
 
+function isOffTopic(q) {
+  var lower = q.toLowerCase().trim();
+  if (lower.length < 3) return true; // single char, emoji
+  if (/^(hi|hey|hello|sup|yo|howdy|greetings)\b/i.test(lower)) return true;
+  if (/^(what is this|who are you|help me|can you|write me|make me|how do i use)/i.test(lower)) return true;
+  if (!/[a-zA-Z]{3,}/.test(q)) return true; // no real words (emoji, symbols)
+  return false;
+}
+
+function isSlashCommand(q) {
+  return /^\/(research|challenge|blind-spot|witness|brief|status|resolve|feedback)\b/i.test(q.trim());
+}
+
+function handleOffTopic(question) {
+  removeThinking();
+  addMessage('ai', 'I\'m a research sprint demo — I help teams think through technical decisions by gathering evidence, flagging risks, and grading confidence.<br><br>Try asking about a real decision your team is facing, like:<br>• <em>Should we migrate to microservices?</em><br>• <em>PostgreSQL vs MongoDB for our new service?</em><br>• <em>Is it worth rewriting our auth system?</em>');
+  autoScroll();
+}
+
+function handleSlashCommand(question) {
+  var match = question.match(/^\/(\w[\w-]*)\s*(.*)/);
+  if (!match) return false;
+  var cmd = match[1].toLowerCase();
+  var arg = match[2].trim();
+
+  if (cmd === 'blind-spot' || cmd === 'blindspot') {
+    // Route to blind-spot handler
+    removeThinking();
+    var followUp = generateFollowUpResponse('/blind-spot');
+    var aiMsg = addMessage('ai', followUp.text);
+    var claims = followUp.claims.map(function(c) {
+      var idx = window._nextClaimIndex++;
+      return { id: 'd' + String(idx).padStart(3, '0'), type: c.type, tier: 'stated', text: c.text };
+    });
+    window._allClaims = window._allClaims.concat(claims);
+    window._turnCount++;
+    window._liveClaims = window._allClaims;
+    if (claims.length > 0) aiMsg.appendChild(renderClaimsToggle(claims));
+    generateNextStepChips(aiMsg);
+    showCompileButton();
+    saveSession();
+    autoScroll();
+    return true;
+  }
+
+  if (cmd === 'challenge') {
+    removeThinking();
+    var recs = window._allClaims.filter(function(c) { return c.type === 'recommendation'; });
+    var target = recs.length > 0 ? recs[recs.length - 1] : null;
+    var text = target
+      ? 'Challenging <em>' + escapeHtml(target.text.substring(0, 80)) + '</em>...<br><br>What if the opposite is true? What evidence would disprove this? Consider: who benefits from this recommendation, and who bears the risk if it\'s wrong?'
+      : 'No recommendations to challenge yet. Ask a research question first, then I\'ll have something to push back on.';
+    var aiMsg2 = addMessage('ai', text);
+    if (target) {
+      var claims2 = [{ id: 'd' + String(window._nextClaimIndex++).padStart(3, '0'), type: 'risk', tier: 'stated', text: 'The recommendation may not hold under different team size, timeline, or resource constraints.' }];
+      window._allClaims = window._allClaims.concat(claims2);
+      window._turnCount++;
+      window._liveClaims = window._allClaims;
+      aiMsg2.appendChild(renderClaimsToggle(claims2));
+    }
+    generateNextStepChips(aiMsg2);
+    showCompileButton();
+    saveSession();
+    autoScroll();
+    return true;
+  }
+
+  // For /research, strip the prefix and treat as a normal question
+  if (cmd === 'research' && arg) {
+    return false; // let it fall through to normal cascade with arg as question
+  }
+
+  return false;
+}
+
 function fallbackToCascade(question, cascadeStart) {
+  // Slash commands always take priority
+  if (isSlashCommand(question)) {
+    if (handleSlashCommand(question)) return;
+    question = question.replace(/^\/\w[\w-]*\s*/, '').trim() || question;
+  }
+
+  // Off-topic detection (first turn only)
+  if (isOffTopic(question) && window._turnCount === 0) {
+    handleOffTopic(question);
+    return;
+  }
+
   // Check if this is a follow-up to an existing conversation
   if (isFollowUp(question) && window._turnCount > 0) {
     removeThinking();
@@ -2152,7 +2247,7 @@ function fallbackToCascade(question, cascadeStart) {
 
   const fuzzyResult = fuzzyMatchDemo(question, DEMO_LIBRARY);
 
-  if (fuzzyResult && fuzzyResult.score > 0.4) {
+  if (fuzzyResult && fuzzyResult.score > 0.3) {
     removeThinking();
     var demo = fuzzyResult.match;
     var intro = generateConversationalIntro(demo.claims, demo.question || question);
@@ -2172,9 +2267,7 @@ function fallbackToCascade(question, cascadeStart) {
     autoScroll();
   } else {
     removeThinking();
-    var words = significantWords(question);
-    var topic = words.slice().sort(function(a,b){ return b.length - a.length; }).slice(0,3).join(' ') || question;
-    var response = generateConversationalFallback(topic, question);
+    var response = generateConversationalFallback(question);
     var aiMsg3 = addMessage('ai', response.text);
     var claims3 = response.claims.map(function(c) {
       var idx = window._nextClaimIndex++;
@@ -2205,31 +2298,31 @@ function generateConversationalIntro(claims, question) {
   return parts.join('<br><br>') || 'Here\'s what I found on that topic.';
 }
 
-function generateConversationalFallback(topic, question) {
-  // Multiple response templates to avoid repetition
+function generateConversationalFallback(question) {
+  var q = escapeHtml(question);
   var templates = [
     {
-      text: 'That\'s an interesting area to explore. <strong>' + escapeHtml(topic) + '</strong> involves several trade-offs that depend heavily on your specific context — team size, existing infrastructure, and timeline all play a role.<br><br>The biggest question is usually whether the upfront investment pays off relative to the alternatives. Most teams that succeed with this approach start small, validate their assumptions, and scale gradually.',
+      text: 'There are a few angles to consider with <em>' + q + '</em>.<br><br>The trade-offs depend on your team size, existing infrastructure, and how much migration cost you can absorb. Most teams that navigate this well start with a bounded pilot before committing fully.',
       claims: [
-        { type: 'constraint', text: 'Evaluating ' + topic + ' requires understanding the specific team context, existing infrastructure, and timeline constraints.' },
-        { type: 'recommendation', text: 'Start with a small proof of concept to validate assumptions before committing to a larger rollout of ' + topic + '.' },
-        { type: 'risk', text: 'The upfront investment in ' + topic + ' may not pay off if the team cannot commit to gradual scaling and iteration.' }
+        { type: 'constraint', text: 'The right approach depends on team context, existing infrastructure, and acceptable migration cost.' },
+        { type: 'recommendation', text: 'Start with a bounded pilot to validate assumptions before full commitment.' },
+        { type: 'risk', text: 'Moving too fast without a pilot risks partial adoption that creates more problems than it solves.' }
       ]
     },
     {
-      text: 'Let me break down what I know about <strong>' + escapeHtml(topic) + '</strong>.<br><br>This is a space where the right answer depends on where you are today versus where you want to be. There are real trade-offs between moving fast and building a solid foundation. The teams that navigate this well tend to be explicit about what they\'re optimizing for.',
+      text: 'This comes down to a few key trade-offs.<br><br>For <em>' + q + '</em>, the main tension is usually between what\'s technically ideal and what your team can actually execute on your timeline. The best choice is rarely the most sophisticated one — it\'s the one that fits.',
       claims: [
-        { type: 'factual', text: 'The optimal approach to ' + topic + ' depends on the gap between current state and desired end state.' },
-        { type: 'recommendation', text: 'Be explicit about optimization targets when evaluating ' + topic + ' — speed vs. foundation is a common tension.' },
-        { type: 'risk', text: 'Trying to optimize for both speed and long-term architecture simultaneously with ' + topic + ' often results in achieving neither.' }
+        { type: 'factual', text: 'The best solution is usually the one that fits the team\'s capacity and timeline, not the most technically elegant.' },
+        { type: 'recommendation', text: 'Be explicit about what you\'re optimizing for — speed, reliability, cost, or developer experience.' },
+        { type: 'risk', text: 'Optimizing for everything at once often means optimizing for nothing.' }
       ]
     },
     {
-      text: 'Good question. <strong>' + escapeHtml(topic) + '</strong> is one of those areas where the conventional wisdom doesn\'t always hold up in practice.<br><br>What I\'d focus on first is understanding the constraints you\'re working within. The best solution often isn\'t the most technically elegant one — it\'s the one that fits your team\'s capacity and your timeline.',
+      text: 'Let me think through this.<br><br>With <em>' + q + '</em>, the conventional wisdom doesn\'t always hold up. What matters most is understanding your specific constraints — what\'s non-negotiable, what\'s flexible, and where the real risks are.',
       claims: [
-        { type: 'constraint', text: 'Conventional wisdom about ' + topic + ' may not apply to all team contexts and should be validated against specific constraints.' },
-        { type: 'recommendation', text: 'Prioritize solutions for ' + topic + ' that fit team capacity and timeline over theoretical elegance.' },
-        { type: 'factual', text: 'Practical outcomes with ' + topic + ' correlate more strongly with team fit than with technical sophistication.' }
+        { type: 'constraint', text: 'Conventional wisdom may not apply — validate against your specific constraints.' },
+        { type: 'recommendation', text: 'Identify what\'s non-negotiable vs. flexible before evaluating options.' },
+        { type: 'factual', text: 'Practical outcomes correlate more with constraint awareness than with choosing the "best" technology.' }
       ]
     }
   ];
