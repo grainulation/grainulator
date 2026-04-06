@@ -105,8 +105,8 @@ canvas.active{opacity:1}
 .dim-overlay{position:fixed;inset:0;z-index:1;background:#0c1a1e;opacity:0;transition:opacity 0.6s ease;pointer-events:none}
 
 /* Top progress bar — model download */
-.top-progress{position:fixed;top:0;left:0;right:0;height:2px;z-index:20;pointer-events:none;transition:opacity 0.4s ease}
-.top-progress-fill{height:100%;width:0%;background:#8df6ff;transition:width 0.4s ease;opacity:0.6}
+.top-progress{position:fixed;top:0;left:0;right:0;height:4px;z-index:20;pointer-events:none;transition:opacity 0.4s ease}
+.top-progress-fill{height:100%;width:0%;background:#8df6ff;transition:width 0.4s ease;opacity:0.8}
 
 /* App shell — flexbox column, full viewport height, iOS safe */
 .app{display:flex;flex-direction:column;height:100vh;height:100dvh;height:-webkit-fill-available;position:relative;z-index:10;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace}
@@ -1862,6 +1862,7 @@ async function loadModel(modelId) {
         var pct = Math.round((report.progress || 0) * 100);
         var fill = document.getElementById('topProgressFill');
         if (fill) fill.style.width = pct + '%';
+        chatInput.placeholder = pct + '% loading...';
         updateModelProgress(pct);
         announceProgress(pct);
       }
@@ -1913,9 +1914,8 @@ if (!CASCADE_OFF) {
       return;
     }
 
-    // Pick default model based on GPU tier
-    var defaultModel = MODELS.find(function(m) { return m.tier === tier; }) || MODELS[0];
-    loadModel(defaultModel.id);
+    // Always start with smallest model (fast load), user can upgrade via picker
+    loadModel(MODELS[0].id);
   })();
 }
 
