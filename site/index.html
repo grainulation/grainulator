@@ -1939,8 +1939,8 @@ function isFollowUp(question) {
   // Explicit follow-up patterns (any turn)
   if (/^(yes|no|yeah|nah|ok|sure|right|exactly|agreed|makes sense)\b/i.test(lower)) return true;
   if (/^(we are|we do|we have|we\'re|that\'s|this is|doing that|already)\b/i.test(lower)) return true;
-  // Wheat-style commands
-  if (/^(any blind|what are the risk|what about|how about|can we|dig deeper|challenge|witness)/i.test(lower)) return true;
+  // Wheat-style commands — but NOT challenge (that needs special handling)
+  if (/^(any blind|what are the risk|what about|how about|can we|dig deeper|witness)/i.test(lower)) return true;
   // Short messages are follow-ups ONLY if they have fewer than 3 significant words
   if (lower.length < 40 && window._turnCount > 0 && significantWords(question).length < 3) return true;
   return false;
@@ -1986,12 +1986,13 @@ function generateFollowUpResponse(question) {
   } else {
     // Generic follow-up that references the original question
     var firstQ = window._conversationHistory.length > 0 ? window._conversationHistory[0].question : '';
-    text = 'Building on that — <em>' + escapeHtml(question) + '</em>';
-    if (firstQ) text += ' connects back to your original question about <em>' + escapeHtml(firstQ) + '</em>.';
-    text += '<br><br>So far we have ' + prevClaims.length + ' claims.';
+    var cleanQ = question.replace(/^\/[\w-]+\s*/, '').trim() || question; // strip slash prefix
+    text = 'Building on that';
+    if (firstQ) text += ' — your original question was about <em>' + escapeHtml(firstQ.substring(0, 80)) + '</em>';
+    text += '.<br><br>So far we have ' + prevClaims.length + ' claims.';
     if (risks.length > 0) text += ' We\'ve flagged ' + risks.length + ' risk' + (risks.length > 1 ? 's' : '') + '.';
     if (recs.length > 0) text += ' ' + recs.length + ' recommendation' + (recs.length > 1 ? 's' : '') + '.';
-    text += ' What angle would strengthen the analysis?';
+    text += '<br><br>To go deeper, try asking about a specific aspect — costs, timeline, team impact, or alternatives.';
     claims = [
       { type: 'factual', text: 'The conversation has covered ' + prevClaims.length + ' claims across ' + window._turnCount + ' exchanges, with ' + risks.length + ' risks identified.' }
     ];
@@ -2080,6 +2081,11 @@ function fallbackToCascade(question, cascadeStart) {
   if (isSlashCommand(question)) {
     if (handleSlashCommand(question)) return;
     question = question.replace(/^\/\w[\w-]*\s*/, '').trim() || question;
+  }
+
+  // Route "challenge" chip clicks to the challenge handler
+  if (/^challenge\b/i.test(question.trim()) && window._turnCount > 0) {
+    if (handleSlashCommand('/challenge')) return;
   }
 
   // Off-topic detection (first turn only)
