@@ -1959,14 +1959,19 @@ function generateFollowUpResponse(question) {
   var claims = [];
 
   if (/blindspot|gap|missing|blind spot|what else/i.test(lower)) {
-    text = 'Looking at the ' + prevClaims.length + ' claims so far, there are a few gaps worth noting:';
-    if (risks.length === 0) text += '<br><br>We haven\'t identified any risks yet — that\'s a significant blind spot. Every approach has downsides.';
-    if (constraints.length === 0) text += '<br><br>No constraints have been captured. What are the hard boundaries?';
-    text += '<br><br>Consider: what happens if this fails? What does rollback look like? Who are the stakeholders who haven\'t weighed in?';
-    claims = [
-      { type: 'risk', text: 'No rollback plan has been discussed — if the pilot fails, the path back to the current approach needs to be defined.' },
-      { type: 'constraint', text: 'Stakeholder buy-in beyond the pilot teams has not been validated.' }
+    var blindSpotAngles = [
+      { text: 'What happens if this fails? Is there a rollback plan? Most teams skip this until it\'s too late.', claim: { type: 'risk', text: 'No rollback plan has been discussed — if the pilot fails, the path back needs to be defined.' } },
+      { text: 'Who are the stakeholders who haven\'t weighed in yet? Decisions made without buy-in get relitigated later.', claim: { type: 'constraint', text: 'Stakeholder buy-in beyond the directly involved teams has not been validated.' } },
+      { text: 'What\'s the second-order effect? If this succeeds, what new problems does it create?', claim: { type: 'risk', text: 'Success may introduce new complexity — second-order effects have not been mapped.' } },
+      { text: 'Are we optimizing for the right time horizon? What looks good for Q1 might hurt in Q4.', claim: { type: 'constraint', text: 'The evaluation time horizon is unclear — short-term wins may conflict with long-term goals.' } },
+      { text: 'What would a skeptic say? If someone opposed this, what would their strongest argument be?', claim: { type: 'risk', text: 'The strongest counter-argument has not been articulated or addressed.' } },
     ];
+    var bsAngle = blindSpotAngles[window._turnCount % blindSpotAngles.length];
+    text = 'Looking at the ' + prevClaims.length + ' claims so far:';
+    if (risks.length === 0) text += '<br><br>We haven\'t identified any risks yet — that\'s a significant gap.';
+    if (constraints.length === 0) text += '<br><br>No constraints captured — what are the hard boundaries?';
+    text += '<br><br>' + bsAngle.text;
+    claims = [bsAngle.claim];
   } else if (/witness|verify|evidence|prove|check/i.test(lower)) {
     text = 'To strengthen the evidence, we\'d want to look at:';
     text += '<br><br>1. Case studies from teams of similar size who made this change';
@@ -2512,7 +2517,7 @@ function updateCascadeDebug(opts) {
     await runTest('Multi-turn context', [
       { input: 'should we adopt kubernetes?', expectMinClaims: 3 },
       { input: 'we have 5 teams', expectContains: ['noted', 'building on', 'context'] },
-      { input: 'any blind spots?', expectContains: ['gaps', 'claims so far', 'rollback'] },
+      { input: 'any blind spots?', expectContains: ['claims so far', 'claims'] },
     ]);
 
     // Test 4: Edge case doesn't crash
