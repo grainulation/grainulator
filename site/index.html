@@ -281,7 +281,7 @@ canvas.active{opacity:1}
 .char-counter{font-size:0.5rem;color:rgba(255,255,255,0.25);text-align:right;padding:0.1rem 0.5rem;display:none}
 
 /* Model picker */
-.model-picker{flex-shrink:0;width:36px;height:36px;border-radius:50%;border:1px solid rgba(141,246,255,0.2);background:none;color:rgba(141,246,255,0.6);cursor:pointer;font-family:inherit;font-size:0.55rem;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all 0.2s;position:relative}
+.model-picker{flex-shrink:0;width:28px;height:28px;border-radius:50%;border:1px solid rgba(141,246,255,0.15);background:none;color:rgba(141,246,255,0.5);cursor:pointer;font-family:inherit;font-size:0.45rem;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all 0.2s;position:relative;margin-right:0.3rem}
 .model-picker:hover{border-color:rgba(141,246,255,0.5);color:#8df6ff}
 .model-picker.loading{animation:picker-pulse 2s ease-in-out infinite}
 @keyframes picker-pulse{0%,100%{opacity:0.5}50%{opacity:1}}
@@ -363,7 +363,7 @@ canvas.active{opacity:1}
 </noscript>
 
 <div id="flash-overlay"></div>
-<button id="cancel-btn" type="button" style="display:none;position:fixed;bottom:calc(24px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);z-index:9999;background:none;color:#f43f5e;border:1px solid rgba(244,63,94,0.3);border-radius:3px;padding:0.5rem 0.8rem;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:0.6rem;cursor:pointer;min-height:36px;align-items:center;justify-content:center" aria-label="Cancel model download">cancel</button>
+<!-- cancel button removed — cancel is now the model picker during loading -->
 <!-- motion-toggle removed — shader pauses automatically on chat, resumes on new chat -->
 
 <!-- toast removed -->
@@ -1757,10 +1757,10 @@ function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 // MODEL ENGINE — Transformers.js with WebGPU, model picker, streaming
 // ===================================================================
 const MODELS = [
-  { id: 'onnx-community/SmolLM2-360M-Instruct', label: 'SmolLM2 360M', size: '~200MB', tier: 'minimal' },
-  { id: 'onnx-community/SmolLM2-1.7B-Instruct', label: 'SmolLM2 1.7B', size: '~1GB', tier: 'reduced-gpu' },
-  { id: 'onnx-community/Qwen2.5-1.5B-Instruct', label: 'Qwen2.5 1.5B', size: '~900MB', tier: 'full' },
-  { id: 'onnx-community/Phi-3.5-mini-instruct-onnx-web', label: 'Phi 3.5 Mini', size: '~2.3GB', tier: 'full' },
+  { id: 'SmolLM2-360M-Instruct-q4f16_1-MLC', label: 'SmolLM2 360M', size: '~200MB', tier: 'minimal' },
+  { id: 'SmolLM2-1.7B-Instruct-q4f16_1-MLC', label: 'SmolLM2 1.7B', size: '~1GB', tier: 'reduced-gpu' },
+  { id: 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC', label: 'Qwen2.5 1.5B', size: '~900MB', tier: 'full' },
+  { id: 'Phi-3.5-mini-instruct-q4f16_1-MLC', label: 'Phi 3.5 Mini', size: '~2GB', tier: 'full' },
 ];
 
 window._modelEngine = null;
@@ -1796,6 +1796,15 @@ renderModelMenu();
 
 modelPicker.addEventListener('click', function(e) {
   e.stopPropagation();
+  // If loading, tap to cancel
+  if (window._modelLoading && window._modelAbort) {
+    window._modelAbort.abort();
+    window._modelLoading = false;
+    modelPicker.classList.remove('loading');
+    document.getElementById('topProgress').style.opacity = '0';
+    if (uxState === 'LAVA_ONLY') transitionTo('LAVA_WITH_INPUT');
+    return;
+  }
   modelMenu.classList.toggle('open');
 });
 document.addEventListener('click', function() { modelMenu.classList.remove('open'); });
@@ -1812,7 +1821,7 @@ async function detectTier() {
 }
 
 async function loadModel(modelId) {
-  const cancelBtn = document.getElementById('cancel-btn');
+  // cancel button removed — picker handles cancel during loading
 
   // Abort previous load if in progress
   if (window._modelAbort) { window._modelAbort.abort(); }
@@ -1832,59 +1841,32 @@ async function loadModel(modelId) {
   modelPicker.classList.add('loading');
   renderModelMenu();
 
-  cancelBtn.style.display = 'inline-flex';
-  cancelBtn.onclick = function() {
-    if (window._modelAbort) window._modelAbort.abort();
-    cancelBtn.style.display = 'none';
-    modelPicker.classList.remove('loading');
-    document.getElementById('topProgress').style.opacity = '0';
-    if (uxState === 'LAVA_ONLY') transitionTo('LAVA_WITH_INPUT');
-  };
+  // Model picker doubles as cancel button while loading (tap to cancel)
+  window._modelLoading = true;
 
   try {
-    var transformers = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.4.1/+esm');
+    var { CreateMLCEngine } = await import('https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.82/+esm');
     if (window._modelAbort.signal.aborted) throw new Error('Cancelled');
 
-    var pipeline = transformers.pipeline;
-
-    // Prefer WebGPU, fall back to WASM
-    var device = navigator.gpu ? 'webgpu' : 'wasm';
-
-    // Track total download progress across files
-    var fileProgress = {};
-    var totalFiles = 0;
-    var doneFiles = 0;
-
-    var generator = await pipeline('text-generation', modelId, {
-      device: device,
-      dtype: device === 'webgpu' ? 'q4f16' : 'q4',
-      progress_callback: function(progress) {
-        if (window._modelAbort.signal.aborted) return;
-        if (progress.status === 'initiate') {
-          totalFiles++;
-        } else if (progress.status === 'progress' && progress.file) {
-          fileProgress[progress.file] = progress.progress || 0;
-          // Average progress across all tracked files
-          var sum = 0; var count = 0;
-          for (var f in fileProgress) { sum += fileProgress[f]; count++; }
-          var pct = count > 0 ? Math.round(sum / Math.max(count, totalFiles)) : 0;
-          var fill = document.getElementById('topProgressFill');
-          if (fill) fill.style.width = pct + '%';
-          updateModelProgress(pct);
-          announceProgress(pct);
-        } else if (progress.status === 'done') {
-          doneFiles++;
-        }
+    var engine = await CreateMLCEngine(modelId, {
+      initProgressCallback: function(report) {
+        if (window._modelAbort.signal.aborted) throw new Error('Cancelled');
+        var pct = Math.round((report.progress || 0) * 100);
+        var fill = document.getElementById('topProgressFill');
+        if (fill) fill.style.width = pct + '%';
+        updateModelProgress(pct);
+        announceProgress(pct);
       }
     });
 
-    if (window._modelAbort.signal.aborted) { if (generator.dispose) generator.dispose(); throw new Error('Cancelled'); }
+    if (window._modelAbort.signal.aborted) throw new Error('Cancelled');
+    var generator = engine;
 
     window._modelEngine = generator;
     window._modelReady = true;
+    window._modelLoading = false;
     window._activeModelId = modelId;
 
-    cancelBtn.style.display = 'none';
     modelPicker.classList.remove('loading');
     chatInput.placeholder = 'Ask anything...';
     if (uxState === 'LAVA_ONLY') transitionTo('LAVA_WITH_INPUT');
@@ -1903,7 +1885,7 @@ async function loadModel(modelId) {
 
   } catch (err) {
     console.warn('Model load:', err.message);
-    cancelBtn.style.display = 'none';
+    window._modelLoading = false;
     modelPicker.classList.remove('loading');
     document.getElementById('topProgress').style.opacity = '0';
     if (uxState === 'LAVA_ONLY') transitionTo('LAVA_WITH_INPUT');
@@ -1969,34 +1951,16 @@ qInput.addEventListener('keydown', async (e) => {
     addThinking();
 
     try {
-      const messages = [
-        { role: 'system', content: 'You are a helpful research assistant. Answer the user\'s question directly and conversationally. Be specific and informative. Keep your answer to 2-4 paragraphs.' },
-        { role: 'user', content: question }
-      ];
-
-      const output = await window._modelEngine(messages, {
-        max_new_tokens: 512,
+      const response = await window._modelEngine.chat.completions.create({
+        messages: [
+          { role: 'system', content: 'You are a helpful research assistant. Answer the user\'s question directly and conversationally. Be specific and informative. Keep your answer to 2-4 paragraphs.' },
+          { role: 'user', content: question }
+        ],
         temperature: 0.7,
-        do_sample: true
+        max_tokens: 512
       });
 
-      // Extract generated text from pipeline output
-      var raw = '';
-      if (output && output[0]) {
-        var gt = output[0].generated_text;
-        if (typeof gt === 'string') {
-          raw = gt.trim();
-        } else if (Array.isArray(gt)) {
-          // Chat pipeline returns array of messages — get the last assistant message
-          for (var i = gt.length - 1; i >= 0; i--) {
-            if (gt[i].role === 'assistant' && gt[i].content) { raw = gt[i].content.trim(); break; }
-          }
-          if (!raw && gt.length > 0) {
-            var last = gt[gt.length - 1];
-            raw = (last && last.content) ? last.content.trim() : '';
-          }
-        }
-      }
+      var raw = (response.choices[0].message.content || '').trim();
       if (!raw || raw.length < 10) throw new Error('Empty response');
 
       removeThinking();
