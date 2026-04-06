@@ -2462,6 +2462,187 @@ function updateCascadeDebug(opts) {
     enumerable: true
   });
 })();
+
+// ===================================================================
+// SELF-TEST PANEL — ?test=true or ~ key
+// ===================================================================
+(function initSelfTest() {
+  var active = new URLSearchParams(location.search).get('test') === 'true';
+  document.addEventListener('keydown', function(e) {
+    if (e.key === '`' && e.ctrlKey) { toggleTestPanel(); }
+  });
+  if (active) setTimeout(toggleTestPanel, 2000);
+
+  var panel = null;
+  var results = [];
+
+  function toggleTestPanel() {
+    if (panel) { panel.remove(); panel = null; return; }
+    panel = document.createElement('div');
+    panel.id = 'test-panel';
+    panel.style.cssText = 'position:fixed;top:0;right:0;bottom:0;width:min(400px,90vw);z-index:9999;background:rgba(6,13,16,0.97);border-left:1px solid rgba(141,246,255,0.2);overflow-y:auto;font-family:monospace;font-size:0.65rem;color:rgba(255,255,255,0.8);padding:1rem;display:flex;flex-direction:column;gap:0.5rem';
+    panel.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem"><strong style="color:#8df6ff">QA Test Panel</strong><button id="test-close" style="background:none;border:none;color:#f43f5e;cursor:pointer;font-size:0.8rem">✕</button></div><button id="test-run-all" style="background:rgba(141,246,255,0.08);border:1px solid rgba(141,246,255,0.2);color:#8df6ff;padding:0.4rem;border-radius:3px;cursor:pointer;font-family:inherit;font-size:0.6rem">Run all tests</button><div id="test-results" style="flex:1;overflow-y:auto"></div>';
+    document.body.appendChild(panel);
+    document.getElementById('test-close').onclick = toggleTestPanel;
+    document.getElementById('test-run-all').onclick = runAllTests;
+    if (active) setTimeout(runAllTests, 500);
+  }
+
+  function log(msg, type) {
+    var el = document.getElementById('test-results');
+    if (!el) return;
+    var line = document.createElement('div');
+    line.style.cssText = 'padding:0.2rem 0;border-bottom:1px solid rgba(255,255,255,0.04)';
+    var prefix = type === 'pass' ? '<span style="color:#22c55e">✓</span> ' : type === 'fail' ? '<span style="color:#f43f5e">✗</span> ' : type === 'info' ? '<span style="color:#8df6ff">→</span> ' : '';
+    line.innerHTML = prefix + msg;
+    el.appendChild(line);
+    el.scrollTop = el.scrollHeight;
+    results.push({ msg: msg, type: type, ts: Date.now() });
+  }
+
+  function simulateSend(text) {
+    var input = document.getElementById('chatInput');
+    var nativeSet = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
+    nativeSet.call(input, text);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+  }
+
+  function getLastAiResponse() {
+    var msgs = document.querySelectorAll('.msg-ai');
+    if (msgs.length === 0) return '';
+    return msgs[msgs.length - 1].textContent.substring(0, 200);
+  }
+
+  function waitFor(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
+
+  function clickNewChat() {
+    // Suppress confirm dialog during tests
+    var origConfirm = window.confirm;
+    window.confirm = function() { return true; };
+    document.getElementById('newChatBtn').click();
+    window.confirm = origConfirm;
+  }
+
+  async function runTest(name, steps) {
+    log('<strong>' + name + '</strong>', 'info');
+    clickNewChat();
+    await waitFor(500);
+
+    for (var i = 0; i < steps.length; i++) {
+      var step = steps[i];
+      simulateSend(step.input);
+      await waitFor(1500);
+
+      var response = getLastAiResponse();
+      var claims = window._allClaims ? window._allClaims.length : 0;
+
+      // Run assertions
+      if (step.expectContains) {
+        var found = step.expectContains.some(function(s) { return response.toLowerCase().indexOf(s.toLowerCase()) !== -1; });
+        if (found) {
+          log('  "' + step.input.substring(0, 40) + '" → response contains expected text', 'pass');
+        } else {
+          log('  "' + step.input.substring(0, 40) + '" → expected [' + step.expectContains.join('|') + '] not found in: ' + response.substring(0, 80), 'fail');
+        }
+      }
+      if (step.expectNotContains) {
+        var bad = step.expectNotContains.some(function(s) { return response.toLowerCase().indexOf(s.toLowerCase()) !== -1; });
+        if (!bad) {
+          log('  no unwanted text in response', 'pass');
+        } else {
+          log('  response contains unwanted text: ' + response.substring(0, 80), 'fail');
+        }
+      }
+      if (step.expectMinClaims != null) {
+        if (claims >= step.expectMinClaims) {
+          log('  claims: ' + claims + ' (min ' + step.expectMinClaims + ')', 'pass');
+        } else {
+          log('  claims: ' + claims + ' (expected min ' + step.expectMinClaims + ')', 'fail');
+        }
+      }
+      // Log response snippet for review
+      log('  <span style="color:rgba(255,255,255,0.4)">' + response.substring(0, 100) + '</span>');
+    }
+  }
+
+  async function runAllTests() {
+    results = [];
+    var el = document.getElementById('test-results');
+    if (el) el.innerHTML = '';
+    log('Starting test suite...', 'info');
+    var startTime = Date.now();
+
+    // Test 1: Research question produces claims
+    await runTest('Research question → claims', [
+      { input: 'should we migrate from mysql to postgres?', expectMinClaims: 3, expectNotContains: ['I\'m a research sprint demo'] },
+    ]);
+
+    // Test 2: Off-topic gets scope explanation
+    await runTest('Off-topic → scope explanation', [
+      { input: 'hello', expectContains: ['research sprint demo', 'technical decision'], expectNotContains: ['trade-offs', 'conventional wisdom'] },
+    ]);
+
+    // Test 3: Follow-up references context
+    await runTest('Multi-turn context', [
+      { input: 'should we adopt kubernetes?', expectMinClaims: 3 },
+      { input: 'we have 5 teams', expectContains: ['noted', 'building on', 'context'] },
+      { input: 'any blind spots?', expectContains: ['gaps', 'claims so far', 'rollback'] },
+    ]);
+
+    // Test 4: Edge case doesn't crash
+    await runTest('Edge cases', [
+      { input: 'a', expectContains: ['research sprint demo'] },
+      { input: '🔥🔥🔥', expectContains: ['research sprint demo'] },
+    ]);
+
+    // Test 5: Slash commands work
+    await runTest('Slash commands', [
+      { input: '/research api authentication', expectMinClaims: 3, expectNotContains: ['/research'] },
+      { input: '/challenge', expectContains: ['challenging', 'opposite', 'disprove'] },
+    ]);
+
+    // Test 6: Compile bar appears
+    await runTest('Compile bar visibility', [
+      { input: 'should we use graphql or rest?', expectMinClaims: 3 },
+    ]);
+    var compileVisible = document.querySelector('.compile-bar.visible');
+    if (compileVisible) {
+      log('Compile bar visible after 3+ claims', 'pass');
+    } else {
+      log('Compile bar NOT visible after 3+ claims', 'fail');
+    }
+
+    // Test 7: Chips don't accumulate
+    await runTest('Chip accumulation check', [
+      { input: 'should we build or buy our auth system?', expectMinClaims: 3 },
+      { input: 'we tried building before and it failed', expectMinClaims: 4 },
+      { input: 'what about cost?', expectMinClaims: 5 },
+    ]);
+    var allChipContainers = document.querySelectorAll('.msg .follow-up-chips');
+    if (allChipContainers.length <= 1) {
+      log('Only 1 chip container (no accumulation)', 'pass');
+    } else {
+      log('Found ' + allChipContainers.length + ' chip containers (accumulation bug)', 'fail');
+    }
+
+    // Test 8: Non-English
+    await runTest('Non-English input', [
+      { input: 'deberíamos usar kubernetes o docker swarm?', expectMinClaims: 3, expectNotContains: ['I\'m a research sprint demo'] },
+    ]);
+
+    // Summary
+    var elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    var passes = results.filter(function(r) { return r.type === 'pass'; }).length;
+    var fails = results.filter(function(r) { return r.type === 'fail'; }).length;
+    log('<strong>Done in ' + elapsed + 's — ' + passes + ' passed, ' + fails + ' failed</strong>', fails > 0 ? 'fail' : 'pass');
+
+    // Expose results for console access
+    window.__testResults = results;
+  }
+
+  window.__test = { run: runAllTests, toggle: toggleTestPanel };
+})();
 </script>
 </body>
 </html>
