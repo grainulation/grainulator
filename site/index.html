@@ -1967,7 +1967,10 @@ function generateFollowUpResponse(question) {
       { text: 'What would a skeptic say? If someone opposed this, what would their strongest argument be?', claim: { type: 'risk', text: 'The strongest counter-argument has not been articulated or addressed.' } },
     ];
     var bsAngle = blindSpotAngles[window._turnCount % blindSpotAngles.length];
-    text = 'Looking at the ' + prevClaims.length + ' claims so far:';
+    var firstQ = window._conversationHistory.length > 0 ? window._conversationHistory[0].question : '';
+    text = 'Looking at the ' + prevClaims.length + ' claims';
+    if (firstQ) text += ' about <em>' + escapeHtml(firstQ.substring(0, 60)) + '</em>';
+    text += ':';
     if (risks.length === 0) text += '<br><br>We haven\'t identified any risks yet — that\'s a significant gap.';
     if (constraints.length === 0) text += '<br><br>No constraints captured — what are the hard boundaries?';
     text += '<br><br>' + bsAngle.text;
@@ -2109,6 +2112,9 @@ function fallbackToCascade(question, cascadeStart) {
   // Route chip clicks to specific handlers
   if (/^challenge\b/i.test(question.trim()) && window._turnCount > 0) {
     if (handleSlashCommand('/challenge')) return;
+  }
+  if (/^(any blind|blind.?spot)/i.test(question.trim()) && window._turnCount > 0) {
+    if (handleSlashCommand('/blind-spot')) return;
   }
   if (/^(what are the risks|dig deeper)\b/i.test(question.trim()) && window._turnCount > 0) {
     removeThinking();
