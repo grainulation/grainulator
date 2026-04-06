@@ -1786,6 +1786,7 @@ async function loadModel(modelId) {
   await new Promise(function(r) { setTimeout(r, 50); });
   window._modelAbort = new AbortController();
   window._modelReady = false;
+  if (window._modelWorker) { window._modelWorker.terminate(); window._modelWorker = null; }
   window._modelEngine = null;
   window._modelTokenizer = null;
   window._activeModelId = modelId;
@@ -1807,12 +1808,14 @@ async function loadModel(modelId) {
   document.getElementById('newChatBtn').disabled = true;
 
   try {
-    var { CreateMLCEngine } = await import('https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.82/+esm');
+    var { CreateWebWorkerMLCEngine } = await import('https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.82/+esm');
     if (window._modelAbort.signal.aborted) throw new Error('Cancelled');
 
-    var engine = await CreateMLCEngine(modelId, {
+    var worker = new Worker(new URL('./llm-worker.js', import.meta.url), { type: 'module' });
+    window._modelWorker = worker;
+    var engine = await CreateWebWorkerMLCEngine(worker, modelId, {
       initProgressCallback: function(report) {
-        if (window._modelAbort.signal.aborted) throw new Error('Cancelled');
+        if (window._modelAbort.signal.aborted) { worker.terminate(); throw new Error('Cancelled'); }
         var pct = Math.round((report.progress || 0) * 100);
         var fill = document.getElementById('topProgressFill');
         if (fill) fill.style.width = pct + '%';
