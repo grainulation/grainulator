@@ -1707,6 +1707,9 @@ function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 // ===================================================================
 // Three-state machine: NOT_READY → READY → ERROR
 // Input starts disabled. Model downloads silently. Input enables when ready.
+// Safety: if model isn't ready after 8s, enable input for Track A anyway
+setTimeout(function() { if (uxState === 'LAVA_ONLY') transitionTo('LAVA_WITH_INPUT'); }, 8000);
+
 if (CASCADE_OFF) { /* skip */ } else {
 (async function initWebLLM() {
   const cancelBtn = document.getElementById('cancel-btn');
@@ -1803,9 +1806,9 @@ if (CASCADE_OFF) { /* skip */ } else {
     console.warn('WebLLM:', err.message);
     cancelBtn.style.display = 'none';
     if (motionBtn) { motionBtn.style.left = ''; motionBtn.style.right = '16px'; }
-    // → ERROR state — Track A is already loaded
     document.getElementById('topProgress').style.opacity = '0';
-    // Notify offline detection
+    // WebLLM failed — fall back to Track A (fuzzy match + templates)
+    if (uxState === 'LAVA_ONLY') transitionTo('LAVA_WITH_INPUT');
     if (typeof window._onWebLLMOffline === 'function') window._onWebLLMOffline();
   }
 })();
