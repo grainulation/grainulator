@@ -1802,32 +1802,8 @@ async function runCompile() {
   window._compilationResult = { score: final.score, verdict: final.verdict, tensions: final.tensions, missing: final.missing };
   saveSession();
 
-  // Follow-up chips
-  const chips = generateFollowUpChips(results);
-  if (chips.length > 0) {
-    const chipsContainer = document.createElement('div');
-    chipsContainer.className = 'follow-up-chips';
-    chips.forEach(function(chipText) {
-      const btn = document.createElement('button');
-      btn.className = 'chip';
-      btn.type = 'button';
-      btn.textContent = chipText;
-      btn.addEventListener('click', function() {
-        // Add user message for the chip click
-        addMessage('user', chipText);
-        addThinking();
-        var gapQuestion = chatInput.value.trim() || 'research question';
-        var gapClaims = generateGapClaims(chipText, gapQuestion);
-        if (gapClaims.length > 0) {
-          loadDemo({ question: gapQuestion, claims: gapClaims }, { accumulate: true, setQuestion: false });
-          showToast('added ' + gapClaims.length + ' claims for: ' + chipText);
-        }
-        chatInput.focus();
-      });
-      chipsContainer.appendChild(btn);
-    });
-    compileContainer.appendChild(chipsContainer);
-  }
+  // Next steps use the conversational chip system
+  generateNextStepChips(compileMsg);
 
   autoScroll();
   chatInput.focus();
