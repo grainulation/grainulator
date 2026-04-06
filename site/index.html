@@ -105,8 +105,6 @@ canvas.active{opacity:1}
 .dim-overlay{position:fixed;top:0;left:0;right:0;bottom:calc(-1 * env(safe-area-inset-bottom,0px));z-index:1;background:#0c1a1e;opacity:0;transition:opacity 0.6s ease;pointer-events:none}
 
 /* Top progress bar — model download */
-.top-progress{position:fixed;top:0;left:0;right:0;height:4px;z-index:20;pointer-events:none;transition:opacity 0.4s ease}
-.top-progress-fill{height:100%;width:0%;background:#8df6ff;transition:width 0.4s ease;opacity:0.8}
 
 /* App shell — flexbox column, full viewport height, iOS safe */
 .app{display:flex;flex-direction:column;height:100vh;height:100dvh;height:-webkit-fill-available;position:relative;z-index:10;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace}
@@ -272,16 +270,7 @@ canvas.active{opacity:1}
 .char-counter{font-size:0.5rem;color:rgba(255,255,255,0.25);text-align:right;padding:0.1rem 0.5rem;display:none}
 
 /* Model picker */
-.model-picker{flex-shrink:0;width:28px;height:28px;border-radius:50%;border:1px solid rgba(141,246,255,0.15);background:none;color:rgba(141,246,255,0.5);cursor:pointer;font-family:inherit;font-size:0.45rem;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all 0.2s;position:relative;margin-right:0.3rem}
-.model-picker:hover{border-color:rgba(141,246,255,0.5);color:#8df6ff}
-.model-picker.loading{animation:picker-pulse 2s ease-in-out infinite}
 @keyframes picker-pulse{0%,100%{opacity:0.5}50%{opacity:1}}
-.model-menu{display:none;position:absolute;bottom:calc(100% + 8px);left:0;background:rgba(12,26,30,0.97);border:1px solid rgba(141,246,255,0.2);border-radius:4px;min-width:220px;z-index:20;padding:0.3rem 0}
-.model-menu.open{display:block}
-.model-menu-item{display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0.8rem;font-family:inherit;font-size:0.65rem;color:rgba(255,255,255,0.7);background:none;border:none;width:100%;text-align:left;cursor:pointer;min-height:36px}
-.model-menu-item:hover{background:rgba(141,246,255,0.08);color:#fff}
-.model-menu-item.active{color:#8df6ff}
-.model-menu-item .model-size{margin-left:auto;color:rgba(255,255,255,0.3);font-size:0.55rem}
 
 /* File attachment (button removed, drag-drop or JS only) */
 .file-chip{font-size:0.6rem;color:rgba(141,246,255,0.7);background:rgba(141,246,255,0.08);border:1px solid rgba(141,246,255,0.15);border-radius:12px;padding:0.2rem 0.6rem;display:inline-flex;align-items:center;gap:0.3rem}
@@ -300,7 +289,6 @@ canvas.active{opacity:1}
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
-<div class="top-progress" id="topProgress"><div class="top-progress-fill" id="topProgressFill"></div></div>
 <canvas id="c" aria-hidden="true" role="presentation"></canvas>
 <div class="dim-overlay" id="dimOverlay"></div>
 
@@ -323,7 +311,6 @@ canvas.active{opacity:1}
   <div class="compile-bar" id="compileBar"><button class="compile-msg-btn" id="compileMsgBtn" type="button">compile findings</button></div>
   <div class="input-bar" id="inputBar">
     <input type="file" id="fileInput" accept=".txt,.md,.json,.csv" class="sr-only">
-    <button class="model-picker" id="modelPicker" type="button" aria-label="Switch model" title="Switch model"></button>
     <div class="input-wrap">
       <label for="chatInput" class="sr-only">Research question</label>
       <textarea
@@ -1691,80 +1678,8 @@ window._modelReady = false;
 window._activeModelId = null;
 window._modelAbort = null;
 
-// Model picker UI
-const modelPicker = document.getElementById('modelPicker');
-const modelPickerLabel = document.createElement('span');
-modelPickerLabel.textContent = '···';
-modelPicker.appendChild(modelPickerLabel);
-const modelMenu = document.createElement('div');
-modelMenu.className = 'model-menu';
-modelMenu.id = 'modelMenu';
-modelPicker.appendChild(modelMenu);
-
-function renderModelMenu() {
-  modelMenu.innerHTML = '';
-  MODELS.forEach(function(m) {
-    var btn = document.createElement('button');
-    btn.className = 'model-menu-item' + (m.id === window._activeModelId ? ' active' : '');
-    btn.type = 'button';
-    var cached = window._cachedModels && window._cachedModels[m.id];
-    btn.innerHTML = escapeHtml(m.label) + '<span class="model-size">' + (cached ? '✓ cached' : escapeHtml(m.size)) + '</span>';
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      modelMenu.classList.remove('open');
-      if (m.id !== window._activeModelId) loadModel(m.id);
-    });
-    modelMenu.appendChild(btn);
-  });
-  // Clear data option
-  var clearBtn = document.createElement('button');
-  clearBtn.className = 'model-menu-item';
-  clearBtn.type = 'button';
-  clearBtn.innerHTML = 'Clear all data<span class="model-size" style="color:#f43f5e">reset</span>';
-  clearBtn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    modelMenu.classList.remove('open');
-    if (!confirm('Clear model cache, session, and analytics?')) return;
-    caches.keys().then(function(keys) { keys.forEach(function(k) { caches.delete(k); }); });
-    localStorage.clear();
-    indexedDB.deleteDatabase('grainulator-analytics');
-    location.reload();
-  });
-  modelMenu.appendChild(clearBtn);
-}
-
-// Detect which models are cached
-window._cachedModels = {};
-(async function checkCachedModels() {
-  if (!window.caches) return;
-  try {
-    var cache = await caches.open('webllm/model');
-    var keys = await cache.keys();
-    var urls = keys.map(function(k) { return k.url; });
-    MODELS.forEach(function(m) {
-      // WebLLM cache keys contain the model ID
-      var found = urls.some(function(u) { return u.indexOf(m.id) !== -1; });
-      if (found) window._cachedModels[m.id] = true;
-    });
-    renderModelMenu();
-  } catch(e) {}
-})();
-renderModelMenu();
-
-modelPicker.addEventListener('click', function(e) {
-  e.stopPropagation();
-  // If loading, tap to cancel
-  if (window._modelLoading && window._modelAbort) {
-    window._modelAbort.abort();
-    window._modelLoading = false;
-    modelPicker.classList.remove('loading');
-    document.getElementById('topProgress').style.opacity = '0';
-    if (uxState === 'LAVA_ONLY') transitionTo('LAVA_WITH_INPUT');
-    return;
-  }
-  modelMenu.classList.toggle('open');
-});
-document.addEventListener('click', function() { modelMenu.classList.remove('open'); });
+// No model picker — Pollinations is primary, WebLLM loads silently
+function renderModelMenu() {} // no-op, kept for compatibility
 
 async function detectTier() {
   if (!navigator.gpu) return 'minimal';
@@ -1778,34 +1693,15 @@ async function detectTier() {
 }
 
 async function loadModel(modelId) {
-  // Skip if already loading this model
   if (window._modelLoading && window._activeModelId === modelId) return;
-  // Abort previous load if in progress
   if (window._modelAbort) { window._modelAbort.abort(); }
-  // Wait a tick for previous abort to settle
   await new Promise(function(r) { setTimeout(r, 50); });
   window._modelAbort = new AbortController();
   window._modelReady = false;
   if (window._modelWorker) { window._modelWorker.terminate(); window._modelWorker = null; }
   window._modelEngine = null;
-  window._modelTokenizer = null;
   window._activeModelId = modelId;
-
-  // Show input bar (disabled — picker accessible, textarea locked)
-  var inputBarEl = document.getElementById('inputBar');
-  inputBarEl.classList.add('visible');
-  chatInput.disabled = true;
-  chatInput.placeholder = 'loading...';
-
-  // Update picker label
-  var m = MODELS.find(function(x) { return x.id === modelId; });
-  modelPickerLabel.textContent = m ? m.label.split(' ').pop() : '···';
-  modelPicker.classList.add('loading');
-  renderModelMenu();
-
-  // Model picker doubles as cancel button while loading (tap to cancel)
   window._modelLoading = true;
-  document.getElementById('newChatBtn').disabled = true;
 
   try {
     var { CreateWebWorkerMLCEngine } = await import('https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.82/+esm');
@@ -1816,72 +1712,35 @@ async function loadModel(modelId) {
     var engine = await CreateWebWorkerMLCEngine(worker, modelId, {
       initProgressCallback: function(report) {
         if (window._modelAbort.signal.aborted) { worker.terminate(); throw new Error('Cancelled'); }
-        var pct = Math.round((report.progress || 0) * 100);
-        var fill = document.getElementById('topProgressFill');
-        if (fill) fill.style.width = pct + '%';
-        chatInput.placeholder = pct + '% loading...';
-        updateModelProgress(pct);
-        announceProgress(pct);
       }
     });
 
     if (window._modelAbort.signal.aborted) throw new Error('Cancelled');
-    var generator = engine;
-
-    window._modelEngine = generator;
+    window._modelEngine = engine;
     window._modelReady = true;
     window._modelLoading = false;
-    window._activeModelId = modelId;
-
-    // Force 100% — initProgressCallback may not fire final event on cache hit
-    var fill = document.getElementById('topProgressFill');
-    if (fill) fill.style.width = '100%';
-    chatInput.placeholder = '100% loading...';
-
-    modelPicker.classList.remove('loading');
-    document.getElementById('newChatBtn').disabled = false;
-    chatInput.placeholder = 'Ask anything...';
-    chatInput.disabled = false;
-    if (uxState === 'LAVA_ONLY') transitionTo('LAVA_WITH_INPUT');
-    document.getElementById('topProgress').style.opacity = '0';
-    announceState('Model ready: ' + (m ? m.label : modelId));
-    if (!document.hidden) chatInput.focus();
-    renderModelMenu();
-
-    // If a question was queued from #q= hash, auto-submit
-    if (window._queuedQuestion) {
-      chatInput.value = window._queuedQuestion;
-      sendBtn.classList.add('active');
-      window._queuedQuestion = null;
-      chatInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
-    }
+    console.log('WebLLM ready:', modelId);
 
   } catch (err) {
-    console.warn('Model load:', err.message);
+    console.warn('WebLLM load:', err.message);
     window._modelLoading = false;
-    modelPicker.classList.remove('loading');
-    document.getElementById('newChatBtn').disabled = false;
-    document.getElementById('topProgress').style.opacity = '0';
-    if (uxState === 'LAVA_ONLY') transitionTo('LAVA_WITH_INPUT');
-    if (typeof window._onWebLLMOffline === 'function') window._onWebLLMOffline();
   }
 }
 
 // Auto-load best model for device tier
+// Enable input immediately — Pollinations (cloud) is the primary path
+if (uxState === 'LAVA_ONLY') transitionTo('LAVA_WITH_INPUT');
+chatInput.disabled = false;
+chatInput.placeholder = 'Ask anything...';
+document.getElementById('inputBar').classList.add('visible');
+
+// Load WebLLM silently in background (offline fallback only)
 if (!CASCADE_OFF) {
   (async function() {
     var tier = 'minimal';
     try { tier = await detectTier(); } catch(e) {}
     document.documentElement.setAttribute('data-tier', tier);
-
-    if (tier === 'minimal') {
-      // No WebGPU — Track A only, show input immediately
-      if (uxState === 'LAVA_ONLY') transitionTo('LAVA_WITH_INPUT');
-      return;
-    }
-
-    // Always start with smallest model (fast load), user can upgrade via picker
-    loadModel(MODELS[0].id);
+    if (tier !== 'minimal') loadModel(MODELS[0].id);
   })();
 }
 
