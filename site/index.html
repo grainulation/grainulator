@@ -1413,6 +1413,7 @@ function resetExploreState() {
   window._conversationHistory = [];
   window._compilationResult = null;
   window._liveClaims = null;
+  window._challengedIds = {};
   const counter = document.getElementById('turnCounter');
   if (counter) counter.remove();
 }
@@ -2048,11 +2049,28 @@ function handleSlashCommand(question) {
 
   if (cmd === 'challenge') {
     removeThinking();
-    var recs = window._allClaims.filter(function(c) { return c.type === 'recommendation'; });
-    var target = recs.length > 0 ? recs[recs.length - 1] : null;
+    // Cycle through unchallenged claims (recs first, then factuals, then constraints)
+    window._challengedIds = window._challengedIds || {};
+    var challengeable = window._allClaims.filter(function(c) {
+      return !window._challengedIds[c.id] && (c.type === 'recommendation' || c.type === 'factual' || c.type === 'constraint');
+    });
+    if (challengeable.length === 0) {
+      // Reset and cycle again
+      window._challengedIds = {};
+      challengeable = window._allClaims.filter(function(c) { return c.type === 'recommendation' || c.type === 'factual'; });
+    }
+    var target = challengeable.length > 0 ? challengeable[0] : null;
+    if (target) window._challengedIds[target.id] = true;
+    var prompts = [
+      'What if the opposite is true? What evidence would disprove this?',
+      'Who benefits from this claim, and who bears the risk if it\'s wrong?',
+      'Under what conditions does this break down? What are the edge cases?',
+      'Is this based on current data, or could it be outdated?'
+    ];
+    var prompt = prompts[Math.floor(Math.random() * prompts.length)];
     var text = target
-      ? 'Challenging <em>' + escapeHtml(target.text.substring(0, 80)) + '</em>...<br><br>What if the opposite is true? What evidence would disprove this? Consider: who benefits from this recommendation, and who bears the risk if it\'s wrong?'
-      : 'No recommendations to challenge yet. Ask a research question first, then I\'ll have something to push back on.';
+      ? 'Challenging <em>' + escapeHtml(target.text.substring(0, 100)) + '</em>...<br><br>' + prompt
+      : 'All claims have been challenged. Try adding more evidence or run a blind-spot analysis.';
     var aiMsg2 = addMessage('ai', text);
     if (target) {
       var claims2 = [{ id: 'd' + String(window._nextClaimIndex++).padStart(3, '0'), type: 'risk', tier: 'stated', text: 'The recommendation may not hold under different team size, timeline, or resource constraints.' }];
