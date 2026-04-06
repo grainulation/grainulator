@@ -120,6 +120,7 @@ canvas.active{opacity:1}
 .header-btn .btn-text{overflow:hidden;max-width:0;opacity:0;transition:max-width 0.4s ease,opacity 0.3s ease}
 .header-btn.revealed .btn-text{max-width:300px;opacity:1}
 .new-chat-btn{border-color:rgba(141,246,255,0.15);color:rgba(141,246,255,0.5);font-size:0.65rem;padding:0.35rem 0.7rem;min-height:32px}
+.new-chat-btn:disabled{opacity:0.25;cursor:default;pointer-events:none}
 .new-chat-btn .btn-text{max-width:300px;opacity:1}
 
 /* Chat area — hidden until CHAT_ACTIVE */
@@ -1590,20 +1591,9 @@ async function runCompile() {
   const handoff = document.createElement('div');
   handoff.className = 'handoff-section';
   const hasShare = typeof navigator.share === 'function';
-  handoff.innerHTML = '<button class="handoff-primary" id="handoff-deeplink" type="button">Open in Claude Code</button>' +
-    (hasShare ? '<button class="handoff-secondary" id="handoff-share" type="button">Share</button>' : '') +
-    '<button class="handoff-secondary" id="handoff-clipboard" type="button">Copy to clipboard</button>';
+  handoff.innerHTML = '<button class="handoff-primary" id="handoff-clipboard" type="button">Copy for Claude Code</button>' +
+    (hasShare ? '<button class="handoff-secondary" id="handoff-share" type="button">Share</button>' : '');
   compileContainer.appendChild(handoff);
-
-  document.getElementById('handoff-deeplink').addEventListener('click', function() {
-    window._trackEvent?.('handoff_click', { type: 'deeplink' });
-    try {
-      window.location.href = 'claude-cli://open?q=' + encodeURIComponent(shortPrompt.substring(0, 1300));
-      setTimeout(function() { showToast('Install Claude Code first \u2014 claude.ai/download'); }, 1500);
-    } catch(e) {
-      showToast('Install Claude Code first \u2014 claude.ai/download');
-    }
-  });
 
   var shareBtn = document.getElementById('handoff-share');
   if (shareBtn) {
@@ -1629,10 +1619,10 @@ async function runCompile() {
       ta.remove();
     }
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(longPrompt).then(function() { showToast('copied.'); }).catch(function() { fallbackCopy(longPrompt); showToast('copied.'); });
+      navigator.clipboard.writeText(longPrompt).then(function() { showToast('Copied — paste into Claude Code'); }).catch(function() { fallbackCopy(longPrompt); showToast('Copied — paste into Claude Code'); });
     } else {
       fallbackCopy(longPrompt);
-      showToast('copied.');
+      showToast('Copied — paste into Claude Code');
     }
   });
 
@@ -1814,6 +1804,7 @@ async function loadModel(modelId) {
 
   // Model picker doubles as cancel button while loading (tap to cancel)
   window._modelLoading = true;
+  document.getElementById('newChatBtn').disabled = true;
 
   try {
     var { CreateMLCEngine } = await import('https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.82/+esm');
@@ -1839,8 +1830,15 @@ async function loadModel(modelId) {
     window._modelLoading = false;
     window._activeModelId = modelId;
 
+    // Force 100% — initProgressCallback may not fire final event on cache hit
+    var fill = document.getElementById('topProgressFill');
+    if (fill) fill.style.width = '100%';
+    chatInput.placeholder = '100% loading...';
+
     modelPicker.classList.remove('loading');
+    document.getElementById('newChatBtn').disabled = false;
     chatInput.placeholder = 'Ask anything...';
+    chatInput.disabled = false;
     if (uxState === 'LAVA_ONLY') transitionTo('LAVA_WITH_INPUT');
     document.getElementById('topProgress').style.opacity = '0';
     announceState('Model ready: ' + (m ? m.label : modelId));
@@ -1859,6 +1857,7 @@ async function loadModel(modelId) {
     console.warn('Model load:', err.message);
     window._modelLoading = false;
     modelPicker.classList.remove('loading');
+    document.getElementById('newChatBtn').disabled = false;
     document.getElementById('topProgress').style.opacity = '0';
     if (uxState === 'LAVA_ONLY') transitionTo('LAVA_WITH_INPUT');
     if (typeof window._onWebLLMOffline === 'function') window._onWebLLMOffline();
@@ -1970,46 +1969,30 @@ qInput.addEventListener('keydown', async (e) => {
   addMessage('user', question);
   addThinking();
 
-  // HF API fires for ALL non-off-topic, non-slash questions (including follow-ups with context)
+  // Cloud LLM fallback — Pollinations GET endpoint (free, no auth, no CORS preflight)
   if (navigator.onLine && !isOffTopic(question) && !isSlashCommand(question) && !/^challenge\b/i.test(question.trim())) {
     try {
-      var hfResponse = await fetch('https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'HuggingFaceH4/zephyr-7b-beta',
-          messages: [
-            { role: 'system', content: 'You are a research assistant helping evaluate a technical decision. Stay focused on the topic. Be specific and informative. Keep your answer to 2-3 paragraphs. Do NOT discuss unrelated topics.' },
-            { role: 'user', content: (function() {
-              var ctx = question.substring(0, 300);
-              var firstQ = window._conversationHistory.length > 0 ? window._conversationHistory[0].question : '';
-              if (firstQ && firstQ !== question) {
-                ctx = 'Original research question: ' + firstQ.substring(0, 150) + '\n\n';
-                // Summarize existing claims
-                var claims = window._allClaims || [];
-                if (claims.length > 0) {
-                  ctx += 'Findings so far (' + claims.length + ' claims):\n';
-                  claims.slice(-5).forEach(function(c) { ctx += '- [' + c.type + '] ' + c.text.substring(0, 80) + '\n'; });
-                  ctx += '\n';
-                }
-                ctx += 'User follow-up: ' + question.substring(0, 200);
-              }
-              return ctx;
-            })() }
-          ],
-          max_tokens: 400,
-          temperature: 0.7,
-          stream: false
-        }),
-        signal: AbortSignal.timeout(15000)
-      });
-      if (hfResponse.ok) {
-        var hfData = await hfResponse.json();
-        var hfText = hfData.choices && hfData.choices[0] && hfData.choices[0].message ? hfData.choices[0].message.content.trim() : '';
-        if (hfText && hfText.length > 20) {
+      var ctx = question.substring(0, 300);
+      var firstQ = window._conversationHistory.length > 0 ? window._conversationHistory[0].question : '';
+      if (firstQ && firstQ !== question) {
+        ctx = 'Original research question: ' + firstQ.substring(0, 150) + '\n\n';
+        var claims = window._allClaims || [];
+        if (claims.length > 0) {
+          ctx += 'Findings so far (' + claims.length + ' claims):\n';
+          claims.slice(-5).forEach(function(c) { ctx += '- [' + c.type + '] ' + c.text.substring(0, 80) + '\n'; });
+          ctx += '\n';
+        }
+        ctx += 'User follow-up: ' + question.substring(0, 200);
+      }
+      var sysPrompt = 'You are a research assistant helping evaluate a technical decision. Stay focused on the topic. Be specific and informative. Keep your answer to 2-3 paragraphs. Do NOT discuss unrelated topics.';
+      var apiUrl = 'https://text.pollinations.ai/' + encodeURIComponent(ctx) + '?model=openai&system=' + encodeURIComponent(sysPrompt) + '&nostream=true';
+      var llmResponse = await fetch(apiUrl, { signal: AbortSignal.timeout(15000) });
+      if (llmResponse.ok) {
+        var llmText = (await llmResponse.text()).trim();
+        if (llmText && llmText.length > 20) {
           removeThinking();
-          var aiMsg = addMessage('ai', escapeHtml(hfText).replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>'));
-          var extractedClaims = extractClaimsFromText(hfText, question);
+          var aiMsg = addMessage('ai', escapeHtml(llmText).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>'));
+          var extractedClaims = extractClaimsFromText(llmText, question);
           if (extractedClaims.length > 0) {
             var reIdClaims = extractedClaims.map(function(c) {
               var idx = window._nextClaimIndex++;
@@ -2017,7 +2000,7 @@ qInput.addEventListener('keydown', async (e) => {
             });
             window._allClaims = window._allClaims.concat(reIdClaims);
             window._turnCount++;
-            window._conversationHistory.push({ turn: window._turnCount, question: question, source: 'hf-api' });
+            window._conversationHistory.push({ turn: window._turnCount, question: question, source: 'cloud-llm' });
             window._liveClaims = window._allClaims;
             aiMsg.appendChild(renderClaimsToggle(reIdClaims));
             showCompileButton();
@@ -2031,8 +2014,7 @@ qInput.addEventListener('keydown', async (e) => {
         }
       }
     } catch (e) {
-      // HF API failed — fall through to templates silently
-      console.warn('HF API:', e.message);
+      console.warn('Cloud LLM:', e.message);
     }
   }
 
@@ -2295,27 +2277,7 @@ function fallbackToCascade(question, cascadeStart) {
     return;
   }
 
-  const fuzzyResult = fuzzyMatchDemo(question, DEMO_LIBRARY);
-
-  if (fuzzyResult && fuzzyResult.score > 0.3) {
-    removeThinking();
-    var demo = fuzzyResult.match;
-    var intro = generateConversationalIntro(demo.claims, demo.question || question);
-    var aiMsg2 = addMessage('ai', intro);
-    var reIdClaims = demo.claims.map(function(c) {
-      var idx = window._nextClaimIndex++;
-      return { id: 'd' + String(idx).padStart(3, '0'), type: c.type, tier: c.tier, text: c.text };
-    });
-    window._allClaims = window._allClaims.concat(reIdClaims);
-    window._turnCount++;
-    window._conversationHistory.push({ turn: window._turnCount, question: question, source: 'fuzzy' });
-    window._liveClaims = window._allClaims;
-    aiMsg2.appendChild(renderClaimsToggle(reIdClaims));
-    generateNextStepChips(aiMsg2);
-    showCompileButton();
-    saveSession();
-    autoScroll();
-  } else {
+  {
     removeThinking();
     var response = generateConversationalFallback(question);
     var aiMsg3 = addMessage('ai', response.text);
