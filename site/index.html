@@ -846,6 +846,31 @@ function autoScroll() {
   });
 }
 
+// Extract structured claims from natural language using keyword heuristics
+function extractClaimsFromText(text, question) {
+  var sentences = text.split(/[.!?]+/).map(function(s) { return s.trim(); }).filter(function(s) { return s.length > 20; });
+  var claims = [];
+  var seen = new Set();
+
+  sentences.forEach(function(s) {
+    var lower = s.toLowerCase();
+    var type = null;
+
+    if (/\brisk|danger|fail|vulnerab|threat|downside|concern|careful/i.test(s)) type = 'risk';
+    else if (/\bshould|recommend|suggest|consider|best practice|advise|opt for/i.test(s)) type = 'recommendation';
+    else if (/\brequir|must|need to|constraint|cannot|limitation|restrict/i.test(s)) type = 'constraint';
+    else if (/\bestimate|approx|typically|around \d|usually takes|\d+[-–]\d+\s*(week|month|day|hour)/i.test(s)) type = 'estimate';
+    else if (s.length > 30) type = 'factual';
+
+    if (type && !seen.has(lower.substring(0, 40))) {
+      seen.add(lower.substring(0, 40));
+      claims.push({ type: type, text: s + '.' });
+    }
+  });
+
+  return claims.slice(0, 6);
+}
+
 function synthesizeSummary(claims, question) {
   if (!claims || claims.length === 0) return 'No claims found for this query.';
   const risks = claims.filter(function(c) { return c.type === 'risk'; });
@@ -1860,7 +1885,7 @@ qInput.addEventListener('keydown', async (e) => {
     addThinking();
 
     try {
-      const systemPrompt = `You are a research analyst. Given a question, produce exactly 5 research claims as a JSON array. Each claim has: id (r001-r005), type (one of: constraint, factual, risk, recommendation, estimate), tier (one of: stated, web, documented, tested), text (one sentence, factual). Return ONLY valid JSON array, no markdown.`;
+      const systemPrompt = `You are a helpful research assistant. Answer the user's question directly and conversationally. Be specific and informative. If you can identify risks, constraints, or recommendations, mention them naturally in your response. Keep your answer to 2-4 paragraphs.`;
 
       const response = await window._webllmEngine.chat.completions.create({
         messages: [
@@ -1868,25 +1893,33 @@ qInput.addEventListener('keydown', async (e) => {
           { role: 'user', content: question }
         ],
         temperature: 0.7,
-        max_tokens: 800
+        max_tokens: 600
       });
 
       const raw = response.choices[0].message.content.trim();
-      const jsonMatch = raw.match(/\[[\s\S]*\]/);
-      if (!jsonMatch) throw new Error('No JSON array in response');
+      if (!raw || raw.length < 10) throw new Error('Empty response');
 
-      const claims = JSON.parse(jsonMatch[0]);
-      // Mark Track B (WebLLM) claims as unverified
-      claims.forEach(function(c) { c.unverified = true; });
+      // Show conversational response first
+      removeThinking();
+      var aiMsg = addMessage('ai', escapeHtml(raw).replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>'));
 
-      // Rx7: accumulate claims instead of replacing
-      loadDemo({ question: question, claims: claims }, {
-        cascadeLayer: 1,
-        score: null,
-        timing: performance.now() - cascadeStart,
-        accumulate: true,
-        setQuestion: false
-      });
+      // Extract claims from the natural language response
+      var extractedClaims = extractClaimsFromText(raw, question);
+      if (extractedClaims.length > 0) {
+        extractedClaims.forEach(function(c) { c.unverified = true; });
+        // Accumulate claims silently
+        var reIdClaims = extractedClaims.map(function(c) {
+          var idx = window._nextClaimIndex++;
+          return { id: 'd' + String(idx).padStart(3, '0'), type: c.type, tier: 'stated', text: c.text, unverified: true };
+        });
+        window._allClaims = window._allClaims.concat(reIdClaims);
+        window._turnCount++;
+        window._liveClaims = window._allClaims;
+        aiMsg.appendChild(renderClaimsToggle(reIdClaims));
+        showCompileButton();
+        saveSession();
+      }
+      autoScroll();
 
     } catch (err) {
       console.warn('Inference failed:', err);
@@ -1909,30 +1942,89 @@ qInput.addEventListener('keydown', async (e) => {
 function fallbackToCascade(question, cascadeStart) {
   const fuzzyResult = fuzzyMatchDemo(question, DEMO_LIBRARY);
 
-  if (fuzzyResult && fuzzyResult.score > 0.25) {
-    // Layer 0a: Fuzzy match found — accumulate, don't overwrite input on subsequent turns
-    loadDemo(fuzzyResult.match, {
-      cascadeLayer: '0a-fuzzy',
-      score: fuzzyResult.score,
-      timing: performance.now() - cascadeStart,
-      accumulate: true,
-      setQuestion: false
+  if (fuzzyResult && fuzzyResult.score > 0.4) {
+    // Strong fuzzy match — use pre-generated demo with conversational intro
+    removeThinking();
+    var demo = fuzzyResult.match;
+    var intro = generateConversationalIntro(demo.claims, demo.question || question);
+    var aiMsg = addMessage('ai', intro);
+    // Re-ID and accumulate claims
+    var reIdClaims = demo.claims.map(function(c) {
+      var idx = window._nextClaimIndex++;
+      return { id: 'd' + String(idx).padStart(3, '0'), type: c.type, tier: c.tier, text: c.text };
     });
-    // silent — no toast for track A matches
+    window._allClaims = window._allClaims.concat(reIdClaims);
+    window._turnCount++;
+    window._liveClaims = window._allClaims;
+    aiMsg.appendChild(renderClaimsToggle(reIdClaims));
+    showCompileButton();
+    saveSession();
+    autoScroll();
   } else {
-    // No close match — always generate template claims from user's keywords
-    // Layer 0b: Template fallback
-    const fallback = templateFallback(question);
-    loadDemo(fallback, {
-      cascadeLayer: '0b-template',
-      score: null,
-      timing: performance.now() - cascadeStart,
-      accumulate: true,
-      isTemplate: true,
-      setQuestion: false
+    // No strong match — generate a conversational template response
+    removeThinking();
+    var words = significantWords(question);
+    var topic = words.slice().sort(function(a,b){ return b.length - a.length; }).slice(0,3).join(' ') || question;
+    var response = generateConversationalFallback(topic, question);
+    var aiMsg2 = addMessage('ai', response.text);
+    // Accumulate extracted claims
+    var claims2 = response.claims.map(function(c) {
+      var idx = window._nextClaimIndex++;
+      return { id: 'd' + String(idx).padStart(3, '0'), type: c.type, tier: 'stated', text: c.text };
     });
-    // silent — no toast for template fallback
+    window._allClaims = window._allClaims.concat(claims2);
+    window._turnCount++;
+    window._liveClaims = window._allClaims;
+    if (claims2.length > 0) aiMsg2.appendChild(renderClaimsToggle(claims2));
+    showCompileButton();
+    saveSession();
+    autoScroll();
   }
+}
+
+function generateConversationalIntro(claims, question) {
+  var risks = claims.filter(function(c) { return c.type === 'risk'; });
+  var recs = claims.filter(function(c) { return c.type === 'recommendation'; });
+  var facts = claims.filter(function(c) { return c.type === 'factual'; });
+
+  var parts = [];
+  if (facts.length > 0) parts.push(escapeHtml(facts[0].text));
+  if (facts.length > 1) parts.push(escapeHtml(facts[1].text));
+  if (risks.length > 0) parts.push('One thing to watch out for: ' + escapeHtml(risks[0].text).toLowerCase());
+  if (recs.length > 0) parts.push(escapeHtml(recs[0].text));
+  return parts.join('<br><br>') || 'Here\'s what I found on that topic.';
+}
+
+function generateConversationalFallback(topic, question) {
+  // Multiple response templates to avoid repetition
+  var templates = [
+    {
+      text: 'That\'s an interesting area to explore. <strong>' + escapeHtml(topic) + '</strong> involves several trade-offs that depend heavily on your specific context — team size, existing infrastructure, and timeline all play a role.<br><br>The biggest question is usually whether the upfront investment pays off relative to the alternatives. Most teams that succeed with this approach start small, validate their assumptions, and scale gradually.',
+      claims: [
+        { type: 'constraint', text: 'Evaluating ' + topic + ' requires understanding the specific team context, existing infrastructure, and timeline constraints.' },
+        { type: 'recommendation', text: 'Start with a small proof of concept to validate assumptions before committing to a larger rollout of ' + topic + '.' },
+        { type: 'risk', text: 'The upfront investment in ' + topic + ' may not pay off if the team cannot commit to gradual scaling and iteration.' }
+      ]
+    },
+    {
+      text: 'Let me break down what I know about <strong>' + escapeHtml(topic) + '</strong>.<br><br>This is a space where the right answer depends on where you are today versus where you want to be. There are real trade-offs between moving fast and building a solid foundation. The teams that navigate this well tend to be explicit about what they\'re optimizing for.',
+      claims: [
+        { type: 'factual', text: 'The optimal approach to ' + topic + ' depends on the gap between current state and desired end state.' },
+        { type: 'recommendation', text: 'Be explicit about optimization targets when evaluating ' + topic + ' — speed vs. foundation is a common tension.' },
+        { type: 'risk', text: 'Trying to optimize for both speed and long-term architecture simultaneously with ' + topic + ' often results in achieving neither.' }
+      ]
+    },
+    {
+      text: 'Good question. <strong>' + escapeHtml(topic) + '</strong> is one of those areas where the conventional wisdom doesn\'t always hold up in practice.<br><br>What I\'d focus on first is understanding the constraints you\'re working within. The best solution often isn\'t the most technically elegant one — it\'s the one that fits your team\'s capacity and your timeline.',
+      claims: [
+        { type: 'constraint', text: 'Conventional wisdom about ' + topic + ' may not apply to all team contexts and should be validated against specific constraints.' },
+        { type: 'recommendation', text: 'Prioritize solutions for ' + topic + ' that fit team capacity and timeline over theoretical elegance.' },
+        { type: 'factual', text: 'Practical outcomes with ' + topic + ' correlate more strongly with team fit than with technical sophistication.' }
+      ]
+    }
+  ];
+
+  return templates[Math.floor(Math.random() * templates.length)];
 }
 
 // ===================================================================
