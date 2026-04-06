@@ -1968,7 +1968,8 @@ qInput.addEventListener('keydown', async (e) => {
   addMessage('user', question);
   addThinking();
 
-  if (navigator.onLine && !isOffTopic(question) && !isSlashCommand(question) && !isFollowUp(question)) {
+  // HF API fires for ALL non-off-topic, non-slash questions (including follow-ups with context)
+  if (navigator.onLine && !isOffTopic(question) && !isSlashCommand(question) && !/^challenge\b/i.test(question.trim())) {
     try {
       var hfResponse = await fetch('https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta/v1/chat/completions', {
         method: 'POST',
@@ -1978,9 +1979,19 @@ qInput.addEventListener('keydown', async (e) => {
           messages: [
             { role: 'system', content: 'You are a research assistant helping evaluate a technical decision. Stay focused on the topic. Be specific and informative. Keep your answer to 2-3 paragraphs. Do NOT discuss unrelated topics.' },
             { role: 'user', content: (function() {
-              var ctx = question.substring(0, 400);
+              var ctx = question.substring(0, 300);
               var firstQ = window._conversationHistory.length > 0 ? window._conversationHistory[0].question : '';
-              if (firstQ && firstQ !== question) ctx = 'Original question: ' + firstQ.substring(0, 200) + '\n\nFollow-up: ' + ctx;
+              if (firstQ && firstQ !== question) {
+                ctx = 'Original research question: ' + firstQ.substring(0, 150) + '\n\n';
+                // Summarize existing claims
+                var claims = window._allClaims || [];
+                if (claims.length > 0) {
+                  ctx += 'Findings so far (' + claims.length + ' claims):\n';
+                  claims.slice(-5).forEach(function(c) { ctx += '- [' + c.type + '] ' + c.text.substring(0, 80) + '\n'; });
+                  ctx += '\n';
+                }
+                ctx += 'User follow-up: ' + question.substring(0, 200);
+              }
               return ctx;
             })() }
           ],
@@ -1988,7 +1999,7 @@ qInput.addEventListener('keydown', async (e) => {
           temperature: 0.7,
           stream: false
         }),
-        signal: AbortSignal.timeout(10000)
+        signal: AbortSignal.timeout(15000)
       });
       if (hfResponse.ok) {
         var hfData = await hfResponse.json();
@@ -2116,10 +2127,18 @@ function generateFollowUpResponse(question) {
 
 function isOffTopic(q) {
   var lower = q.toLowerCase().trim();
-  if (lower.length < 3) return true; // single char, emoji
-  if (/^(hi|hey|hello|sup|yo|howdy|greetings)\b/i.test(lower)) return true;
-  if (/^(what is this|who are you|help me|can you|write me|make me|how do i use)/i.test(lower)) return true;
-  if (!/[a-zA-Z]{3,}/.test(q)) return true; // no real words (emoji, symbols)
+  if (lower.length < 2) return true; // single char
+  if (/^(hi|hey|hello|sup|yo|howdy|greetings|help|thanks|thank you|bye)\b/i.test(lower)) return true;
+  if (/^(what is this|who are you|help me|can you help|write me|make me|how do i use|tell me about yourself)/i.test(lower)) return true;
+  if (/^(what is \d|how much is|calculate|math|joke|poem|story|sing|draw)/i.test(lower)) return true;
+  if (/<[^>]+>/.test(q)) return true; // HTML/XSS
+  if (/^(ignore|forget|disregard|override|bypass)/i.test(lower)) return true; // prompt injection
+  if (!/[a-zA-Z]{3,}/.test(q)) return true; // no real words (emoji, symbols only)
+  // Single word that's not a known tech term
+  if (lower.split(/\s+/).length === 1 && !WORD_ALIASES[lower] && !/\?$/.test(lower)) {
+    var techTerms = /^(postgres|postgresql|mysql|mongodb|redis|kubernetes|docker|graphql|typescript|python|rust|golang|terraform|serverless|microservices|monolith|monorepo|polyrepo|cicd|devops|sre|webassembly|wasm)$/i;
+    if (!techTerms.test(lower)) return true;
+  }
   return false;
 }
 
