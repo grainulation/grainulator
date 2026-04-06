@@ -113,14 +113,13 @@ canvas.active{opacity:1}
 
 /* Header — install left, new chat right */
 .app-header{display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0.8rem;z-index:15;position:relative;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.04)}
-.splash-hero{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100px;height:100px;opacity:1;z-index:16;filter:drop-shadow(0 0 20px rgba(141,246,255,0.3));transition:opacity 0.8s ease;pointer-events:none}
-.splash-hero.fade{opacity:0}
+/* splash hero removed */
 .header-btn{font-size:0.65rem;padding:0.35rem 0.7rem;min-height:32px;color:rgba(141,246,255,0.7);border:1px solid rgba(141,246,255,0.2);border-radius:4px;background:none;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:0.4rem;text-decoration:none;white-space:nowrap;transition:all 0.2s}
 .header-btn:hover{border-color:rgba(141,246,255,0.4);color:#8df6ff}
-.header-btn img{width:20px;height:20px;opacity:0.9}
+.header-btn img{width:28px;height:28px;opacity:0.9}
 .header-btn .btn-text{overflow:hidden;max-width:0;opacity:0;transition:max-width 0.4s ease,opacity 0.3s ease}
 .header-btn.revealed .btn-text{max-width:300px;opacity:1}
-.new-chat-btn{border-color:rgba(141,246,255,0.15);color:rgba(141,246,255,0.5)}
+.new-chat-btn{border-color:rgba(141,246,255,0.15);color:rgba(141,246,255,0.5);font-size:0.65rem;padding:0.35rem 0.7rem;min-height:32px}
 .new-chat-btn .btn-text{max-width:300px;opacity:1}
 
 /* Chat area — hidden until CHAT_ACTIVE */
@@ -312,8 +311,7 @@ canvas.active{opacity:1}
 
 <div class="app" id="app">
   <header class="app-header">
-    <img src="glitchy.png" alt="Grainulator" class="splash-hero" id="splashHero">
-    <a class="header-btn" id="ctaInstall" href="https://github.com/grainulation/grainulator" target="_blank" rel="noopener" aria-label="View on GitHub"><img src="glitchy.png" alt="" width="28" height="28"><span class="btn-text">/plugin install grainulator</span></a>
+    <a class="header-btn revealed" id="ctaInstall" href="https://github.com/grainulation/grainulator" target="_blank" rel="noopener" aria-label="View on GitHub"><img src="glitchy.png" alt="" width="28" height="28"><span class="btn-text">/plugin install grainulator</span></a>
     <button class="header-btn new-chat-btn" id="newChatBtn" type="button" aria-label="New chat"><span class="btn-text">new chat</span></button>
   </header>
 
@@ -378,16 +376,7 @@ let inferenceRunning = false;
 let uxState = 'LAVA_ONLY';
 let modelReady = false;
 
-// Splash: ghost fades out, install text slides in
-(function runSplash() {
-  var hero = document.getElementById('splashHero');
-  var installBtn = document.getElementById('ctaInstall');
-  setTimeout(function() {
-    hero.classList.add('fade');
-    installBtn.classList.add('revealed');
-  }, 800);
-  setTimeout(function() { hero.remove(); }, 1600);
-})();
+// Install button starts revealed (no splash animation)
 
 function transitionTo(newState) {
   if (uxState === newState) return;
