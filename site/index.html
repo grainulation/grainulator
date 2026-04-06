@@ -1840,7 +1840,8 @@ function renderModelMenu() {
     var btn = document.createElement('button');
     btn.className = 'model-menu-item' + (m.id === window._activeModelId ? ' active' : '');
     btn.type = 'button';
-    btn.innerHTML = escapeHtml(m.label) + '<span class="model-size">' + escapeHtml(m.size) + '</span>';
+    var cached = window._cachedModels && window._cachedModels[m.id];
+    btn.innerHTML = escapeHtml(m.label) + '<span class="model-size">' + (cached ? '✓ cached' : escapeHtml(m.size)) + '</span>';
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
       modelMenu.classList.remove('open');
@@ -1848,7 +1849,39 @@ function renderModelMenu() {
     });
     modelMenu.appendChild(btn);
   });
+  // Clear data option
+  var clearBtn = document.createElement('button');
+  clearBtn.className = 'model-menu-item';
+  clearBtn.type = 'button';
+  clearBtn.innerHTML = 'Clear all data<span class="model-size" style="color:#f43f5e">reset</span>';
+  clearBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    modelMenu.classList.remove('open');
+    if (!confirm('Clear model cache, session, and analytics?')) return;
+    caches.keys().then(function(keys) { keys.forEach(function(k) { caches.delete(k); }); });
+    localStorage.clear();
+    indexedDB.deleteDatabase('grainulator-analytics');
+    location.reload();
+  });
+  modelMenu.appendChild(clearBtn);
 }
+
+// Detect which models are cached
+window._cachedModels = {};
+(async function checkCachedModels() {
+  if (!window.caches) return;
+  try {
+    var cache = await caches.open('webllm/model');
+    var keys = await cache.keys();
+    var urls = keys.map(function(k) { return k.url; });
+    MODELS.forEach(function(m) {
+      // WebLLM cache keys contain the model ID
+      var found = urls.some(function(u) { return u.indexOf(m.id) !== -1; });
+      if (found) window._cachedModels[m.id] = true;
+    });
+    renderModelMenu();
+  } catch(e) {}
+})();
 renderModelMenu();
 
 modelPicker.addEventListener('click', function(e) {
