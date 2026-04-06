@@ -136,7 +136,7 @@ canvas.active{opacity:1}
 .new-chat-btn:hover{color:#8df6ff;border-color:rgba(141,246,255,0.3)}
 
 /* Chat area — hidden until CHAT_ACTIVE */
-.chat-area{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:0.8rem;scroll-behavior:smooth;opacity:0;transition:opacity 0.4s ease}
+.chat-area{flex:1 1 0%;min-height:0;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:0.8rem;scroll-behavior:smooth;opacity:0;transition:opacity 0.4s ease}
 .app.chat-active .chat-area{opacity:1}
 
 /* Messages */
@@ -222,12 +222,12 @@ canvas.active{opacity:1}
 
 /* footer links removed — github link is the install button */
 
-/* Mobile fixes — prevent overlap, ensure chat is contained */
+/* Mobile fixes */
 @media(max-width:768px){
-  .app{padding-top:env(safe-area-inset-top,0px)}
+  .app{padding-top:env(safe-area-inset-top,0px);padding-bottom:0}
   .chat-area{padding:0.5rem;flex:1 1 0%;overflow-y:auto}
   .msg{max-width:92%;font-size:0.75rem}
-  .input-bar{gap:0.3rem}
+  .input-bar{gap:0.3rem;padding-bottom:calc(0.5rem + env(safe-area-inset-bottom,0px))}
   #ctaInstall img{width:80px;height:80px}
   #ctaInstall{padding:0.6rem 1rem}
 }
@@ -420,13 +420,17 @@ function transitionTo(newState) {
   }
 
   if (newState === 'CHAT_ACTIVE') {
-    // Ensure input bar is visible (may have skipped LAVA_WITH_INPUT)
     inputBarEl.classList.add('visible');
     chatInputEl.disabled = false;
-    if (chatInputEl.placeholder === 'loading...') chatInputEl.placeholder = 'Ask a question...';
+    if (chatInputEl.placeholder === 'loading...' || /\d+% loading/.test(chatInputEl.placeholder)) chatInputEl.placeholder = 'Ask a question...';
     appEl.classList.add('chat-active');
     dimOverlay.style.opacity = '0.95';
     pauseShader();
+    // Show slash command examples on first chat open
+    if (!window._welcomeShown) {
+      window._welcomeShown = true;
+      showWelcomeChips();
+    }
   }
 }
 
@@ -894,6 +898,35 @@ function extractClaimsFromText(text, question) {
   });
 
   return claims.slice(0, 6);
+}
+
+function showWelcomeChips() {
+  var examples = [
+    { label: '/research', text: 'should we use postgres or mongo for our new service?' },
+    { label: '/challenge', text: 'is serverless really cheaper at scale?' },
+    { label: '/blind-spot', text: 'what are we missing in our auth migration plan?' },
+    { label: '/witness', text: 'how does Stripe handle idempotency?' },
+  ];
+  var container = document.createElement('div');
+  container.className = 'follow-up-chips';
+  container.style.justifyContent = 'center';
+  container.style.marginTop = '0';
+  examples.forEach(function(ex) {
+    var btn = document.createElement('button');
+    btn.className = 'chip';
+    btn.type = 'button';
+    btn.innerHTML = '<strong>' + ex.label + '</strong> ' + escapeHtml(ex.text);
+    btn.addEventListener('click', function() {
+      chatInput.value = ex.text;
+      sendBtn.classList.add('active');
+      container.remove();
+      chatInput.focus();
+    });
+    container.appendChild(btn);
+  });
+  var msg = addMessage('system', '');
+  msg.appendChild(container);
+  msg.style.maxWidth = '100%';
 }
 
 function synthesizeSummary(claims, question) {
@@ -1711,7 +1744,23 @@ async function runCompile() {
 
   document.getElementById('handoff-clipboard').addEventListener('click', function() {
     window._trackEvent?.('handoff_click', { type: 'clipboard' });
-    navigator.clipboard.writeText(longPrompt).then(function() { showToast('prompt copied to clipboard.'); }).catch(function() { showToast('copy failed'); });
+    // iOS Safari fallback: textarea + execCommand
+    function fallbackCopy(text) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;left:-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, text.length);
+      document.execCommand('copy');
+      ta.remove();
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(longPrompt).then(function() { showToast('copied.'); }).catch(function() { fallbackCopy(longPrompt); showToast('copied.'); });
+    } else {
+      fallbackCopy(longPrompt);
+      showToast('copied.');
+    }
   });
 
   announceState('Compilation complete. Confidence score: ' + final.score + ' out of 100.');
@@ -1829,10 +1878,12 @@ async function detectTier() {
 }
 
 async function loadModel(modelId) {
-  // cancel button removed — picker handles cancel during loading
-
+  // Skip if already loading this model
+  if (window._modelLoading && window._activeModelId === modelId) return;
   // Abort previous load if in progress
   if (window._modelAbort) { window._modelAbort.abort(); }
+  // Wait a tick for previous abort to settle
+  await new Promise(function(r) { setTimeout(r, 50); });
   window._modelAbort = new AbortController();
   window._modelReady = false;
   window._modelEngine = null;
@@ -1905,11 +1956,12 @@ async function loadModel(modelId) {
 // Auto-load best model for device tier
 if (!CASCADE_OFF) {
   (async function() {
-    var tier = await detectTier();
+    var tier = 'minimal';
+    try { tier = await detectTier(); } catch(e) {}
     document.documentElement.setAttribute('data-tier', tier);
 
     if (tier === 'minimal') {
-      // No WebGPU — Track A only
+      // No WebGPU — Track A only, show input immediately
       if (uxState === 'LAVA_ONLY') transitionTo('LAVA_WITH_INPUT');
       return;
     }
@@ -1917,6 +1969,9 @@ if (!CASCADE_OFF) {
     // Always start with smallest model (fast load), user can upgrade via picker
     loadModel(MODELS[0].id);
   })();
+
+  // Safety: if nothing has loaded after 5s, bloom input for Track A
+  setTimeout(function() { if (uxState === 'LAVA_ONLY') { transitionTo('LAVA_WITH_INPUT'); } }, 5000);
 }
 
 // ===================================================================
