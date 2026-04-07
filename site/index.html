@@ -129,6 +129,14 @@ canvas.active{opacity:1}
 @keyframes msg-in{to{opacity:1}}
 .msg-user{align-self:flex-end;background:rgba(141,246,255,0.1);color:#fff;border:1px solid rgba(141,246,255,0.15)}
 .msg-ai{align-self:flex-start;background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.85);border:1px solid rgba(255,255,255,0.06)}
+.msg-ai table{border-collapse:collapse;width:100%;margin:0.5rem 0;font-size:0.7rem}
+.msg-ai th,.msg-ai td{border:1px solid rgba(141,246,255,0.2);padding:0.3rem 0.5rem;text-align:left}
+.msg-ai th{background:rgba(141,246,255,0.08);color:#8df6ff}
+.msg-ai code{background:rgba(141,246,255,0.1);padding:0.1rem 0.3rem;border-radius:2px;font-size:0.85em}
+.msg-ai pre{background:rgba(0,0,0,0.3);padding:0.5rem;border-radius:4px;overflow-x:auto}
+.msg-ai pre code{background:none;padding:0}
+.msg-ai ul,.msg-ai ol{padding-left:1.2rem;margin:0.3rem 0}
+.msg-ai p{margin:0.3rem 0}
 .msg-system{align-self:center;background:none;color:rgba(141,246,255,0.5);font-size:0.65rem;text-align:center;max-width:100%;padding:0.4rem}
 
 /* Thinking dots */
@@ -346,12 +354,24 @@ canvas.active{opacity:1}
 <!-- motion-toggle removed — shader pauses automatically on chat, resumes on new chat -->
 
 <!-- toast removed -->
-
+<script src="https://cdn.jsdelivr.net/npm/marked@15/marked.min.js" defer></script>
 <script>
 // ===================================================================
 // XSS HELPER — escape user-supplied strings before inserting into HTML
 // ===================================================================
 function escapeHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+var _markedLoaded = false;
+function renderMarkdown(text) {
+  if (typeof marked !== 'undefined' && marked.parse) {
+    return marked.parse(text);
+  }
+  // Fallback if marked hasn't loaded yet
+  var html = escapeHtml(text);
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\n\n/g, '<br><br>');
+  html = html.replace(/\n/g, '<br>');
+  return html;
+}
 
 // ===================================================================
 // SHADER PAUSE STATE — declared early to avoid temporal dead zone (BUG #8)
@@ -1807,14 +1827,14 @@ qInput.addEventListener('keydown', async (e) => {
         }
         ctx += 'User follow-up: ' + question.substring(0, 200);
       }
-      var sysPrompt = 'You are a research assistant helping evaluate a technical decision. Stay focused on the topic. Be specific and informative. Keep your answer to 2-3 paragraphs. Do NOT discuss unrelated topics.';
+      var sysPrompt = 'You are Grainulator, a research sprint assistant built by grainulation.com. Grainulator is a Claude Code plugin that helps teams make evidence-backed technical decisions. It works by accumulating typed claims (constraints, facts, estimates, risks, recommendations), compiling them through a 7-pass pipeline, and producing confidence-scored briefs. Users install it via: /plugin install grainulator. This demo at grainulator.app showcases the research sprint workflow. You can use full markdown including tables, bold, lists, and code blocks. Be specific and informative. Keep your answer to 2-3 paragraphs. Do NOT discuss unrelated topics.';
       var apiUrl = 'https://text.pollinations.ai/' + encodeURIComponent(ctx) + '?model=openai&system=' + encodeURIComponent(sysPrompt) + '&nostream=true';
       var llmResponse = await fetch(apiUrl, { signal: AbortSignal.timeout(15000) });
       if (llmResponse.ok) {
         var llmText = (await llmResponse.text()).trim();
         if (llmText && llmText.length > 20) {
           removeThinking();
-          var aiMsg = addMessage('ai', escapeHtml(llmText).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>'));
+          var aiMsg = addMessage('ai', renderMarkdown(llmText));
           var extractedClaims = extractClaimsFromText(llmText, question);
           if (extractedClaims.length > 0) {
             var reIdClaims = extractedClaims.map(function(c) {
@@ -1855,7 +1875,7 @@ qInput.addEventListener('keydown', async (e) => {
       var localText = (localResponse.choices[0].message.content || '').trim();
       if (localText && localText.length > 20) {
         removeThinking();
-        var aiMsg = addMessage('ai', escapeHtml(localText).replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>'));
+        var aiMsg = addMessage('ai', renderMarkdown(localText));
         var extractedClaims = extractClaimsFromText(localText, question);
         if (extractedClaims.length > 0) {
           var reIdClaims = extractedClaims.map(function(c) {
