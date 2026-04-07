@@ -110,7 +110,7 @@ canvas.active{opacity:1}
 .app{display:flex;flex-direction:column;height:100vh;height:100dvh;height:-webkit-fill-available;position:relative;z-index:10;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace}
 
 /* Header — install left, new chat right */
-.app-header{display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0.8rem;z-index:15;position:relative;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.app-header{display:flex;align-items:center;justify-content:space-between;padding:calc(0.5rem + env(safe-area-inset-top,0px)) 0.8rem 0.5rem;z-index:15;position:relative;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.04)}
 /* splash hero removed */
 .header-btn{font-size:0.65rem;padding:0.35rem 0.7rem;height:38px;color:rgba(141,246,255,1);border:1px solid rgba(141,246,255,0.2);border-radius:4px;background:rgba(255,255,255,0.25);cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:0.4rem;text-decoration:none;white-space:nowrap;transition:all 0.2s;box-sizing:border-box}
 .header-btn:hover{border-color:rgba(141,246,255,0.4);color:#8df6ff}
@@ -218,7 +218,7 @@ canvas.active{opacity:1}
 
 /* Mobile fixes */
 @media(max-width:768px){
-  .app{padding-top:env(safe-area-inset-top,0px)}
+  .app{padding-top:0}
   .chat-area{padding:0.5rem;flex:1 1 0%;overflow-y:auto}
   .msg{max-width:92%;font-size:0.75rem}
   .input-bar{gap:0.3rem;padding-bottom:calc(0.5rem + env(safe-area-inset-bottom,0px))}
