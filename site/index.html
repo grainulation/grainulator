@@ -1048,18 +1048,15 @@ document.getElementById('newChatBtn').addEventListener('click', function() {
   uxState = 'LAVA_WITH_INPUT';
 });
 
-// Easter egg: triple-click logo to toggle lava animation
-var _lavaTaps = 0; var _lavaTapTimer = null;
-document.getElementById('ctaInstall').addEventListener('click', function(e) {
-  _lavaTaps++;
-  clearTimeout(_lavaTapTimer);
-  _lavaTapTimer = setTimeout(function() { _lavaTaps = 0; }, 500);
-  if (_lavaTaps >= 3) {
-    _lavaTaps = 0;
-    e.preventDefault();
+// Easter egg: long-press header (1.5s) to toggle lava animation
+var _lavaLongPress = null;
+document.querySelector('.app-header').addEventListener('pointerdown', function() {
+  _lavaLongPress = setTimeout(function() {
     if (shaderPaused) { resumeShader(); } else { pauseShader(); }
-  }
+  }, 1500);
 });
+document.querySelector('.app-header').addEventListener('pointerup', function() { clearTimeout(_lavaLongPress); });
+document.querySelector('.app-header').addEventListener('pointerleave', function() { clearTimeout(_lavaLongPress); });
 
 // Send button + input wiring
 var _inputResizeTimer = null;
