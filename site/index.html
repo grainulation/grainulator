@@ -1844,18 +1844,31 @@ qInput.addEventListener('keydown', async (e) => {
   // ── Layer 1: Cloud LLM (Pollinations — best quality, requires network) ──
   if (navigator.onLine && !isOffTopic(question) && !isSlashCommand(question) && !/^challenge\b/i.test(question.trim())) {
     try {
-      var ctx = question.substring(0, 300);
-      var firstQ = window._conversationHistory.length > 0 ? window._conversationHistory[0].question : '';
-      if (firstQ && firstQ !== question) {
-        ctx = 'Original research question: ' + firstQ.substring(0, 150) + '\n\n';
-        var claims = window._allClaims || [];
-        if (claims.length > 0) {
-          ctx += 'Findings so far (' + claims.length + ' claims):\n';
-          claims.slice(-5).forEach(function(c) { ctx += '- [' + c.type + '] ' + c.text.substring(0, 80) + '\n'; });
-          ctx += '\n';
-        }
-        ctx += 'User follow-up: ' + question.substring(0, 200);
+      // Build conversation context — full history, truncated to fit ~6K URL limit
+      var ctx = '';
+      var history = window._conversationHistory || [];
+      var aiResponses = document.querySelectorAll('.msg-ai');
+      // Include last 6 turns of conversation
+      var recentTurns = history.slice(-6);
+      if (recentTurns.length > 0 && recentTurns[0].question !== history[0]?.question) {
+        ctx += 'Original question: ' + (history[0]?.question || '').substring(0, 100) + '\n\n';
       }
+      recentTurns.forEach(function(turn, i) {
+        ctx += 'User: ' + turn.question.substring(0, 150) + '\n';
+        // Get corresponding AI response text
+        var aiEl = aiResponses[i + (history.length - recentTurns.length)];
+        if (aiEl) ctx += 'Assistant: ' + aiEl.textContent.substring(0, 200) + '\n\n';
+      });
+      // Add current claims summary
+      var claims = window._allClaims || [];
+      if (claims.length > 0) {
+        ctx += 'Claims so far (' + claims.length + '):\n';
+        claims.slice(-8).forEach(function(c) { ctx += '- [' + c.type + '] ' + c.text.substring(0, 60) + '\n'; });
+        ctx += '\n';
+      }
+      ctx += 'User: ' + question.substring(0, 300);
+      // Truncate to keep URL under ~6K
+      if (ctx.length > 3000) ctx = ctx.substring(ctx.length - 3000);
       var sysPrompt = 'You are Grainulator, a research sprint assistant built by grainulation.com. Grainulator is a Claude Code plugin that helps teams make evidence-backed technical decisions. It works by accumulating typed claims (constraints, facts, estimates, risks, recommendations), compiling them through a 7-pass pipeline, and producing confidence-scored briefs. Users install it via: /plugin install grainulator. This demo at grainulator.app showcases the research sprint workflow. You can use full markdown including tables, bold, lists, and code blocks. Be specific and informative. Keep your answer to 2-3 paragraphs. Do NOT discuss unrelated topics.';
       var apiUrl = 'https://text.pollinations.ai/' + encodeURIComponent(ctx) + '?model=openai&system=' + encodeURIComponent(sysPrompt) + '&nostream=true';
       var llmResponse = await fetch(apiUrl, { signal: AbortSignal.timeout(15000) });
