@@ -889,26 +889,53 @@ function showWelcomeChips() {
   addMessage('ai', 'What are you exploring? Ask anything — I\'ll gather evidence, flag risks, and grade confidence.');
 }
 
-// Generate wheat-style next step chips based on current sprint state
+// Generate contextual next-step chips using mini compiler analysis
 function generateNextStepChips(aiMsg) {
-  // Remove chips from ALL previous messages so they don't pile up
   document.querySelectorAll('.msg .follow-up-chips').forEach(function(el) { el.remove(); });
 
   var claims = window._allClaims || [];
-  var risks = claims.filter(function(c) { return c.type === 'risk'; });
-  var recs = claims.filter(function(c) { return c.type === 'recommendation'; });
+  if (claims.length < 3) return;
+
+  // Mini compiler: analyze what's actually missing
   var types = {};
-  claims.forEach(function(c) { types[c.type] = (types[c.type] || 0) + 1; });
+  var tiers = {};
+  var topics = {};
+  claims.forEach(function(c) {
+    types[c.type] = (types[c.type] || 0) + 1;
+    tiers[c.tier || 'stated'] = (tiers[c.tier || 'stated'] || 0) + 1;
+    if (c.topic) topics[c.topic] = (topics[c.topic] || 0) + 1;
+  });
+  var typeKeys = Object.keys(types);
+  var hasRisk = !!types.risk;
+  var hasRec = !!types.recommendation;
+  var hasConstraint = !!types.constraint;
+  var hasEstimate = !!types.estimate;
+  var monoculture = typeKeys.length <= 2;
+  var weakEvidence = !tiers.tested && !tiers.documented && !tiers.production;
+  var lastQuestion = window._conversationHistory.length > 0 ? window._conversationHistory[0].question : '';
+  var topicWord = lastQuestion.split(' ').filter(function(w) { return w.length > 4; })[0] || 'this';
 
   var suggestions = [];
-  if (claims.length >= 3 && risks.length === 0) suggestions.push('what are the risks?');
-  if (claims.length >= 3 && recs.length > 0) suggestions.push('challenge that recommendation');
-  if (claims.length >= 5) suggestions.push('any blind spots?');
-  if (claims.length >= 3 && claims.length < 8) suggestions.push('dig deeper');
-  if (Object.keys(types).length <= 2 && claims.length >= 3) suggestions.push('diversify the evidence');
+
+  // Only suggest what's actually missing — max 2 chips
+  if (!hasRisk && claims.length >= 3) {
+    suggestions.push('what risks are we missing on ' + topicWord + '?');
+  }
+  if (monoculture && hasRec && !hasConstraint) {
+    suggestions.push('what constraints limit ' + topicWord + '?');
+  }
+  if (hasRec && claims.length >= 4 && !window._challengedIds?.size) {
+    suggestions.push('challenge the strongest recommendation');
+  }
+  if (typeKeys.length >= 3 && claims.length >= 6 && weakEvidence) {
+    suggestions.push('any blind spots in our evidence?');
+  }
+  if (!hasEstimate && claims.length >= 5) {
+    suggestions.push('what would this cost or take?');
+  }
 
   if (suggestions.length === 0) return;
-  suggestions = suggestions.slice(0, 3);
+  suggestions = suggestions.slice(0, 2);
 
   var container = document.createElement('div');
   container.className = 'follow-up-chips';
