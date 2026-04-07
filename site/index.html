@@ -327,7 +327,6 @@ canvas.active{opacity:1}
         rows="1"
         placeholder="Ask anything..."
         autocomplete="off"
-        autofocus
         spellcheck="false"
         enterkeyhint="send"
         maxlength="5000"
@@ -856,7 +855,7 @@ function removeThinking() {
 function autoScroll() {
   requestAnimationFrame(function() {
     chatArea.scrollTop = chatArea.scrollHeight;
-    if (!document.hidden) chatInput.focus();
+    if (!document.hidden && !isMobileDevice) chatInput.focus();
   });
 }
 
@@ -1782,6 +1781,7 @@ if (uxState === 'LAVA_ONLY') transitionTo('LAVA_WITH_INPUT');
 chatInput.disabled = false;
 chatInput.placeholder = 'Ask anything...';
 document.getElementById('inputBar').classList.add('visible');
+if (!isMobileDevice) chatInput.focus();
 // Freeze lava — it served as the loading state, now free up GPU for typing
 pauseShader();
 
@@ -1832,6 +1832,7 @@ qInput.addEventListener('keydown', async (e) => {
   qInput.value = '';
   qInput.style.height = 'auto';
   sendBtn.classList.remove('active');
+  if (isMobileDevice) qInput.blur();
 
   const cascadeStart = performance.now();
 
