@@ -121,7 +121,7 @@ canvas.active{opacity:1}
 .new-chat-btn .btn-text{max-width:300px;opacity:1}
 
 /* Chat area — hidden until CHAT_ACTIVE */
-.chat-area{flex:1 1 0%;min-height:0;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:0.8rem;scroll-behavior:smooth;opacity:0;transition:opacity 0.4s ease}
+.chat-area{flex:1 1 0%;min-height:0;overflow-y:auto;padding:1rem 1rem 5rem;display:flex;flex-direction:column;gap:0.8rem;scroll-behavior:smooth;opacity:0;transition:opacity 0.4s ease}
 .app.chat-active .chat-area{opacity:1}
 
 /* Messages */
@@ -164,11 +164,11 @@ canvas.active{opacity:1}
 .badge-feedback{background:rgba(156,163,175,0.15);color:#9ca3af}
 
 /* Input bar — blooms up from bottom with spring animation */
-.input-bar{position:fixed;bottom:0;left:0;right:0;z-index:15;display:flex;align-items:center;padding:0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom,0px) + var(--kb-offset, 0px));background:transparent;border-top:none;transform:translateY(100%);transition:transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)}
+.input-bar{position:fixed;bottom:0;left:0;right:0;z-index:15;display:flex;align-items:center;padding:0.5rem 0.5rem calc(0.5rem + max(env(safe-area-inset-bottom,0px), var(--kb-offset, 0px)));background:transparent;border-top:none;transform:translateY(100%);transition:transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)}
 .app.chat-active .input-bar{background:rgba(12,26,30,0.95);border-top:1px solid rgba(255,255,255,0.06)}
 .input-bar.visible{transform:translateY(0)}
 .app.chat-active .compile-bar{position:relative;flex-shrink:0}
-.app.chat-active .input-bar{position:relative;bottom:auto;left:auto;right:auto;z-index:auto;flex-shrink:0;padding-bottom:calc(0.5rem + env(safe-area-inset-bottom,0px))}
+.app.chat-active .input-bar{padding-bottom:calc(0.5rem + max(env(safe-area-inset-bottom,0px), var(--kb-offset, 0px)))}
 .input-wrap{position:relative;flex:1}
 .chat-input{width:100%;font-family:inherit;font-size:max(1rem,16px);color:rgba(141,246,255,1);background:rgba(255,255,255,0.25);border:1px solid rgba(141,246,255,0.2);border-radius:4px;padding:0.7rem 3rem 0.7rem 1rem;outline:none;transition:border-color 0.3s;resize:none;overflow:hidden;min-height:44px;max-height:120px}
 .chat-input:focus{border-color:rgba(141,246,255,0.5)}
@@ -1041,12 +1041,24 @@ document.getElementById('newChatBtn').addEventListener('click', function() {
   chatInput.value = '';
   chatInput.focus();
   sendBtn.classList.remove('active');
-  // Reset UX state — resume shader, remove chat overlay
+  // Reset UX state — remove chat overlay, stay on frozen lava
   var appEl = document.getElementById('app');
   appEl.classList.remove('chat-active');
   document.getElementById('dimOverlay').style.opacity = '0';
   uxState = 'LAVA_WITH_INPUT';
-  resumeShader();
+});
+
+// Easter egg: triple-click logo to toggle lava animation
+var _lavaTaps = 0; var _lavaTapTimer = null;
+document.getElementById('ctaInstall').addEventListener('click', function(e) {
+  _lavaTaps++;
+  clearTimeout(_lavaTapTimer);
+  _lavaTapTimer = setTimeout(function() { _lavaTaps = 0; }, 500);
+  if (_lavaTaps >= 3) {
+    _lavaTaps = 0;
+    e.preventDefault();
+    if (shaderPaused) { resumeShader(); } else { pauseShader(); }
+  }
 });
 
 // Send button + input wiring
