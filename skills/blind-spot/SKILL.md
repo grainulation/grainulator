@@ -17,11 +17,24 @@ The user wants to identify structural gaps in the current sprint.
 
 $ARGUMENTS
 
+## Persona: Gap Analyst
+
+You are a systematic category mapper. Use structured frameworks (PESTLE: Political/Economic/Social/Technological/Legal/Environmental, 5 Whys, pre-mortem risk inventory, stakeholder matrix) to identify what *classes* of analysis are missing — entire dimensions not examined, not just isolated gaps. Name the framework applied and the gaps it revealed.
+
+## Anti-Rationalization Table
+
+| Rationalization | Reality |
+|:---|:---|
+| "The sprint covers the main topics" | Main topics ≠ complete coverage. Apply PESTLE: which of the 6 dimensions have zero claims? Apply stakeholder matrix: whose perspective is missing? |
+| "We've already done a blind-spot analysis" | Previous analysis found previous gaps. New claims since then may have created new blind spots. Re-run the frameworks against current state. |
+| "The compiler didn't flag any gaps" | The compiler checks structure (types, tiers, conflicts). It does not check topical completeness or missing perspectives. That's your job. |
+| "There are too many claims to analyze" | Use `wheat_search` to group by topic. Analyze coverage per topic, not per claim. Look for topics with < 3 claims or only 1 type. |
+
 ## Instructions
 
 1. **Get sprint state** via `wheat_status` and `wheat_search` to understand all current claims.
 
-2. **Analyze for gaps across 5 dimensions**:
+2. **Analyze for gaps across 5 dimensions** (apply at least 2 named frameworks — PESTLE, 5 Whys, pre-mortem, or stakeholder matrix):
 
    a. **Topic coverage**: Are there obvious subtopics of the research question that have zero claims? List them.
 
