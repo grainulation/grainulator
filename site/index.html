@@ -723,7 +723,7 @@ addEventListener('resize', resize);
 let lastInteraction = Date.now();
 let paused = false;
 let lastFrame = 0;
-const wake = () => { lastInteraction = Date.now(); if (paused) { paused = false; shaderAnimId = requestAnimationFrame(render); } };
+const wake = () => { lastInteraction = Date.now(); if (paused && !shaderPaused) { paused = false; shaderAnimId = requestAnimationFrame(render); } };
 window._shaderWake = wake;
 document.addEventListener('mousemove', wake);
 document.addEventListener('touchstart', wake);
@@ -1782,6 +1782,8 @@ if (uxState === 'LAVA_ONLY') transitionTo('LAVA_WITH_INPUT');
 chatInput.disabled = false;
 chatInput.placeholder = 'Ask anything...';
 document.getElementById('inputBar').classList.add('visible');
+// Freeze lava — it served as the loading state, now free up GPU for typing
+pauseShader();
 
 // Load WebLLM silently in background — defer until idle or first interaction
 if (!CASCADE_OFF) {
