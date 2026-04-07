@@ -34,6 +34,26 @@ claude plugin install grainulator
 
 **Requirements:** Node.js >= 20 (needed for MCP servers that run via npx).
 
+<details>
+<summary><strong>Troubleshooting: SSH permission denied</strong></summary>
+
+If you see `git@github.com: Permission denied (publickey)`, the plugin installer is trying SSH but you don't have SSH keys set up with GitHub. Fix with one command:
+
+```bash
+git config --global url."https://github.com/".insteadOf "git@github.com:"
+```
+
+Then retry `claude plugin install grainulator`. This tells git to use HTTPS instead of SSH for all GitHub repos.
+
+Alternatively, clone manually:
+
+```bash
+git clone https://github.com/grainulation/grainulator.git ~/.claude/plugins/grainulator
+claude plugin add ~/.claude/plugins/grainulator
+```
+
+</details>
+
 For team-wide deployment, commit to your project's `.claude/settings.json`:
 
 ```json
