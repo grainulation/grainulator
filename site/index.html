@@ -317,8 +317,9 @@ canvas.active{opacity:1}
         class="chat-input"
         id="chatInput"
         rows="1"
-        placeholder="loading..."
+        placeholder="Ask anything..."
         autocomplete="off"
+        autofocus
         spellcheck="false"
         enterkeyhint="send"
         maxlength="5000"
@@ -835,6 +836,7 @@ function removeThinking() {
 function autoScroll() {
   requestAnimationFrame(function() {
     chatArea.scrollTop = chatArea.scrollHeight;
+    if (!document.hidden) chatInput.focus();
   });
 }
 
@@ -1734,14 +1736,26 @@ chatInput.disabled = false;
 chatInput.placeholder = 'Ask anything...';
 document.getElementById('inputBar').classList.add('visible');
 
-// Load WebLLM silently in background (offline fallback only)
+// Load WebLLM silently in background — defer until idle or first interaction
 if (!CASCADE_OFF) {
-  (async function() {
-    var tier = 'minimal';
-    try { tier = await detectTier(); } catch(e) {}
-    document.documentElement.setAttribute('data-tier', tier);
-    if (tier !== 'minimal') loadModel(MODELS[0].id);
-  })();
+  var _startWebLLM = function() {
+    window.removeEventListener('click', _startWebLLM);
+    window.removeEventListener('keydown', _startWebLLM);
+    (async function() {
+      var tier = 'minimal';
+      try { tier = await detectTier(); } catch(e) {}
+      document.documentElement.setAttribute('data-tier', tier);
+      if (tier !== 'minimal') loadModel(MODELS[0].id);
+    })();
+  };
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(function() { setTimeout(_startWebLLM, 3000); });
+  } else {
+    setTimeout(_startWebLLM, 5000);
+  }
+  // Also start on first interaction in case idle fires too late
+  window.addEventListener('click', _startWebLLM, { once: true });
+  window.addEventListener('keydown', _startWebLLM, { once: true });
 }
 
 // ===================================================================
