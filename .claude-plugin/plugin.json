@@ -11,7 +11,9 @@
 	"mcpServers": "./.mcp.json",
 	"userConfig": {
 		"tips_level": {
+			"title": "Background Tips Level",
 			"description": "Background tips level: on (all tips), quiet (conflicts only), off (disabled)",
+			"type": "string",
 			"sensitive": false
 		}
 	}
