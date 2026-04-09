@@ -109,6 +109,20 @@ You're ready to go. Try:
   /init <question>   -- start a new sprint
 ```
 
+## Important: Do NOT manually register MCP servers
+
+Do **NOT** run `claude mcp add wheat`, `claude mcp add mill`, or `claude mcp add silo`. The Grainulator plugin already registers all three MCP servers automatically via `plugin.json`. Adding them manually creates duplicate server entries, which causes tool name collisions and nondeterministic behavior.
+
+If MCP servers are not connecting, use `/reload-plugins` to refresh the plugin's server registrations instead of manually adding them.
+
+If you suspect a duplicate exists (e.g., you previously ran `claude mcp add wheat`), remove the manual entry:
+
+```bash
+claude mcp remove wheat
+```
+
+Then restart Claude Code to pick up only the plugin-provided servers.
+
 ## Troubleshooting notes
 
 - **All three core servers use `npx -y`**, so they download on first run. First-run latency of 5-15 seconds is normal.

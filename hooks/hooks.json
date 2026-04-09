@@ -17,7 +17,7 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "node -e \"const p=JSON.parse(process.env.CLAUDE_HOOK_CONTEXT||'{}'); const f=p.tool_input?.file_path||''; if(f.endsWith('/claims.json')||f.endsWith('/compilation.json')){process.stderr.write('BLOCKED: Direct writes to claims.json and compilation.json are not allowed. Use wheat MCP tools.\\n');process.exit(1)}\""
+						"command": "node -e \"const p=JSON.parse(process.env.CLAUDE_HOOK_CONTEXT||'{}'); const f=p.tool_input?.file_path||''; if(f.endsWith('/claims.json')){process.stderr.write('BLOCKED: Direct writes to claims.json are not allowed. Use wheat MCP tools instead:\\n  - wheat_add-claim: add a new claim\\n  - wheat_resolve: update or resolve an existing claim\\n  - wheat_compile: recompile sprint state\\nFile blocked: '+f+'\\n');process.exit(1)} if(f.endsWith('/compilation.json')){process.stderr.write('BLOCKED: Direct writes to compilation.json are not allowed. This file is auto-generated.\\nRun wheat_compile to regenerate it.\\nFile blocked: '+f+'\\n');process.exit(1)}\""
 					}
 				]
 			}

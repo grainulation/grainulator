@@ -33,7 +33,7 @@ Optional: output format (pdf, html, md). Default: html.
 
 3. **Read `compilation.json`** -- this is the source of truth, never read claims.json directly for output.
 
-4. **Read the template** at `skills/_templates/sidebar-brief.html` for the canonical accessible HTML structure. All generated HTML MUST follow this template exactly.
+4. **Read the template** at `${CLAUDE_PLUGIN_ROOT}/skills/_templates/sidebar-brief.html` for the canonical accessible HTML structure. All generated HTML MUST follow this template exactly. Note: the path uses `${CLAUDE_PLUGIN_ROOT}` because the template lives in the Grainulator plugin directory, not the user's repo.
 
 5. **Generate the brief** using `mill_convert`:
    - Format: user-requested or default to HTML

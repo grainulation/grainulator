@@ -2,10 +2,8 @@
 name: init
 description: Initialize a new research sprint with a question, audience, and constraints.
 tools:
-  - mcp__wheat__wheat_add-claim
-  - mcp__wheat__wheat_compile
   - mcp__wheat__wheat_status
-  - Write
+  - Bash
   - Read
 ---
 
@@ -22,20 +20,25 @@ $ARGUMENTS
 1. Parse the user's input to extract:
    - **Question**: The core research question. If not explicit, ask.
    - **Audience**: Who will consume the output (engineers, product, executives, etc.). Default to the repo context if detectable.
-   - **Constraints**: Any hard requirements or boundaries.
+   - **Constraints**: Any hard requirements or boundaries (semicolon-separated).
+   - **Done criteria**: What "done" looks like for this sprint.
 
-2. Generate a sprint slug from the question (lowercase, hyphenated, max 4 words). Example: "how does auth work" -> `auth-architecture`.
+2. **Delegate to the canonical CLI init.** Do NOT manually create claims.json or call wheat_add-claim.
+   Run the full init via the Bash tool:
 
-3. Create `claims.json` in the project root with schema_version "1.0" and meta fields (question, initiated date, audience, phase: "define", connectors: []).
+   ```bash
+   npx -y @grainulation/wheat init --headless \
+     --question "<question>" \
+     --audience "<audience>" \
+     --constraints "<constraint1>; <constraint2>" \
+     --done "<done criteria>"
+   ```
 
-5. Add define-phase claims:
-   - `d001`: constraint claim capturing the core question scope
-   - `d002`: constraint claim for audience and output expectations
-   - Additional `d###` claims for any stated constraints
+   This creates all sprint files: claims.json, CLAUDE.md, AGENTS.md, .mcp.json, .gitignore, .claude/commands/wheat/, output directories, and the pre-commit hook. Using the CLI ensures the skill path and CLI path produce identical results.
 
-6. Run `wheat_compile` to validate the initial sprint.
+3. After init completes, call `wheat_status` to verify the sprint was created successfully.
 
-7. Print a summary:
+4. Print a summary:
 
    ```
    Sprint initialized: <slug>
