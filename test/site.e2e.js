@@ -495,20 +495,28 @@ test.describe("PWA", () => {
 
 // ── Dead code verification ───────────────────────────────────────────────────
 
-test.describe("dead code", () => {
-	test("demos.json is fetched but fuzzyMatchDemo is never called", async ({
-		page,
-	}) => {
-		// Verify the function exists but is never invoked
+test.describe("dead code removed", () => {
+	test("fuzzyMatchDemo and loadDemo no longer exist", async ({ page }) => {
 		await page.goto("/");
 		const result = await page.evaluate(() => {
 			return {
-				fuzzyMatchDefined: typeof fuzzyMatchDemo === "function",
-				loadDemoDefined: typeof loadDemo === "function",
+				fuzzyMatchDefined: typeof window.fuzzyMatchDemo === "function",
+				loadDemoDefined: typeof window.loadDemo === "function",
+				scoreEntryDefined: typeof window.scoreEntry === "function",
+				demoLibraryDefined: typeof window.DEMO_LIBRARY !== "undefined",
 			};
 		});
-		// These are defined (confirms dead code exists to be cleaned up)
-		expect(result.fuzzyMatchDefined).toBe(true);
-		expect(result.loadDemoDefined).toBe(true);
+		// All dead code should be removed
+		expect(result.fuzzyMatchDefined).toBe(false);
+		expect(result.loadDemoDefined).toBe(false);
+		expect(result.scoreEntryDefined).toBe(false);
+		expect(result.demoLibraryDefined).toBe(false);
+	});
+
+	test("demos.json is not in service worker cache list", async ({ page }) => {
+		const res = await page.request.get("/sw.js");
+		expect(res.ok()).toBeTruthy();
+		const swContent = await res.text();
+		expect(swContent).not.toContain("demos.json");
 	});
 });
