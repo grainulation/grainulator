@@ -29,7 +29,17 @@
 	"bugs": {
 		"url": "https://github.com/grainulation/grainulator/issues"
 	},
+	"scripts": {
+		"test": "node --test test/*.test.js",
+		"test:e2e": "npx playwright test",
+		"test:all": "npm test && npm run test:e2e",
+		"prepublishOnly": "npm test"
+	},
 	"engines": {
 		"node": ">=20"
+	},
+	"devDependencies": {
+		"@playwright/test": "^1.59.1",
+		"serve": "^14.2.6"
 	}
 }

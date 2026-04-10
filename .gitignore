@@ -9,3 +9,5 @@ compilation.json
 orchard.json
 wheat-manifest.json
 output/
+test-results/
+playwright-report/
