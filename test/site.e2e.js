@@ -287,9 +287,7 @@ test.describe("compile flow", () => {
 		await expect(btn).toContainText(/compile \d+ claims/i);
 	});
 
-	test("clicking compile runs 7 passes and shows verdict", async ({
-		page,
-	}) => {
+	test("clicking compile runs 7 passes and shows verdict", async ({ page }) => {
 		test.setTimeout(60000);
 		await mockLLM(page.context());
 		await page.goto("/");

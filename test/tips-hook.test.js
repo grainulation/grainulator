@@ -341,11 +341,7 @@ describe("buildTipsSections", () => {
 
 	it("skips monoculture in quiet mode", () => {
 		const { issues } = buildTipsSections(MONOCULTURE_COMPILATION, "quiet");
-		assert.equal(
-			issues.length,
-			0,
-			"quiet mode should skip monoculture topics",
-		);
+		assert.equal(issues.length, 0, "quiet mode should skip monoculture topics");
 	});
 
 	it("detects echo chamber warnings in on mode", () => {
@@ -370,10 +366,7 @@ describe("buildTipsSections", () => {
 	});
 
 	it("reports all issue types for combined problems", () => {
-		const { issues } = buildTipsSections(
-			EVERYTHING_WRONG_COMPILATION,
-			"on",
-		);
+		const { issues } = buildTipsSections(EVERYTHING_WRONG_COMPILATION, "on");
 		assert.ok(issues.some((i) => i.includes("conflict")));
 		assert.ok(issues.some((i) => i.includes("weak evidence")));
 		assert.ok(issues.some((i) => i.includes("type monoculture")));
@@ -562,11 +555,13 @@ describe("buildTipsMarkdown", () => {
 	});
 
 	it("includes markdown sections", () => {
-		const sections = [
-			"## Conflicts\n",
-			"- **r001, r002**: Something wrong",
-		];
-		const md = buildTipsMarkdown(CLEAN_COMPILATION, "on", ["1 conflict"], sections);
+		const sections = ["## Conflicts\n", "- **r001, r002**: Something wrong"];
+		const md = buildTipsMarkdown(
+			CLEAN_COMPILATION,
+			"on",
+			["1 conflict"],
+			sections,
+		);
 		assert.ok(md.includes("## Conflicts"));
 		assert.ok(md.includes("r001, r002"));
 	});
