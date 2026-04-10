@@ -431,16 +431,19 @@ window._nextClaimIndex = 1; // generates d001, d002, ...
 window._conversationHistory = [];
 window._compilationResult = null;
 
-// Feature flag: ?cascade=off disables all cascade/model logic
-const CASCADE_OFF = new URLSearchParams(location.search).has('cascade') && new URLSearchParams(location.search).get('cascade') === 'off';
+// Feature flag: ?cascade=on enables live model inference (off by default)
+// Default OFF: Track A pre-authored claims only. No hallucinations from small local models.
+const CASCADE_OFF = !(new URLSearchParams(location.search).get('cascade') === 'on');
 
 // ===================================================================
 // WEBGL SHADER — preserved from v1
 // ===================================================================
 const c = document.getElementById('c');
 const isMobileDevice = window.matchMedia('(max-width:768px)').matches || navigator.maxTouchPoints > 0;
+const isFirefox = /Firefox\//i.test(navigator.userAgent);
+// Firefox: skip WebGL entirely -- shader crashes the compositor. Use CSS fallback.
 // Mobile: no preserveDrawingBuffer for perf
-const gl = c.getContext('webgl', { preserveDrawingBuffer: !isMobileDevice });
+const gl = isFirefox ? null : c.getContext('webgl', { preserveDrawingBuffer: !isMobileDevice });
 
 function activateFallback() {
   document.body.classList.add('webgl-fallback');
