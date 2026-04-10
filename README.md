@@ -4,7 +4,6 @@
 
 <p align="center">
   <a href="https://github.com/grainulation/grainulator/releases"><img src="https://img.shields.io/github/v/tag/grainulation/grainulator?label=version" alt="version"></a>
-  <a href="https://grainulator.app"><img src="https://img.shields.io/badge/demo-grainulator.app-8df6ff?style=flat" alt="demo"></a>
   <a href="https://github.com/grainulation/grainulator/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
   <a href="https://github.com/grainulation/grainulator/actions"><img src="https://github.com/grainulation/grainulator/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://deepwiki.com/grainulation/grainulator"><img src="https://deepwiki.com/badge.svg" alt="Docs on DeepWiki"></a>
@@ -13,10 +12,6 @@
 <p align="center"><strong>Research sprint orchestrator for Claude Code.</strong></p>
 
 Ask a question, get a decision-ready brief. Every finding is tracked as a typed claim, adversarially challenged, confidence-graded, and compiled into self-contained output. Zero third-party dependencies.
-
-## Try it
-
-**[grainulator.app](https://grainulator.app)** — interactive demo with in-browser AI. No install needed.
 
 ## Install
 
@@ -114,16 +109,9 @@ The **grainulator subagent** (`agents/grainulator.md`) runs multi-pass research 
 
 Launch it from Claude Code with: `"research X using grainulator"`.
 
-## Demo site
+## Demo
 
-[grainulator.app](https://grainulator.app) is a PWA that demos the research sprint concept in-browser:
-
-- Mobile-first chat interface — no shader on mobile, dark background
-- In-browser AI via WebLLM (SmolLM2-360M, ~200MB download)
-- 50 pre-generated demo topics with fuzzy matching (instant Track A)
-- Live local inference when model downloads (Track B)
-- Conversational responses with progressive claim disclosure
-- Compile flow with 7-pass confidence scoring
+[grainulator.app](https://grainulator.app) shows the compiler pipeline with pre-authored claims. The real experience is the plugin above.
 
 ## Architecture
 
