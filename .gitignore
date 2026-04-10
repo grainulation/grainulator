@@ -4,3 +4,8 @@ node_modules/
 *.log
 .wheat-tips.md
 .wheat-compile.lock
+claims.json
+compilation.json
+orchard.json
+wheat-manifest.json
+output/
