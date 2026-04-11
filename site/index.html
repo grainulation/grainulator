@@ -125,7 +125,7 @@ canvas.active{opacity:1}
 
 /* === Header — install CTA left, new sprint right === */
 .app-header{display:flex;align-items:center;justify-content:space-between;padding:calc(0.5rem + env(safe-area-inset-top,0px)) 0.8rem 0.5rem;z-index:15;position:fixed;top:0;left:0;right:0;border-bottom:1px solid rgba(255,255,255,0.04)}
-.header-btn{font-size:0.65rem;padding:0.35rem 0.7rem;height:38px;color:rgba(141,246,255,1);border:1px solid rgba(141,246,255,0.2);border-radius:4px;background:rgba(255,255,255,0.25);cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:0.4rem;text-decoration:none;white-space:nowrap;transition:all 0.2s;box-sizing:border-box}
+.header-btn{font-size:0.75rem;padding:0.35rem 0.7rem;height:38px;color:rgba(141,246,255,1);border:1px solid rgba(141,246,255,0.2);border-radius:4px;background:rgba(255,255,255,0.25);cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:0.4rem;text-decoration:none;white-space:nowrap;transition:all 0.2s;box-sizing:border-box}
 .header-btn:hover{border-color:rgba(141,246,255,0.4);color:#8df6ff}
 .header-btn img{width:28px;height:28px;opacity:0.9}
 .header-btn .btn-text{overflow:hidden;max-width:0;opacity:0;transition:max-width 0.4s ease,opacity 0.3s ease}
@@ -185,7 +185,7 @@ canvas.active{opacity:1}
 }
 .submit-btn:hover{background:rgba(141,246,255,0.15);border-color:rgba(141,246,255,0.4)}
 .submit-btn:disabled{opacity:0.3;cursor:not-allowed}
-.input-hint{margin-top:1.5rem;font-size:0.7rem;color:rgba(255,255,255,0.2)}
+.input-hint{margin-top:1.5rem;font-size:0.75rem;color:rgba(255,255,255,0.2)}
 
 /* === SPRINT RUNNING STATE === */
 #sprintState{
@@ -370,13 +370,14 @@ canvas.active{opacity:1}
   .claim-card{flex-direction:column;gap:0.3rem}
   .answer-column{padding:0 0.5rem}
   .app-header{padding:calc(0.4rem + env(safe-area-inset-top,0px)) 0.5rem 0.4rem}
-  .header-btn{font-size:0.6rem;padding:0.3rem 0.5rem;min-height:28px}
+  .header-btn{font-size:0.75rem;padding:0.3rem 0.5rem;min-height:28px}
 }
 
 /* === Mobile input readability — opaque background over lava shader === */
 @media(max-width:768px){
   .input-field{background:rgba(0,0,0,0.85)}
   .input-field::placeholder{color:rgba(255,255,255,0.4)}
+  .header-btn{font-size:0.75rem}
 }
 
 /* === PWA standalone — safe area for dynamic island / notch === */
