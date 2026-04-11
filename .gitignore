@@ -11,3 +11,12 @@ wheat-manifest.json
 output/
 test-results/
 playwright-report/
+
+# Farmer runtime files
+.farmer-token
+.farmer-state.json
+.farmer.pid
+.farmer-audit*.jsonl
+
+# Claude Code
+.claude/
