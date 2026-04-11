@@ -645,6 +645,11 @@ function extractClaims(text, passPrefix){
   var seen=new Set();
   var idCounter=1;
 
+  // Strip stray label prefixes that leak into claim text
+  function cleanText(t){
+    return t.replace(/^(CONSTRAINT|FACTUAL|RISK|RECOMMENDATION|ESTIMATE)\s*/i,'').replace(/^Claim\s*\d+\s*/i,'').trim();
+  }
+
   // Evidence tier inference from claim text
   function inferTier(content){
     if(/\d+(\.\d+)?%|\d{3,}|\bstudy|studies|survey|research\b|according to/i.test(content))return'documented';
@@ -663,7 +668,7 @@ function extractClaims(text, passPrefix){
   // First pass: line-anchored (list items, bold-wrapped)
   while((m=bracketRe.exec(text))!==null){
     var type=m[1].toLowerCase();
-    var content=m[2].trim().replace(/\n+/g,' ').replace(/\s+/g,' ');
+    var content=cleanText(m[2].trim().replace(/\n+/g,' ').replace(/\s+/g,' '));
     var key=content.substring(0,80).toLowerCase();
     if(content.length>20&&!seen.has(key)){
       seen.add(key);
@@ -674,7 +679,7 @@ function extractClaims(text, passPrefix){
   // Second pass: inline matches not already captured
   while((m=bracketReInline.exec(text))!==null){
     var type=m[1].toLowerCase();
-    var content=m[2].trim().replace(/\n+/g,' ').replace(/\s+/g,' ');
+    var content=cleanText(m[2].trim().replace(/\n+/g,' ').replace(/\s+/g,' '));
     var key=content.substring(0,80).toLowerCase();
     if(content.length>20&&!seen.has(key)){
       seen.add(key);
@@ -811,8 +816,9 @@ const PASS3_SYSTEM='Decision synthesizer. You have research findings AND adversa
 
 // --- Format claims for passing between passes ---
 function formatClaimsForContext(claims){
+  // Keep context compact — truncate each claim to fit in URL limits
   return claims.map(function(c,i){
-    return(i+1)+'. ['+c.type.toUpperCase()+'] '+c.text;
+    return(i+1)+'. ['+c.type.toUpperCase()+'] '+c.text.substring(0,80);
   }).join('\n');
 }
 
