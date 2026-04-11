@@ -1245,11 +1245,13 @@ function buildSummary(claims, compilerResults) {
   var recs = claims.filter(function(c5) { return c5.type === 'recommendation'; });
   var risks = claims.filter(function(c6) { return c6.type === 'risk'; });
   var facts = claims.filter(function(c7) { return c7.type === 'factual'; });
+  // Strip stray label prefixes that survive extraction
+  function clean(t) { return t.replace(/^(CONSTRAINT|FACTUAL|RISK|RECOMMENDATION|ESTIMATE)\s*/i,'').replace(/^(Claim|Takeaway|Finding|Point)\s*\d*[:\s]*/i,'').replace(/^\[?(CONSTRAINT|FACTUAL|RISK|RECOMMENDATION|ESTIMATE)\]?\s*/i,'').trim(); }
 
   var parts = [];
-  if (recs.length > 0) parts.push(recs[0].text);
-  if (facts.length > 0 && parts.length < 2) parts.push(facts[0].text);
-  if (risks.length > 0) parts.push('Key risk: ' + risks[0].text.charAt(0).toLowerCase() + risks[0].text.slice(1));
+  if (recs.length > 0) parts.push(clean(recs[0].text));
+  if (facts.length > 0 && parts.length < 2) parts.push(clean(facts[0].text));
+  if (risks.length > 0) { var rt = clean(risks[0].text); parts.push('Key risk: ' + rt.charAt(0).toLowerCase() + rt.slice(1)); }
   return parts.slice(0, 3).join(' ');
 }
 
