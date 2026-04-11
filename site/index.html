@@ -888,12 +888,29 @@ var TIER_WEIGHTS = {stated:1,web:2,documented:3,tested:4,production:5};
 // DUAL-MODE CLAIM EXTRACTION
 // ===================================================================
 function extractClaims(text, passPrefix) {
+  // Pre-process: strip ALL markdown formatting before extraction
+  // This handles LLMs that ignore "no markdown" instructions
+  text = text
+    .replace(/\*\*\*([^*]+)\*\*\*/g, '$1')   // ***bold italic***
+    .replace(/\*\*([^*]+)\*\*/g, '$1')        // **bold**
+    .replace(/\*([^*]+)\*/g, '$1')            // *italic*
+    .replace(/^#{1,6}\s+/gm, '')              // ### headers
+    .replace(/^>\s+/gm, '')                   // > blockquotes
+    .replace(/\|[^|]*\|/g, '')                // |table|cells|
+    .replace(/^[-=]{3,}$/gm, '')              // --- or === dividers
+    .replace(/`([^`]+)`/g, '$1');             // `inline code`
+
   var claims = [];
   var seen = new Set();
   var idCounter = 1;
 
   function cleanText(t) {
-    return t.replace(/^(CONSTRAINT|FACTUAL|RISK|RECOMMENDATION|ESTIMATE)\s*/i,'').replace(/^Claim\s*\d+\s*/i,'').trim();
+    return t
+      .replace(/^(CONSTRAINT|FACTUAL|RISK|RECOMMENDATION|ESTIMATE)\s*/i, '')
+      .replace(/^Claim\s*\d+[:\s]*/i, '')
+      .replace(/^(Takeaway|Finding|Point)\s*\d*[:\s]*/i, '')
+      .replace(/^[-–—]\s*/, '')
+      .trim();
   }
 
   function inferTier(content) {
@@ -1056,14 +1073,32 @@ async function streamPass(systemPrompt, userMessage, abortSignal) {
   if (response.status === 429) throw new Error('RATE_LIMITED');
   if (!response.ok) throw new Error('API_ERROR_' + response.status);
 
-  var fullText;
-  if (!isLocalhost) {
-    var json = await response.json();
-    fullText = (json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content) || '';
-  } else {
-    fullText = (await response.text()).trim();
+  var rawText = await response.text();
+
+  // Guard: HTML error pages (rate limit pages, 502s, etc.)
+  if (rawText.trimStart().startsWith('<!') || rawText.trimStart().startsWith('<html')) {
+    throw new Error('API_HTML_ERROR');
   }
 
+  var fullText;
+  if (!isLocalhost) {
+    try {
+      var json = JSON.parse(rawText);
+      fullText = (json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content) || '';
+    } catch(e) {
+      // Non-JSON response — treat as plain text (GET endpoint returns plain text)
+      fullText = rawText.trim();
+    }
+  } else {
+    fullText = rawText.trim();
+  }
+
+  // Guard: empty or very short responses
+  if (!fullText || fullText.length < 20) {
+    throw new Error('API_EMPTY_RESPONSE');
+  }
+
+  // Guard: deprecation notices
   if (/IMPORTANT NOTICE|API is being deprecated|migrate to our new service/i.test(fullText)) {
     throw new Error('API_DEPRECATION_NOTICE');
   }
@@ -1075,9 +1110,11 @@ async function streamPassWithRetry(systemPrompt, userMessage, signal, retries) {
   try {
     return await streamPass(systemPrompt, userMessage, signal);
   } catch(e) {
-    if (e.message === 'RATE_LIMITED' && retries < 2) {
-      showRateWait('rate limited, retrying in ' + (3 + retries * 3) + 's...');
-      await delay((3 + retries * 3) * 1000);
+    var retryable = e.message === 'RATE_LIMITED' || e.message === 'API_HTML_ERROR' || e.message === 'API_EMPTY_RESPONSE';
+    if (retryable && retries < 2) {
+      var waitSec = e.message === 'RATE_LIMITED' ? (3 + retries * 3) : (2 + retries * 2);
+      showRateWait('retrying in ' + waitSec + 's...');
+      await delay(waitSec * 1000);
       showRateWait('');
       return streamPassWithRetry(systemPrompt, userMessage, signal, retries + 1);
     }
@@ -1092,7 +1129,7 @@ var PASS1_SYSTEM = 'Research analyst. Produce EXACTLY 5-7 findings about the que
 
 var PASS2_SYSTEM = 'Adversarial reviewer. The claims below were produced by a research pass. Find what is wrong, exaggerated, or missing. Produce EXACTLY 3-5 challenges. You MUST use [RISK] for at least 2 of them. Label each on its own line:\n[RISK] for assumptions that could be wrong, numbers that are exaggerated, or scenarios where the advice backfires\n[CONSTRAINT] for important factors the research completely missed\nRules: Reference the specific claim number (e.g. "Claim 3 assumes X but..."). Explain WHY it is problematic with a concrete counter-example. Stay realistic. No markdown, no colons after labels, no bullets.';
 
-var PASS3_SYSTEM = 'Decision synthesizer. You have research findings AND adversarial challenges. Produce EXACTLY 3-4 actionable takeaways. Label each on its own line:\n[RECOMMENDATION] for what the person should actually do — give a clear, direct answer first, then explain the tradeoff\n[ESTIMATE] for one key number that helps the decision (time, cost, or effort — pick the most important one)\nRules: Lead with the bottom-line answer. Each recommendation must reference a specific risk. Produce exactly 2-3 RECOMMENDATION and exactly 1 ESTIMATE. Be concise — one sentence per finding. No markdown, no colons after labels, no bullets.';
+var PASS3_SYSTEM = 'Decision synthesizer. Produce EXACTLY 3-4 takeaways from the findings and challenges below. Label each on its own line:\n[RECOMMENDATION] for what to do\n[ESTIMATE] for one key number\nRules: Answer the question directly in your first recommendation — yes or no, do this or that. Do not hedge. Then give one supporting reason and one caveat. If the answer is obvious, say so — do not manufacture complexity. Produce 2-3 RECOMMENDATION and 1 ESTIMATE. One sentence each. No markdown, no colons after labels, no bullet points.';
 
 // ===================================================================
 // FORMAT CLAIMS FOR CONTEXT
