@@ -49,25 +49,24 @@ The demo runs client-side to show the pipeline. The real tool (installed as a pl
 
 ## Install
 
+**Step 1** — Add the marketplace (one-time setup):
+
+```bash
+/plugin marketplace add https://github.com/grainulation/grainulator/blob/main/.claude-plugin/marketplace.json
+```
+
+**Step 2** — Install the plugin:
+
 ```bash
 /plugin install grainulator
 ```
 
-That's it. No npm install. No config files. The plugin registers MCP servers, skills, hooks, and an autonomous agent.
+That's it. The plugin registers MCP servers, skills, hooks, and an autonomous agent.
 
 **Requirements:** Claude Code with Node.js >= 20.
 
 <details>
-<summary><strong>Alternative: manual install</strong></summary>
-
-If the marketplace isn't configured yet:
-
-```bash
-claude plugin marketplace add https://github.com/grainulation/grainulator/blob/main/.claude-plugin/marketplace.json
-claude plugin install grainulator
-```
-
-Or clone directly:
+<summary><strong>Alternative: clone directly</strong></summary>
 
 ```bash
 git clone https://github.com/grainulation/grainulator.git ~/.claude/plugins/grainulator
