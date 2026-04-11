@@ -41,5 +41,6 @@
 	"devDependencies": {
 		"@playwright/test": "^1.59.1",
 		"serve": "^14.2.6"
-	}
+	},
+	"private": true
 }
