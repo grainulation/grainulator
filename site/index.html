@@ -141,9 +141,10 @@ canvas.active{opacity:1}
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  min-height:100vh;
-  min-height:100dvh;
+  height:100vh;
+  height:100dvh;
   padding:2rem 1rem;
+  overflow:hidden;
 }
 .input-container{width:100%;max-width:600px;text-align:center}
 .input-logo{
@@ -192,9 +193,10 @@ canvas.active{opacity:1}
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  min-height:100vh;
-  min-height:100dvh;
+  height:100vh;
+  height:100dvh;
   padding:2rem 1rem;
+  overflow:hidden;
 }
 .sprint-question{
   font-size:0.75rem;
@@ -276,7 +278,7 @@ canvas.active{opacity:1}
   align-items:center;
   min-height:100vh;
   min-height:100dvh;
-  padding:2rem 1rem 4rem;
+  padding:calc(3.5rem + env(safe-area-inset-top,0px)) 1rem 4rem;
   opacity:0;
   transform:translateY(40px);
   transition:opacity 0.8s ease-out,transform 0.8s ease-out;
@@ -459,7 +461,7 @@ canvas.active{opacity:1}
         maxlength="3000"
       ></textarea>
       <br>
-      <button id="submitBtn" class="submit-btn" type="button">Run Sprint</button>
+      <button id="submitBtn" class="submit-btn" type="button" disabled>Run Sprint</button>
       <div class="input-hint">3 autonomous passes. Evidence-tracked. Confidence-graded.</div>
     </div>
   </div>
@@ -493,7 +495,7 @@ canvas.active{opacity:1}
 
 <div id="flash-overlay"></div>
 <div class="toast" id="toast"></div>
-<a href="/privacy" style="position:fixed;bottom:0.5rem;right:0.75rem;color:rgba(255,255,255,0.15);font-size:0.6rem;text-decoration:none;z-index:1" aria-label="Privacy policy">Privacy</a>
+<a href="/privacy" style="position:fixed;bottom:0.5rem;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.15);font-size:0.6rem;text-decoration:none;z-index:1" aria-label="Privacy policy">Privacy</a>
 
 <script>
 // ===================================================================
@@ -1388,7 +1390,7 @@ function renderAnswer(claims, compilerResults, elapsedMs, passCount, sprintQuest
   var ctaCmd = 'wheat init --question "' + question.substring(0, 120).replace(/"/g, "'") + '"';
   s6.innerHTML = '<div class="cta-section">' +
     '<div class="cta-code" id="ctaCode" title="Click to copy">' + esc(ctaCmd) + '</div>' +
-    '<div class="cta-text">Generated in ' + Math.round(elapsedMs / 1000) + 's with ' + passCount + ' passes. The full tool adds web search, code analysis, and adversarial challenges.</div>' +
+    '<div class="cta-text">Demo powered by a lightweight model. The installed plugin runs on Claude for substantially deeper analysis, web search, and code-aware reasoning.</div>' +
     '<button class="cta-btn" id="ctaBtn" type="button">Continue this sprint in Claude Code</button>' +
     '<br><button class="cta-restart" id="restartBtn" type="button">Ask a different question</button>' +
     '</div>';
@@ -1631,6 +1633,11 @@ async function runSprint(question) {
 // ===================================================================
 // EVENT WIRING
 // ===================================================================
+// Enable submit only when input has text
+document.getElementById('questionInput').addEventListener('input', function() {
+  document.getElementById('submitBtn').disabled = !this.value.trim();
+});
+
 document.getElementById('submitBtn').addEventListener('click', function() {
   var q = document.getElementById('questionInput').value.trim();
   if (!q) return;
