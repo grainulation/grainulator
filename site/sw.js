@@ -1,11 +1,10 @@
 // Service worker for grainulator.app PWA
 // Stale-while-revalidate: serve cached version instantly, update in background
 
-const CACHE = "grainulator-v11";
+const CACHE = "grainulator-v12";
 const ASSETS = [
 	"/",
 	"/index.html",
-	"/llm-worker.js",
 	"/glitchy.png",
 	"/manifest.json",
 	"/favicon-32.png",

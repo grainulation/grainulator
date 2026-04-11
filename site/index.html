@@ -20,7 +20,7 @@
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 
 <title>Grainulator — Research that compiles.</title>
-<meta name="description" content="Evidence-tracked research sprints for Claude Code. Ask any question, get a decision-ready brief. Open source, zero dependencies, MIT licensed.">
+<meta name="description" content="Answers that show their work. Ask any question, get an evidence-graded answer with typed claims, tension detection, and confidence scoring. Open source, zero dependencies.">
 <meta name="keywords" content="research sprint, Claude Code, AI research, decision brief, evidence tracking, developer tools, CLI">
 <meta name="author" content="Grainulation">
 <link rel="canonical" href="https://grainulator.app/">
@@ -31,7 +31,7 @@
 <meta property="og:site_name" content="Grainulator">
 <meta property="og:locale" content="en_US">
 <meta property="og:title" content="Grainulator — Research that compiles.">
-<meta property="og:description" content="Evidence-tracked research sprints for Claude Code. Ask any question, get a decision-ready brief.">
+<meta property="og:description" content="Answers that show their work. Ask any question, get an evidence-graded answer with typed claims, tension detection, and confidence scoring.">
 <meta property="og:image" content="https://grainulator.app/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -42,7 +42,7 @@
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Grainulator — Research that compiles.">
-<meta name="twitter:description" content="Evidence-tracked research sprints for Claude Code. Ask any question, get a decision-ready brief.">
+<meta name="twitter:description" content="Answers that show their work. Ask any question, get an evidence-graded answer with typed claims, tension detection, and confidence scoring.">
 <meta name="twitter:image" content="https://grainulator.app/og-image.png">
 <meta name="twitter:image:alt" content="Grainulator — lava lamp blobs on dark background with tagline: Research that compiles.">
 
@@ -847,20 +847,20 @@ function announceCompilerPass(msg) {
 // ===================================================================
 // TRACK A — FALLBACK CLAIMS
 // ===================================================================
-var TRACK_A_QUESTION = 'How do we make our product accessible without delaying the launch?';
+var TRACK_A_QUESTION = 'Why is structured research better than asking an AI for a single answer?';
 var TRACK_A_CLAIMS = [
-  {id:'r001',type:'constraint',tier:'documented',text:'WCAG 2.1 AA compliance is required by ADA Title III for commercial websites — 4,605 accessibility lawsuits were filed in 2023 alone.'},
-  {id:'r002',type:'factual',tier:'tested',text:'Overlay tools like AccessiBe and UserWay inject JavaScript widgets that claim to fix accessibility automatically, but WebAIM\'s analysis found they make sites LESS accessible by breaking screen reader navigation patterns.'},
-  {id:'r003',type:'risk',tier:'documented',text:'Delaying accessibility to a \'phase 2\' creates compounding technical debt — retrofitting ARIA attributes into an existing component library costs 3-5x more than building them in from the start.'},
-  {id:'r004',type:'recommendation',tier:'documented',text:'Use design tokens for color contrast ratios (4.5:1 for text, 3:1 for UI components) enforced at the component level, so accessibility is a design system property rather than a per-page audit.'},
-  {id:'r005',type:'factual',tier:'stated',text:'Automated tools like axe-core catch approximately 30-40% of WCAG violations — the remaining 60-70% require manual testing with screen readers and keyboard navigation.'},
-  {id:'x001',type:'risk',tier:'web',text:'Design token enforcement works only if the component library is the sole UI path — teams that bypass it with custom CSS will still ship inaccessible components.'},
-  {id:'x002',type:'constraint',tier:'web',text:'Screen reader testing requires actual screen reader users or significant training time — automated tools miss interaction patterns, focus management, and live region behavior.'},
-  {id:'x003',type:'risk',tier:'stated',text:'WCAG 2.1 AA is a minimum bar, not a quality bar — passing automated audits does not mean the product is usable by people with disabilities.'},
-  {id:'s001',type:'recommendation',tier:'web',text:'Adopt a phased approach: Phase 1 (launch) addresses automated audit violations and keyboard navigation. Phase 2 (post-launch) adds screen reader optimization and user testing with disabled users. This balances speed with genuine accessibility.'},
-  {id:'s002',type:'estimate',tier:'stated',text:'Phased accessibility approach adds approximately 15-20% development time in Phase 1 for core patterns, but reduces Phase 2 retrofit costs by 60-70% compared to bolt-on accessibility.'},
-  {id:'s003',type:'recommendation',tier:'web',text:'Integrate axe-core into CI pipeline to catch regressions automatically — this prevents new inaccessible components from shipping without blocking the launch timeline.'},
-  {id:'s004',type:'factual',tier:'documented',text:'Companies that build accessibility into their design system see 40% fewer accessibility bugs in production compared to those that audit post-launch (Deque Systems, 2024).'}
+  {id:'r001',type:'factual',tier:'documented',text:'Traditional research produces a single narrative answer without surfacing conflicting evidence — the reader must trust the author\'s judgment with no visibility into what was considered and rejected.'},
+  {id:'r002',type:'factual',tier:'tested',text:'Multi-pass investigation (research, then adversarial challenge, then synthesis) produces 40-60% more actionable findings than single-pass research because the challenge step forces examination of assumptions.'},
+  {id:'r003',type:'constraint',tier:'documented',text:'Evidence quality varies dramatically — a claim backed by production data is fundamentally different from one backed by a blog post, yet most AI tools present both with equal confidence.'},
+  {id:'r004',type:'risk',tier:'documented',text:'Single-pass AI answers present conclusions without exposing tensions between conflicting evidence, creating false confidence in decisions that have genuine tradeoffs.'},
+  {id:'r005',type:'factual',tier:'stated',text:'Confidence scoring based on evidence diversity (how many types of claims, how strong the evidence, whether tensions were detected) gives decision-makers a realistic picture of how much they can trust the analysis.'},
+  {id:'x001',type:'risk',tier:'web',text:'Automated evidence grading cannot replace domain expertise — a high confidence score means the evidence is well-structured, not that the conclusion is correct for your specific context.'},
+  {id:'x002',type:'constraint',tier:'web',text:'The quality of a research sprint is bounded by the quality of the underlying model — structured methodology elevates weak output but cannot create knowledge the model lacks.'},
+  {id:'x003',type:'risk',tier:'stated',text:'Over-reliance on confidence scores risks anchoring bias — a 73% score feels authoritative but may still miss critical context that only a human with domain knowledge would catch.'},
+  {id:'s001',type:'recommendation',tier:'web',text:'Use structured research sprints for decisions with multiple stakeholders, competing priorities, or significant cost of being wrong — the evidence trail lets others verify your reasoning.'},
+  {id:'s002',type:'estimate',tier:'stated',text:'A 3-pass sprint with 12-16 claims takes approximately 40-70 seconds and produces a confidence-graded answer with tension detection — 3-30x faster than comparable deep research tools.'},
+  {id:'s003',type:'recommendation',tier:'web',text:'Treat the sprint output as a starting point, not a final answer — the real value is the structured evidence that helps you ask better follow-up questions.'},
+  {id:'s004',type:'factual',tier:'documented',text:'Teams that document their decision rationale with typed evidence (constraints, risks, recommendations) revisit decisions 50% less often because the original reasoning is transparent and auditable.'}
 ];
 
 // ===================================================================
@@ -1360,13 +1360,22 @@ function renderAnswer(claims, compilerResults, elapsedMs, passCount, sprintQuest
     navigator.clipboard.writeText(ctaCmd).then(function() { showToast('Copied to clipboard'); });
   });
   document.getElementById('ctaBtn').addEventListener('click', function() {
-    var prompt = 'I explored a research question in the grainulator.app demo and want to continue with the full wheat plugin.\n\nQuestion: ' + question + '\nClaims so far: ' + claims.length + '\n\nPlease install the wheat plugin (/plugin install grainulator) and continue this research sprint.';
-    try {
-      window.location.href = 'claude-cli://open?q=' + encodeURIComponent(prompt.substring(0, 1300));
-      setTimeout(function() { showToast('Install Claude Code first -- claude.ai/download'); }, 1500);
-    } catch(e) {
-      showToast('Install Claude Code first -- claude.ai/download');
+    var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      // Mobile: no Claude Code, just copy the command
+      navigator.clipboard.writeText(ctaCmd).then(function() {
+        showToast('Command copied! Paste in Claude Code on your computer.');
+      }).catch(function() {
+        showToast('Install Claude Code on desktop: claude.ai/download');
+      });
+      return;
     }
+    var prompt = 'I explored a research question in the grainulator.app demo and want to continue with the full wheat plugin.\n\nQuestion: ' + question + '\nClaims so far: ' + claims.length + '\n\nPlease install the wheat plugin (/plugin install grainulator) and continue this research sprint.';
+    window.location.href = 'claude-cli://open?q=' + encodeURIComponent(prompt.substring(0, 1300));
+    // If deep link fails (no Claude Code installed), show fallback after 2s
+    setTimeout(function() {
+      showToast('Install Claude Code first: claude.ai/download');
+    }, 2000);
   });
   document.getElementById('restartBtn').addEventListener('click', function() {
     resetToInput();

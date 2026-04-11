@@ -24,7 +24,7 @@ li{margin-bottom:.3rem}
 <body>
 <a class="back" href="/">← grainulator.app</a>
 <h1>Privacy Policy</h1>
-<p class="meta">Effective: March 25, 2026</p>
+<p class="meta">Effective: April 11, 2026</p>
 
 <h2>1. What Grainulator Is</h2>
 <p>Grainulator is a Claude Code plugin for structured research sprints. It runs entirely on your local machine as a set of CLI tools and MCP servers. There is no Grainulator backend, no cloud service, and no user account.</p>
@@ -52,10 +52,19 @@ li{margin-bottom:.3rem}
 <p>Grainulator includes an optional connection to <a href="https://deepwiki.com">DeepWiki</a> (<code>mcp.deepwiki.com</code>), a third-party HTTP MCP server that provides documentation for open-source projects. When you use DeepWiki-powered tools, your queries about open-source repositories are sent to DeepWiki's servers.</p>
 <p>DeepWiki is operated by a third party, not by Grainulator. You can remove the <code>deepwiki</code> entry from <code>.mcp.json</code> to disable this connection entirely. All other Grainulator functionality continues to work without it.</p>
 
-<h2>5. Your API Keys</h2>
+<h2>5. Web Demo: grainulator.app</h2>
+<p>The interactive demo at <a href="https://grainulator.app">grainulator.app</a> sends your research question to <a href="https://pollinations.ai">Pollinations</a> (<code>text.pollinations.ai</code>), a third-party LLM API, to generate research findings. Your question text is transmitted in plaintext over HTTPS. Pollinations may log requests per their own <a href="https://pollinations.ai/privacy">privacy policy</a>.</p>
+<ul>
+<li>Only the question you type is sent — no device info, cookies, or identifiers</li>
+<li>Responses are processed entirely in your browser — no data is sent back to us</li>
+<li>The demo uses no analytics, cookies, or tracking beyond a local IndexedDB page-view counter</li>
+<li>If you prefer not to use Pollinations, use the installed plugin instead — it runs through Claude Code with your own API key and never touches Pollinations</li>
+</ul>
+
+<h2>6. Your API Keys</h2>
 <p>Grainulator itself does not require or store API keys. Claude Code (the host environment) uses your Anthropic API key, which is managed by Claude Code. See <a href="https://www.anthropic.com/privacy">Anthropic's privacy policy</a>.</p>
 
-<h2>6. Data Storage and Retention</h2>
+<h2>7. Data Storage and Retention</h2>
 <p>All Grainulator data lives in your local filesystem:</p>
 <ul>
 <li>Sprint data: <code>claims.json</code>, <code>compilation.json</code>, <code>output/</code> in your project root</li>
@@ -64,13 +73,13 @@ li{margin-bottom:.3rem}
 </ul>
 <p>We have no access to any of this data. You control it entirely. Delete it whenever you want.</p>
 
-<h2>7. Children's Privacy</h2>
+<h2>8. Children's Privacy</h2>
 <p>Grainulator is a developer tool distributed via npm and Claude Code. It is not directed at children under 13.</p>
 
-<h2>8. Changes</h2>
+<h2>9. Changes</h2>
 <p>If we change this policy, we will update this page and the effective date above. Since we collect no data, we do not anticipate material changes.</p>
 
-<h2>9. Contact</h2>
+<h2>10. Contact</h2>
 <p>Questions? Email <a href="mailto:info@grainulator.app">info@grainulator.app</a> or open an issue at <a href="https://github.com/grainulation/grainulator/issues">github.com/grainulation/grainulator</a>.</p>
 </body>
 </html>
