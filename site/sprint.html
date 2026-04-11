@@ -781,14 +781,36 @@ function runCompiler(claims){
   return results;
 }
 
-// --- Pollinations API (GET text endpoint with system param) ---
+// --- Pollinations API ---
+// POST on production (no URL length limits), GET on localhost (POST gets deprecation notices)
 async function streamPass(systemPrompt,userMessage,abortSignal){
-  var url='https://text.pollinations.ai/'+encodeURIComponent(userMessage.substring(0,2000))+'?model=openai&system='+encodeURIComponent(systemPrompt.substring(0,1500))+'&nostream=true&_t='+Date.now();
+  var isLocalhost=location.hostname==='localhost'||location.hostname==='127.0.0.1';
+  var response;
 
-  var response=await fetch(url,{
-    cache:'no-store',
-    signal:AbortSignal.any?AbortSignal.any([abortSignal,AbortSignal.timeout(20000)]):abortSignal
-  });
+  if(!isLocalhost){
+    // Production: use POST — handles any context length
+    response=await fetch('https://text.pollinations.ai/openai',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'openai',
+        messages:[
+          {role:'system',content:systemPrompt},
+          {role:'user',content:userMessage}
+        ],
+        stream:false
+      }),
+      cache:'no-store',
+      signal:AbortSignal.any?AbortSignal.any([abortSignal,AbortSignal.timeout(25000)]):abortSignal
+    });
+  }else{
+    // Localhost: use GET (POST returns deprecation notices for localhost Origin)
+    var url='https://text.pollinations.ai/'+encodeURIComponent(userMessage.substring(0,2000))+'?model=openai&system='+encodeURIComponent(systemPrompt.substring(0,1500))+'&nostream=true&_t='+Date.now();
+    response=await fetch(url,{
+      cache:'no-store',
+      signal:AbortSignal.any?AbortSignal.any([abortSignal,AbortSignal.timeout(25000)]):abortSignal
+    });
+  }
 
   if(response.status===429){
     throw new Error('RATE_LIMITED');
@@ -797,10 +819,15 @@ async function streamPass(systemPrompt,userMessage,abortSignal){
     throw new Error('API_ERROR_'+response.status);
   }
 
-  var fullText=(await response.text()).trim();
+  var fullText;
+  if(!isLocalhost){
+    var json=await response.json();
+    fullText=(json.choices&&json.choices[0]&&json.choices[0].message&&json.choices[0].message.content)||'';
+  }else{
+    fullText=(await response.text()).trim();
+  }
 
-  // Guard: Pollinations returns deprecation notices for localhost origins (#1)
-  // This only affects local development — production (grainulator.app) works fine
+  // Guard: deprecation notices
   if(/IMPORTANT NOTICE|API is being deprecated|migrate to our new service/i.test(fullText)){
     throw new Error('API_DEPRECATION_NOTICE');
   }
