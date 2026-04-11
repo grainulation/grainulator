@@ -3,53 +3,91 @@
 </p>
 
 <p align="center">
+  <a href="https://grainulator.app"><img src="https://img.shields.io/badge/try_it_live-grainulator.app-ff6b35?style=for-the-badge" alt="Try it live"></a>
+</p>
+
+<p align="center">
   <a href="https://github.com/grainulation/grainulator/releases"><img src="https://img.shields.io/github/v/tag/grainulation/grainulator?label=version" alt="version"></a>
   <a href="https://github.com/grainulation/grainulator/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
   <a href="https://github.com/grainulation/grainulator/actions"><img src="https://github.com/grainulation/grainulator/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://deepwiki.com/grainulation/grainulator"><img src="https://deepwiki.com/badge.svg" alt="Docs on DeepWiki"></a>
 </p>
 
-<p align="center"><strong>Research sprint orchestrator for Claude Code.</strong></p>
+<h1 align="center">Grainulator</h1>
 
-Ask a question, get a decision-ready brief. Every finding is tracked as a typed claim, adversarially challenged, confidence-graded, and compiled into self-contained output. Zero third-party dependencies.
+<p align="center"><strong>Research that compiles.</strong></p>
+
+<p align="center">
+Ask a question. Get a multi-pass investigation with typed claims, tension detection, and a confidence-graded answer. Not a chatbot — a research sprint that runs in under 60 seconds.
+</p>
+
+---
+
+## What it does
+
+- **Multi-pass investigation** — 3 research passes build evidence from different angles before synthesizing an answer
+- **Typed claims, not vibes** — every finding is tagged as factual, constraint, risk, recommendation, or estimate with an evidence tier (stated / web / documented / tested / production)
+- **Tension detection** — the compiler finds contradictions between claims and surfaces them before generating output
+- **Confidence scoring** — a 7-pass compiler grades evidence strength, type coverage, and bias to produce a 0-100 confidence score
+
+## Try the demo
+
+**[grainulator.app](https://grainulator.app)** runs a sprint in your browser. Type a question, watch three research passes execute, and see the compiled answer with claim breakdown.
+
+What to expect from a single sprint:
+
+| Metric | Typical value |
+|--------|---------------|
+| Claims generated | 12-16 |
+| Claim types | 5 (factual, constraint, risk, recommendation, estimate) |
+| Tensions detected | 3-6 |
+| Evidence tiers | web, documented, stated |
+| Confidence score | 63-68 / 100 |
+| Time to answer | 40-70 seconds |
+
+The demo runs client-side to show the pipeline. The real tool (installed as a plugin) uses Claude for substantially higher quality research and deeper evidence.
 
 ## Install
 
-### Step 1 — Add the marketplace
+```bash
+/plugin install grainulator
+```
+
+That's it. No npm install. No config files. The plugin registers MCP servers, skills, hooks, and an autonomous agent.
+
+**Requirements:** Claude Code with Node.js >= 20.
+
+<details>
+<summary><strong>Alternative: manual install</strong></summary>
+
+If the marketplace isn't configured yet:
 
 ```bash
 claude plugin marketplace add https://github.com/grainulation/grainulator/blob/main/.claude-plugin/marketplace.json
-```
-
-### Step 2 — Install the plugin
-
-```bash
 claude plugin install grainulator
 ```
 
-**Requirements:** Node.js >= 20 (needed for MCP servers that run via npx).
-
-<details>
-<summary><strong>Troubleshooting: SSH permission denied</strong></summary>
-
-If you see `git@github.com: Permission denied (publickey)`, the plugin installer is trying SSH but you don't have SSH keys set up with GitHub. Fix with one command:
-
-```bash
-git config --global url."https://github.com/".insteadOf "git@github.com:"
-```
-
-Then retry `claude plugin install grainulator`. This tells git to use HTTPS instead of SSH for all GitHub repos.
-
-Alternatively, clone manually:
+Or clone directly:
 
 ```bash
 git clone https://github.com/grainulation/grainulator.git ~/.claude/plugins/grainulator
 claude plugin add ~/.claude/plugins/grainulator
 ```
 
+**SSH permission denied?** If you see `git@github.com: Permission denied (publickey)`:
+
+```bash
+git config --global url."https://github.com/".insteadOf "git@github.com:"
+```
+
+Then retry the install. This tells git to use HTTPS instead of SSH for GitHub repos.
+
 </details>
 
-For team-wide deployment, commit to your project's `.claude/settings.json`:
+<details>
+<summary><strong>Team deployment</strong></summary>
+
+Commit to your project's `.claude/settings.json`:
 
 ```json
 {
@@ -57,99 +95,108 @@ For team-wide deployment, commit to your project's `.claude/settings.json`:
 }
 ```
 
-## Quick start
+For air-gapped environments, use `CLAUDE_CODE_PLUGIN_SEED_DIR` with the plugin baked into container images.
 
-Once installed, just talk to Claude:
-
-- **"research how our auth system works"** — runs a multi-pass research sprint
-- **"challenge r003"** — adversarial testing of a specific claim
-- **"what are we missing?"** — blind spot analysis
-- **"write it up"** — generates a compiled brief
-
-No slash syntax required. The intent router detects what you want and runs the right workflow.
+</details>
 
 ## How it works
 
-**Claims** are the unit of knowledge. Every finding from research, challenges, witnesses, and prototypes is stored as a typed claim in `claims.json`.
+**You ask a question. Grainulator runs a research sprint.**
 
-| Claim type | What it means |
-|------------|--------------|
-| `constraint` | Hard requirements, non-negotiable boundaries |
-| `factual` | Verifiable statements about the world |
-| `estimate` | Projections, approximations, ranges |
-| `risk` | Potential failure modes, concerns |
-| `recommendation` | Proposed courses of action |
-| `feedback` | Stakeholder input, opinions |
+The sprint has two phases:
 
-**Evidence tiers** grade confidence: `stated` → `web` → `documented` → `tested` → `production`.
+### 1. Investigation (3 passes)
 
-**The compiler** runs 7 passes over your claims — type coverage, evidence strength, conflict detection, bias scan — and produces a confidence score. If there are unresolved conflicts, it blocks output until you resolve them.
+Each pass approaches the question from a different angle — constraints, risks, alternatives — and produces typed claims. Claims accumulate in `claims.json`, the sprint's evidence ledger.
 
-## Skills
+### 2. Compilation (7 passes)
 
-| Skill | Description |
-|-------|-------------|
+The compiler runs seven analysis passes over the collected claims:
+
+1. **Type coverage** — are there enough claim types to avoid blind spots?
+2. **Evidence strength** — are claims grounded in documentation, or just stated?
+3. **Conflict detection** — do any claims contradict each other?
+4. **Bias scan** — is the evidence skewed toward one conclusion?
+5. **Gap analysis** — what topics have thin coverage?
+6. **Confidence scoring** — weighted score from all the above
+7. **Synthesis** — final answer that acknowledges tensions and trade-offs
+
+If unresolved conflicts exist, the compiler blocks output until you resolve them. The confidence score tells you how much to trust the answer.
+
+## Commands
+
+Once installed, just talk to Claude. The intent router detects what you want.
+
+| Say this | Grainulator runs |
+|----------|-----------------|
+| "research how our auth system works" | Multi-pass research sprint |
+| "challenge r003" | Adversarial testing of claim r003 |
+| "what are we missing?" | Blind spot analysis |
+| "write it up" | Compiled decision brief |
+| "make slides" | Presentation deck |
+| "where are we?" | Sprint status dashboard |
+
+Or use slash commands directly:
+
+| Command | What it does |
+|---------|-------------|
 | `/init` | Start a new research sprint |
 | `/research` | Multi-pass investigation with evidence gathering |
-| `/challenge` | Adversarial testing of a claim |
+| `/challenge` | Adversarial testing of a specific claim |
 | `/witness` | Corroborate a claim against an external source |
 | `/blind-spot` | Structural gap analysis |
-| `/brief` | Generate a compiled decision brief |
-| `/present` | Generate a presentation deck |
-| `/status` | Sprint dashboard snapshot |
-| `/pull` | Import knowledge from external sources (DeepWiki, Confluence) |
-| `/sync` | Publish artifacts to external targets |
+| `/brief` | Compiled decision brief |
+| `/present` | Presentation deck |
+| `/status` | Sprint dashboard |
+| `/pull` | Import knowledge from DeepWiki or Confluence |
+| `/sync` | Publish artifacts to Confluence |
 | `/calibrate` | Score predictions against actual outcomes |
 | `/resolve` | Adjudicate conflicts between claims |
-| `/feedback` | Record stakeholder input |
 
 ## Autonomous agent
 
-The **grainulator subagent** (`agents/grainulator.md`) runs multi-pass research sprints autonomously. It reads the compiler output to decide what command to run next — research, challenge, witness, blind-spot — until the sprint reaches decision-ready confidence.
+The grainulator subagent runs full research sprints without intervention. It reads compiler output to decide what to do next — research, challenge, witness, blind-spot — until confidence is high enough for output.
 
-Launch it from Claude Code with: `"research X using grainulator"`.
-
-## Demo
-
-[grainulator.app](https://grainulator.app) shows the compiler pipeline with pre-authored claims. The real experience is the plugin above.
+Launch it: `"research X using grainulator"`
 
 ## Architecture
 
-- **Plugin manifest**: `.claude-plugin/plugin.json`
-- **MCP servers**: wheat (claims engine), mill (format conversion), silo (knowledge store), DeepWiki (codebase research)
-- **Skills**: `skills/<name>/SKILL.md` — 13 prompt-engineered workflows
-- **Agent**: `agents/grainulator.md` — autonomous sprint subagent
-- **Hooks**: Auto-compile on claim mutation, write-guard on `claims.json` and `compilation.json`
-- **Orchard**: Multi-sprint orchestration via `orchard.json` dependency graphs
+```
+grainulator/
+  .claude-plugin/     Plugin manifest + permissions
+  skills/             13 prompt-engineered workflows
+  agents/             Autonomous sprint subagent
+  hooks/              Auto-compile on claim mutation
+  lib/                Shared utilities
+  site/               grainulator.app landing page + demo
+```
+
+**MCP servers:** wheat (claims engine), mill (format conversion), silo (knowledge store), DeepWiki (codebase research)
+
+**Hooks:** Auto-compile fires on every claim mutation. Write-guards protect `claims.json` and `compilation.json` from manual edits.
+
+**Orchard:** Multi-sprint orchestration via `orchard.json` dependency graphs for complex investigations that span multiple questions.
 
 ## The ecosystem
 
-Part of the [grainulation](https://github.com/grainulation/grainulation) ecosystem. Eight tools, each does one thing.
+Grainulator is part of the [grainulation](https://github.com/grainulation/grainulation) ecosystem. Eight tools, each does one thing.
 
-| Tool | What it does | Install |
-|------|-------------|---------|
-| [wheat](https://github.com/grainulation/wheat) | Research engine — grow structured evidence | `npx @grainulation/wheat init` |
-| [farmer](https://github.com/grainulation/farmer) | Permission dashboard — approve AI actions in real time | `npm i -g @grainulation/farmer` |
-| [barn](https://github.com/grainulation/barn) | Shared tools — templates, validators, sprint detection | `npm i -g @grainulation/barn` |
-| [mill](https://github.com/grainulation/mill) | Format conversion — export to PDF, CSV, slides | `npm i -g @grainulation/mill` |
-| [silo](https://github.com/grainulation/silo) | Knowledge storage — reusable claim libraries and packs | `npm i -g @grainulation/silo` |
-| [harvest](https://github.com/grainulation/harvest) | Analytics — cross-sprint patterns and prediction scoring | `npm i -g @grainulation/harvest` |
-| [orchard](https://github.com/grainulation/orchard) | Orchestration — multi-sprint coordination | `npm i -g @grainulation/orchard` |
-| [grainulation](https://github.com/grainulation/grainulation) | Unified CLI — single entry point | `npm i -g @grainulation/grainulation` |
+| Tool | What it does |
+|------|-------------|
+| [wheat](https://github.com/grainulation/wheat) | Research engine — structured evidence |
+| [farmer](https://github.com/grainulation/farmer) | Permission dashboard — approve AI actions in real time |
+| [barn](https://github.com/grainulation/barn) | Shared tools — templates, validators, sprint detection |
+| [mill](https://github.com/grainulation/mill) | Format conversion — PDF, CSV, slides |
+| [silo](https://github.com/grainulation/silo) | Knowledge storage — reusable claim libraries |
+| [harvest](https://github.com/grainulation/harvest) | Analytics — cross-sprint patterns |
+| [orchard](https://github.com/grainulation/orchard) | Orchestration — multi-sprint coordination |
+| [grainulation](https://github.com/grainulation/grainulation) | Unified CLI — single entry point |
 
-**You don't need all eight.** Start with `claude plugin install grainulator`. That's it.
-
-## Enterprise deployment
-
-Three levels:
-
-1. **Team lead**: Commit `.claude/settings.json` with `enabledPlugins` to your repo
-2. **IT admin**: Deploy managed settings via MDM with pre-approved permissions
-3. **Air-gapped**: Use `CLAUDE_CODE_PLUGIN_SEED_DIR` with the plugin baked into container images
+**You don't need all eight.** `/plugin install grainulator` gives you everything.
 
 ## Zero dependencies
 
-Every grainulation tool runs on Node built-ins only. No npm install waterfall. No left-pad. No supply chain anxiety. The MCP servers download on first use via `npx` — no global install required.
+Every grainulation tool runs on Node built-ins only. No npm install waterfall. No left-pad. No supply chain anxiety. MCP servers download on first use via `npx`.
 
 ## License
 
