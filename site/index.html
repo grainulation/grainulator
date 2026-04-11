@@ -71,7 +71,7 @@
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   "name": "Grainulator",
-  "description": "Evidence-tracked research sprints for Claude Code. Ask any question, get a evidence-graded answer.",
+  "description": "Evidence-tracked research sprints for Claude Code. Ask any question, get an evidence-graded answer.",
   "url": "https://grainulator.app/",
   "applicationCategory": "DeveloperApplication",
   "operatingSystem": "macOS, Linux, Windows",
@@ -369,8 +369,20 @@ canvas.active{opacity:1}
   .conflict-pair{flex-direction:column}
   .claim-card{flex-direction:column;gap:0.3rem}
   .answer-column{padding:0 0.5rem}
-  .app-header{padding:0.4rem 0.5rem}
+  .app-header{padding:calc(0.4rem + env(safe-area-inset-top,0px)) 0.5rem 0.4rem}
   .header-btn{font-size:0.6rem;padding:0.3rem 0.5rem;min-height:28px}
+}
+
+/* === Mobile input readability — opaque background over lava shader === */
+@media(max-width:768px){
+  .input-field{background:rgba(0,0,0,0.85)}
+  .input-field::placeholder{color:rgba(255,255,255,0.4)}
+}
+
+/* === PWA standalone — safe area for dynamic island / notch === */
+@media(display-mode:standalone){
+  body{padding-top:env(safe-area-inset-top)}
+  .app-header{top:0}
 }
 
 /* === Reduced motion === */
@@ -473,7 +485,7 @@ canvas.active{opacity:1}
 <noscript>
   <div class="noscript-fallback">
     <p><strong>Grainulator</strong></p>
-    <p>Evidence-tracked research sprints for Claude Code. Ask any question, get a evidence-graded answer.</p>
+    <p>Evidence-tracked research sprints for Claude Code. Ask any question, get an evidence-graded answer.</p>
     <p>Install: /plugin install grainulator</p>
   </div>
 </noscript>

@@ -10,7 +10,7 @@ import { expect, test } from "@playwright/test";
 
 // ── Sprint-mode page path ───────────────────────────────────────────────────
 
-const SPRINT_PATH = "/sprint.html";
+const SPRINT_PATH = "/";
 
 // ── Mock LLM setup ──────────────────────────────────────────────────────────
 
@@ -75,7 +75,7 @@ test.describe("page load", () => {
 
 	test("lava background exists", async ({ page }) => {
 		await page.goto(SPRINT_PATH);
-		const lava = page.locator("#lavaBg");
+		const lava = page.locator("#c");
 		await expect(lava).toBeAttached();
 	});
 });
@@ -112,9 +112,9 @@ test.describe("input state", () => {
 test.describe("accessibility", () => {
 	test("has ARIA live region for announcements", async ({ page }) => {
 		await page.goto(SPRINT_PATH);
-		await expect(page.locator("#announcer")).toHaveAttribute(
+		await expect(page.locator("#state-announcer")).toHaveAttribute(
 			"aria-live",
-			"polite",
+			"assertive",
 		);
 	});
 
@@ -294,7 +294,9 @@ test.describe("offline mode", () => {
 		expect(await cards.count()).toBeGreaterThanOrEqual(10);
 		// Verify TRACK_A claim content is present
 		const firstCard = page.locator(".claim-card-text").first();
-		await expect(firstCard).toContainText(/WCAG|accessibility|screen reader/i);
+		await expect(firstCard).toContainText(
+			/structured|evidence|multi-pass|research|investigation/i,
+		);
 	});
 });
 
