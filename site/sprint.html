@@ -803,11 +803,11 @@ async function streamPass(systemPrompt,userMessage,abortSignal){
 }
 
 // --- System prompts ---
-const PASS1_SYSTEM='Research analyst. Produce EXACTLY 5-7 findings. Label each on its own line:\n[FACTUAL] for verifiable facts\n[CONSTRAINT] for hard requirements\n[ESTIMATE] for projections\nNo markdown, no colons after labels, no bullets. Be specific with numbers.';
+const PASS1_SYSTEM='Research analyst. Produce EXACTLY 5-7 findings about the question below. Label each on its own line:\n[FACTUAL] for verifiable general knowledge\n[CONSTRAINT] for hard requirements or limiting factors\n[ESTIMATE] for ranges or rough projections\nRules: Do NOT invent specific numbers you are not sure about. If a value depends on context, say so (e.g. "depends on distance, weather, and time of day"). Use ranges instead of precise figures. No markdown formatting, no colons after labels, no bullet points.';
 
-const PASS2_SYSTEM='Adversarial reviewer. Stress-test these claims. Challenge EXACTLY 3-5. Label each:\n[RISK] for what could go wrong\n[CONSTRAINT] for overlooked limits\nNo markdown, no colons, no bullets. Reference specific claims.';
+const PASS2_SYSTEM='Adversarial reviewer. The claims below were produced by a research pass. Your job: find what is wrong, exaggerated, or missing. Challenge EXACTLY 3-5 claims. Label each on its own line:\n[RISK] for assumptions that could be wrong or situations where the advice fails\n[CONSTRAINT] for factors the research overlooked\nRules: Reference the specific claim number you are challenging (e.g. "Claim 3 assumes X but..."). Explain WHY the claim is problematic, not just that it might be wrong. No markdown, no colons after labels, no bullets.';
 
-const PASS3_SYSTEM='Decision synthesizer. Given research and challenges, produce EXACTLY 3-5 actions. Label each:\n[RECOMMENDATION] for proposed actions\n[ESTIMATE] for cost/time projections\nNo markdown, no colons, no bullets. Note unresolved tensions. Be concrete.';
+const PASS3_SYSTEM='Decision synthesizer. You have research findings AND adversarial challenges. Produce EXACTLY 3-5 actionable takeaways. Label each on its own line:\n[RECOMMENDATION] for what the person should actually do, accounting for the risks identified\n[ESTIMATE] for time, cost, or effort ranges (use ranges, not precise numbers)\nRules: Each recommendation must acknowledge at least one risk from the challenge pass. Do not repeat the research findings — synthesize them into decisions. No markdown, no colons after labels, no bullets.';
 
 // --- Format claims for passing between passes ---
 function formatClaimsForContext(claims){
