@@ -93,171 +93,300 @@
 </script>
 
 <style>
+/* === Reset + Base === */
 *{margin:0;padding:0;box-sizing:border-box}
-html{height:100vh;overflow:hidden;background:transparent}
-body{height:100vh;overflow:hidden;background:#060d10;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+html{height:100%;overflow-x:hidden}
+body{
+  min-height:100%;
+  background:#060d10;
+  color:#e2e8f0;
+  font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  line-height:1.6;
+}
 
-/* Canvas — fades in after load */
+/* === Canvas — WebGL lava shader === */
 canvas{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;opacity:0;transition:opacity 1.5s ease}
 canvas.active{opacity:1}
 
-/* Dim overlay — JS controls opacity for CHAT_ACTIVE / focus mode */
+/* === Dim overlay — JS controls opacity === */
 .dim-overlay{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:1;background:#0c1a1e;opacity:0;transition:opacity 0.6s ease;pointer-events:none}
 
-/* Top progress bar — model download */
+/* === Phase color tinting overlay === */
+.phase-tint{position:fixed;inset:0;z-index:2;pointer-events:none;background:transparent;transition:background 0.8s ease}
+.phase-tint.research{background:rgba(0,180,200,0.12)}
+.phase-tint.challenge{background:rgba(200,150,0,0.10)}
+.phase-tint.synthesis{background:rgba(0,180,80,0.10)}
+.phase-tint.compile{background:rgba(100,100,100,0.15)}
 
-/* App shell — flexbox column, full viewport height, iOS safe */
-.app{display:flex;flex-direction:column;height:100vh;height:100dvh;height:-webkit-fill-available;position:relative;z-index:10;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace}
+/* === App shell === */
+.app{position:relative;z-index:10;font-family:'JetBrains Mono','SF Mono','Fira Code',monospace}
 
-/* Header — install left, new chat right */
-.app-header{display:flex;align-items:center;justify-content:space-between;padding:calc(0.5rem + env(safe-area-inset-top,0px)) 0.8rem 0.5rem;z-index:15;position:relative;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.04)}
-/* splash hero removed */
+/* === Header — install CTA left, new sprint right === */
+.app-header{display:flex;align-items:center;justify-content:space-between;padding:calc(0.5rem + env(safe-area-inset-top,0px)) 0.8rem 0.5rem;z-index:15;position:fixed;top:0;left:0;right:0;border-bottom:1px solid rgba(255,255,255,0.04)}
 .header-btn{font-size:0.65rem;padding:0.35rem 0.7rem;height:38px;color:rgba(141,246,255,1);border:1px solid rgba(141,246,255,0.2);border-radius:4px;background:rgba(255,255,255,0.25);cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:0.4rem;text-decoration:none;white-space:nowrap;transition:all 0.2s;box-sizing:border-box}
 .header-btn:hover{border-color:rgba(141,246,255,0.4);color:#8df6ff}
 .header-btn img{width:28px;height:28px;opacity:0.9}
 .header-btn .btn-text{overflow:hidden;max-width:0;opacity:0;transition:max-width 0.4s ease,opacity 0.3s ease}
 .header-btn.revealed .btn-text{max-width:300px;opacity:1}
-.new-chat-btn:disabled{opacity:0.25;cursor:default;pointer-events:none}
-.new-chat-btn .btn-text{max-width:300px;opacity:1}
+.new-sprint-btn .btn-text{max-width:300px;opacity:1}
 
-/* Chat area — hidden until CHAT_ACTIVE */
-.chat-area{flex:1 1 0%;min-height:0;overflow-y:auto;padding:1rem 1rem 5rem;display:flex;flex-direction:column;gap:0.8rem;scroll-behavior:smooth;opacity:0;transition:opacity 0.4s ease}
-.app.chat-active .chat-area{opacity:1}
+/* === Page States === */
+.page-state{display:none;position:relative;z-index:10}
+.page-state.active{display:flex}
 
-/* Messages */
-.msg{max-width:85%;border-radius:12px;padding:0.8rem 1rem;font-size:0.8rem;line-height:1.6;animation:msg-in 0.3s ease forwards;opacity:0}
-@keyframes msg-in{to{opacity:1}}
-.msg-user{align-self:flex-end;background:rgba(141,246,255,0.1);color:#fff;border:1px solid rgba(141,246,255,0.15)}
-.msg-ai{align-self:flex-start;background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.85);border:1px solid rgba(255,255,255,0.06)}
-.msg-ai table{border-collapse:collapse;width:100%;margin:0.5rem 0;font-size:0.7rem}
-.msg-ai th,.msg-ai td{border:1px solid rgba(141,246,255,0.2);padding:0.3rem 0.5rem;text-align:left}
-.msg-ai th{background:rgba(141,246,255,0.08);color:#8df6ff}
-.msg-ai code{background:rgba(141,246,255,0.1);padding:0.1rem 0.3rem;border-radius:2px;font-size:0.85em}
-.msg-ai pre{background:rgba(0,0,0,0.3);padding:0.5rem;border-radius:4px;overflow-x:auto}
-.msg-ai pre code{background:none;padding:0}
-.msg-ai ul,.msg-ai ol{padding-left:1.2rem;margin:0.3rem 0}
-.msg-ai p{margin:0.3rem 0}
-.msg-system{align-self:center;background:none;color:rgba(141,246,255,0.5);font-size:0.65rem;text-align:center;max-width:100%;padding:0.4rem}
+/* === INPUT STATE === */
+#inputState{
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  min-height:100dvh;
+  padding:2rem 1rem;
+}
+.input-container{width:100%;max-width:600px;text-align:center}
+.input-logo{
+  font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;
+  font-size:1.1rem;
+  color:rgba(141,246,255,0.7);
+  letter-spacing:0.05em;
+  margin-bottom:2rem;
+}
+.input-field{
+  width:100%;
+  font-family:inherit;
+  font-size:max(1rem,16px);
+  color:#fff;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(141,246,255,0.2);
+  border-radius:8px;
+  padding:1rem 1.2rem;
+  outline:none;
+  transition:border-color 0.3s,box-shadow 0.3s;
+  resize:none;
+  min-height:56px;
+  max-height:160px;
+}
+.input-field:focus{border-color:rgba(141,246,255,0.5);box-shadow:0 0 20px rgba(141,246,255,0.08)}
+.input-field::placeholder{color:rgba(255,255,255,0.25)}
+.submit-btn{
+  margin-top:1rem;
+  font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;
+  font-size:0.8rem;
+  color:#8df6ff;
+  background:rgba(141,246,255,0.08);
+  border:1px solid rgba(141,246,255,0.25);
+  border-radius:6px;
+  padding:0.7rem 2rem;
+  cursor:pointer;
+  transition:all 0.2s;
+  min-height:44px;
+}
+.submit-btn:hover{background:rgba(141,246,255,0.15);border-color:rgba(141,246,255,0.4)}
+.submit-btn:disabled{opacity:0.3;cursor:not-allowed}
+.input-hint{margin-top:1.5rem;font-size:0.7rem;color:rgba(255,255,255,0.2)}
 
-/* Thinking dots */
-.thinking-dots{display:flex;gap:4px;padding:0.5rem 0}
-.thinking-dots span{width:6px;height:6px;border-radius:50%;background:rgba(141,246,255,0.4);animation:dot-pulse 1.4s ease-in-out infinite}
-.thinking-dots span:nth-child(2){animation-delay:0.2s}
-.thinking-dots span:nth-child(3){animation-delay:0.4s}
-@keyframes dot-pulse{0%,80%,100%{opacity:0.3;transform:scale(0.8)}40%{opacity:1;transform:scale(1.2)}}
+/* === SPRINT RUNNING STATE === */
+#sprintState{
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  min-height:100dvh;
+  padding:2rem 1rem;
+}
+.sprint-question{
+  font-size:0.75rem;
+  color:rgba(255,255,255,0.3);
+  max-width:500px;
+  text-align:center;
+  margin-bottom:2rem;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.sprint-phase-label{
+  font-size:1.1rem;
+  color:#8df6ff;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  animation:phase-pulse 2s ease-in-out infinite;
+  text-align:center;
+}
+@keyframes phase-pulse{0%,100%{opacity:0.6}50%{opacity:1}}
 
-/* Claims toggle (2-level disclosure) */
-.claims-toggle{font-size:0.7rem;color:rgba(141,246,255,0.6);background:none;border:1px solid rgba(141,246,255,0.12);border-radius:4px;min-height:36px;padding:0.4rem 0.8rem;cursor:pointer;margin-top:0.5rem;font-family:inherit;transition:all 0.2s}
-.claims-toggle[aria-expanded="true"]{color:#8df6ff;border-color:rgba(141,246,255,0.3)}
-.claims-panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows 0.3s ease}
-.claims-panel.open{grid-template-rows:1fr}
-.claims-panel-inner{overflow:hidden}
-.claim-row{font-size:0.7rem;color:rgba(255,255,255,0.6);padding:0.4rem 0;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;gap:0.5rem;align-items:baseline}
-.claim-row .badge{font-size:0.55rem;padding:0.1rem 0.35rem;border-radius:2px;text-transform:uppercase;font-weight:700;flex-shrink:0}
+.sprint-counter{font-size:2.5rem;font-weight:800;color:#fff;margin:0.5rem 0;text-align:center;font-variant-numeric:tabular-nums}
+.sprint-counter-label{font-size:0.65rem;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.15em;text-align:center}
 
-/* Claim type badges */
-.badge-constraint{background:rgba(244,63,94,0.15);color:#f43f5e}
-.badge-factual{background:rgba(59,130,246,0.15);color:#3b82f6}
-.badge-risk{background:rgba(251,191,36,0.15);color:#fbbf24}
-.badge-recommendation{background:rgba(34,197,94,0.15);color:#22c55e}
-.badge-estimate{background:rgba(167,139,250,0.15);color:#a78bfa}
-.badge-feedback{background:rgba(156,163,175,0.15);color:#9ca3af}
+/* Claim pills stream */
+.claim-pills{margin-top:1.5rem;max-height:40vh;overflow-y:auto;scrollbar-width:none;width:100%;max-width:500px;display:flex;flex-direction:column;gap:0.4rem}
+.claim-pills::-webkit-scrollbar{display:none}
+.claim-pill{
+  display:flex;align-items:baseline;gap:0.5rem;
+  padding:0.35rem 0.6rem;
+  background:rgba(255,255,255,0.03);
+  border-radius:4px;
+  border-left:3px solid transparent;
+  opacity:0;transform:translateY(8px);
+  animation:pill-in 0.3s ease forwards;
+  font-size:0.72rem;
+}
+@keyframes pill-in{to{opacity:1;transform:translateY(0)}}
 
-/* Input bar — blooms up from bottom with spring animation */
-.input-bar{position:fixed;bottom:0;left:0;right:0;z-index:15;display:flex;align-items:center;padding:0.5rem 0.5rem calc(0.5rem + max(env(safe-area-inset-bottom,0px), var(--kb-offset, 0px)));background:transparent;border-top:none;transform:translateY(100%);transition:transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)}
-.app.chat-active .input-bar{background:rgba(12,26,30,0.95);border-top:1px solid rgba(255,255,255,0.06)}
-.input-bar.visible{transform:translateY(0)}
-.app.chat-active .compile-bar{position:relative;flex-shrink:0}
-.app.chat-active .input-bar{padding-bottom:calc(0.5rem + max(env(safe-area-inset-bottom,0px), var(--kb-offset, 0px)))}
-.input-wrap{position:relative;flex:1}
-.chat-input{width:100%;font-family:inherit;font-size:max(1rem,16px);color:rgba(141,246,255,1);background:rgba(255,255,255,0.25);border:1px solid rgba(141,246,255,0.2);border-radius:4px;padding:0.7rem 3rem 0.7rem 1rem;outline:none;transition:border-color 0.3s;resize:none;overflow:hidden;min-height:44px;max-height:120px}
-.chat-input:focus{border-color:rgba(141,246,255,0.5)}
-.chat-input::placeholder{color:rgba(255,255,255,0.25)}
-.send-btn{position:absolute;right:8px;top:8px;width:28px;height:28px;border-radius:50%;background:rgba(141,246,255,0.25);border:1px solid rgba(141,246,255,0.3);color:#8df6ff;cursor:pointer;display:none;align-items:center;justify-content:center}
-.send-btn.active{display:flex}
-.send-btn:active{color:#fff}
-.send-btn svg{width:14px;height:14px}
+.pill-badge{font-size:0.55rem;padding:0.1rem 0.35rem;border-radius:2px;text-transform:uppercase;font-weight:700;flex-shrink:0}
+.pill-text{color:rgba(255,255,255,0.5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-/* Model progress bar (system message style) */
-.model-bar{width:100%;height:3px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:0.3rem;overflow:hidden}
-.model-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,rgba(141,246,255,0.4),rgba(141,246,255,0.8));border-radius:2px;transition:width 0.4s ease}
+/* Claim type colors */
+.type-constraint{border-left-color:#f59e0b}.badge-constraint{background:rgba(245,158,11,0.15);color:#f59e0b}
+.type-factual{border-left-color:#3b82f6}.badge-factual{background:rgba(59,130,246,0.15);color:#3b82f6}
+.type-risk{border-left-color:#ef4444}.badge-risk{background:rgba(239,68,68,0.15);color:#ef4444}
+.type-recommendation{border-left-color:#22c55e}.badge-recommendation{background:rgba(34,197,94,0.15);color:#22c55e}
+.type-estimate{border-left-color:#8b5cf6}.badge-estimate{background:rgba(139,92,246,0.15);color:#8b5cf6}
 
-/* Compile bar — sticky above input */
-.compile-bar{display:none;padding:0.3rem 0.5rem;background:rgba(12,26,30,0.9);border-top:1px solid rgba(141,246,255,0.1);justify-content:center}
-.app.chat-active .compile-bar.visible{display:flex}
-.compile-msg-btn{font-family:inherit;font-size:0.65rem;color:#fff;background:rgba(141,246,255,0.25);border:1px solid rgba(141,246,255,0.3);padding:0.4rem 1rem;border-radius:3px;cursor:pointer;transition:all 0.2s;min-height:32px;width:100%}
-.compile-msg-btn:hover{border-color:rgba(141,246,255,0.4)}
-.compile-msg-btn:disabled{opacity:0.3;cursor:not-allowed}
+/* Cancel button */
+.cancel-btn{
+  margin-top:1.5rem;
+  font-size:0.65rem;
+  color:rgba(255,255,255,0.3);
+  background:none;
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:4px;
+  padding:0.5rem 1.2rem;
+  cursor:pointer;
+  transition:all 0.2s;
+  min-height:36px;
+  font-family:inherit;
+}
+.cancel-btn:hover{color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.2)}
 
-/* Compiler pass lines in chat */
-.pass-line{font-family:monospace;font-size:0.7rem;color:rgba(255,255,255,0.5);padding:0.3rem 0;opacity:0;transform:translateX(-8px);transition:all 0.3s ease}
+/* Rate limit wait indicator */
+.rate-wait{margin-top:0.8rem;font-size:0.6rem;color:rgba(255,255,255,0.2);text-align:center}
+
+/* Compiler pass lines */
+.compiler-lines{margin-top:1rem;width:100%;max-width:400px}
+.pass-line{font-size:0.7rem;color:rgba(255,255,255,0.5);padding:0.25rem 0;opacity:0;transform:translateX(-8px);transition:all 0.3s ease}
 .pass-line.done{opacity:1;transform:translateX(0)}
 .pass-line .check{color:#8df6ff;margin-right:0.4rem}
-.pass-line .fail{color:#f43f5e;margin-right:0.4rem}
+.pass-line .fail{color:#ef4444;margin-right:0.4rem}
+
+/* === ANSWER STATE === */
+#answerState{
+  flex-direction:column;
+  align-items:center;
+  min-height:100vh;
+  min-height:100dvh;
+  padding:2rem 1rem 4rem;
+  opacity:0;
+  transform:translateY(40px);
+  transition:opacity 0.8s ease-out,transform 0.8s ease-out;
+}
+#answerState.active{opacity:1;transform:translateY(0)}
+
+.answer-column{width:100%;max-width:680px}
+
+/* Answer sections — staggered reveal */
+.answer-section{opacity:0;transform:translateY(12px);transition:opacity 0.4s ease,transform 0.4s ease;margin-bottom:1.5rem}
+.answer-section.visible{opacity:1;transform:translateY(0)}
+
+/* Claim bar + stats */
+.claim-bar{height:8px;border-radius:4px;display:flex;overflow:hidden;background:rgba(255,255,255,0.05)}
+.claim-bar-segment{transition:width 0.4s ease}
+.stat-row{display:flex;gap:1.5rem;margin-top:0.6rem;flex-wrap:wrap}
+.stat-item{display:flex;flex-direction:column;align-items:center}
+.stat-value{font-size:1.5rem;font-weight:800;color:#fff}
+.stat-label{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.12em;color:rgba(255,255,255,0.3)}
+
+/* Executive summary */
+.exec-summary{font-size:0.95rem;line-height:1.7;color:rgba(255,255,255,0.8);padding:1rem 0;border-bottom:1px solid rgba(255,255,255,0.06)}
+
+/* Claims by type */
+.claims-group{margin-bottom:1rem}
+.claims-group-header{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.5rem;padding-bottom:0.3rem;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:0.5rem}
+.claim-card{padding:0.6rem 0.8rem;margin-bottom:0.4rem;border-radius:4px;border-left:3px solid transparent;background:rgba(255,255,255,0.02);font-size:0.78rem;line-height:1.5;display:flex;gap:0.6rem;align-items:baseline}
+.claim-card-id{font-size:0.6rem;color:rgba(255,255,255,0.3);flex-shrink:0}
+.claim-card-text{color:rgba(255,255,255,0.7)}
+.claim-card-tier{font-size:0.5rem;padding:0.1rem 0.4rem;border-radius:2px;text-transform:uppercase;font-weight:700;flex-shrink:0}
+
+/* Evidence tiers */
+.tier-stated{background:rgba(100,116,139,0.2);color:#94a3b8}
+.tier-web{background:rgba(59,130,246,0.2);color:#60a5fa}
+.tier-documented{background:rgba(20,184,166,0.2);color:#2dd4bf}
+.tier-tested{background:rgba(34,197,94,0.2);color:#4ade80}
+.tier-production{background:rgba(16,185,129,0.2);color:#34d399}
+
+/* Conflicts */
+.conflict-pair{display:flex;gap:0.8rem;margin-bottom:0.8rem;flex-wrap:wrap}
+.conflict-card{flex:1;min-width:200px;padding:0.6rem 0.8rem;border-radius:4px;border:1px solid rgba(239,68,68,0.2);background:rgba(239,68,68,0.03);font-size:0.72rem;color:rgba(255,255,255,0.6)}
+.conflict-badge{display:inline-block;font-size:0.55rem;padding:0.15rem 0.5rem;border-radius:2px;background:rgba(239,68,68,0.15);color:#ef4444;font-weight:700;text-transform:uppercase;margin:0 0.4rem}
+.no-conflicts{font-size:0.75rem;color:rgba(34,197,94,0.6);padding:0.5rem 0}
 
 /* Verdict */
-.verdict-title{font-family:monospace;font-size:0.7rem;color:#8df6ff;margin-bottom:0.4rem;font-weight:700}
-.verdict-body{font-family:monospace;font-size:0.7rem;color:rgba(255,255,255,0.65);line-height:1.6}
-.conflict-flag{color:#fbbf24}
+.verdict-label{font-size:0.85rem;font-weight:700;margin-bottom:0.5rem}
+.verdict-high{color:#22c55e}
+.verdict-moderate{color:#f59e0b}
+.verdict-low{color:#ef4444}
+.verdict-insufficient{color:#ef4444}
+.evidence-bar{height:6px;border-radius:3px;display:flex;overflow:hidden;background:rgba(255,255,255,0.05);margin-bottom:0.4rem}
+.evidence-bar-segment{transition:width 0.4s ease}
+.evidence-legend{display:flex;gap:0.8rem;flex-wrap:wrap;font-size:0.55rem;color:rgba(255,255,255,0.3)}
+.evidence-legend-item{display:flex;align-items:center;gap:0.3rem}
+.evidence-dot{width:6px;height:6px;border-radius:50%}
+.verdict-text{font-size:0.75rem;color:rgba(255,255,255,0.5);margin-top:0.4rem}
 
-/* Handoff section */
-.handoff-section{display:flex;flex-wrap:wrap;gap:0.6rem;margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.06)}
-.handoff-btn{font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;font-size:0.7rem;color:rgba(141,246,255,1);background:none;border:1px solid rgba(141,246,255,0.2);padding:0.6rem 1rem;border-radius:4px;cursor:pointer;transition:all 0.3s;min-height:44px}
-.handoff-btn:hover,.handoff-btn:focus-visible{color:#8df6ff;border-color:rgba(141,246,255,0.5);box-shadow:0 0 15px rgba(141,246,255,0.1)}
-.handoff-primary{font-family:monospace;font-size:0.7rem;color:#8df6ff;background:rgba(141,246,255,0.08);border:1px solid rgba(141,246,255,0.3);padding:0.6rem 1rem;border-radius:4px;cursor:pointer;transition:all 0.3s;min-height:44px}
-.handoff-primary:hover{background:rgba(141,246,255,0.15);border-color:rgba(141,246,255,0.5)}
-.handoff-secondary{font-family:monospace;font-size:0.65rem;color:rgba(255,255,255,0.5);background:none;border:1px solid rgba(255,255,255,0.1);padding:0.5rem 0.8rem;border-radius:4px;cursor:pointer;transition:all 0.3s;min-height:44px}
-.handoff-secondary:hover{color:rgba(255,255,255,0.7);border-color:rgba(255,255,255,0.2)}
+/* CTA section */
+.cta-section{text-align:center;padding:1.5rem 1rem;background:rgba(141,246,255,0.03);border:1px solid rgba(141,246,255,0.1);border-radius:8px}
+.cta-code{font-size:0.75rem;color:#8df6ff;background:rgba(0,0,0,0.3);padding:0.5rem 1rem;border-radius:4px;display:inline-block;margin-bottom:0.8rem;cursor:pointer;border:1px solid rgba(141,246,255,0.15);transition:border-color 0.2s}
+.cta-code:hover{border-color:rgba(141,246,255,0.4)}
+.cta-text{font-size:0.7rem;color:rgba(255,255,255,0.3);margin-bottom:0.8rem}
+.cta-btn{font-size:0.75rem;color:#0a0a0a;background:#8df6ff;border:none;border-radius:6px;padding:0.7rem 2rem;cursor:pointer;transition:all 0.2s;min-height:44px;font-weight:700;font-family:inherit}
+.cta-btn:hover{background:#a0f8ff;box-shadow:0 0 20px rgba(141,246,255,0.2)}
+.cta-restart{display:inline-block;margin-top:0.8rem;font-size:0.6rem;color:rgba(255,255,255,0.25);background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:2px;font-family:inherit}
+.cta-restart:hover{color:rgba(255,255,255,0.4)}
 
-/* Follow-up chips */
-.follow-up-chips{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.8rem}
-.chip{font-family:monospace;font-size:0.65rem;color:rgba(141,246,255,1);background:none;border:1px solid rgba(141,246,255,0.2);padding:0.4rem 0.8rem;border-radius:12px;cursor:pointer;transition:all 0.3s;min-height:36px}
-.chip:hover{color:#8df6ff;border-color:rgba(141,246,255,0.5);box-shadow:0 0 12px rgba(141,246,255,0.1)}
-
-/* footer links removed — github link is the install button */
-
-/* Mobile fixes */
-@media(max-width:768px){
-  .app{padding-top:0}
-  .chat-area{padding:0.5rem;flex:1 1 0%;overflow-y:auto}
-  .msg{max-width:92%;font-size:0.75rem}
-  .input-bar{gap:0.3rem;padding-bottom:calc(0.5rem + env(safe-area-inset-bottom,0px))}
-  .app-header{padding:0.4rem 0.5rem;justify-content:space-between;width:100%}
-  .header-btn{font-size:0.6rem;padding:0.3rem 0.5rem;min-height:28px}
-}
-
-/* Desktop enhancements */
-@media(min-width:769px){
-  .chat-area{padding:1rem 15%;max-width:100%}
-  .msg{max-width:80%}
-}
+/* Section header */
+.section-header{font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.25);margin-bottom:0.6rem}
 
 /* PWA */
 .pwa-standalone .cta-install{display:none}
-
-/* Streaming cursor */
-.stream-cursor{display:inline-block;width:2px;height:1em;background:#8df6ff;margin-left:2px;animation:blink 0.8s step-end infinite;vertical-align:text-bottom}
-@keyframes blink{50%{opacity:0}}
-
-/* Reduced motion */
-@media(prefers-reduced-motion:reduce){
-  .msg,.thinking-dots span{animation:none!important;opacity:1}
-}
-
-/* Accessibility */
-.skip-link{position:absolute;top:-100%;left:50%;transform:translateX(-50%);background:#8df6ff;color:#000;padding:0.5rem 1rem;font-family:monospace;font-size:0.85rem;z-index:200;border-radius:0 0 4px 4px;text-decoration:none;font-weight:700}
-.skip-link:focus{top:0}
-*:focus-visible{outline:2px solid #8df6ff;outline-offset:2px}
-.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
 /* Flash overlay */
 #flash-overlay{position:fixed;inset:0;z-index:200;pointer-events:none;opacity:0;transition:opacity 300ms ease-out}
 
 /* Toast */
-/* toast removed */
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);font-size:0.7rem;color:#8df6ff;background:rgba(0,0,0,0.9);border:1px solid rgba(141,246,255,0.3);padding:0.5rem 1rem;border-radius:4px;opacity:0;transition:opacity 0.3s;z-index:100;pointer-events:none}
+.toast.show{opacity:1}
 
 /* Noscript fallback */
 .noscript-fallback{display:none}
+
+/* === Mobile === */
+@media(max-width:480px){
+  .sprint-counter{font-size:2rem}
+  .sprint-phase-label{font-size:0.9rem}
+  .stat-row{gap:1rem;justify-content:center}
+  .stat-value{font-size:1.2rem}
+  .conflict-pair{flex-direction:column}
+  .claim-card{flex-direction:column;gap:0.3rem}
+  .answer-column{padding:0 0.5rem}
+  .app-header{padding:0.4rem 0.5rem}
+  .header-btn{font-size:0.6rem;padding:0.3rem 0.5rem;min-height:28px}
+}
+
+/* === Reduced motion === */
+@media(prefers-reduced-motion:reduce){
+  .claim-pill{animation:none!important;opacity:1;transform:none}
+  .sprint-phase-label{animation:none!important;opacity:1}
+  #answerState{transition:none!important}
+  .answer-section{transition:none!important}
+  canvas{transition:none!important}
+}
+
+/* === Accessibility === */
+.skip-nav{position:absolute;top:-100%;left:50%;transform:translateX(-50%);background:#8df6ff;color:#000;padding:0.5rem 1rem;font-family:monospace;font-size:0.85rem;z-index:200;border-radius:0 0 4px 4px;text-decoration:none;font-weight:700}
+.skip-nav:focus{top:0}
+*:focus-visible{outline:2px solid #8df6ff;outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
 /* === WebGL fallback — CSS-only lava lamp (r1800-r1807) === */
 @property --blob1-x{syntax:'<percentage>';inherits:false;initial-value:30%}
@@ -267,23 +396,11 @@ canvas.active{opacity:1}
 @property --blob3-x{syntax:'<percentage>';inherits:false;initial-value:50%}
 @property --blob3-y{syntax:'<percentage>';inherits:false;initial-value:50%}
 .webgl-fallback canvas{display:none!important}
-/* Fallback lava: primary gradient on body itself (propagates to viewport canvas = fills safe area) */
 .webgl-fallback{background:radial-gradient(ellipse 50% 60% at var(--blob1-x) var(--blob1-y),rgba(30,80,90,0.35) 0%,transparent 70%),radial-gradient(ellipse 45% 55% at var(--blob2-x) var(--blob2-y),rgba(20,60,70,0.30) 0%,transparent 65%),radial-gradient(ellipse 60% 40% at var(--blob3-x) var(--blob3-y),rgba(15,50,60,0.25) 0%,transparent 60%),linear-gradient(to top,rgba(15,40,50,0.15) 0%,rgba(8,12,15,1) 50%,rgba(0,0,0,1) 100%)!important;animation:lava-drift 25s ease-in-out infinite}
 .webgl-fallback::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(circle 120px at var(--blob2-x) var(--blob1-y),rgba(141,246,255,0.08) 0%,transparent 70%),radial-gradient(circle 80px at var(--blob1-x) var(--blob2-y),rgba(141,246,255,0.06) 0%,transparent 60%),radial-gradient(ellipse 200px 300px at 50% 85%,rgba(80,50,20,0.12) 0%,transparent 70%);animation:lava-drift-2 30s ease-in-out infinite;filter:blur(50px)}
 @keyframes lava-drift{0%{--blob1-x:30%;--blob1-y:70%;--blob2-x:70%;--blob2-y:30%;--blob3-x:50%;--blob3-y:50%}25%{--blob1-x:45%;--blob1-y:55%;--blob2-x:55%;--blob2-y:60%;--blob3-x:35%;--blob3-y:40%}50%{--blob1-x:60%;--blob1-y:40%;--blob2-x:40%;--blob2-y:70%;--blob3-x:65%;--blob3-y:60%}75%{--blob1-x:35%;--blob1-y:65%;--blob2-x:65%;--blob2-y:45%;--blob3-x:45%;--blob3-y:35%}100%{--blob1-x:30%;--blob1-y:70%;--blob2-x:70%;--blob2-y:30%;--blob3-x:50%;--blob3-y:50%}}
 @keyframes lava-drift-2{0%{--blob2-x:70%;--blob1-y:70%}50%{--blob2-x:40%;--blob1-y:40%}100%{--blob2-x:70%;--blob1-y:70%}}
-@media(prefers-reduced-motion:reduce){.webgl-fallback::before,.webgl-fallback::after{animation:none!important}}
-
-/* Character counter */
-.char-counter{font-size:0.5rem;color:rgba(255,255,255,0.25);text-align:right;padding:0.1rem 0.5rem;display:none}
-
-/* Model picker */
-@keyframes picker-pulse{0%,100%{opacity:0.5}50%{opacity:1}}
-
-/* File attachment (button removed, drag-drop or JS only) */
-.file-chip{font-size:0.6rem;color:rgba(141,246,255,1);background:rgba(141,246,255,0.08);border:1px solid rgba(141,246,255,0.15);border-radius:12px;padding:0.2rem 0.6rem;display:inline-flex;align-items:center;gap:0.3rem}
-.file-chip .remove{cursor:pointer;opacity:0.5}
-.file-chip .remove:hover{opacity:1}
+@media(prefers-reduced-motion:reduce){.webgl-fallback,.webgl-fallback::before{animation:none!important}}
 </style>
 
 <noscript>
@@ -296,12 +413,13 @@ canvas.active{opacity:1}
 </noscript>
 </head>
 <body>
-<a class="skip-link" href="#main-content">Skip to content</a>
+<a href="#main-content" class="skip-nav">Skip to main content</a>
 <canvas id="c" aria-hidden="true" role="presentation"></canvas>
 <div class="dim-overlay" id="dimOverlay"></div>
+<div class="phase-tint" id="phaseTint"></div>
 
 <!-- A11y live regions -->
-<div role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="AI model download progress" class="sr-only" id="model-progress"></div>
+<div role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Sprint progress" class="sr-only" id="model-progress"></div>
 <div aria-live="polite" id="progress-announcer" class="sr-only"></div>
 <div aria-live="assertive" id="state-announcer" class="sr-only"></div>
 <div aria-live="polite" id="compiler-announcer" class="sr-only"></div>
@@ -309,35 +427,47 @@ canvas.active{opacity:1}
 <div class="app" id="app">
   <header class="app-header">
     <a class="header-btn revealed" id="ctaInstall" href="https://github.com/grainulation/grainulator" target="_blank" rel="noopener" aria-label="View on GitHub"><img src="glitchy.png" alt="" width="28" height="28"><span class="btn-text">/plugin install grainulator</span></a>
-    <button class="header-btn new-chat-btn" id="newChatBtn" type="button" aria-label="New chat"><span class="btn-text">new chat</span></button>
+    <button class="header-btn new-sprint-btn" id="newSprintBtn" type="button" aria-label="New sprint"><span class="btn-text">new sprint</span></button>
   </header>
 
-  <main id="main-content" class="chat-area" role="log" aria-label="Research conversation">
-    <!-- Messages render here -->
-  </main>
-
-  <div class="compile-bar" id="compileBar"><button class="compile-msg-btn" id="compileMsgBtn" type="button">compile findings</button></div>
-  <div class="input-bar" id="inputBar">
-    <input type="file" id="fileInput" accept=".txt,.md,.json,.csv" class="sr-only">
-    <div class="input-wrap">
-      <label for="chatInput" class="sr-only">Research question</label>
+  <!-- STATE 1: INPUT -->
+  <main id="main-content">
+  <div id="inputState" class="page-state active">
+    <div class="input-container">
+      <div class="input-logo">grainulator</div>
+      <label for="questionInput" class="sr-only">Research question</label>
       <textarea
-        class="chat-input"
-        id="chatInput"
-        rows="1"
-        placeholder="Ask anything..."
+        id="questionInput"
+        class="input-field"
+        rows="2"
+        placeholder="What complex question are you investigating?"
         autocomplete="off"
         spellcheck="false"
-        enterkeyhint="send"
-        maxlength="5000"
-        disabled
+        maxlength="3000"
       ></textarea>
-      <div class="char-counter" id="charCounter"></div>
-      <button class="send-btn" id="sendBtn" type="button" aria-label="Send">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
-      </button>
+      <br>
+      <button id="submitBtn" class="submit-btn" type="button">Run Sprint</button>
+      <div class="input-hint">3 autonomous passes. Evidence-tracked. Confidence-graded.</div>
     </div>
   </div>
+
+  <!-- STATE 2: SPRINT RUNNING -->
+  <div id="sprintState" class="page-state">
+    <div class="sprint-question" id="sprintQuestion"></div>
+    <div class="sprint-phase-label" id="phaseLabel">initializing...</div>
+    <div class="sprint-counter" id="claimCounter">0</div>
+    <div class="sprint-counter-label">claims discovered</div>
+    <div class="claim-pills" id="claimPills"></div>
+    <div class="rate-wait" id="rateWait"></div>
+    <div class="compiler-lines" id="compilerLines" style="display:none"></div>
+    <button id="cancelBtn" class="cancel-btn" type="button">cancel (compile partial)</button>
+  </div>
+
+  <!-- STATE 3: ANSWER -->
+  <div id="answerState" class="page-state">
+    <div class="answer-column" id="answerColumn" aria-busy="false"></div>
+  </div>
+  </main>
 </div>
 
 <noscript>
@@ -349,372 +479,291 @@ canvas.active{opacity:1}
 </noscript>
 
 <div id="flash-overlay"></div>
-<!-- cancel button removed — cancel is now the model picker during loading -->
-<!-- motion-toggle removed — shader pauses automatically on chat, resumes on new chat -->
+<div class="toast" id="toast"></div>
 
-<!-- toast removed -->
-<script src="https://cdn.jsdelivr.net/npm/marked@15/marked.min.js" defer></script>
 <script>
 // ===================================================================
-// XSS HELPER — escape user-supplied strings before inserting into HTML
+// XSS HELPER
 // ===================================================================
-function escapeHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-var _markedLoaded = false;
-function renderMarkdown(text) {
-  if (typeof marked !== 'undefined' && marked.parse) {
-    return marked.parse(text);
-  }
-  // Fallback if marked hasn't loaded yet
-  var html = escapeHtml(text);
-  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  html = html.replace(/\n\n/g, '<br><br>');
-  html = html.replace(/\n/g, '<br>');
-  return html;
-}
+function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 
 // ===================================================================
-// SHADER PAUSE STATE — declared early to avoid temporal dead zone (BUG #8)
+// SHADER PAUSE STATE — declared early to avoid temporal dead zone
 // ===================================================================
-let shaderAnimId = null;
-let shaderPaused = false;
-let motionTogglePaused = false;
-let inferenceRunning = false;
-
-// UX State Machine: LAVA_ONLY -> LAVA_WITH_INPUT -> CHAT_ACTIVE
-let uxState = 'LAVA_ONLY';
-let modelReady = false;
-
-// Install button starts revealed (no splash animation)
-
-function transitionTo(newState) {
-  if (uxState === newState) return;
-  uxState = newState;
-  var appEl = document.getElementById('app');
-  var dimOverlay = document.getElementById('dimOverlay');
-  var inputBarEl = document.getElementById('inputBar');
-  var chatInputEl = document.getElementById('chatInput');
-
-  if (newState === 'LAVA_WITH_INPUT') {
-    modelReady = true;
-    chatInputEl.disabled = false;
-    chatInputEl.placeholder = 'Ask a question...';
-    inputBarEl.classList.add('visible');
-    if (!document.hidden) chatInputEl.focus();
-  }
-
-  if (newState === 'CHAT_ACTIVE') {
-    inputBarEl.classList.add('visible');
-    chatInputEl.disabled = false;
-    if (chatInputEl.placeholder === 'loading...' || /\d+% loading/.test(chatInputEl.placeholder)) chatInputEl.placeholder = 'Ask a question...';
-    appEl.classList.add('chat-active');
-    dimOverlay.style.opacity = '0.95';
-    pauseShader();
-    // Show slash command examples on first chat open
-    if (!window._welcomeShown) {
-      window._welcomeShown = true;
-      showWelcomeChips();
-    }
-  }
-}
-
-function enterFocusMode() {
-  const dimOverlay = document.getElementById('dimOverlay');
-  dimOverlay.style.opacity = '0.92';
-}
+var shaderAnimId = null;
+var shaderPaused = false;
+var motionTogglePaused = false;
 
 // ===================================================================
-// Rx7: MULTI-TURN EXPLORE — claim accumulation + turn tracking
+// WEBGL SHADER — preserved from production v10
 // ===================================================================
-window._allClaims = [];
-window._turnCount = 0;
-window._nextClaimIndex = 1; // generates d001, d002, ...
-window._conversationHistory = [];
-window._compilationResult = null;
-
-// Feature flag: ?cascade=on enables live model inference (off by default)
-// Default OFF: Track A pre-authored claims only. No hallucinations from small local models.
-const CASCADE_OFF = !(new URLSearchParams(location.search).get('cascade') === 'on');
-
-// ===================================================================
-// WEBGL SHADER — preserved from v1
-// ===================================================================
-const c = document.getElementById('c');
-const isMobileDevice = window.matchMedia('(max-width:768px)').matches || navigator.maxTouchPoints > 0;
-const isFirefox = /Firefox\//i.test(navigator.userAgent);
-// Firefox: skip WebGL entirely -- shader crashes the compositor. Use CSS fallback.
-// Mobile: no preserveDrawingBuffer for perf
-const gl = isFirefox ? null : c.getContext('webgl', { preserveDrawingBuffer: !isMobileDevice });
+var c = document.getElementById('c');
+var isMobileDevice = window.matchMedia('(max-width:768px)').matches || navigator.maxTouchPoints > 0;
+var isFirefox = /Firefox\//i.test(navigator.userAgent);
+var gl = isFirefox ? null : c.getContext('webgl', { preserveDrawingBuffer: !isMobileDevice });
 
 function activateFallback() {
   document.body.classList.add('webgl-fallback');
 }
 
 function isSoftwareRenderer(g) {
-  const ext = g.getExtension('WEBGL_debug_renderer_info');
+  var ext = g.getExtension('WEBGL_debug_renderer_info');
   if (!ext) return false;
-  const renderer = g.getParameter(ext.UNMASKED_RENDERER_WEBGL) || '';
+  var renderer = g.getParameter(ext.UNMASKED_RENDERER_WEBGL) || '';
   return /swiftshader|llvmpipe|software|basic render/i.test(renderer);
 }
 
 if (!gl) {
   activateFallback();
-  // No WebGL — bloom input immediately (Track A works without GPU)
-  transitionTo('LAVA_WITH_INPUT');
 } else if (isSoftwareRenderer(gl)) {
   activateFallback();
-  transitionTo('LAVA_WITH_INPUT');
 }
 
 if (gl && !document.body.classList.contains('webgl-fallback')) {
 
-// Context loss handler (w711) — stop rAF loop + CSS fallback
-c.addEventListener('webglcontextlost', (e) => { e.preventDefault(); pauseShader(); activateFallback(); });
+// Context loss handler (w711)
+c.addEventListener('webglcontextlost', function(e) { e.preventDefault(); pauseShader(); activateFallback(); });
 
-// Mobile detection
-const isMobile = /Mobi|Android/i.test(navigator.userAgent) || innerWidth < 768;
+var isMobile = /Mobi|Android/i.test(navigator.userAgent) || innerWidth < 768;
+var NUM       = 8;
+var STEPS     = isMobile ? 56   : 72;
+var HIT_THRESH= isMobile ? '0.002' : '0.001';
+var STEP_MULT = isMobile ? '0.85'  : '0.8';
+var NORM_EPS  = isMobile ? '0.003' : '0.002';
+var GLITCH_ON = isMobile ? 0       : 1;
+var IS_MOBILE = isMobile ? 1       : 0;
 
-// 8 blobs ALWAYS — one per product in the ecosystem
-const NUM       = 8;
-const STEPS     = isMobile ? 56   : 72;
-const HIT_THRESH= isMobile ? '0.002' : '0.001';
-const STEP_MULT = isMobile ? '0.85'  : '0.8';
-const NORM_EPS  = isMobile ? '0.003' : '0.002';
-const GLITCH_ON = isMobile ? 0       : 1;
-const IS_MOBILE = isMobile ? 1       : 0;
+var vs = 'attribute vec2 p;void main(){gl_Position=vec4(p,0,1);}';
+var fs = '\n\
+precision highp float;\n\
+uniform float t;\n\
+uniform vec2 r;\n\
+uniform float seed;\n\
+uniform float u_preloadProgress;\n\
+\n\
+#define NUM ' + NUM + '\n\
+#define STEPS ' + STEPS + '\n\
+#define HIT_THRESH ' + HIT_THRESH + '\n\
+#define STEP_MULT ' + STEP_MULT + '\n\
+#define NORM_EPS ' + NORM_EPS + '\n\
+#define GLITCH_ON ' + GLITCH_ON + '\n\
+#define IS_MOBILE ' + IS_MOBILE + '\n\
+\n\
+float smin(float a, float b, float k) {\n\
+  float h = clamp(0.5 + 0.5*(b-a)/k, 0.0, 1.0);\n\
+  return mix(b, a, h) - k*h*(1.0-h);\n\
+}\n\
+\n\
+float sdSphere(vec3 p, float s) {\n\
+  return length(p) - s;\n\
+}\n\
+\n\
+float hash(float n) { return fract(sin(n) * 43758.5453); }\n\
+\n\
+float g_nearestBlob = 0.0;\n\
+\n\
+vec3 getNeonColor(float idx) {\n\
+  int i = int(mod(idx, 8.0));\n\
+  if (i == 0) return vec3(0.984, 0.749, 0.141);\n\
+  if (i == 1) return vec3(0.957, 0.247, 0.369);\n\
+  if (i == 2) return vec3(0.133, 0.773, 0.369);\n\
+  if (i == 3) return vec3(0.231, 0.510, 0.965);\n\
+  if (i == 4) return vec3(0.655, 0.545, 0.980);\n\
+  if (i == 5) return vec3(0.984, 0.573, 0.235);\n\
+  if (i == 6) return vec3(0.133, 0.827, 0.933);\n\
+  return vec3(0.612, 0.639, 0.686);\n\
+}\n\
+\n\
+float map(vec3 p) {\n\
+  float d = 1e10;\n\
+\n\
+  for (int i = 0; i < NUM; i++) {\n\
+    float fi = float(i);\n\
+    float h1 = hash(fi * 412.531 + seed * 3.7);\n\
+    float h2 = hash(fi * 317.892 + seed * 5.1);\n\
+    float h3 = hash(fi * 253.147 + seed * 7.9);\n\
+    float h4 = hash(fi * 173.29 + seed * 2.1);\n\
+\n\
+    float baseX = (h1 * 2.0 - 1.0) * 2.5;\n\
+    float baseY = (h2 * 2.0 - 1.0) * 2.5;\n\
+    float baseZ = (h4 - 0.5) * 0.3;\n\
+\n\
+#if IS_MOBILE\n\
+    float sx = 0.06 + h1 * 0.08;\n\
+    float sy = 0.05 + h2 * 0.07;\n\
+    float sz = 0.04 + h3 * 0.06;\n\
+#else\n\
+    float sx = 0.03 + h1 * 0.04;\n\
+    float sy = 0.025 + h2 * 0.035;\n\
+    float sz = 0.02 + h3 * 0.03;\n\
+#endif\n\
+    float px = h2 * 6.28 + seed * 100.0;\n\
+    float py = h3 * 6.28 + seed * 100.0;\n\
+    float pz = h1 * 6.28 + seed * 100.0;\n\
+\n\
+    float dx = sin(t*sx + px)*0.35 + sin(t*sx*0.37 + py + 1.7)*0.2;\n\
+    float dy = sin(t*sy + py + 0.5)*0.3 + cos(t*sy*0.43 + px + 2.1)*0.2;\n\
+    float dz = cos(t*sz + pz + 1.0)*0.15;\n\
+\n\
+    vec3 blobPos = vec3(baseX + dx, baseY + dy, baseZ + dz);\n\
+\n\
+    float growFactor = 1.0 + u_preloadProgress * 0.6;\n\
+\n\
+#if IS_MOBILE\n\
+    float blobR = (0.8 + h4 * 1.0) * growFactor;\n\
+#else\n\
+    float blobR = (0.20 + h4 * 0.30) * growFactor;\n\
+#endif\n\
+\n\
+    vec3 evalP = p;\n\
+\n\
+#if GLITCH_ON\n\
+    {\n\
+      float gw = sin(t*0.3 + fi*3.7) * sin(t*0.13 + fi*2.1);\n\
+      float burst = smoothstep(0.65, 0.9, gw);\n\
+      if (burst > 0.01) {\n\
+        vec3 toB = p - blobPos;\n\
+        float near = smoothstep(1.5, 0.1, length(toB));\n\
+        float amt = burst * near * 0.28;\n\
+        if (amt > 0.005) {\n\
+          float vs = mix(0.28, 0.10, fract(sin(fi*73.1 + floor(t*2.0))*438.5));\n\
+          vec3 snapped = floor(p/vs + 0.5) * vs;\n\
+          evalP = mix(p, snapped, amt);\n\
+        }\n\
+      }\n\
+    }\n\
+#endif\n\
+\n\
+    vec3 localP = evalP - blobPos;\n\
+    float baseDist = length(localP) - blobR;\n\
+    float blobD = baseDist;\n\
+    if (baseDist < blobR * 1.5) {\n\
+      vec3 nc = localP * (2.5 + fi * 0.3) + t * 0.06 + fi * 7.0;\n\
+      float warp = sin(nc.x * 1.7 + nc.y * 1.3) * sin(nc.y * 2.1 + nc.z * 0.9);\n\
+      blobD = baseDist - warp * blobR * 0.35;\n\
+    }\n\
+    float k = 0.3 + 0.1 * sin(fi * 1.7 + t * 0.05);\n\
+    if (blobD < d) g_nearestBlob = fi;\n\
+    d = smin(d, blobD, k);\n\
+  }\n\
+\n\
+  return d;\n\
+}\n\
+\n\
+vec3 calcNormal(vec3 p) {\n\
+  vec2 e = vec2(NORM_EPS, 0.0);\n\
+  return normalize(vec3(\n\
+    map(p+e.xyy) - map(p-e.xyy),\n\
+    map(p+e.yxy) - map(p-e.yxy),\n\
+    map(p+e.yyx) - map(p-e.yyx)\n\
+  ));\n\
+}\n\
+\n\
+void main() {\n\
+  vec2 uv = (gl_FragCoord.xy - 0.5*r) / min(r.x, r.y);\n\
+\n\
+  vec3 ro = vec3(0.0, 0.0, 3.8);\n\
+  vec3 fwd = vec3(0.0, 0.0, -1.0);\n\
+  vec3 rgt = vec3(1.0, 0.0, 0.0);\n\
+  vec3 up2 = vec3(0.0, 1.0, 0.0);\n\
+  vec3 rd = normalize(fwd * 1.2 + rgt * uv.x + up2 * uv.y);\n\
+\n\
+  float dist = 0.0;\n\
+  float hit = -1.0;\n\
+  float lastH = 1.0;\n\
+  for (int i = 0; i < STEPS; i++) {\n\
+    vec3 p = ro + rd * dist;\n\
+    float h = map(p);\n\
+    lastH = h;\n\
+    if (h < HIT_THRESH) { hit = dist; break; }\n\
+    if (dist > 15.0) break;\n\
+    dist += h * STEP_MULT;\n\
+  }\n\
+\n\
+  vec3 col = vec3(0.005, 0.004, 0.003);\n\
+  vec2 gridUV = gl_FragCoord.xy;\n\
+  float gridSize = 40.0;\n\
+  float lineW = 1.0;\n\
+  float gx = abs(mod(gridUV.x, gridSize) - gridSize * 0.5);\n\
+  float gy = abs(mod(gridUV.y, gridSize) - gridSize * 0.5);\n\
+  float gridLine = 1.0 - smoothstep(0.0, lineW, min(gx, gy));\n\
+  col += vec3(1.0) * gridLine * 0.035;\n\
+  vec3 bgCol = col;\n\
+\n\
+  if (hit > 0.0) {\n\
+    vec3 p = ro + rd * hit;\n\
+    vec3 n = calcNormal(p);\n\
+\n\
+    float NdotV = max(dot(n, -rd), 0.0);\n\
+    float fres = pow(1.0 - NdotV, 2.5);\n\
+\n\
+    vec3 neon = getNeonColor(g_nearestBlob);\n\
+\n\
+    vec3 waxCol = neon * mix(0.06, 0.18, fres * 0.5);\n\
+    float hemiAmt = 0.5 + 0.5 * n.y;\n\
+    vec3 hemiAmb = neon * mix(0.02, 0.05, hemiAmt);\n\
+    float sss = pow(max(dot(rd, n), 0.0), 2.0) * 0.15;\n\
+    col = waxCol + hemiAmb + neon * sss * 0.12;\n\
+\n\
+    float fog = exp(-hit * 0.05);\n\
+    col = mix(vec3(0.006, 0.005, 0.003), col, fog);\n\
+\n\
+    float edgeAA = smoothstep(HIT_THRESH, 0.0, lastH);\n\
+    col = mix(bgCol, col, edgeAA);\n\
+\n\
+    float rimWide = pow(fres, 1.3);\n\
+    float rimTight = pow(fres, 2.0);\n\
+    float rimHot = pow(fres, 3.5);\n\
+    col += neon * rimWide * 0.35;\n\
+    col += neon * rimTight * 1.8;\n\
+    col += neon * rimHot * 1.2;\n\
+  }\n\
+\n\
+  float vig = 1.0 - dot(uv * 0.55, uv * 0.55);\n\
+  col *= smoothstep(0.0, 0.5, vig);\n\
+\n\
+  float grain = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233)) + t) * 43758.5453);\n\
+  col += grain * 0.004 - 0.002;\n\
+\n\
+  gl_FragColor = vec4(col, 1.0);\n\
+}\n\
+';
 
-const vs = `attribute vec2 p;void main(){gl_Position=vec4(p,0,1);}`;
-const fs = `
-precision highp float;
-uniform float t;
-uniform vec2 r;
-uniform float seed;
-uniform float u_preloadProgress;
-
-#define NUM ${NUM}
-#define STEPS ${STEPS}
-#define HIT_THRESH ${HIT_THRESH}
-#define STEP_MULT ${STEP_MULT}
-#define NORM_EPS ${NORM_EPS}
-#define GLITCH_ON ${GLITCH_ON}
-#define IS_MOBILE ${IS_MOBILE}
-
-float smin(float a, float b, float k) {
-  float h = clamp(0.5 + 0.5*(b-a)/k, 0.0, 1.0);
-  return mix(b, a, h) - k*h*(1.0-h);
-}
-
-float sdSphere(vec3 p, float s) {
-  return length(p) - s;
-}
-
-float hash(float n) { return fract(sin(n) * 43758.5453); }
-
-float g_nearestBlob = 0.0;
-
-vec3 getNeonColor(float idx) {
-  int i = int(mod(idx, 8.0));
-  if (i == 0) return vec3(0.984, 0.749, 0.141);
-  if (i == 1) return vec3(0.957, 0.247, 0.369);
-  if (i == 2) return vec3(0.133, 0.773, 0.369);
-  if (i == 3) return vec3(0.231, 0.510, 0.965);
-  if (i == 4) return vec3(0.655, 0.545, 0.980);
-  if (i == 5) return vec3(0.984, 0.573, 0.235);
-  if (i == 6) return vec3(0.133, 0.827, 0.933);
-  return vec3(0.612, 0.639, 0.686);
-}
-
-float map(vec3 p) {
-  float d = 1e10;
-
-  for (int i = 0; i < NUM; i++) {
-    float fi = float(i);
-    float h1 = hash(fi * 412.531 + seed * 3.7);
-    float h2 = hash(fi * 317.892 + seed * 5.1);
-    float h3 = hash(fi * 253.147 + seed * 7.9);
-    float h4 = hash(fi * 173.29 + seed * 2.1);
-
-    float baseX = (h1 * 2.0 - 1.0) * 2.5;
-    float baseY = (h2 * 2.0 - 1.0) * 2.5;
-    float baseZ = (h4 - 0.5) * 0.3;
-
-#if IS_MOBILE
-    float sx = 0.06 + h1 * 0.08;
-    float sy = 0.05 + h2 * 0.07;
-    float sz = 0.04 + h3 * 0.06;
-#else
-    float sx = 0.03 + h1 * 0.04;
-    float sy = 0.025 + h2 * 0.035;
-    float sz = 0.02 + h3 * 0.03;
-#endif
-    float px = h2 * 6.28 + seed * 100.0;
-    float py = h3 * 6.28 + seed * 100.0;
-    float pz = h1 * 6.28 + seed * 100.0;
-
-    float dx = sin(t*sx + px)*0.35 + sin(t*sx*0.37 + py + 1.7)*0.2;
-    float dy = sin(t*sy + py + 0.5)*0.3 + cos(t*sy*0.43 + px + 2.1)*0.2;
-    float dz = cos(t*sz + pz + 1.0)*0.15;
-
-    vec3 blobPos = vec3(baseX + dx, baseY + dy, baseZ + dz);
-
-    // Blob growth driven by preload progress
-    float growFactor = 1.0 + u_preloadProgress * 0.6;
-
-#if IS_MOBILE
-    float blobR = (0.8 + h4 * 1.0) * growFactor;
-#else
-    float blobR = (0.20 + h4 * 0.30) * growFactor;
-#endif
-
-    vec3 evalP = p;
-
-#if GLITCH_ON
-    {
-      float gw = sin(t*0.3 + fi*3.7) * sin(t*0.13 + fi*2.1);
-      float burst = smoothstep(0.65, 0.9, gw);
-      if (burst > 0.01) {
-        vec3 toB = p - blobPos;
-        float near = smoothstep(1.5, 0.1, length(toB));
-        float amt = burst * near * 0.28;
-        if (amt > 0.005) {
-          float vs = mix(0.28, 0.10, fract(sin(fi*73.1 + floor(t*2.0))*438.5));
-          vec3 snapped = floor(p/vs + 0.5) * vs;
-          evalP = mix(p, snapped, amt);
-        }
-      }
-    }
-#endif
-
-    vec3 localP = evalP - blobPos;
-    float baseDist = length(localP) - blobR;
-    float blobD = baseDist;
-    if (baseDist < blobR * 1.5) {
-      vec3 nc = localP * (2.5 + fi * 0.3) + t * 0.06 + fi * 7.0;
-      float warp = sin(nc.x * 1.7 + nc.y * 1.3) * sin(nc.y * 2.1 + nc.z * 0.9);
-      blobD = baseDist - warp * blobR * 0.35;
-    }
-    float k = 0.3 + 0.1 * sin(fi * 1.7 + t * 0.05);
-    if (blobD < d) g_nearestBlob = fi;
-    d = smin(d, blobD, k);
-  }
-
-  return d;
-}
-
-vec3 calcNormal(vec3 p) {
-  vec2 e = vec2(NORM_EPS, 0.0);
-  return normalize(vec3(
-    map(p+e.xyy) - map(p-e.xyy),
-    map(p+e.yxy) - map(p-e.yxy),
-    map(p+e.yyx) - map(p-e.yyx)
-  ));
-}
-
-void main() {
-  vec2 uv = (gl_FragCoord.xy - 0.5*r) / min(r.x, r.y);
-
-  vec3 ro = vec3(0.0, 0.0, 3.8);
-  vec3 fwd = vec3(0.0, 0.0, -1.0);
-  vec3 rgt = vec3(1.0, 0.0, 0.0);
-  vec3 up2 = vec3(0.0, 1.0, 0.0);
-  vec3 rd = normalize(fwd * 1.2 + rgt * uv.x + up2 * uv.y);
-
-  float dist = 0.0;
-  float hit = -1.0;
-  float lastH = 1.0;
-  for (int i = 0; i < STEPS; i++) {
-    vec3 p = ro + rd * dist;
-    float h = map(p);
-    lastH = h;
-    if (h < HIT_THRESH) { hit = dist; break; }
-    if (dist > 15.0) break;
-    dist += h * STEP_MULT;
-  }
-
-  vec3 col = vec3(0.005, 0.004, 0.003);
-  vec2 gridUV = gl_FragCoord.xy;
-  float gridSize = 40.0;
-  float lineW = 1.0;
-  float gx = abs(mod(gridUV.x, gridSize) - gridSize * 0.5);
-  float gy = abs(mod(gridUV.y, gridSize) - gridSize * 0.5);
-  float gridLine = 1.0 - smoothstep(0.0, lineW, min(gx, gy));
-  col += vec3(1.0) * gridLine * 0.035;
-  vec3 bgCol = col;
-
-  if (hit > 0.0) {
-    vec3 p = ro + rd * hit;
-    vec3 n = calcNormal(p);
-
-    float NdotV = max(dot(n, -rd), 0.0);
-    float fres = pow(1.0 - NdotV, 2.5);
-
-    vec3 neon = getNeonColor(g_nearestBlob);
-
-    vec3 waxCol = neon * mix(0.06, 0.18, fres * 0.5);
-    float hemiAmt = 0.5 + 0.5 * n.y;
-    vec3 hemiAmb = neon * mix(0.02, 0.05, hemiAmt);
-    float sss = pow(max(dot(rd, n), 0.0), 2.0) * 0.15;
-    col = waxCol + hemiAmb + neon * sss * 0.12;
-
-    float fog = exp(-hit * 0.05);
-    col = mix(vec3(0.006, 0.005, 0.003), col, fog);
-
-    float edgeAA = smoothstep(HIT_THRESH, 0.0, lastH);
-    col = mix(bgCol, col, edgeAA);
-
-    float rimWide = pow(fres, 1.3);
-    float rimTight = pow(fres, 2.0);
-    float rimHot = pow(fres, 3.5);
-    col += neon * rimWide * 0.35;
-    col += neon * rimTight * 1.8;
-    col += neon * rimHot * 1.2;
-  }
-
-  float vig = 1.0 - dot(uv * 0.55, uv * 0.55);
-  col *= smoothstep(0.0, 0.5, vig);
-
-  float grain = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233)) + t) * 43758.5453);
-  col += grain * 0.004 - 0.002;
-
-  gl_FragColor = vec4(col, 1.0);
-}
-`;
-
-const compileShader = (src, type) => {
-  const s = gl.createShader(type);
+var compileShader = function(src, type) {
+  var s = gl.createShader(type);
   gl.shaderSource(s, src);
   gl.compileShader(s);
   if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error('Shader:', gl.getShaderInfoLog(s));
   return s;
 };
 
-const prog = gl.createProgram();
+var prog = gl.createProgram();
 gl.attachShader(prog, compileShader(vs, gl.VERTEX_SHADER));
 gl.attachShader(prog, compileShader(fs, gl.FRAGMENT_SHADER));
 gl.linkProgram(prog);
 if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) console.error('Link:', gl.getProgramInfoLog(prog));
 gl.useProgram(prog);
 
-const buf = gl.createBuffer();
+var buf = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, buf);
 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
-const pLoc = gl.getAttribLocation(prog, 'p');
+var pLoc = gl.getAttribLocation(prog, 'p');
 gl.enableVertexAttribArray(pLoc);
 gl.vertexAttribPointer(pLoc, 2, gl.FLOAT, false, 0, 0);
 
-const tLoc = gl.getUniformLocation(prog, 't');
-const rLoc = gl.getUniformLocation(prog, 'r');
-const seedLoc = gl.getUniformLocation(prog, 'seed');
-const preloadLoc = gl.getUniformLocation(prog, 'u_preloadProgress');
-const seedVal = Math.random();
+var tLoc = gl.getUniformLocation(prog, 't');
+var rLoc = gl.getUniformLocation(prog, 'r');
+var seedLoc = gl.getUniformLocation(prog, 'seed');
+var preloadLoc = gl.getUniformLocation(prog, 'u_preloadProgress');
+var seedVal = Math.random();
 gl.uniform1f(seedLoc, seedVal);
 gl.uniform1f(preloadLoc, 0.0);
 
-const dpr = isMobileDevice ? Math.min(devicePixelRatio, 1.5) : Math.min(devicePixelRatio, 2);
+var dpr = isMobileDevice ? Math.min(devicePixelRatio, 1.5) : Math.min(devicePixelRatio, 2);
 
-const resize = () => {
-  // Use canvas client dimensions (CSS size from inset:0) for full-screen including safe areas
-  const w = c.clientWidth || innerWidth;
-  const h = c.clientHeight || innerHeight;
+var resize = function() {
+  var w = c.clientWidth || innerWidth;
+  var h = c.clientHeight || innerHeight;
   c.width = w * dpr;
   c.height = h * dpr;
   gl.viewport(0, 0, c.width, c.height);
@@ -722,18 +771,18 @@ const resize = () => {
 resize();
 addEventListener('resize', resize);
 
-let lastInteraction = Date.now();
-let paused = false;
-let lastFrame = 0;
-const wake = () => { lastInteraction = Date.now(); if (paused && !shaderPaused) { paused = false; shaderAnimId = requestAnimationFrame(render); } };
+var lastInteraction = Date.now();
+var paused = false;
+var lastFrame = 0;
+var wake = function() { lastInteraction = Date.now(); if (paused && !shaderPaused) { paused = false; shaderAnimId = requestAnimationFrame(render); } };
 window._shaderWake = wake;
 document.addEventListener('mousemove', wake);
 document.addEventListener('touchstart', wake);
 document.addEventListener('click', wake);
 
-window._shaderRender = null; // hoisted reference
-const FRAME_INTERVAL = isMobileDevice ? 66 : 33; // 15fps mobile, 30fps desktop
-const render = (time) => {
+window._shaderRender = null;
+var FRAME_INTERVAL = isMobileDevice ? 66 : 33;
+var render = function(time) {
   if (shaderPaused) return;
   if (Date.now() - lastInteraction > 15000) { paused = true; return; }
   if (time - lastFrame < FRAME_INTERVAL) { shaderAnimId = requestAnimationFrame(render); return; }
@@ -746,58 +795,14 @@ const render = (time) => {
 shaderAnimId = requestAnimationFrame(render);
 window._shaderRender = render;
 
-// Lava bloom — fade canvas in. Input blooms when model ready (not on timer).
 setTimeout(function() { c.classList.add('active'); }, 100);
 
-// Expose preload uniform setter
-window._setPreloadProgress = (v) => {
+window._setPreloadProgress = function(v) {
   gl.useProgram(prog);
   gl.uniform1f(preloadLoc, Math.min(1.0, Math.max(0.0, v)));
 };
 
-}
-
-// ===================================================================
-// A11Y: ANNOUNCEMENTS + PROGRESS
-// ===================================================================
-const MILESTONES = [25, 50, 75, 100];
-let lastMilestone = 0;
-
-function updateModelProgress(pct) {
-  const bar = document.getElementById('model-progress');
-  if (bar) bar.setAttribute('aria-valuenow', String(Math.round(pct)));
-}
-
-function announceProgress(pct) {
-  const milestone = MILESTONES.find(m => pct >= m && m > lastMilestone);
-  if (milestone) {
-    lastMilestone = milestone;
-    document.getElementById('progress-announcer').textContent =
-      milestone === 100 ? 'Model download complete.' : `Model download ${milestone}% complete.`;
-  }
-}
-
-function announceState(msg) {
-  document.getElementById('state-announcer').textContent = msg;
-}
-
-function announceCompilerPass(msg) {
-  document.getElementById('compiler-announcer').textContent = msg;
-}
-
-// A11y: flash rate limiting
-const FLASH_MIN_INTERVAL = 500;
-let lastFlashTime = 0;
-function compilerFlash() {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const now = performance.now();
-  if (now - lastFlashTime < FLASH_MIN_INTERVAL) return;
-  lastFlashTime = now;
-  const overlay = document.getElementById('flash-overlay');
-  overlay.style.background = 'rgba(80, 0, 0, 0.3)';
-  overlay.style.opacity = '1';
-  requestAnimationFrame(() => { overlay.style.transition = 'opacity 300ms ease-out'; overlay.style.opacity = '0'; });
-}
+} // end if (gl && !fallback)
 
 // ===================================================================
 // SHADER PAUSE CONTROL
@@ -809,246 +814,787 @@ function pauseShader() {
 function resumeShader() {
   if (!motionTogglePaused && shaderPaused) {
     shaderPaused = false;
-    // Always restart the render loop — wake handles idle, but we also need direct restart
     if (window._shaderWake) window._shaderWake();
     if (!shaderAnimId && window._shaderRender) shaderAnimId = requestAnimationFrame(window._shaderRender);
   }
 }
 
+// A11y: flash rate limiting
+var FLASH_MIN_INTERVAL = 500;
+var lastFlashTime = 0;
+function compilerFlash() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var now = performance.now();
+  if (now - lastFlashTime < FLASH_MIN_INTERVAL) return;
+  lastFlashTime = now;
+  var overlay = document.getElementById('flash-overlay');
+  overlay.style.background = 'rgba(80, 0, 0, 0.3)';
+  overlay.style.opacity = '1';
+  requestAnimationFrame(function() { overlay.style.transition = 'opacity 300ms ease-out'; overlay.style.opacity = '0'; });
+}
+
 // ===================================================================
-// CHAT UI — mobile-first chat interface
+// A11Y: ANNOUNCEMENTS + PROGRESS
 // ===================================================================
-const ctaInstall = document.getElementById('ctaInstall');
-const chatArea = document.getElementById('main-content');
-const chatInput = document.getElementById('chatInput');
-const sendBtn = document.getElementById('sendBtn');
-
-// motion-toggle removed — shader auto-pauses on chat
-
-function addMessage(type, content, safe) {
-  const div = document.createElement('div');
-  div.className = 'msg msg-' + type;
-  if (typeof content === 'string') {
-    if (safe !== false && type !== 'user') {
-      div.innerHTML = content;
-    } else {
-      div.textContent = content;
-    }
-  } else {
-    div.appendChild(content);
-  }
-  chatArea.appendChild(div);
-  // Focus mode after 5+ user messages
-  if (chatArea.querySelectorAll('.msg-user').length >= 5) enterFocusMode();
-  autoScroll();
-  return div;
+function announceState(msg) {
+  document.getElementById('state-announcer').textContent = msg;
 }
 
-function addThinking() {
-  const div = addMessage('ai', '<div class="thinking-dots"><span></span><span></span><span></span></div>');
-  div.id = 'thinkingMsg';
-  return div;
+function announceCompilerPass(msg) {
+  document.getElementById('compiler-announcer').textContent = msg;
 }
 
-function removeThinking() {
-  const t = document.getElementById('thinkingMsg');
-  if (t) t.remove();
-}
+// ===================================================================
+// TRACK A — FALLBACK CLAIMS
+// ===================================================================
+var TRACK_A_QUESTION = 'How do we make our product accessible without delaying the launch?';
+var TRACK_A_CLAIMS = [
+  {id:'r001',type:'constraint',tier:'documented',text:'WCAG 2.1 AA compliance is required by ADA Title III for commercial websites — 4,605 accessibility lawsuits were filed in 2023 alone.'},
+  {id:'r002',type:'factual',tier:'tested',text:'Overlay tools like AccessiBe and UserWay inject JavaScript widgets that claim to fix accessibility automatically, but WebAIM\'s analysis found they make sites LESS accessible by breaking screen reader navigation patterns.'},
+  {id:'r003',type:'risk',tier:'documented',text:'Delaying accessibility to a \'phase 2\' creates compounding technical debt — retrofitting ARIA attributes into an existing component library costs 3-5x more than building them in from the start.'},
+  {id:'r004',type:'recommendation',tier:'documented',text:'Use design tokens for color contrast ratios (4.5:1 for text, 3:1 for UI components) enforced at the component level, so accessibility is a design system property rather than a per-page audit.'},
+  {id:'r005',type:'factual',tier:'stated',text:'Automated tools like axe-core catch approximately 30-40% of WCAG violations — the remaining 60-70% require manual testing with screen readers and keyboard navigation.'},
+  {id:'x001',type:'risk',tier:'web',text:'Design token enforcement works only if the component library is the sole UI path — teams that bypass it with custom CSS will still ship inaccessible components.'},
+  {id:'x002',type:'constraint',tier:'web',text:'Screen reader testing requires actual screen reader users or significant training time — automated tools miss interaction patterns, focus management, and live region behavior.'},
+  {id:'x003',type:'risk',tier:'stated',text:'WCAG 2.1 AA is a minimum bar, not a quality bar — passing automated audits does not mean the product is usable by people with disabilities.'},
+  {id:'s001',type:'recommendation',tier:'web',text:'Adopt a phased approach: Phase 1 (launch) addresses automated audit violations and keyboard navigation. Phase 2 (post-launch) adds screen reader optimization and user testing with disabled users. This balances speed with genuine accessibility.'},
+  {id:'s002',type:'estimate',tier:'stated',text:'Phased accessibility approach adds approximately 15-20% development time in Phase 1 for core patterns, but reduces Phase 2 retrofit costs by 60-70% compared to bolt-on accessibility.'},
+  {id:'s003',type:'recommendation',tier:'web',text:'Integrate axe-core into CI pipeline to catch regressions automatically — this prevents new inaccessible components from shipping without blocking the launch timeline.'},
+  {id:'s004',type:'factual',tier:'documented',text:'Companies that build accessibility into their design system see 40% fewer accessibility bugs in production compared to those that audit post-launch (Deque Systems, 2024).'}
+];
 
-function autoScroll() {
-  requestAnimationFrame(function() {
-    chatArea.scrollTop = chatArea.scrollHeight;
-    if (!document.hidden && !isMobileDevice) chatInput.focus();
-  });
-}
+// ===================================================================
+// CLAIM TYPE + TIER CONFIG
+// ===================================================================
+var TYPE_COLORS = {
+  constraint:'#f59e0b',
+  factual:'#3b82f6',
+  risk:'#ef4444',
+  recommendation:'#22c55e',
+  estimate:'#8b5cf6'
+};
 
-// Extract structured claims from natural language using keyword heuristics
-function extractClaimsFromText(text, question) {
-  var sentences = text.split(/[.!?]+/).map(function(s) { return s.trim(); }).filter(function(s) { return s.length > 20; });
+var TIER_COLORS = {
+  stated:'#94a3b8',
+  web:'#60a5fa',
+  documented:'#2dd4bf',
+  tested:'#4ade80',
+  production:'#34d399'
+};
+var TIER_WEIGHTS = {stated:1,web:2,documented:3,tested:4,production:5};
+
+// ===================================================================
+// DUAL-MODE CLAIM EXTRACTION
+// ===================================================================
+function extractClaims(text, passPrefix) {
   var claims = [];
   var seen = new Set();
+  var idCounter = 1;
 
-  sentences.forEach(function(s) {
-    var lower = s.toLowerCase();
-    var type = null;
+  function cleanText(t) {
+    return t.replace(/^(CONSTRAINT|FACTUAL|RISK|RECOMMENDATION|ESTIMATE)\s*/i,'').replace(/^Claim\s*\d+\s*/i,'').trim();
+  }
 
-    if (/\brisk|danger|fail|vulnerab|threat|downside|concern|careful/i.test(s)) type = 'risk';
-    else if (/\bshould|recommend|suggest|consider|best practice|advise|opt for/i.test(s)) type = 'recommendation';
-    else if (/\brequir|must|need to|constraint|cannot|limitation|restrict/i.test(s)) type = 'constraint';
-    else if (/\bestimate|approx|typically|around \d|usually takes|\d+[-–]\d+\s*(week|month|day|hour)/i.test(s)) type = 'estimate';
-    else if (s.length > 30) type = 'factual';
+  function inferTier(content) {
+    if (/\d+(\.\d+)?%|\d{3,}|\bstudy|studies|survey|research\b|according to/i.test(content)) return 'documented';
+    if (/\brisk|could|might|concern|may|unclear|uncertain|possible|potential\b/i.test(content)) return 'stated';
+    return 'web';
+  }
 
-    if (type && !seen.has(lower.substring(0, 40))) {
-      seen.add(lower.substring(0, 40));
-      claims.push({ type: type, text: s + '.' });
+  // Mode 1: Bracket labels
+  var bracketRe = /(?:^|\n)\s*(?:[-*]|\d+\.)?\s*(?:\*{1,2})?\[(CONSTRAINT|FACTUAL|RISK|RECOMMENDATION|ESTIMATE)\](?:\*{1,2})?[:\s]*([^\[]+)/gi;
+  var bracketReInline = /(?:\*{1,2})?\[(CONSTRAINT|FACTUAL|RISK|RECOMMENDATION|ESTIMATE)\](?:\*{1,2})?[:\s]*([^\[]+)/gi;
+  var m;
+  var used = new Set();
+  while ((m = bracketRe.exec(text)) !== null) {
+    var type = m[1].toLowerCase();
+    var content = cleanText(m[2].trim().replace(/\n+/g,' ').replace(/\s+/g,' '));
+    var key = content.substring(0,80).toLowerCase();
+    if (content.length > 20 && !seen.has(key)) {
+      seen.add(key);
+      used.add(m.index);
+      claims.push({id:passPrefix+String(idCounter++).padStart(2,'0'),type:type,tier:inferTier(content),text:content});
+    }
+  }
+  while ((m = bracketReInline.exec(text)) !== null) {
+    var type2 = m[1].toLowerCase();
+    var content2 = cleanText(m[2].trim().replace(/\n+/g,' ').replace(/\s+/g,' '));
+    var key2 = content2.substring(0,80).toLowerCase();
+    if (content2.length > 20 && !seen.has(key2)) {
+      seen.add(key2);
+      claims.push({id:passPrefix+String(idCounter++).padStart(2,'0'),type:type2,tier:inferTier(content2),text:content2});
+    }
+  }
+
+  // Mode 2: Keyword heuristic fallback
+  if (claims.length < 3) {
+    var sentences = text.split(/[.!?]+/).map(function(s){return s.trim();}).filter(function(s){return s.length>25;});
+    sentences.forEach(function(s) {
+      if (claims.length >= 8) return;
+      var t = null;
+      if (/\brisk|danger|fail|vulnerab|threat|downside|concern|careful/i.test(s)) t = 'risk';
+      else if (/\bshould|recommend|suggest|consider|best practice|advise|opt for/i.test(s)) t = 'recommendation';
+      else if (/\brequir|must|need to|constraint|cannot|limitation|restrict/i.test(s)) t = 'constraint';
+      else if (/\bestimate|approx|typically|around \d|usually takes|\d+[-–]\d+\s*(week|month|day|hour)/i.test(s)) t = 'estimate';
+      else if (s.length > 35) t = 'factual';
+
+      if (t) {
+        var k = s.substring(0,80).toLowerCase();
+        if (!seen.has(k)) {
+          seen.add(k);
+          claims.push({id:passPrefix+String(idCounter++).padStart(2,'0'),type:t,tier:inferTier(s),text:s+'.'});
+        }
+      }
+    });
+  }
+
+  return claims.slice(0,8);
+}
+
+// ===================================================================
+// 7-PASS COMPILER
+// ===================================================================
+var COMPILER_PASSES = [
+  {name:'parse claims',fn:function(claims){return{parsed:claims.length,ok:true};}},
+  {name:'type distribution',fn:function(claims){
+    var types={};
+    claims.forEach(function(c){types[c.type]=(types[c.type]||0)+1;});
+    var total=claims.length;
+    var entries=Object.entries(types).sort(function(a,b){return b[1]-a[1];});
+    var dominant=entries[0];
+    var monoculture=dominant&&(dominant[1]/total)>0.6;
+    return{types:types,monoculture:monoculture,monocultureType:monoculture?dominant[0]:null,ok:true};
+  }},
+  {name:'evidence strength',fn:function(claims){
+    var avg=claims.reduce(function(s,c2){return s+(TIER_WEIGHTS[c2.tier]||1);},0)/claims.length;
+    return{avgStrength:avg.toFixed(1),weak:avg<2.5,ok:true};
+  }},
+  {name:'tension detection',fn:function(claims){
+    var tensions=[];
+    for(var i=0;i<claims.length;i++){
+      for(var j=i+1;j<claims.length;j++){
+        var a=claims[i],b=claims[j];
+        var opposing=(a.type==='risk'&&b.type==='recommendation')||(a.type==='recommendation'&&b.type==='risk')||(a.type==='constraint'&&b.type==='estimate');
+        if(opposing){
+          var wordsA=new Set(a.text.toLowerCase().split(/\W+/).filter(function(w){return w.length>4;}));
+          var wordsB=new Set(b.text.toLowerCase().split(/\W+/).filter(function(w){return w.length>4;}));
+          var overlap=Array.from(wordsA).filter(function(w){return wordsB.has(w);});
+          if(overlap.length>=2){
+            tensions.push({pair:[a.id,b.id],a:a,b:b,overlap:overlap.slice(0,3)});
+          }
+        }
+      }
+    }
+    return{tensions:tensions,count:tensions.length,ok:true};
+  }},
+  {name:'coverage check',fn:function(claims){
+    var required=['constraint','factual','risk','recommendation'];
+    var present=new Set(claims.map(function(c3){return c3.type;}));
+    var missing=required.filter(function(t2){return!present.has(t2);});
+    return{missing:missing,complete:missing.length===0,ok:true};
+  }},
+  {name:'confidence score',fn:function(claims,prev){
+    var score=70;
+    if(prev[1].monoculture)score-=15;
+    if(prev[2].weak)score-=10;
+    if(prev[3].count>0)score-=5*Math.min(prev[3].count,3);
+    if(!prev[4].complete)score-=10;
+    score+=Math.min(claims.length,15)*1.5;
+    score=Math.max(10,Math.min(100,Math.round(score)));
+    return{score:score,ok:score>=40};
+  }},
+  {name:'generate verdict',fn:function(claims,prev){
+    var score=prev[5].score;
+    var verdict;
+    if(score>=80)verdict='High confidence. Research is well-balanced with strong evidence.';
+    else if(score>=60)verdict='Moderate confidence. Some gaps remain — consider additional research passes.';
+    else if(score>=40)verdict='Low confidence. Significant gaps or tensions detected. More evidence needed.';
+    else verdict='Insufficient. Claims lack diversity or evidence strength for a reliable brief.';
+    return{verdict:verdict,score:score,tensions:prev[3].tensions,missing:prev[4].missing,types:prev[1].types,ok:true};
+  }}
+];
+
+function runCompiler(claims) {
+  var results = [];
+  for (var i = 0; i < COMPILER_PASSES.length; i++) {
+    results.push(COMPILER_PASSES[i].fn(claims, results));
+  }
+  return results;
+}
+
+// ===================================================================
+// POLLINATIONS API
+// ===================================================================
+async function streamPass(systemPrompt, userMessage, abortSignal) {
+  var isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  var response;
+
+  if (!isLocalhost) {
+    response = await fetch('https://text.pollinations.ai/openai', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        model: 'openai',
+        messages: [
+          {role: 'system', content: systemPrompt},
+          {role: 'user', content: userMessage}
+        ],
+        stream: false
+      }),
+      cache: 'no-store',
+      signal: AbortSignal.any ? AbortSignal.any([abortSignal, AbortSignal.timeout(45000)]) : abortSignal
+    });
+  } else {
+    var url = 'https://text.pollinations.ai/' + encodeURIComponent(userMessage.substring(0,2000)) + '?model=openai&system=' + encodeURIComponent(systemPrompt.substring(0,1500)) + '&nostream=true&_t=' + Date.now();
+    response = await fetch(url, {
+      cache: 'no-store',
+      signal: AbortSignal.any ? AbortSignal.any([abortSignal, AbortSignal.timeout(45000)]) : abortSignal
+    });
+  }
+
+  if (response.status === 429) throw new Error('RATE_LIMITED');
+  if (!response.ok) throw new Error('API_ERROR_' + response.status);
+
+  var fullText;
+  if (!isLocalhost) {
+    var json = await response.json();
+    fullText = (json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content) || '';
+  } else {
+    fullText = (await response.text()).trim();
+  }
+
+  if (/IMPORTANT NOTICE|API is being deprecated|migrate to our new service/i.test(fullText)) {
+    throw new Error('API_DEPRECATION_NOTICE');
+  }
+  return fullText;
+}
+
+async function streamPassWithRetry(systemPrompt, userMessage, signal, retries) {
+  retries = retries || 0;
+  try {
+    return await streamPass(systemPrompt, userMessage, signal);
+  } catch(e) {
+    if (e.message === 'RATE_LIMITED' && retries < 2) {
+      showRateWait('rate limited, retrying in ' + (3 + retries * 3) + 's...');
+      await delay((3 + retries * 3) * 1000);
+      showRateWait('');
+      return streamPassWithRetry(systemPrompt, userMessage, signal, retries + 1);
+    }
+    throw e;
+  }
+}
+
+// ===================================================================
+// SYSTEM PROMPTS
+// ===================================================================
+var PASS1_SYSTEM = 'Research analyst. Produce EXACTLY 5-7 findings about the question below. Label each on its own line:\n[FACTUAL] for verifiable general knowledge\n[CONSTRAINT] for hard requirements or limiting factors\n[ESTIMATE] for ranges or rough projections\nRules: Do NOT invent specific numbers you are not sure about. If a value depends on context, say so (e.g. "depends on distance, weather, and time of day"). Use ranges instead of precise figures. No markdown formatting, no colons after labels, no bullet points.';
+
+var PASS2_SYSTEM = 'Adversarial reviewer. The claims below were produced by a research pass. Find what is wrong, exaggerated, or missing. Produce EXACTLY 3-5 challenges. You MUST use [RISK] for at least 2 of them. Label each on its own line:\n[RISK] for assumptions that could be wrong, numbers that are exaggerated, or scenarios where the advice backfires\n[CONSTRAINT] for important factors the research completely missed\nRules: Reference the specific claim number (e.g. "Claim 3 assumes X but..."). Explain WHY it is problematic with a concrete counter-example. Stay realistic. No markdown, no colons after labels, no bullets.';
+
+var PASS3_SYSTEM = 'Decision synthesizer. You have research findings AND adversarial challenges. Produce EXACTLY 3-4 actionable takeaways. Label each on its own line:\n[RECOMMENDATION] for what the person should actually do — give a clear, direct answer first, then explain the tradeoff\n[ESTIMATE] for one key number that helps the decision (time, cost, or effort — pick the most important one)\nRules: Lead with the bottom-line answer. Each recommendation must reference a specific risk. Produce exactly 2-3 RECOMMENDATION and exactly 1 ESTIMATE. Be concise — one sentence per finding. No markdown, no colons after labels, no bullets.';
+
+// ===================================================================
+// FORMAT CLAIMS FOR CONTEXT
+// ===================================================================
+function formatClaimsForContext(claims) {
+  return claims.map(function(c4, i) {
+    return (i + 1) + '. [' + c4.type.toUpperCase() + '] ' + c4.text.substring(0, 80);
+  }).join('\n');
+}
+
+// ===================================================================
+// STATE MANAGEMENT
+// ===================================================================
+var states = {input:'inputState', sprint:'sprintState', answer:'answerState'};
+function showState(name) {
+  Object.values(states).forEach(function(id) {
+    document.getElementById(id).classList.remove('active');
+  });
+  document.getElementById(states[name]).classList.add('active');
+}
+
+// ===================================================================
+// UI HELPERS
+// ===================================================================
+function announce(text) { document.getElementById('state-announcer').textContent = text; }
+
+function setPhase(label, tintClass) {
+  document.getElementById('phaseLabel').textContent = label;
+  var tint = document.getElementById('phaseTint');
+  tint.className = 'phase-tint';
+  if (tintClass) tint.classList.add(tintClass);
+  announce(label);
+}
+
+function updateCounter(n) {
+  document.getElementById('claimCounter').textContent = String(n);
+  var bar = document.getElementById('model-progress');
+  if (bar) bar.setAttribute('aria-valuenow', String(Math.min(100, Math.round(n * 8))));
+}
+
+function showRateWait(msg) { document.getElementById('rateWait').textContent = msg; }
+
+function addClaimPill(claim) {
+  var pills = document.getElementById('claimPills');
+  var pill = document.createElement('div');
+  pill.className = 'claim-pill type-' + claim.type;
+  pill.innerHTML = '<span class="pill-badge badge-' + claim.type + '">' + esc(claim.type) + '</span><span class="pill-text">' + esc(claim.text.substring(0, 60) + (claim.text.length > 60 ? '...' : '')) + '</span>';
+  pills.appendChild(pill);
+  pills.scrollTop = pills.scrollHeight;
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2000);
+}
+
+function delay(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
+
+// ===================================================================
+// CHOREOGRAPHED WAIT
+// ===================================================================
+async function choreographedWait(ms, claims, abortSignal) {
+  var start = Date.now();
+  var remaining = Math.ceil(ms / 1000);
+  showRateWait('rate limit cooldown: ' + remaining + 's');
+
+  while (Date.now() - start < ms) {
+    if (abortSignal && abortSignal.aborted) return;
+    remaining = Math.ceil((ms - (Date.now() - start)) / 1000);
+    showRateWait(remaining > 0 ? 'next pass in ' + remaining + 's' : 'starting...');
+    await delay(1000);
+  }
+  showRateWait('');
+}
+
+// ===================================================================
+// COMPILER ANIMATION
+// ===================================================================
+async function animateCompiler(claims) {
+  setPhase('compiling brief...', 'compile');
+  var container = document.getElementById('compilerLines');
+  container.style.display = 'block';
+  container.innerHTML = '';
+
+  var results = [];
+  for (var i = 0; i < COMPILER_PASSES.length; i++) {
+    var pass = COMPILER_PASSES[i];
+    await delay(150);
+    var result = pass.fn(claims, results);
+    results.push(result);
+
+    var line = document.createElement('div');
+    line.className = 'pass-line';
+    var icon = result.ok ? '<span class="check">&#10003;</span>' : '<span class="fail">&#10007;</span>';
+    line.innerHTML = icon + 'pass ' + (i + 1) + '/7: ' + pass.name;
+    container.appendChild(line);
+    announceCompilerPass('Pass ' + (i + 1) + ' of 7: ' + pass.name + ' — ' + (result.ok ? 'passed' : 'issue detected'));
+    requestAnimationFrame(function() {
+      var l = container.lastElementChild;
+      if (l) l.classList.add('done');
+    });
+  }
+  await delay(400);
+  return results;
+}
+
+// ===================================================================
+// BUILD SUMMARY + RENDER ANSWER
+// ===================================================================
+function buildSummary(claims, compilerResults) {
+  var recs = claims.filter(function(c5) { return c5.type === 'recommendation'; });
+  var risks = claims.filter(function(c6) { return c6.type === 'risk'; });
+  var facts = claims.filter(function(c7) { return c7.type === 'factual'; });
+
+  var parts = [];
+  if (recs.length > 0) parts.push(recs[0].text);
+  if (facts.length > 0 && parts.length < 2) parts.push(facts[0].text);
+  if (risks.length > 0) parts.push('Key risk: ' + risks[0].text.charAt(0).toLowerCase() + risks[0].text.slice(1));
+  return parts.slice(0, 3).join(' ');
+}
+
+function renderAnswer(claims, compilerResults, elapsedMs, passCount, sprintQuestion) {
+  var col = document.getElementById('answerColumn');
+  col.innerHTML = '';
+  col.setAttribute('aria-busy', 'false');
+  var final = compilerResults[6];
+  var types = compilerResults[1].types;
+  var total = claims.length;
+
+  // Section 1: Claim bar + stats
+  var s1 = document.createElement('div');
+  s1.className = 'answer-section';
+  var barHtml = '<div class="claim-bar">';
+  Object.keys(TYPE_COLORS).forEach(function(t) {
+    var count = types[t] || 0;
+    if (count > 0) {
+      var pct = (count / total * 100).toFixed(1);
+      barHtml += '<div class="claim-bar-segment" style="width:' + pct + '%;background:' + TYPE_COLORS[t] + '"></div>';
     }
   });
+  barHtml += '</div>';
+  barHtml += '<div class="stat-row">';
+  barHtml += '<div class="stat-item"><div class="stat-value">' + claims.length + '</div><div class="stat-label">claims</div></div>';
+  barHtml += '<div class="stat-item"><div class="stat-value">' + passCount + '</div><div class="stat-label">passes</div></div>';
+  barHtml += '<div class="stat-item"><div class="stat-value">' + Math.round(elapsedMs / 1000) + 's</div><div class="stat-label">elapsed</div></div>';
+  barHtml += '<div class="stat-item"><div class="stat-value">' + final.score + '</div><div class="stat-label">confidence</div></div>';
+  barHtml += '</div>';
+  s1.innerHTML = barHtml;
+  col.appendChild(s1);
 
-  return claims.slice(0, 6);
-}
+  // Section 2: Executive summary
+  var s2 = document.createElement('div');
+  s2.className = 'answer-section';
+  s2.innerHTML = '<div class="section-header">Summary</div><div class="exec-summary">' + esc(buildSummary(claims, compilerResults)) + '</div>';
+  col.appendChild(s2);
 
-function showWelcomeChips() {
-  addMessage('ai', 'What are you exploring? Ask any complex question — I\'ll gather evidence, flag risks, and grade confidence.<br><br>Try something like:<br>• <em>How do we make our product accessible without delaying the launch?</em><br>• <em>What\'s the right code review process for a growing team?</em><br>• <em>Should our remote team switch to async-first standups?</em>');
-}
-
-// Generate contextual next-step chips using mini compiler analysis
-function generateNextStepChips(aiMsg) {
-  document.querySelectorAll('.msg .follow-up-chips').forEach(function(el) { el.remove(); });
-
-  var claims = window._allClaims || [];
-  if (claims.length < 3) return;
-
-  // Mini compiler: analyze what's actually missing
-  var types = {};
-  var tiers = {};
-  var topics = {};
-  claims.forEach(function(c) {
-    types[c.type] = (types[c.type] || 0) + 1;
-    tiers[c.tier || 'stated'] = (tiers[c.tier || 'stated'] || 0) + 1;
-    if (c.topic) topics[c.topic] = (topics[c.topic] || 0) + 1;
-  });
-  var typeKeys = Object.keys(types);
-  var hasRisk = !!types.risk;
-  var hasRec = !!types.recommendation;
-  var hasConstraint = !!types.constraint;
-  var hasEstimate = !!types.estimate;
-  var monoculture = typeKeys.length <= 2;
-  var weakEvidence = !tiers.tested && !tiers.documented && !tiers.production;
-  var lastQuestion = window._conversationHistory.length > 0 ? window._conversationHistory[0].question : '';
-  var topicWord = lastQuestion.split(' ').filter(function(w) { return w.length > 4; })[0] || 'this';
-
-  var suggestions = [];
-
-  // Only suggest what's actually missing — max 2 chips
-  if (!hasRisk && claims.length >= 3) {
-    suggestions.push('what risks are we missing on ' + topicWord + '?');
-  }
-  if (monoculture && hasRec && !hasConstraint) {
-    suggestions.push('what constraints limit ' + topicWord + '?');
-  }
-  if (hasRec && claims.length >= 4 && !window._challengedIds?.size) {
-    suggestions.push('challenge the strongest recommendation');
-  }
-  if (typeKeys.length >= 3 && claims.length >= 6 && weakEvidence) {
-    suggestions.push('any blind spots in our evidence?');
-  }
-  if (!hasEstimate && claims.length >= 5) {
-    suggestions.push('what would this cost or take?');
-  }
-
-  if (suggestions.length === 0) return;
-  suggestions = suggestions.slice(0, 2);
-
-  var container = document.createElement('div');
-  container.className = 'follow-up-chips';
-  suggestions.forEach(function(text) {
-    var btn = document.createElement('button');
-    btn.className = 'chip';
-    btn.type = 'button';
-    btn.textContent = text;
-    btn.addEventListener('click', function() {
-      chatInput.value = text;
-      sendBtn.classList.add('active');
-      chatInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+  // Section 3: Claims by type
+  var s3 = document.createElement('div');
+  s3.className = 'answer-section';
+  var groupHtml = '<div class="section-header">Evidence</div>';
+  var typeOrder = ['factual','constraint','risk','recommendation','estimate'];
+  typeOrder.forEach(function(t) {
+    var grouped = claims.filter(function(c8) { return c8.type === t; });
+    if (grouped.length === 0) return;
+    groupHtml += '<div class="claims-group">';
+    groupHtml += '<div class="claims-group-header" style="color:' + TYPE_COLORS[t] + '"><span class="pill-badge badge-' + t + '">' + t + '</span> ' + grouped.length + ' claims</div>';
+    grouped.forEach(function(c9) {
+      groupHtml += '<div class="claim-card type-' + c9.type + '">';
+      groupHtml += '<span class="claim-card-id">' + esc(c9.id) + '</span>';
+      groupHtml += '<span class="claim-card-text">' + esc(c9.text) + '</span>';
+      groupHtml += '<span class="claim-card-tier tier-' + (c9.tier || 'stated') + '">' + esc(c9.tier || 'stated') + '</span>';
+      groupHtml += '</div>';
     });
-    container.appendChild(btn);
+    groupHtml += '</div>';
   });
-  aiMsg.appendChild(container);
-}
+  s3.innerHTML = groupHtml;
+  col.appendChild(s3);
 
-function synthesizeSummary(claims, question) {
-  if (!claims || claims.length === 0) return 'No claims found for this query.';
-  const risks = claims.filter(function(c) { return c.type === 'risk'; });
-  const recs = claims.filter(function(c) { return c.type === 'recommendation'; });
-  const facts = claims.filter(function(c) { return c.type === 'factual'; });
-  const constraints = claims.filter(function(c) { return c.type === 'constraint'; });
-
-  var summary = 'Based on ' + claims.length + ' findings';
-  if (question) summary += ' about <strong>' + escapeHtml(question) + '</strong>';
-  summary += ':<br><br>';
-
-  if (constraints.length > 0) summary += constraints[0].text + '<br><br>';
-  if (facts.length > 0) summary += facts[0].text + '<br><br>';
-  if (risks.length > 0) summary += '<span style="color:#fbbf24">Risk:</span> ' + risks[0].text + '<br><br>';
-  if (recs.length > 0) summary += '<span style="color:#22c55e">Recommendation:</span> ' + recs[0].text;
-
-  return summary;
-}
-
-function renderClaimsToggle(claims) {
-  var wrapper = document.createElement('div');
-  var btn = document.createElement('button');
-  btn.className = 'claims-toggle';
-  btn.setAttribute('aria-expanded', 'false');
-  btn.textContent = '\u25B8 View ' + claims.length + ' claims';
-
-  var panel = document.createElement('div');
-  panel.className = 'claims-panel';
-  var inner = document.createElement('div');
-  inner.className = 'claims-panel-inner';
-
-  claims.forEach(function(c) {
-    var row = document.createElement('div');
-    row.className = 'claim-row';
-    var badge = document.createElement('span');
-    badge.className = 'badge badge-' + c.type;
-    badge.textContent = c.type + (c.unverified ? ' (ai)' : '');
-    var textSpan = document.createElement('span');
-    textSpan.textContent = c.text || '';
-    row.appendChild(badge);
-    row.appendChild(textSpan);
-    inner.appendChild(row);
-  });
-
-  panel.appendChild(inner);
-
-  btn.addEventListener('click', function() {
-    var expanded = btn.getAttribute('aria-expanded') === 'true';
-    btn.setAttribute('aria-expanded', String(!expanded));
-    panel.classList.toggle('open');
-    btn.textContent = expanded ? '\u25B8 View ' + claims.length + ' claims' : '\u25BE Hide claims';
-  });
-
-  wrapper.appendChild(btn);
-  wrapper.appendChild(panel);
-  return wrapper;
-}
-
-function showCompileButton() {
-  if (window._allClaims.length < 5) return;
-  var typeSet = new Set(); window._allClaims.forEach(function(c) { typeSet.add(c.type); });
-  if (typeSet.size < 2) return;
-  var bar = document.getElementById('compileBar');
-  bar.classList.add('visible');
-  var btn = document.getElementById('compileMsgBtn');
-  // Show what's missing so user knows what to add
-  var required = ['constraint', 'factual', 'risk', 'recommendation'];
-  var missing = required.filter(function(t) { return !typeSet.has(t); });
-  if (missing.length > 0) {
-    btn.textContent = 'compile ' + window._allClaims.length + ' claims (missing: ' + missing.join(', ') + ')';
+  // Section 4: Conflicts
+  var s4 = document.createElement('div');
+  s4.className = 'answer-section';
+  var conflictHtml = '<div class="section-header">Tensions</div>';
+  if (final.tensions && final.tensions.length > 0) {
+    final.tensions.forEach(function(t2) {
+      conflictHtml += '<div class="conflict-pair">';
+      conflictHtml += '<div class="conflict-card"><strong>' + esc(t2.a.id) + '</strong> <span class="pill-badge badge-' + t2.a.type + '">' + esc(t2.a.type) + '</span> ' + esc(t2.a.text) + '</div>';
+      conflictHtml += '<span class="conflict-badge">tension</span>';
+      conflictHtml += '<div class="conflict-card"><strong>' + esc(t2.b.id) + '</strong> <span class="pill-badge badge-' + t2.b.type + '">' + esc(t2.b.type) + '</span> ' + esc(t2.b.text) + '</div>';
+      conflictHtml += '</div>';
+    });
+    conflictHtml += '<div style="font-size:0.6rem;color:rgba(255,255,255,0.25);margin-top:0.3rem">Shared keywords: ' + final.tensions.map(function(t3) { return t3.overlap.join(', '); }).join(' | ') + '</div>';
   } else {
-    btn.textContent = 'compile ' + window._allClaims.length + ' claims';
+    conflictHtml += '<div class="no-conflicts">No conflicts detected — all evidence aligned.</div>';
   }
-  btn.disabled = false;
-  btn.onclick = runCompile;
+  s4.innerHTML = conflictHtml;
+  col.appendChild(s4);
+
+  // Section 5: Verdict
+  var s5 = document.createElement('div');
+  s5.className = 'answer-section';
+  var score = final.score;
+  var verdictClass = score >= 80 ? 'verdict-high' : score >= 60 ? 'verdict-moderate' : score >= 40 ? 'verdict-low' : 'verdict-insufficient';
+  var verdictWord = score >= 80 ? 'High' : score >= 60 ? 'Moderate' : score >= 40 ? 'Low' : 'Insufficient';
+
+  var tierCounts = {};
+  claims.forEach(function(c10) {
+    var tier = c10.tier || 'stated';
+    tierCounts[tier] = (tierCounts[tier] || 0) + 1;
+  });
+  var tierBarHtml = '<div class="evidence-bar">';
+  var tierOrder = ['stated','web','documented','tested','production'];
+  tierOrder.forEach(function(t4) {
+    var ct = tierCounts[t4] || 0;
+    if (ct > 0) {
+      var pct2 = (ct / total * 100).toFixed(1);
+      tierBarHtml += '<div class="evidence-bar-segment" style="width:' + pct2 + '%;background:' + TIER_COLORS[t4] + '"></div>';
+    }
+  });
+  tierBarHtml += '</div>';
+
+  var legendHtml = '<div class="evidence-legend">';
+  tierOrder.forEach(function(t5) {
+    if (tierCounts[t5]) {
+      legendHtml += '<span class="evidence-legend-item"><span class="evidence-dot" style="background:' + TIER_COLORS[t5] + '"></span>' + t5 + ' (' + tierCounts[t5] + ')</span>';
+    }
+  });
+  legendHtml += '</div>';
+
+  s5.innerHTML = '<div class="section-header">Verdict</div><div class="verdict-label ' + verdictClass + '">' + verdictWord + ' Confidence — ' + score + '/100</div>' + tierBarHtml + legendHtml + '<div class="verdict-text">' + esc(final.verdict) + '</div>';
+  if (final.missing && final.missing.length > 0) {
+    s5.innerHTML += '<div style="font-size:0.65rem;color:#f59e0b;margin-top:0.3rem">Missing types: ' + esc(final.missing.join(', ')) + '</div>';
+  }
+  col.appendChild(s5);
+
+  // Section 6: CTA
+  var s6 = document.createElement('div');
+  s6.className = 'answer-section';
+  var question = sprintQuestion || document.getElementById('questionInput').value.trim() || TRACK_A_QUESTION;
+  var ctaCmd = 'wheat init --question "' + question.substring(0, 120).replace(/"/g, "'") + '"';
+  s6.innerHTML = '<div class="cta-section">' +
+    '<div class="cta-code" id="ctaCode" title="Click to copy">' + esc(ctaCmd) + '</div>' +
+    '<div class="cta-text">Generated in ' + Math.round(elapsedMs / 1000) + 's with ' + passCount + ' passes. The full tool adds web search, code analysis, and adversarial challenges.</div>' +
+    '<button class="cta-btn" id="ctaBtn" type="button">Continue this sprint in Claude Code</button>' +
+    '<br><button class="cta-restart" id="restartBtn" type="button">Ask a different question</button>' +
+    '</div>';
+  col.appendChild(s6);
+
+  // Show answer state with staggered reveal
+  showState('answer');
+  document.getElementById('phaseTint').className = 'phase-tint';
+  document.getElementById('dimOverlay').style.opacity = '0.92';
+
+  requestAnimationFrame(function() {
+    document.getElementById('answerState').classList.add('active');
+  });
+
+  var sections = col.querySelectorAll('.answer-section');
+  sections.forEach(function(sec, i) {
+    setTimeout(function() { sec.classList.add('visible'); }, 200 * (i + 1));
+  });
+
+  // Wire CTA events
+  document.getElementById('ctaCode').addEventListener('click', function() {
+    navigator.clipboard.writeText(ctaCmd).then(function() { showToast('Copied to clipboard'); });
+  });
+  document.getElementById('ctaBtn').addEventListener('click', function() {
+    var prompt = 'I explored a research question in the grainulator.app demo and want to continue with the full wheat plugin.\n\nQuestion: ' + question + '\nClaims so far: ' + claims.length + '\n\nPlease install the wheat plugin (/plugin install grainulator) and continue this research sprint.';
+    try {
+      window.location.href = 'claude-cli://open?q=' + encodeURIComponent(prompt.substring(0, 1300));
+      setTimeout(function() { showToast('Install Claude Code first -- claude.ai/download'); }, 1500);
+    } catch(e) {
+      showToast('Install Claude Code first -- claude.ai/download');
+    }
+  });
+  document.getElementById('restartBtn').addEventListener('click', function() {
+    resetToInput();
+  });
+
+  announceState('Sprint complete. Confidence score: ' + final.score + ' out of 100.');
 }
 
-// New chat button
-document.getElementById('newChatBtn').addEventListener('click', function() {
-  if (window._allClaims && window._allClaims.length > 0) {
-    if (!confirm('Start new chat? (' + window._allClaims.length + ' claims will be cleared)')) return;
-  }
-  resetExploreState();
-  clearSession();
-  chatArea.innerHTML = '';
-  chatInput.value = '';
-  chatInput.focus();
-  sendBtn.classList.remove('active');
-  // Reset UX state — remove chat overlay, stay on frozen lava
-  var appEl = document.getElementById('app');
-  appEl.classList.remove('chat-active');
+// ===================================================================
+// RESET TO INPUT
+// ===================================================================
+function resetToInput() {
+  document.getElementById('answerState').classList.remove('active');
+  document.getElementById('answerColumn').innerHTML = '';
+  document.getElementById('answerColumn').setAttribute('aria-busy', 'false');
+  document.getElementById('claimPills').innerHTML = '';
+  document.getElementById('compilerLines').innerHTML = '';
+  document.getElementById('compilerLines').style.display = 'none';
+  document.getElementById('claimCounter').textContent = '0';
+  document.getElementById('rateWait').textContent = '';
+  document.getElementById('phaseTint').className = 'phase-tint';
   document.getElementById('dimOverlay').style.opacity = '0';
-  uxState = 'LAVA_WITH_INPUT';
+  resumeShader();
+  showState('input');
+  document.getElementById('questionInput').value = '';
+  document.getElementById('questionInput').focus();
+}
+
+// ===================================================================
+// MAIN SPRINT PIPELINE
+// ===================================================================
+var _abortController = null;
+
+async function runSprint(question) {
+  var isOffline = window.location.search.indexOf('offline') !== -1;
+  var startTime = Date.now();
+  var allClaims = [];
+  var passCount = 0;
+  _abortController = new AbortController();
+  var signal = _abortController.signal;
+
+  // Show sprint state
+  document.getElementById('sprintQuestion').textContent = question;
+  document.getElementById('answerColumn').setAttribute('aria-busy', 'true');
+  showState('sprint');
+  pauseShader();
+  document.getElementById('dimOverlay').style.opacity = '0.85';
+
+  try {
+    if (isOffline) {
+      // === OFFLINE MODE: use TRACK_A claims ===
+      setPhase('researching...', 'research');
+      for (var i = 0; i < 5; i++) {
+        if (signal.aborted) throw new Error('CANCELLED');
+        await delay(400 + Math.random() * 300);
+        allClaims.push(TRACK_A_CLAIMS[i]);
+        addClaimPill(TRACK_A_CLAIMS[i]);
+        updateCounter(allClaims.length);
+      }
+      passCount = 1;
+
+      await delay(800);
+      setPhase('challenging assumptions...', 'challenge');
+      for (var j = 5; j < 8; j++) {
+        if (signal.aborted) throw new Error('CANCELLED');
+        await delay(500 + Math.random() * 300);
+        allClaims.push(TRACK_A_CLAIMS[j]);
+        addClaimPill(TRACK_A_CLAIMS[j]);
+        updateCounter(allClaims.length);
+      }
+      passCount = 2;
+
+      await delay(800);
+      setPhase('synthesizing...', 'synthesis');
+      for (var k = 8; k < TRACK_A_CLAIMS.length; k++) {
+        if (signal.aborted) throw new Error('CANCELLED');
+        await delay(400 + Math.random() * 300);
+        allClaims.push(TRACK_A_CLAIMS[k]);
+        addClaimPill(TRACK_A_CLAIMS[k]);
+        updateCounter(allClaims.length);
+      }
+      passCount = 3;
+
+    } else {
+      // === ONLINE MODE: Pollinations API ===
+
+      // Pass 1: Research
+      setPhase('researching...', 'research');
+      try {
+        var p1Text = await streamPassWithRetry(PASS1_SYSTEM, question, signal);
+        var p1Claims = extractClaims(p1Text, 'r');
+        passCount = 1;
+        for (var ci = 0; ci < p1Claims.length; ci++) {
+          if (signal.aborted) throw new Error('CANCELLED');
+          allClaims.push(p1Claims[ci]);
+          addClaimPill(p1Claims[ci]);
+          updateCounter(allClaims.length);
+          await delay(200 + Math.random() * 200);
+        }
+
+        if (p1Claims.length < 3) {
+          setPhase('compiling with limited evidence...', 'compile');
+        } else {
+          if (!signal.aborted) {
+            await choreographedWait(16000, allClaims, signal);
+          }
+
+          // Pass 2: Challenge
+          if (!signal.aborted) {
+            setPhase('challenging assumptions...', 'challenge');
+            try {
+              var p2Context = 'Research findings to challenge:\n' + formatClaimsForContext(allClaims) + '\n\nOriginal question: ' + question;
+              var p2Text = await streamPassWithRetry(PASS2_SYSTEM, p2Context, signal);
+              var p2Claims = extractClaims(p2Text, 'x');
+              passCount = 2;
+              for (var cj = 0; cj < p2Claims.length; cj++) {
+                if (signal.aborted) throw new Error('CANCELLED');
+                allClaims.push(p2Claims[cj]);
+                addClaimPill(p2Claims[cj]);
+                updateCounter(allClaims.length);
+                await delay(200 + Math.random() * 200);
+              }
+            } catch(e) {
+              if (e.message === 'CANCELLED') throw e;
+              console.warn('Pass 2 failed, degrading:', e.message);
+            }
+
+            if (!signal.aborted) {
+              await choreographedWait(16000, allClaims, signal);
+            }
+
+            // Pass 3: Synthesis
+            if (!signal.aborted) {
+              setPhase('synthesizing...', 'synthesis');
+              try {
+                var p3Context = 'All findings and challenges:\n' + formatClaimsForContext(allClaims) + '\n\nOriginal question: ' + question;
+                var p3Text = await streamPassWithRetry(PASS3_SYSTEM, p3Context, signal);
+                var p3Claims = extractClaims(p3Text, 's');
+                passCount = 3;
+                for (var ck = 0; ck < p3Claims.length; ck++) {
+                  if (signal.aborted) throw new Error('CANCELLED');
+                  allClaims.push(p3Claims[ck]);
+                  addClaimPill(p3Claims[ck]);
+                  updateCounter(allClaims.length);
+                  await delay(200 + Math.random() * 200);
+                }
+              } catch(e2) {
+                if (e2.message === 'CANCELLED') throw e2;
+                console.warn('Pass 3 failed, compiling partial:', e2.message);
+              }
+            }
+          }
+        }
+      } catch(e3) {
+        if (e3.message === 'CANCELLED') throw e3;
+        console.warn('All passes failed, using TRACK_A fallback:', e3.message);
+        allClaims = TRACK_A_CLAIMS.slice();
+        passCount = 0;
+        allClaims.forEach(function(c11) { addClaimPill(c11); });
+        updateCounter(allClaims.length);
+      }
+    }
+
+    // --- Auto-compile ---
+    if (signal.aborted) throw new Error('CANCELLED');
+    if (allClaims.length === 0) {
+      allClaims = TRACK_A_CLAIMS.slice();
+      passCount = 0;
+      allClaims.forEach(function(c12) { addClaimPill(c12); });
+      updateCounter(allClaims.length);
+    }
+
+    var compilerResults = await animateCompiler(allClaims);
+    var elapsed = Date.now() - startTime;
+    await delay(300);
+
+    renderAnswer(allClaims, compilerResults, elapsed, passCount || 1, question);
+
+  } catch(e4) {
+    if (e4.message === 'CANCELLED') {
+      if (allClaims.length > 0) {
+        var compilerResults2 = await animateCompiler(allClaims);
+        var elapsed2 = Date.now() - startTime;
+        await delay(300);
+        renderAnswer(allClaims, compilerResults2, elapsed2, passCount || 1, question);
+      } else {
+        resetToInput();
+      }
+    } else {
+      console.error('Sprint error:', e4);
+      allClaims = TRACK_A_CLAIMS.slice();
+      allClaims.forEach(function(c13) { addClaimPill(c13); });
+      updateCounter(allClaims.length);
+      var compilerResults3 = await animateCompiler(allClaims);
+      renderAnswer(allClaims, compilerResults3, Date.now() - startTime, 0, question);
+    }
+  }
+}
+
+// ===================================================================
+// EVENT WIRING
+// ===================================================================
+document.getElementById('submitBtn').addEventListener('click', function() {
+  var q = document.getElementById('questionInput').value.trim();
+  if (!q) return;
+  runSprint(q);
+});
+
+document.getElementById('questionInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    document.getElementById('submitBtn').click();
+  }
+});
+
+document.getElementById('cancelBtn').addEventListener('click', function() {
+  if (_abortController) _abortController.abort();
+});
+
+// Auto-resize textarea
+document.getElementById('questionInput').addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 160) + 'px';
+});
+
+// New sprint button
+document.getElementById('newSprintBtn').addEventListener('click', function() {
+  resetToInput();
 });
 
 // Easter egg: long-press header (1.5s) to toggle lava animation
@@ -1061,1389 +1607,92 @@ document.querySelector('.app-header').addEventListener('pointerdown', function()
 document.querySelector('.app-header').addEventListener('pointerup', function() { clearTimeout(_lavaLongPress); });
 document.querySelector('.app-header').addEventListener('pointerleave', function() { clearTimeout(_lavaLongPress); });
 
-// Send button + input wiring
-var _inputResizeTimer = null;
-chatInput.addEventListener('input', function() {
-  sendBtn.classList.toggle('active', chatInput.value.trim().length > 0 || !!_attachedFileText);
-  // Debounce auto-expand (avoids layout thrash on every keystroke)
-  var self = this;
-  if (_inputResizeTimer) cancelAnimationFrame(_inputResizeTimer);
-  _inputResizeTimer = requestAnimationFrame(function() {
-    self.style.height = 'auto';
-    self.style.height = Math.min(self.scrollHeight, 120) + 'px';
-  });
+// ===================================================================
+// ?offline AUTO-START
+// ===================================================================
+var _isOfflineMode = window.location.search.indexOf('offline') !== -1;
+if (_isOfflineMode) {
+  var qi = document.getElementById('questionInput');
+  qi.value = TRACK_A_QUESTION;
+  setTimeout(function() { runSprint(TRACK_A_QUESTION); }, 600);
+}
+
+// Hash-based question loading
+(function loadFromHash() {
+  var hash = location.hash;
+  if (hash.startsWith('#q=')) {
+    var q = decodeURIComponent(hash.slice(3));
+    if (q) {
+      document.getElementById('questionInput').value = q;
+    }
+  }
+})();
+
+// Focus input on load
+window.addEventListener('load', function() {
+  if (!_isOfflineMode) document.getElementById('questionInput').focus();
 });
 
-sendBtn.addEventListener('click', function() {
-  chatInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
-});
-
-// File attachment
-var _attachedFileText = '';
-var _attachedFileName = '';
-// File attach via hidden input (no visible button — drag-drop or programmatic only)
-document.getElementById('fileInput').addEventListener('change', function(e) {
-  var file = e.target.files[0];
-  if (!file) return;
-  if (file.size > 1048576) { showToast('File too large (1MB max)'); return; }
-  var reader = new FileReader();
-  reader.onload = function(evt) {
-    _attachedFileText = evt.target.result;
-    _attachedFileName = file.name;
-    var old = document.querySelector('.file-chip');
-    if (old) old.remove();
-    var chip = document.createElement('div');
-    chip.className = 'file-chip';
-    var nameSpan = document.createElement('span');
-    nameSpan.textContent = file.name;
-    var removeBtn = document.createElement('span');
-    removeBtn.className = 'remove';
-    removeBtn.setAttribute('role', 'button');
-    removeBtn.textContent = '\u00d7';
-    removeBtn.addEventListener('click', function() { _attachedFileText = ''; _attachedFileName = ''; chip.remove(); sendBtn.classList.toggle('active', !!chatInput.value.trim()); });
-    chip.appendChild(nameSpan);
-    chip.appendChild(removeBtn);
-    document.getElementById('inputBar').insertBefore(chip, document.querySelector('.input-wrap'));
-    sendBtn.classList.add('active');
-  };
-  reader.readAsText(file);
-  e.target.value = '';
-});
-
-// iOS keyboard fix
-if (window.visualViewport) {
-  window.visualViewport.addEventListener('resize', function() {
-    var kbOffset = window.innerHeight - window.visualViewport.height;
-    document.documentElement.style.setProperty('--kb-offset', Math.max(0, kbOffset) + 'px');
-  });
-}
-
-// Session restore — if saved session exists, go straight to chat
-requestAnimationFrame(function() {
-  var saved = loadSavedSession();
-  if (saved && saved.allClaims && saved.allClaims.length > 0) {
-    restoreSession(saved);
-    transitionTo('CHAT_ACTIVE');
-  }
-  // Otherwise: stay in LAVA_ONLY until model ready
-  // LAVA_WITH_INPUT is triggered by WebLLM ready state
-});
-
-// Install button — links to GitHub (native <a> tag)
-
-function showToast() { /* removed */ }
-
 // ===================================================================
-// TRACK A — PRE-GENERATED DEMO DATA (Accessibility without delay)
-// ===================================================================
-const TRACK_A_CLAIMS = [
-  {
-    id: 'r001', type: 'constraint', tier: 'documented',
-    text: 'WCAG 2.1 AA compliance is required by ADA Title III for commercial websites — 4,605 accessibility lawsuits were filed in 2023 alone.'
-  },
-  {
-    id: 'r002', type: 'factual', tier: 'tested',
-    text: 'Overlay tools like AccessiBe and UserWay inject JavaScript widgets that claim to fix accessibility automatically, but WebAIM\'s analysis found they make sites LESS accessible by breaking screen reader navigation patterns.'
-  },
-  {
-    id: 'r003', type: 'risk', tier: 'documented',
-    text: 'Delaying accessibility to a \'phase 2\' creates compounding technical debt — retrofitting ARIA attributes into an existing component library costs 3-5x more than building them in from the start.'
-  },
-  {
-    id: 'r004', type: 'recommendation', tier: 'documented',
-    text: 'Use design tokens for color contrast ratios (4.5:1 for text, 3:1 for UI components) enforced at the component level, so accessibility is a design system property rather than a per-page audit.'
-  },
-  {
-    id: 'r005', type: 'factual', tier: 'stated',
-    text: 'Automated tools like axe-core catch approximately 30-40% of WCAG violations — the remaining 60-70% require manual testing with screen readers and keyboard navigation.'
-  }
-];
-
-const TRACK_A_QUESTION = 'How do we make our product accessible without delaying the launch?';
-
-
-// ── Utility: Normalize text for comparison ───────────────────────────────────
-
-const STOP_WORDS = new Set([
-  'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
-  'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
-  'should', 'may', 'might', 'shall', 'can', 'need', 'dare', 'ought',
-  'used', 'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by', 'from',
-  'as', 'into', 'through', 'during', 'before', 'after', 'above', 'below',
-  'between', 'out', 'off', 'over', 'under', 'again', 'further', 'then',
-  'once', 'and', 'but', 'or', 'nor', 'not', 'so', 'yet', 'both',
-  'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no',
-  'only', 'own', 'same', 'than', 'too', 'very', 'just', 'because',
-  'how', 'what', 'which', 'who', 'whom', 'this', 'that', 'these',
-  'those', 'it', 'its', 'we', 'our', 'my', 'your', 'they', 'their',
-  'about', 'up', 'if', 'when', 'where', 'why', 'all', 'any'
-]);
-
-function normalize(text) {
-  return text
-    .toLowerCase()
-    .replace(/[^\w\s]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-// Aliases: normalize common variants for word matching
-var WORD_ALIASES = {postgres:'postgresql',pg:'postgresql',mongo:'mongodb',k8s:'kubernetes',kube:'kubernetes',js:'javascript',ts:'typescript',py:'python',rb:'ruby',gql:'graphql',tf:'terraform',aws:'amazon',gcp:'google',ci:'continuous',cd:'continuous',ml:'machine',ai:'artificial',db:'database',api:'apis',microservice:'microservices',monolith:'monolithic',serverless:'lambda',
-// Non-English common tech terms
-migrer:'migrate',migration:'migrate',migrieren:'migrate',umsteigen:'migrate',move:'migrate',nube:'cloud',cloud:'cloud',nuage:'cloud',wolke:'cloud',serveur:'server',servidor:'server',base:'database',datos:'database',donnees:'database',daten:'database',devrions:'should',sollen:'should','deberíamos':'should',usar:'use',utiliser:'use',nutzen:'use',adopter:'adopt',adoptar:'adopt',adopt:'migrate'};
-
-function significantWords(text) {
-  return normalize(text)
-    .split(' ')
-    .filter(function (w) { return w.length > 1 && !STOP_WORDS.has(w); })
-    .map(function(w) { return WORD_ALIASES[w] || w; });
-}
-
-
-function buildHandoffDeepLink() {
-  const question = (document.getElementById('chatInput') || {}).value || TRACK_A_QUESTION;
-  const claimCount = (window._allClaims || []).length || (window._liveClaims || []).length;
-  const prompt = 'I explored a research question in the grainulator.app demo and want to continue with the full wheat plugin.\n\nQuestion: ' + question.trim() + '\nClaims so far: ' + claimCount + '\n\nPlease install the wheat plugin (/plugin install grainulator) and continue this research sprint.';
-  return 'claude-cli://open?q=' + encodeURIComponent(prompt.substring(0, 1300));
-}
-
-function handleNudgeHandoff(e) {
-  if (e) e.preventDefault();
-  window._trackEvent?.('handoff_click', { type: 'deeplink' });
-  try {
-    window.location.href = buildHandoffDeepLink();
-    setTimeout(function() { showToast('Install Claude Code first \u2014 claude.ai/download'); }, 1500);
-  } catch(err) {
-    showToast('Install Claude Code first \u2014 claude.ai/download');
-  }
-}
-
-function renderTurnCounter() {
-  // In chat UI, turn tracking is implicit in the conversation flow.
-  // Show handoff nudge as a system message at turn 3
-  if (window._turnCount === 3) {
-    addMessage('system', 'Want deeper research? <a href="#" onclick="handleNudgeHandoff(event);return false;" style="color:#8df6ff">Continue in Claude Code</a>');
-  }
-}
-
-// ===================================================================
-// SESSION PERSISTENCE (localStorage)
-// ===================================================================
-function saveSession() {
-  try {
-    const session = {
-      allClaims: window._allClaims,
-      conversationHistory: window._conversationHistory,
-      compilationResult: window._compilationResult,
-      turnCount: window._turnCount,
-      nextClaimIndex: window._nextClaimIndex,
-      savedAt: Date.now()
-    };
-    localStorage.setItem('grainulator-session', JSON.stringify(session));
-  } catch(e) {}
-}
-
-function clearSession() {
-  try { localStorage.removeItem('grainulator-session'); } catch(e) {}
-}
-
-function loadSavedSession() {
-  try {
-    const raw = localStorage.getItem('grainulator-session');
-    if (!raw) return null;
-    const session = JSON.parse(raw);
-    // Check if < 7 days old
-    const sevenDays = 7 * 24 * 60 * 60 * 1000;
-    if (Date.now() - session.savedAt > sevenDays) {
-      clearSession();
-      return null;
-    }
-    return session;
-  } catch(e) { return null; }
-}
-
-function restoreSession(session) {
-  window._allClaims = session.allClaims || [];
-  window._conversationHistory = session.conversationHistory || [];
-  window._compilationResult = session.compilationResult || null;
-  window._turnCount = session.turnCount || 0;
-  window._nextClaimIndex = session.nextClaimIndex || (window._allClaims.length + 1);
-  window._liveClaims = window._allClaims.length > 0 ? window._allClaims : null;
-
-  if (window._allClaims.length > 0) {
-    // Render restored claims as a single AI message with toggle
-    addMessage('system', 'Restored session: ' + window._allClaims.length + ' claims across ' + (window._turnCount || 1) + ' questions');
-    var aiMsg = addMessage('ai', synthesizeSummary(window._allClaims, (session.conversationHistory && session.conversationHistory.length > 0) ? session.conversationHistory[session.conversationHistory.length - 1].question : ''));
-    aiMsg.appendChild(renderClaimsToggle(window._allClaims));
-    showCompileButton();
-  }
-
-  // Set input to last conversation entry
-  if (session.conversationHistory && session.conversationHistory.length > 0) {
-    var last = session.conversationHistory[session.conversationHistory.length - 1];
-    // Don't pre-fill input on restore (x627)
-    chatInput.value = '';
-    sendBtn.classList.remove('active');
-  }
-}
-
-function loadTrackA() {
-  // Check for saved session first
-  var saved = loadSavedSession();
-  if (saved && saved.allClaims && saved.allClaims.length > 0) {
-    restoreSession(saved);
-    return;
-  }
-  // No saved session — chat UI starts empty, waiting for user input
-}
-
-function resetExploreState() {
-  window._allClaims = [];
-  window._turnCount = 0;
-  window._nextClaimIndex = 1;
-  window._conversationHistory = [];
-  window._compilationResult = null;
-  window._liveClaims = null;
-  window._challengedIds = {};
-  const counter = document.getElementById('turnCounter');
-  if (counter) counter.remove();
-}
-
-// Legacy stubs — claim cards replaced by chat bubble rendering
-function createClaimCard(claim) { return document.createElement('div'); }
-function addClaimCard(container, cardEl) { }
-
-
-// ===================================================================
-// IN-BROWSER COMPILER — 7-pass pipeline
-// ===================================================================
-const COMPILER_PASSES = [
-  { name: 'parse claims', fn: (claims) => ({ parsed: claims.length, ok: true }) },
-  { name: 'type distribution', fn: (claims) => {
-    const types = {};
-    claims.forEach(c => types[c.type] = (types[c.type] || 0) + 1);
-    const total = claims.length;
-    const dominant = Object.entries(types).sort((a,b) => b[1]-a[1])[0];
-    const monoculture = dominant && (dominant[1] / total) > 0.6;
-    return { types, monoculture, monocultureType: monoculture ? dominant[0] : null, ok: true };
-  }},
-  { name: 'evidence strength', fn: (claims) => {
-    const tierWeight = { stated: 1, web: 2, documented: 3, tested: 4, production: 5 };
-    const avg = claims.reduce((s,c) => s + (tierWeight[c.tier]||1), 0) / claims.length;
-    return { avgStrength: avg.toFixed(1), weak: avg < 2.5, ok: true };
-  }},
-  { name: 'tension detection', fn: (claims) => {
-    // Generalized: find claims with opposing sentiment about similar topics
-    const tensions = [];
-    for (let i = 0; i < claims.length; i++) {
-      for (let j = i+1; j < claims.length; j++) {
-        const a = claims[i], b = claims[j];
-        // Heuristic: risk vs recommendation, or constraint vs estimate on overlapping words
-        const opposing = (a.type === 'risk' && b.type === 'recommendation') ||
-                         (a.type === 'recommendation' && b.type === 'risk') ||
-                         (a.type === 'constraint' && b.type === 'estimate');
-        if (opposing) {
-          const wordsA = new Set(a.text.toLowerCase().split(/\W+/).filter(w => w.length > 4));
-          const wordsB = new Set(b.text.toLowerCase().split(/\W+/).filter(w => w.length > 4));
-          const overlap = [...wordsA].filter(w => wordsB.has(w));
-          if (overlap.length >= 2) {
-            tensions.push({ pair: [a.id, b.id], overlap: overlap.slice(0, 3) });
-          }
-        }
-      }
-    }
-    return { tensions, count: tensions.length, ok: true };
-  }},
-  { name: 'coverage check', fn: (claims) => {
-    const requiredTypes = ['constraint', 'factual', 'risk', 'recommendation'];
-    const present = new Set(claims.map(c => c.type));
-    const missing = requiredTypes.filter(t => !present.has(t));
-    return { missing, complete: missing.length === 0, ok: true };
-  }},
-  { name: 'confidence score', fn: (claims, prev) => {
-    let score = 70;
-    if (prev[1].monoculture) score -= 15;
-    if (prev[2].weak) score -= 10;
-    if (prev[3].count > 0) score -= 5 * prev[3].count;
-    if (!prev[4].complete) score -= 10;
-    score = Math.max(10, Math.min(100, score));
-    return { score, ok: score >= 40 };
-  }},
-  { name: 'generate verdict', fn: (claims, prev) => {
-    const score = prev[5].score;
-    let verdict;
-    if (score >= 80) verdict = 'High confidence. Research is well-balanced with strong evidence.';
-    else if (score >= 60) verdict = 'Moderate confidence. Some gaps remain — consider additional research passes.';
-    else if (score >= 40) verdict = 'Low confidence. Significant gaps or tensions detected. More evidence needed.';
-    else verdict = 'Insufficient. Claims lack diversity or evidence strength for a reliable brief.';
-    return { verdict, score, tensions: prev[3].tensions, missing: prev[4].missing, ok: true };
-  }}
-];
-
-// ===================================================================
-// Rx8: FOLLOW-UP CHIP GENERATION
-// ===================================================================
-// generateFollowUpChips + generateGapClaims removed — replaced by generateNextStepChips
-
-async function runCompile() {
-  window._trackEvent?.('compile_run');
-
-  // Disable the compile button
-  var compileMsgBtn = document.getElementById('compileMsgBtn');
-  if (compileMsgBtn) compileMsgBtn.disabled = true;
-
-  // Add thinking indicator
-  addThinking();
-
-  const claims = currentClaims();
-  const results = [];
-
-  // Create a pass-lines container in an AI message
-  removeThinking();
-  var compileContainer = document.createElement('div');
-  var passLinesDiv = document.createElement('div');
-  compileContainer.appendChild(passLinesDiv);
-  var compileMsg = addMessage('ai', compileContainer);
-
-  for (let i = 0; i < COMPILER_PASSES.length; i++) {
-    const pass = COMPILER_PASSES[i];
-    await delay(280 + Math.random() * 200);
-
-    const result = pass.fn(claims, results);
-    results.push(result);
-
-    const line = document.createElement('div');
-    line.className = 'pass-line';
-    const icon = result.ok ? '<span class="check">&#10003;</span>' : '<span class="fail">&#10007;</span>';
-    line.innerHTML = icon + 'pass ' + (i+1) + '/7: ' + pass.name;
-    passLinesDiv.appendChild(line);
-    requestAnimationFrame(function() { line.classList.add('done'); });
-    announceCompilerPass('Pass ' + (i+1) + ' of 7: ' + pass.name + ' — ' + (result.ok ? 'passed' : 'issue detected'));
-    autoScroll();
-  }
-
-  await delay(300);
-
-  // Render verdict
-  const final = results[6];
-  var verdictDiv = document.createElement('div');
-  verdictDiv.style.marginTop = '0.8rem';
-
-  const vTitle = document.createElement('div');
-  vTitle.className = 'verdict-title';
-  vTitle.textContent = 'compilation complete \u2014 confidence: ' + final.score + '/100';
-  verdictDiv.appendChild(vTitle);
-
-  const vBody = document.createElement('div');
-  vBody.className = 'verdict-body';
-  vBody.textContent = final.verdict;
-
-  if (final.tensions.length > 0) {
-    vBody.appendChild(document.createElement('br'));
-    vBody.appendChild(document.createElement('br'));
-    const tensionLabel = document.createElement('span');
-    tensionLabel.className = 'conflict-flag';
-    tensionLabel.textContent = 'Tensions detected:';
-    vBody.appendChild(tensionLabel);
-    final.tensions.forEach(function(t) {
-      vBody.appendChild(document.createElement('br'));
-      vBody.appendChild(document.createTextNode('\u00A0\u00A0' + t.pair[0] + ' vs ' + t.pair[1] + ' (shared: ' + t.overlap.join(', ') + ')'));
-    });
-  }
-  if (final.missing.length > 0) {
-    vBody.appendChild(document.createElement('br'));
-    vBody.appendChild(document.createElement('br'));
-    vBody.appendChild(document.createTextNode('Missing claim types: ' + final.missing.join(', ')));
-  }
-  verdictDiv.appendChild(vBody);
-  compileContainer.appendChild(verdictDiv);
-
-  // Handoff UI
-  const question = chatInput.value.trim() || TRACK_A_QUESTION;
-  const claimCount = claims.length;
-  const topicSet = new Set();
-  claims.forEach(function(c) { (c.text || '').split(/\s+/).slice(0, 3).forEach(function(w) { if (w.length > 4) topicSet.add(w.toLowerCase()); }); });
-  const topicCount = Math.max(1, Math.min(topicSet.size, claimCount));
-
-  const shortPrompt = 'I explored a research question in the grainulator.app demo and want to continue with the full wheat plugin.\n\nQuestion: ' + question + '\nKey findings: ' + final.verdict + '\nClaims so far: ' + claimCount + ' claims across ' + topicCount + ' topics\nConfidence: ' + final.score + '/100\n\nPlease install the wheat plugin (/plugin install grainulator) and continue this research sprint.';
-  const claimSummaries = claims.slice(0, 10).map(function(c) { return '- [' + c.type + '] ' + c.text; }).join('\n');
-  const longPrompt = 'I explored a research question in the grainulator.app demo and want to continue with the full wheat plugin.\n\nQuestion: ' + question + '\nKey findings: ' + final.verdict + '\nClaims so far: ' + claimCount + ' claims across ' + topicCount + ' topics\nConfidence: ' + final.score + '/100\n\nClaim summaries:\n' + claimSummaries + '\n\nPlease install the wheat plugin (/plugin install grainulator) and continue this research sprint.';
-
-  const handoff = document.createElement('div');
-  handoff.className = 'handoff-section';
-  const hasShare = typeof navigator.share === 'function';
-  handoff.innerHTML = '<button class="handoff-primary" id="handoff-clipboard" type="button">Copy for Claude Code</button>' +
-    (hasShare ? '<button class="handoff-secondary" id="handoff-share" type="button">Share</button>' : '');
-  compileContainer.appendChild(handoff);
-
-  var shareBtn = document.getElementById('handoff-share');
-  if (shareBtn) {
-    shareBtn.addEventListener('click', function() {
-      window._trackEvent?.('handoff_click', { type: 'share' });
-      navigator.share({ title: 'Grainulator Sprint', text: shortPrompt, url: location.origin + '/#q=' + encodeURIComponent(question) })
-        .then(function() { showToast('shared.'); })
-        .catch(function(err) { if (err.name !== 'AbortError') showToast('share failed'); });
-    });
-  }
-
-  document.getElementById('handoff-clipboard').addEventListener('click', function() {
-    window._trackEvent?.('handoff_click', { type: 'clipboard' });
-    // iOS Safari fallback: textarea + execCommand
-    function fallbackCopy(text) {
-      var ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.cssText = 'position:fixed;left:-9999px';
-      document.body.appendChild(ta);
-      ta.select();
-      ta.setSelectionRange(0, text.length);
-      document.execCommand('copy');
-      ta.remove();
-    }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(longPrompt).then(function() { showToast('Copied — paste into Claude Code'); }).catch(function() { fallbackCopy(longPrompt); showToast('Copied — paste into Claude Code'); });
-    } else {
-      fallbackCopy(longPrompt);
-      showToast('Copied — paste into Claude Code');
-    }
-  });
-
-  announceState('Compilation complete. Confidence score: ' + final.score + ' out of 100.');
-
-  // Save compilation result
-  window._compilationResult = { score: final.score, verdict: final.verdict, tensions: final.tensions, missing: final.missing };
-  saveSession();
-
-  // Post-compile chips — specific to what's missing
-  var postChips = [];
-  if (final.missing.length > 0) {
-    final.missing.forEach(function(t) {
-      if (t === 'risk') postChips.push('what are the risks?');
-      else if (t === 'constraint') postChips.push('what are the constraints?');
-      else if (t === 'recommendation') postChips.push('what do you recommend?');
-      else if (t === 'factual') postChips.push('dig deeper');
-    });
-  }
-  if (final.tensions.length > 0) postChips.push('resolve the tensions');
-  if (postChips.length === 0) postChips.push('challenge that recommendation');
-  postChips = postChips.slice(0, 3);
-
-  document.querySelectorAll('.msg .follow-up-chips').forEach(function(el) { el.remove(); });
-  var chipsEl = document.createElement('div');
-  chipsEl.className = 'follow-up-chips';
-  postChips.forEach(function(text) {
-    var btn = document.createElement('button');
-    btn.className = 'chip';
-    btn.type = 'button';
-    btn.textContent = text;
-    btn.addEventListener('click', function() {
-      chatInput.value = text;
-      sendBtn.classList.add('active');
-      chatInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
-    });
-    chipsEl.appendChild(btn);
-  });
-  compileMsg.appendChild(chipsEl);
-
-  autoScroll();
-  chatInput.focus();
-}
-
-function currentClaims() {
-  // Rx7: return accumulated claims if any, else live claims, else Track A
-  if (window._allClaims && window._allClaims.length > 0) return window._allClaims;
-  return window._liveClaims || TRACK_A_CLAIMS;
-}
-
-function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-// ===================================================================
-// MODEL ENGINE — Transformers.js with WebGPU, model picker, streaming
-// ===================================================================
-const MODELS = [
-  { id: 'SmolLM2-360M-Instruct-q4f16_1-MLC', label: 'SmolLM2 360M', size: '~200MB', tier: 'minimal' },
-  { id: 'SmolLM2-1.7B-Instruct-q4f16_1-MLC', label: 'SmolLM2 1.7B', size: '~1GB', tier: 'reduced-gpu' },
-  { id: 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC', label: 'Qwen2.5 1.5B', size: '~900MB', tier: 'full' },
-  { id: 'Phi-3.5-mini-instruct-q4f16_1-MLC', label: 'Phi 3.5 Mini', size: '~2GB', tier: 'full' },
-];
-
-window._modelEngine = null;
-window._modelTokenizer = null;
-window._modelReady = false;
-window._activeModelId = null;
-window._modelAbort = null;
-
-// No model picker — Pollinations is primary, WebLLM loads silently
-function renderModelMenu() {} // no-op, kept for compatibility
-
-async function detectTier() {
-  if (!navigator.gpu) return 'minimal';
-  try {
-    const adapter = await navigator.gpu.requestAdapter();
-    if (!adapter) return 'minimal';
-    const maxBuf = adapter.limits?.maxBufferSize || Infinity;
-    if (maxBuf < 256 * 1024 * 1024) return 'reduced-gpu';
-    return 'full';
-  } catch { return 'minimal'; }
-}
-
-async function loadModel(modelId) {
-  if (window._modelLoading && window._activeModelId === modelId) return;
-  if (window._modelAbort) { window._modelAbort.abort(); }
-  await new Promise(function(r) { setTimeout(r, 50); });
-  window._modelAbort = new AbortController();
-  window._modelReady = false;
-  if (window._modelWorker) { window._modelWorker.terminate(); window._modelWorker = null; }
-  window._modelEngine = null;
-  window._activeModelId = modelId;
-  window._modelLoading = true;
-
-  try {
-    var { CreateWebWorkerMLCEngine } = await import('https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.82/+esm');
-    if (window._modelAbort.signal.aborted) throw new Error('Cancelled');
-
-    var worker = new Worker('/llm-worker.js', { type: 'module' });
-    window._modelWorker = worker;
-    var engine = await CreateWebWorkerMLCEngine(worker, modelId, {
-      initProgressCallback: function(report) {
-        if (window._modelAbort.signal.aborted) { worker.terminate(); throw new Error('Cancelled'); }
-      }
-    });
-
-    if (window._modelAbort.signal.aborted) throw new Error('Cancelled');
-    window._modelEngine = engine;
-    window._modelReady = true;
-    window._modelLoading = false;
-    console.log('WebLLM ready:', modelId);
-
-  } catch (err) {
-    console.warn('WebLLM load:', err.message);
-    window._modelLoading = false;
-  }
-}
-
-// Auto-load best model for device tier
-// Enable input immediately — Pollinations (cloud) is the primary path
-if (uxState === 'LAVA_ONLY') transitionTo('LAVA_WITH_INPUT');
-chatInput.disabled = false;
-chatInput.placeholder = 'Ask anything...';
-document.getElementById('inputBar').classList.add('visible');
-if (!isMobileDevice) chatInput.focus();
-// Freeze lava — it served as the loading state, now free up GPU for typing
-pauseShader();
-
-// Load WebLLM silently in background — defer until idle or first interaction
-if (!CASCADE_OFF) {
-  var _startWebLLM = function() {
-    window.removeEventListener('click', _startWebLLM);
-    window.removeEventListener('keydown', _startWebLLM);
-    (async function() {
-      var tier = 'minimal';
-      try { tier = await detectTier(); } catch(e) {}
-      document.documentElement.setAttribute('data-tier', tier);
-      if (tier !== 'minimal') loadModel(MODELS[0].id);
-    })();
-  };
-  if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(function() { setTimeout(_startWebLLM, 3000); });
-  } else {
-    setTimeout(_startWebLLM, 5000);
-  }
-  // Also start on first interaction in case idle fires too late
-  window.addEventListener('click', _startWebLLM, { once: true });
-  window.addEventListener('keydown', _startWebLLM, { once: true });
-}
-
-// ===================================================================
-// LIVE INFERENCE (Track B) — when model is ready + user submits question
-// ===================================================================
-const qInput = chatInput;
-
-qInput.addEventListener('keydown', async (e) => {
-  if (e.key !== 'Enter') return;
-  if (e.shiftKey) return; // Shift+Enter adds newline
-  e.preventDefault();
-  if (inferenceRunning) return;
-  var question = qInput.value.trim().substring(0, 500);
-  if (!question && !_attachedFileText) return;
-
-  // Prepend file content if attached
-  if (_attachedFileText) {
-    question = '[File: ' + _attachedFileName + ']\n' + _attachedFileText.substring(0, 4000) + '\n\nQuestion: ' + question;
-    _attachedFileText = ''; _attachedFileName = '';
-    var fchip = document.querySelector('.file-chip');
-    if (fchip) fchip.remove();
-  }
-
-  // Clear input immediately
-  qInput.value = '';
-  qInput.style.height = 'auto';
-  sendBtn.classList.remove('active');
-  if (isMobileDevice) qInput.blur();
-
-  const cascadeStart = performance.now();
-
-  // Transition to CHAT_ACTIVE on first message
-  if (uxState !== 'CHAT_ACTIVE') transitionTo('CHAT_ACTIVE');
-
-  addMessage('user', question);
-  addThinking();
-
-  // ── Layer 1: Cloud LLM (Pollinations — best quality, requires network) ──
-  if (navigator.onLine && !isOffTopic(question) && !isSlashCommand(question) && !/^challenge\b/i.test(question.trim())) {
-    try {
-      // Build conversation context — full history, truncated to fit ~6K URL limit
-      var ctx = '';
-      var history = window._conversationHistory || [];
-      var aiResponses = document.querySelectorAll('.msg-ai');
-      // Include last 6 turns of conversation
-      var recentTurns = history.slice(-6);
-      if (recentTurns.length > 0 && recentTurns[0].question !== history[0]?.question) {
-        ctx += 'Original question: ' + (history[0]?.question || '').substring(0, 100) + '\n\n';
-      }
-      recentTurns.forEach(function(turn, i) {
-        ctx += 'User: ' + turn.question.substring(0, 150) + '\n';
-        // Get corresponding AI response text
-        var aiEl = aiResponses[i + (history.length - recentTurns.length)];
-        if (aiEl) ctx += 'Assistant: ' + aiEl.textContent.substring(0, 200) + '\n\n';
-      });
-      // Add current claims summary
-      var claims = window._allClaims || [];
-      if (claims.length > 0) {
-        ctx += 'Claims so far (' + claims.length + '):\n';
-        claims.slice(-8).forEach(function(c) { ctx += '- [' + c.type + '] ' + c.text.substring(0, 60) + '\n'; });
-        ctx += '\n';
-      }
-      ctx += 'User: ' + question.substring(0, 300);
-      // Truncate to keep URL under ~6K
-      if (ctx.length > 3000) ctx = ctx.substring(ctx.length - 3000);
-      var sysPrompt = 'You are Grainulator, a research sprint assistant built by grainulation.com. Grainulator is a Claude Code plugin that helps teams make evidence-backed technical decisions. It works by accumulating typed claims (constraints, facts, estimates, risks, recommendations), compiling them through a 7-pass pipeline, and producing confidence-scored briefs. Users install it via: /plugin install grainulator. This demo at grainulator.app showcases the research sprint workflow. You can use full markdown including tables, bold, lists, and code blocks. Be specific and informative. Keep your answer to 2-3 paragraphs. Do NOT discuss unrelated topics.';
-      var apiUrl = 'https://text.pollinations.ai/' + encodeURIComponent(ctx) + '?model=openai&system=' + encodeURIComponent(sysPrompt) + '&nostream=true';
-      var llmResponse = await fetch(apiUrl, { signal: AbortSignal.timeout(15000) });
-      if (llmResponse.ok) {
-        var llmText = (await llmResponse.text()).trim();
-        // Guard: discard API error/deprecation notices masquerading as LLM responses (#1)
-        if (/IMPORTANT NOTICE|API is being deprecated|migrate to our new service/i.test(llmText)) {
-          throw new Error('API returned deprecation notice instead of LLM response');
-        }
-        if (llmText && llmText.length > 20) {
-          removeThinking();
-          var aiMsg = addMessage('ai', renderMarkdown(llmText));
-          var extractedClaims = extractClaimsFromText(llmText, question);
-          if (extractedClaims.length > 0) {
-            var reIdClaims = extractedClaims.map(function(c) {
-              var idx = window._nextClaimIndex++;
-              return { id: 'd' + String(idx).padStart(3, '0'), type: c.type, tier: 'web', text: c.text, unverified: true };
-            });
-            window._allClaims = window._allClaims.concat(reIdClaims);
-            window._turnCount++;
-            window._conversationHistory.push({ turn: window._turnCount, question: question, source: 'cloud-llm' });
-            window._liveClaims = window._allClaims;
-            aiMsg.appendChild(renderClaimsToggle(reIdClaims));
-            showCompileButton();
-            saveSession();
-          }
-          generateNextStepChips(aiMsg);
-          autoScroll();
-          inferenceRunning = false;
-          qInput.disabled = false;
-          return;
-        }
-      }
-    } catch (e) {
-      console.warn('Cloud LLM:', e.message);
-    }
-  }
-
-  // ── Layer 2: Local WebLLM (offline fallback) ──
-  if (window._modelReady && window._modelEngine) {
-    try {
-      var localResponse = await window._modelEngine.chat.completions.create({
-        messages: [
-          { role: 'system', content: 'You are a research assistant helping evaluate a technical decision. Stay focused on the topic. Be specific. Keep your answer to 2-3 paragraphs. Do NOT discuss unrelated topics.' },
-          { role: 'user', content: question }
-        ],
-        temperature: 0.7,
-        max_tokens: 512
-      });
-      var localText = (localResponse.choices[0].message.content || '').trim();
-      if (localText && localText.length > 20) {
-        removeThinking();
-        var aiMsg = addMessage('ai', renderMarkdown(localText));
-        var extractedClaims = extractClaimsFromText(localText, question);
-        if (extractedClaims.length > 0) {
-          var reIdClaims = extractedClaims.map(function(c) {
-            var idx = window._nextClaimIndex++;
-            return { id: 'd' + String(idx).padStart(3, '0'), type: c.type, tier: 'stated', text: c.text, unverified: true };
-          });
-          window._allClaims = window._allClaims.concat(reIdClaims);
-          window._turnCount++;
-          window._conversationHistory.push({ turn: window._turnCount, question: question, source: 'local-llm' });
-          window._liveClaims = window._allClaims;
-          aiMsg.appendChild(renderClaimsToggle(reIdClaims));
-          showCompileButton();
-          saveSession();
-        }
-        generateNextStepChips(aiMsg);
-        autoScroll();
-        inferenceRunning = false;
-        qInput.disabled = false;
-        return;
-      }
-    } catch (err) {
-      console.warn('Local LLM:', err.message);
-    }
-  }
-
-  // ── Layer 3: Template fallback ──
-  fallbackToCascade(question, cascadeStart);
-});
-
-function isFollowUp(question) {
-  var lower = question.toLowerCase().trim();
-  // Explicit follow-up patterns (any turn)
-  if (/^(yes|no|yeah|nah|ok|sure|right|exactly|agreed|makes sense)\b/i.test(lower)) return true;
-  if (/^(we are|we do|we have|we\'re|that\'s|this is|doing that|already)\b/i.test(lower)) return true;
-  // Wheat-style commands — but NOT challenge (that needs special handling)
-  if (/^(any blind|what are the risk|what about|how about|can we|dig deeper|witness)/i.test(lower)) return true;
-  // Short messages are follow-ups ONLY if they have fewer than 3 significant words
-  if (lower.length < 40 && window._turnCount > 0 && significantWords(question).length < 3) return true;
-  return false;
-}
-
-function generateFollowUpResponse(question) {
-  var prevClaims = window._allClaims;
-  var risks = prevClaims.filter(function(c) { return c.type === 'risk'; });
-  var recs = prevClaims.filter(function(c) { return c.type === 'recommendation'; });
-  var constraints = prevClaims.filter(function(c) { return c.type === 'constraint'; });
-  var lastQ = window._conversationHistory.length > 0 ? window._conversationHistory[window._conversationHistory.length - 1].question : '';
-
-  var lower = question.toLowerCase();
-  var text = '';
-  var claims = [];
-
-  if (/blindspot|gap|missing|blind[- ]spot|what else/i.test(lower)) {
-    var blindSpotAngles = [
-      { text: 'What happens if this fails? Is there a rollback plan? Most teams skip this until it\'s too late.', claim: { type: 'risk', text: 'No rollback plan has been discussed — if the pilot fails, the path back needs to be defined.' } },
-      { text: 'Who are the stakeholders who haven\'t weighed in yet? Decisions made without buy-in get relitigated later.', claim: { type: 'constraint', text: 'Stakeholder buy-in beyond the directly involved teams has not been validated.' } },
-      { text: 'What\'s the second-order effect? If this succeeds, what new problems does it create?', claim: { type: 'risk', text: 'Success may introduce new complexity — second-order effects have not been mapped.' } },
-      { text: 'Are we optimizing for the right time horizon? What looks good for Q1 might hurt in Q4.', claim: { type: 'constraint', text: 'The evaluation time horizon is unclear — short-term wins may conflict with long-term goals.' } },
-      { text: 'What would a skeptic say? If someone opposed this, what would their strongest argument be?', claim: { type: 'risk', text: 'The strongest counter-argument has not been articulated or addressed.' } },
-    ];
-    var bsAngle = blindSpotAngles[window._turnCount % blindSpotAngles.length];
-    var firstQ = window._conversationHistory.length > 0 ? window._conversationHistory[0].question : '';
-    text = 'Looking at the ' + prevClaims.length + ' claims';
-    if (firstQ) text += ' about <em>' + escapeHtml(firstQ.substring(0, 60)) + '</em>';
-    text += ':';
-    if (risks.length === 0) text += '<br><br>We haven\'t identified any risks yet — that\'s a significant gap.';
-    if (constraints.length === 0) text += '<br><br>No constraints captured — what are the hard boundaries?';
-    text += '<br><br>' + bsAngle.text;
-    claims = [bsAngle.claim];
-  } else if (/witness|verify|evidence|prove|check/i.test(lower)) {
-    text = 'To strengthen the evidence, we\'d want to look at:';
-    text += '<br><br>1. Case studies from teams of similar size who made this change';
-    text += '<br>2. Metrics from the pilot teams — what are they actually measuring?';
-    text += '<br>3. Feedback from the 8 teams NOT in the pilot — are they bought in or resistant?';
-    claims = [
-      { type: 'recommendation', text: 'Collect quantitative metrics from pilot teams before expanding — anecdotal feedback is insufficient for org-wide decisions.' },
-      { type: 'risk', text: 'Selection bias in pilot teams (volunteers vs assigned) may not represent how the remaining teams will respond.' }
-    ];
-  } else if (/we are|we do|we have|we\'re|doing that|already/i.test(lower)) {
-    text = 'Good — that\'s noted. Building on what you\'ve shared so far:';
-    if (recs.length > 0) text += '<br><br>Given that context, the recommendation to <em>' + escapeHtml(recs[recs.length-1].text.toLowerCase().substring(0, 80)) + '</em> seems aligned with your approach.';
-    text += '<br><br>The key question now is: what\'s your success criteria? How will you know when it\'s time to expand from 2 teams to the next batch?';
-    claims = [
-      { type: 'constraint', text: 'Success criteria for the pilot phase need to be defined before expansion decisions are made.' },
-      { type: 'recommendation', text: 'Define a clear go/no-go checklist for scaling from pilot to broader rollout.' }
-    ];
-  } else {
-    // Generic follow-up — reference compile state if we just compiled
-    var firstQ = window._conversationHistory.length > 0 ? window._conversationHistory[0].question : '';
-    var compResult = window._compilationResult;
-    text = 'Building on that';
-    if (firstQ) text += ' — your original question was about <em>' + escapeHtml(firstQ.substring(0, 80)) + '</em>';
-    text += '.';
-
-    if (compResult && compResult.missing && compResult.missing.length > 0) {
-      // Post-compile: guide user to fill gaps
-      text += '<br><br>The last compile flagged missing claim types: <strong>' + compResult.missing.join(', ') + '</strong>. Let\'s fill those gaps.';
-      if (compResult.missing.indexOf('risk') !== -1) {
-        text += '<br><br>What could go wrong with this approach? What are the failure modes?';
-        claims = [{ type: 'risk', text: 'Failure modes and rollback scenarios have not been explored for ' + (firstQ || 'this decision') + '.' }];
-      } else {
-        text += '<br><br>Try asking about ' + compResult.missing[0] + 's specifically.';
-        claims = [];
-      }
-    } else {
-      text += '<br><br>So far we have ' + prevClaims.length + ' claims.';
-      if (risks.length > 0) text += ' We\'ve flagged ' + risks.length + ' risk' + (risks.length > 1 ? 's' : '') + '.';
-      if (recs.length > 0) text += ' ' + recs.length + ' recommendation' + (recs.length > 1 ? 's' : '') + '.';
-      text += '<br><br>To go deeper, try asking about costs, timeline, team impact, or alternatives.';
-      claims = [];
-    }
-  }
-
-  return { text: text, claims: claims };
-}
-
-function isOffTopic(q) {
-  var lower = q.toLowerCase().trim();
-  if (lower.length < 2) return true; // single char
-  if (/^(hi|hey|hello|sup|yo|howdy|greetings|help|thanks|thank you|bye)\b/i.test(lower)) return true;
-  if (/^(what is this|who are you|help me|can you help|write me|make me|how do i use|tell me about yourself)/i.test(lower)) return true;
-  if (/^(what is \d|how much is|calculate|math|joke|poem|story|sing|draw)/i.test(lower)) return true;
-  if (/^(can you access|can you read|can you see|can you delete|what files)/i.test(lower)) return true;
-  if (/\bmy \d+ year old\b|\bmy kid\b|\bmy child\b|\bfor kids\b|\bfor beginners\b/i.test(lower)) return true;
-  if (/\breplace (software |)engineers\b|\breplace (developers|programmers)\b/i.test(lower)) return true;
-  if (/<[^>]+>/.test(q)) return true; // HTML/XSS
-  if (/^(ignore|forget|disregard|override|bypass)/i.test(lower)) return true; // prompt injection
-  if (!/[a-zA-Z]{3,}/.test(q)) return true; // no real words (emoji, symbols only)
-  // Single word without ? — not a question, redirect
-  if (lower.split(/\s+/).length === 1 && !/\?$/.test(lower)) return true;
-  return false;
-}
-
-function isSlashCommand(q) {
-  return /^\/(research|challenge|blind-spot|witness|brief|status|resolve|feedback)\b/i.test(q.trim());
-}
-
-function handleOffTopic(question) {
-  removeThinking();
-  addMessage('ai', 'I\'m a research sprint demo — I help teams think through complex questions by gathering evidence, flagging risks, and grading confidence.<br><br>Try asking about a real decision your team is facing, like:<br>• <em>How do we make our product accessible without delaying the launch?</em><br>• <em>What\'s the right code review process for a growing team?</em><br>• <em>Should our remote team switch to async-first standups?</em>');
-  autoScroll();
-}
-
-function handleSlashCommand(question) {
-  var match = question.match(/^\/(\w[\w-]*)\s*(.*)/);
-  if (!match) return false;
-  var cmd = match[1].toLowerCase();
-  var arg = match[2].trim();
-
-  if (cmd === 'blind-spot' || cmd === 'blindspot') {
-    // Route to blind-spot handler
-    removeThinking();
-    var followUp = generateFollowUpResponse('/blind-spot');
-    var aiMsg = addMessage('ai', followUp.text);
-    var claims = followUp.claims.map(function(c) {
-      var idx = window._nextClaimIndex++;
-      return { id: 'd' + String(idx).padStart(3, '0'), type: c.type, tier: 'stated', text: c.text };
-    });
-    window._allClaims = window._allClaims.concat(claims);
-    window._turnCount++;
-    window._liveClaims = window._allClaims;
-    if (claims.length > 0) aiMsg.appendChild(renderClaimsToggle(claims));
-    generateNextStepChips(aiMsg);
-    showCompileButton();
-    saveSession();
-    autoScroll();
-    return true;
-  }
-
-  if (cmd === 'challenge') {
-    removeThinking();
-    // Cycle through unchallenged claims (recs first, then factuals, then constraints)
-    window._challengedIds = window._challengedIds || {};
-    var challengeable = window._allClaims.filter(function(c) {
-      return !window._challengedIds[c.id] && (c.type === 'recommendation' || c.type === 'factual' || c.type === 'constraint');
-    });
-    if (challengeable.length === 0) {
-      // Reset and cycle again
-      window._challengedIds = {};
-      challengeable = window._allClaims.filter(function(c) { return c.type === 'recommendation' || c.type === 'factual'; });
-    }
-    var target = challengeable.length > 0 ? challengeable[0] : null;
-    if (target) window._challengedIds[target.id] = true;
-    var prompts = [
-      'What if the opposite is true? What evidence would disprove this?',
-      'Who benefits from this claim, and who bears the risk if it\'s wrong?',
-      'Under what conditions does this break down? What are the edge cases?',
-      'Is this based on current data, or could it be outdated?'
-    ];
-    var prompt = prompts[Math.floor(Math.random() * prompts.length)];
-    var text = target
-      ? 'Challenging <em>' + escapeHtml(target.text.substring(0, 100)) + '</em>...<br><br>' + prompt
-      : 'All claims have been challenged. Try adding more evidence or run a blind-spot analysis.';
-    var aiMsg2 = addMessage('ai', text);
-    if (target) {
-      var claims2 = [{ id: 'd' + String(window._nextClaimIndex++).padStart(3, '0'), type: 'risk', tier: 'stated', text: 'The recommendation may not hold under different team size, timeline, or resource constraints.' }];
-      window._allClaims = window._allClaims.concat(claims2);
-      window._turnCount++;
-      window._liveClaims = window._allClaims;
-      aiMsg2.appendChild(renderClaimsToggle(claims2));
-    }
-    generateNextStepChips(aiMsg2);
-    showCompileButton();
-    saveSession();
-    autoScroll();
-    return true;
-  }
-
-  // For /research, strip the prefix and treat as a normal question
-  if (cmd === 'research' && arg) {
-    return false; // let it fall through to normal cascade with arg as question
-  }
-
-  return false;
-}
-
-function fallbackToCascade(question, cascadeStart) {
-  // Slash commands always take priority
-  if (isSlashCommand(question)) {
-    if (handleSlashCommand(question)) return;
-    question = question.replace(/^\/\w[\w-]*\s*/, '').trim() || question;
-  }
-
-  // Route chip clicks to specific handlers
-  if (/^challenge\b/i.test(question.trim()) && window._turnCount > 0) {
-    if (handleSlashCommand('/challenge')) return;
-  }
-  if (/^(any blind|blind.?spot)/i.test(question.trim()) && window._turnCount > 0) {
-    if (handleSlashCommand('/blind-spot')) return;
-  }
-  if (/^(what are the risks|dig deeper)\b/i.test(question.trim()) && window._turnCount > 0) {
-    removeThinking();
-    var firstQ = window._conversationHistory.length > 0 ? window._conversationHistory[0].question : 'this topic';
-    var prevClaims = window._allClaims || [];
-    var riskAngles = [
-      'What happens if the migration takes 3× longer than estimated? Do you have a rollback plan?',
-      'Who on the team has done this before? Lack of experience is a hidden risk that compounds under pressure.',
-      'What\'s the cost of doing nothing? Sometimes the risk of change is lower than the risk of staying put.',
-      'How will this affect teams that aren\'t directly involved? Downstream dependencies often get overlooked.',
-      'What\'s the worst realistic outcome? Not worst-case fantasy — the actual bad scenario you could plausibly hit.',
-    ];
-    var angle = riskAngles[window._turnCount % riskAngles.length];
-    var text = 'Thinking about <em>' + escapeHtml(firstQ.substring(0, 60)) + '</em> from a risk angle:<br><br>' + angle;
-    var aiMsg = addMessage('ai', text);
-    var newClaim = { id: 'd' + String(window._nextClaimIndex++).padStart(3, '0'), type: 'risk', tier: 'stated', text: angle.replace(/<[^>]*>/g, '') };
-    window._allClaims.push(newClaim);
-    window._turnCount++;
-    window._conversationHistory.push({ turn: window._turnCount, question: question, source: 'risk-chip' });
-    window._liveClaims = window._allClaims;
-    aiMsg.appendChild(renderClaimsToggle([newClaim]));
-    generateNextStepChips(aiMsg);
-    showCompileButton();
-    saveSession();
-    autoScroll();
-    return;
-  }
-
-  // Off-topic detection (first turn only)
-  if (isOffTopic(question) && window._turnCount === 0) {
-    handleOffTopic(question);
-    return;
-  }
-
-  // Check if this is a follow-up to an existing conversation
-  if (isFollowUp(question) && window._turnCount > 0) {
-    removeThinking();
-    var followUp = generateFollowUpResponse(question);
-    var aiMsg = addMessage('ai', followUp.text);
-    var claims = followUp.claims.map(function(c) {
-      var idx = window._nextClaimIndex++;
-      return { id: 'd' + String(idx).padStart(3, '0'), type: c.type, tier: 'stated', text: c.text };
-    });
-    window._allClaims = window._allClaims.concat(claims);
-    window._turnCount++;
-    window._conversationHistory.push({ turn: window._turnCount, question: question, source: 'follow-up' });
-    window._liveClaims = window._allClaims;
-    if (claims.length > 0) aiMsg.appendChild(renderClaimsToggle(claims));
-    generateNextStepChips(aiMsg);
-    showCompileButton();
-    saveSession();
-    autoScroll();
-    return;
-  }
-
-  {
-    removeThinking();
-    var response = generateConversationalFallback(question);
-    var aiMsg3 = addMessage('ai', response.text);
-    var claims3 = response.claims.map(function(c) {
-      var idx = window._nextClaimIndex++;
-      return { id: 'd' + String(idx).padStart(3, '0'), type: c.type, tier: 'stated', text: c.text };
-    });
-    window._allClaims = window._allClaims.concat(claims3);
-    window._turnCount++;
-    window._conversationHistory.push({ turn: window._turnCount, question: question, source: 'template' });
-    window._liveClaims = window._allClaims;
-    if (claims3.length > 0) aiMsg3.appendChild(renderClaimsToggle(claims3));
-    generateNextStepChips(aiMsg3);
-    showCompileButton();
-    saveSession();
-    autoScroll();
-  }
-}
-
-function generateConversationalIntro(claims, question) {
-  var risks = claims.filter(function(c) { return c.type === 'risk'; });
-  var recs = claims.filter(function(c) { return c.type === 'recommendation'; });
-  var facts = claims.filter(function(c) { return c.type === 'factual'; });
-
-  var parts = [];
-  if (facts.length > 0) parts.push(escapeHtml(facts[0].text));
-  if (facts.length > 1) parts.push(escapeHtml(facts[1].text));
-  if (risks.length > 0) parts.push('One thing to watch out for: ' + escapeHtml(risks[0].text).toLowerCase());
-  if (recs.length > 0) parts.push(escapeHtml(recs[0].text));
-  return parts.join('<br><br>') || 'Here\'s what I found on that topic.';
-}
-
-function generateConversationalFallback(question) {
-  var q = escapeHtml(question);
-  var templates = [
-    {
-      text: 'There are a few angles to consider with <em>' + q + '</em>.<br><br>The trade-offs depend on your team size, existing infrastructure, and how much migration cost you can absorb. Most teams that navigate this well start with a bounded pilot before committing fully.',
-      claims: [
-        { type: 'constraint', text: 'The right approach depends on team context, existing infrastructure, and acceptable migration cost.' },
-        { type: 'recommendation', text: 'Start with a bounded pilot to validate assumptions before full commitment.' },
-        { type: 'risk', text: 'Moving too fast without a pilot risks partial adoption that creates more problems than it solves.' }
-      ]
-    },
-    {
-      text: 'This comes down to a few key trade-offs.<br><br>For <em>' + q + '</em>, the main tension is usually between what\'s technically ideal and what your team can actually execute on your timeline. The best choice is rarely the most sophisticated one — it\'s the one that fits.',
-      claims: [
-        { type: 'factual', text: 'The best solution is usually the one that fits the team\'s capacity and timeline, not the most technically elegant.' },
-        { type: 'recommendation', text: 'Be explicit about what you\'re optimizing for — speed, reliability, cost, or developer experience.' },
-        { type: 'risk', text: 'Optimizing for everything at once often means optimizing for nothing.' }
-      ]
-    },
-    {
-      text: 'Let me think through this.<br><br>With <em>' + q + '</em>, the conventional wisdom doesn\'t always hold up. What matters most is understanding your specific constraints — what\'s non-negotiable, what\'s flexible, and where the real risks are.',
-      claims: [
-        { type: 'constraint', text: 'Conventional wisdom may not apply — validate against your specific constraints.' },
-        { type: 'recommendation', text: 'Identify what\'s non-negotiable vs. flexible before evaluating options.' },
-        { type: 'factual', text: 'Practical outcomes correlate more with constraint awareness than with choosing the "best" technology.' }
-      ]
-    }
-  ];
-
-  return templates[Math.floor(Math.random() * templates.length)];
-}
-
-// ===================================================================
-// SERVICE WORKER + EASTER EGG — preserved from v1
+// SERVICE WORKER
 // ===================================================================
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(() => {});
+  navigator.serviceWorker.register('/sw.js').catch(function() {});
 }
 
 // ===================================================================
 // PWA STANDALONE MODE DETECTION
 // ===================================================================
 (function initPWAMode() {
-  const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  var isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
   if (isPWA) {
     document.documentElement.classList.add('pwa-standalone');
-    window._trackEvent?.('pwa_standalone');
   }
 })();
 
-// ===================================================================
-// Offline — silent, no toast (Track A works without network after first cache)
-window._onWebLLMOffline = function() {};
-
 // Zero-dep local analytics — IndexedDB event log
 (function initLocalAnalytics() {
-  const DB_NAME = 'grainulator-analytics';
-  const STORE = 'events';
-  let db = null;
-  const open = indexedDB.open(DB_NAME, 1);
-  open.onupgradeneeded = () => { open.result.createObjectStore(STORE, { autoIncrement: true }); };
-  open.onsuccess = () => { db = open.result; };
+  var DB_NAME = 'grainulator-analytics';
+  var STORE = 'events';
+  var db = null;
+  var open = indexedDB.open(DB_NAME, 1);
+  open.onupgradeneeded = function() { open.result.createObjectStore(STORE, { autoIncrement: true }); };
+  open.onsuccess = function() { db = open.result; };
   window._trackEvent = function(name, data) {
     if (!db) return;
     try {
-      const tx = db.transaction(STORE, 'readwrite');
+      var tx = db.transaction(STORE, 'readwrite');
       tx.objectStore(STORE).add({ event: name, data: data || {}, ts: Date.now() });
     } catch(e) {}
   };
-  // Track page view
-  window._trackEvent('page_view', { referrer: document.referrer, tier: document.documentElement.getAttribute('data-tier') });
+  window._trackEvent('page_view', { referrer: document.referrer });
 })();
 
 // ===================================================================
-// iOS KEYBOARD — adjust layout when virtual keyboard opens
+// REDUCED MOTION + VISIBILITY HANDLING
 // ===================================================================
-if (window.visualViewport) {
-  let pendingVV = null;
-  window.visualViewport.addEventListener('resize', () => {
-    if (pendingVV) cancelAnimationFrame(pendingVV);
-    pendingVV = requestAnimationFrame(() => {
-      const offset = window.innerHeight - window.visualViewport.height;
-      document.documentElement.style.setProperty('--kb-offset', Math.max(0, offset) + 'px');
-      // Shrink app to visual viewport height when keyboard is open
-      const appEl = document.getElementById('app');
-      if (offset > 50) {
-        appEl.style.height = window.visualViewport.height + 'px';
-      } else {
-        appEl.style.height = '';
-      }
-      autoScroll();
-    });
-  });
-}
-
-// Reduced motion: pause shader at start
 if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
   motionTogglePaused = true;
   pauseShader();
 }
 
-// Page Visibility API pause
-document.addEventListener('visibilitychange', () => {
+document.addEventListener('visibilitychange', function() {
   if (document.hidden) { pauseShader(); }
   else if (!motionTogglePaused) { resumeShader(); }
 });
 
-// Hash-based question loading (input-first — #q= prefills, #demo scrolls to input)
-(function loadFromHash() {
-  const hash = location.hash;
-  if (hash.startsWith('#q=')) {
-    const q = decodeURIComponent(hash.slice(3));
-    if (q) {
-      window._queuedQuestion = q;
-      chatInput.value = q;
-      sendBtn.classList.add('active');
-    }
-  } else if (hash === '#demo') {
-    setTimeout(function() { chatInput.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 500);
-    history.replaceState(null, '', '/');
-  }
-})();
-
 // Easter egg (respects reduced-motion)
-let kb = '';
-document.addEventListener('keydown', (e) => {
+var kb = '';
+document.addEventListener('keydown', function(e) {
   kb = (kb + e.key.toLowerCase()).slice(-10);
   if (kb.includes('grain')) {
     kb = '';
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     document.body.style.transition = 'filter 0.2s';
     document.body.style.filter = 'invert(1) hue-rotate(180deg)';
-    setTimeout(() => { document.body.style.filter = 'none'; }, 400);
+    setTimeout(function() { document.body.style.filter = 'none'; }, 400);
   }
 });
-
-
-// ===================================================================
-// DEBUG: ?debug=cascade panel
-// ===================================================================
-const CASCADE_DEBUG = new URLSearchParams(location.search).get('debug') === 'cascade';
-
-function updateCascadeDebug(opts) {
-  if (!CASCADE_DEBUG) return;
-  let panel = document.getElementById('cascade-debug');
-  if (!panel) {
-    panel = document.createElement('div');
-    panel.id = 'cascade-debug';
-    panel.style.cssText = 'position:fixed;top:8px;right:8px;z-index:9999;background:rgba(0,0,0,0.85);border:1px solid rgba(141,246,255,0.3);border-radius:6px;padding:0.6rem 0.8rem;font-family:monospace;font-size:0.6rem;color:rgba(141,246,255,0.8);max-width:260px;pointer-events:none;';
-    document.body.appendChild(panel);
-  }
-  const lines = [];
-  lines.push('cascade layer: ' + (opts.cascadeLayer || '?'));
-  if (opts.score !== null && opts.score !== undefined) lines.push('fuzzy score: ' + opts.score.toFixed(3));
-  lines.push('timing: ' + (opts.timing || 0).toFixed(1) + 'ms');
-  if (opts.isTemplate) lines.push('(template fallback)');
-  panel.innerHTML = lines.join('<br>');
-}
-
-// Model ready watcher — update input placeholder
-(function watchModelReady() {
-  let _val = window._modelReady;
-  Object.defineProperty(window, '_modelReady', {
-    get() { return _val; },
-    set(v) {
-      _val = v;
-      if (v) {
-        var m = MODELS.find(function(x) { return x.id === window._activeModelId; });
-        chatInput.placeholder = 'Ask anything...';
-      }
-    },
-    configurable: true,
-    enumerable: true
-  });
-})();
-
-// ===================================================================
-// SELF-TEST PANEL — ?test=true or ~ key
-// ===================================================================
-(function initSelfTest() {
-  var active = new URLSearchParams(location.search).get('test') === 'true';
-  document.addEventListener('keydown', function(e) {
-    if (e.key === '`' && e.ctrlKey) { toggleTestPanel(); }
-  });
-  if (active) setTimeout(toggleTestPanel, 2000);
-
-  var panel = null;
-  var results = [];
-
-  function toggleTestPanel() {
-    if (panel) { panel.remove(); panel = null; return; }
-    panel = document.createElement('div');
-    panel.id = 'test-panel';
-    panel.style.cssText = 'position:fixed;top:0;right:0;bottom:0;width:min(400px,90vw);z-index:9999;background:rgba(6,13,16,0.97);border-left:1px solid rgba(141,246,255,0.2);overflow-y:auto;font-family:monospace;font-size:0.65rem;color:rgba(255,255,255,0.8);padding:1rem;display:flex;flex-direction:column;gap:0.5rem';
-    panel.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem"><strong style="color:#8df6ff">QA Test Panel</strong><button id="test-close" style="background:none;border:none;color:#f43f5e;cursor:pointer;font-size:0.8rem">✕</button></div><button id="test-run-all" style="background:rgba(141,246,255,0.08);border:1px solid rgba(141,246,255,0.2);color:#8df6ff;padding:0.4rem;border-radius:3px;cursor:pointer;font-family:inherit;font-size:0.6rem">Run all tests</button><div id="test-results" style="flex:1;overflow-y:auto"></div>';
-    document.body.appendChild(panel);
-    document.getElementById('test-close').onclick = toggleTestPanel;
-    document.getElementById('test-run-all').onclick = runAllTests;
-    if (active) setTimeout(runAllTests, 500);
-  }
-
-  function log(msg, type) {
-    var el = document.getElementById('test-results');
-    if (!el) return;
-    var line = document.createElement('div');
-    line.style.cssText = 'padding:0.2rem 0;border-bottom:1px solid rgba(255,255,255,0.04)';
-    var prefix = type === 'pass' ? '<span style="color:#22c55e">✓</span> ' : type === 'fail' ? '<span style="color:#f43f5e">✗</span> ' : type === 'info' ? '<span style="color:#8df6ff">→</span> ' : '';
-    line.innerHTML = prefix + msg;
-    el.appendChild(line);
-    el.scrollTop = el.scrollHeight;
-    results.push({ msg: msg, type: type, ts: Date.now() });
-  }
-
-  function simulateSend(text) {
-    var input = document.getElementById('chatInput');
-    var nativeSet = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
-    nativeSet.call(input, text);
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
-  }
-
-  function getLastAiResponse() {
-    var msgs = document.querySelectorAll('.msg-ai');
-    if (msgs.length === 0) return '';
-    return msgs[msgs.length - 1].textContent.substring(0, 200);
-  }
-
-  function waitFor(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
-
-  function clickNewChat() {
-    // Suppress confirm dialog during tests
-    var origConfirm = window.confirm;
-    window.confirm = function() { return true; };
-    document.getElementById('newChatBtn').click();
-    window.confirm = origConfirm;
-  }
-
-  async function runTest(name, steps) {
-    log('<strong>' + name + '</strong>', 'info');
-    clickNewChat();
-    await waitFor(500);
-
-    for (var i = 0; i < steps.length; i++) {
-      var step = steps[i];
-      simulateSend(step.input);
-      await waitFor(1500);
-
-      var response = getLastAiResponse();
-      var claims = window._allClaims ? window._allClaims.length : 0;
-
-      // Run assertions
-      if (step.expectContains) {
-        var found = step.expectContains.some(function(s) { return response.toLowerCase().indexOf(s.toLowerCase()) !== -1; });
-        if (found) {
-          log('  "' + step.input.substring(0, 40) + '" → response contains expected text', 'pass');
-        } else {
-          log('  "' + step.input.substring(0, 40) + '" → expected [' + step.expectContains.join('|') + '] not found in: ' + response.substring(0, 80), 'fail');
-        }
-      }
-      if (step.expectNotContains) {
-        var bad = step.expectNotContains.some(function(s) { return response.toLowerCase().indexOf(s.toLowerCase()) !== -1; });
-        if (!bad) {
-          log('  no unwanted text in response', 'pass');
-        } else {
-          log('  response contains unwanted text: ' + response.substring(0, 80), 'fail');
-        }
-      }
-      if (step.expectMinClaims != null) {
-        if (claims >= step.expectMinClaims) {
-          log('  claims: ' + claims + ' (min ' + step.expectMinClaims + ')', 'pass');
-        } else {
-          log('  claims: ' + claims + ' (expected min ' + step.expectMinClaims + ')', 'fail');
-        }
-      }
-      // Log response snippet for review
-      log('  <span style="color:rgba(255,255,255,0.4)">' + response.substring(0, 100) + '</span>');
-    }
-  }
-
-  async function runAllTests() {
-    results = [];
-    var el = document.getElementById('test-results');
-    if (el) el.innerHTML = '';
-    log('Starting test suite...', 'info');
-    var startTime = Date.now();
-
-    // Test 1: Research question produces claims
-    await runTest('Research question → claims', [
-      { input: 'should we migrate from mysql to postgres?', expectMinClaims: 3, expectNotContains: ['I\'m a research sprint demo'] },
-    ]);
-
-    // Test 2: Off-topic gets scope explanation
-    await runTest('Off-topic → scope explanation', [
-      { input: 'hello', expectContains: ['research sprint demo', 'complex question'], expectNotContains: ['trade-offs', 'conventional wisdom'] },
-    ]);
-
-    // Test 3: Follow-up references context
-    await runTest('Multi-turn context', [
-      { input: 'should we adopt kubernetes?', expectMinClaims: 3 },
-      { input: 'we have 5 teams', expectContains: ['noted', 'building on', 'context'] },
-      { input: 'any blind spots?', expectContains: ['claims so far', 'claims'] },
-    ]);
-
-    // Test 4: Edge case doesn't crash
-    await runTest('Edge cases', [
-      { input: 'a', expectContains: ['research sprint demo'] },
-      { input: '🔥🔥🔥', expectContains: ['research sprint demo'] },
-    ]);
-
-    // Test 5: Slash commands work
-    await runTest('Slash commands', [
-      { input: '/research api authentication', expectMinClaims: 3, expectNotContains: ['/research'] },
-      { input: '/challenge', expectContains: ['challenging', 'opposite', 'disprove'] },
-    ]);
-
-    // Test 6: Compile bar appears (needs 5+ claims, 2+ types)
-    await runTest('Compile bar visibility', [
-      { input: 'should we use graphql or rest?', expectMinClaims: 3 },
-      { input: 'what are the risks?', expectMinClaims: 4 },
-      { input: 'dig deeper', expectMinClaims: 5 },
-    ]);
-    var compileVisible = document.querySelector('.compile-bar.visible');
-    if (compileVisible) {
-      log('Compile bar visible after 5+ claims with 2+ types', 'pass');
-    } else {
-      log('Compile bar NOT visible (need 5+ claims, 2+ types)', 'fail');
-    }
-
-    // Test 7: Chips don't accumulate
-    await runTest('Chip accumulation check', [
-      { input: 'should we build or buy our auth system?', expectMinClaims: 3 },
-      { input: 'we tried building before and it failed', expectMinClaims: 4 },
-      { input: 'what about cost?', expectMinClaims: 5 },
-    ]);
-    var allChipContainers = document.querySelectorAll('.msg .follow-up-chips');
-    if (allChipContainers.length <= 1) {
-      log('Only 1 chip container (no accumulation)', 'pass');
-    } else {
-      log('Found ' + allChipContainers.length + ' chip containers (accumulation bug)', 'fail');
-    }
-
-    // Test 8: Non-English
-    await runTest('Non-English input', [
-      { input: 'deberíamos usar kubernetes o docker swarm?', expectMinClaims: 3, expectNotContains: ['I\'m a research sprint demo'] },
-    ]);
-
-    // Summary
-    var elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    var passes = results.filter(function(r) { return r.type === 'pass'; }).length;
-    var fails = results.filter(function(r) { return r.type === 'fail'; }).length;
-    log('<strong>Done in ' + elapsed + 's — ' + passes + ' passed, ' + fails + ' failed</strong>', fails > 0 ? 'fail' : 'pass');
-
-    // Expose results for console access
-    window.__testResults = results;
-  }
-
-  window.__test = { run: runAllTests, toggle: toggleTestPanel };
-})();
 </script>
 </body>
 </html>
