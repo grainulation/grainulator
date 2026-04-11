@@ -248,6 +248,7 @@ canvas.active{opacity:1}
 
 /* Cancel button */
 .cancel-btn{
+  display:none;
   margin-top:1.5rem;
   font-size:0.65rem;
   color:rgba(255,255,255,0.3);
@@ -1194,6 +1195,8 @@ function addClaimPill(claim) {
   pill.innerHTML = '<span class="pill-badge badge-' + claim.type + '">' + esc(claim.type) + '</span><span class="pill-text">' + esc(claim.text.substring(0, 60) + (claim.text.length > 60 ? '...' : '')) + '</span>';
   pills.appendChild(pill);
   pills.scrollTop = pills.scrollHeight;
+  // Show cancel button after first claim arrives (not before — avoids compiling empty sprint)
+  document.getElementById('cancelBtn').style.display = '';
 }
 
 function showToast(msg) {
@@ -1447,6 +1450,7 @@ function resetToInput() {
   document.getElementById('answerColumn').innerHTML = '';
   document.getElementById('answerColumn').setAttribute('aria-busy', 'false');
   document.getElementById('claimPills').innerHTML = '';
+  document.getElementById('cancelBtn').style.display = 'none';
   document.getElementById('compilerLines').innerHTML = '';
   document.getElementById('compilerLines').style.display = 'none';
   document.getElementById('claimCounter').textContent = '0';
