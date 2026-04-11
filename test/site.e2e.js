@@ -1,522 +1,360 @@
 /**
- * Playwright E2E tests for the Grainulator landing page.
+ * Playwright E2E tests for the Grainulator sprint-mode page.
  *
- * Tests the UX flow: page load → input → chat → claims → compile → verdict.
+ * Tests the UX flow: page load → input → 3-pass sprint → compiler → answer.
  * Uses route interception to mock Pollinations LLM for deterministic output.
- * Covers desktop + mobile viewports, a11y landmarks, and keyboard navigation.
+ * Covers desktop + mobile viewports, a11y, PWA, offline mode, and dead code.
  */
 
 import { expect, test } from "@playwright/test";
 
-// ── Mock LLM response with realistic claims ─────────────────────────────────
+// ── Sprint-mode page path ───────────────────────────────────────────────────
 
-const MOCK_LLM_RESPONSE = `Here's what the evidence shows across multiple dimensions.
+const SPRINT_PATH = "/sprint.html";
 
-SOC 2 Type II requires continuous monitoring and a point-in-time audit is insufficient for SaaS companies handling customer data. This is a hard constraint that cannot be bypassed.
-
-The average SOC 2 audit costs between 50K and 150K for a 10-person startup with 3 to 6 months of preparation time needed. Vanta and Drata have reduced this to 4 to 8 weeks for companies with modern cloud infrastructure.
-
-The biggest risk is that starting SOC 2 too early burns engineering cycles on compliance before product-market fit is achieved. Starting too late blocks enterprise sales because 73 percent of enterprise buyers require SOC 2 before signing any contract.
-
-I would recommend beginning with SOC 2 Type I as a stepping stone because it validates control design without requiring 6 months of operational evidence. It can typically be completed in 6 to 8 weeks with the right tooling.
-
-You should consider using automated compliance platforms which typically cost around 20K to 40K per year but save approximately 3 engineer-months of manual evidence collection work.
-
-Another danger to watch for is that compliance tooling vendors sometimes overstate automation coverage and you must verify that your specific infrastructure stack is fully supported before committing.
-
-The timeline estimate is approximately 4 to 8 weeks for Type I and 6 to 12 months for Type II depending on your current security posture and the number of trust service criteria you need to satisfy.`;
+// ── Mock LLM setup ──────────────────────────────────────────────────────────
 
 /**
- * Intercept Pollinations API and return deterministic claims.
- * This avoids network dependency and LLM non-determinism.
+ * Intercept Pollinations API at context level and return deterministic claims.
+ * Production mode uses POST with JSON response.
  */
 async function mockLLM(context) {
-	// Use context-level routing to intercept ALL requests including from service workers
-	await context.route(/pollinations\.ai/, (route) => {
-		route.fulfill({
-			status: 200,
-			contentType: "text/plain; charset=utf-8",
-			body: MOCK_LLM_RESPONSE,
-		});
-	});
+  await context.route(/pollinations\.ai/, (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        choices: [
+          {
+            message: {
+              content:
+                "[FACTUAL] Test fact about the topic that exceeds twenty characters easily.\n[RISK] This could go wrong in several important ways for users.\n[CONSTRAINT] Must consider this limit when planning the approach.\n[RECOMMENDATION] Do this instead because it is the better path forward.\n[ESTIMATE] Takes 2-4 weeks depending on scope and team velocity.",
+            },
+          },
+        ],
+      }),
+    });
+  });
 }
 
-// ── Page load & initial state ────────────────────────────────────────────────
+/** Helper: submit a question and wait for sprint state to become active. */
+async function submitQuestion(
+  page,
+  question = "How does SOC 2 compliance work?",
+) {
+  const input = page.locator("#questionInput");
+  await expect(input).toBeEnabled({ timeout: 5000 });
+  await input.fill(question);
+  await page.locator("#submitBtn").click();
+  await expect(page.locator("#sprintState")).toHaveClass(/active/, {
+    timeout: 5000,
+  });
+}
+
+/** Helper: wait for answer state to become active (sprint completed). */
+async function waitForAnswer(page) {
+  await expect(page.locator("#answerState")).toHaveClass(/active/, {
+    timeout: 45000,
+  });
+}
+
+// ── Page load & initial state ───────────────────────────────────────────────
 
 test.describe("page load", () => {
-	test("renders with correct title and meta", async ({ page }) => {
-		await page.goto("/");
-		await expect(page).toHaveTitle(/Grainulator/);
-		const desc = page.locator('meta[name="description"]');
-		await expect(desc).toHaveAttribute(
-			"content",
-			/evidence-tracked research sprints/i,
-		);
-	});
+  test("renders with correct title", async ({ page }) => {
+    await page.goto(SPRINT_PATH);
+    await expect(page).toHaveTitle(/Grainulator/);
+  });
 
-	test("input is enabled and focusable on load", async ({ page }) => {
-		await page.goto("/");
-		const input = page.locator("#chatInput");
-		await expect(input).toBeEnabled({ timeout: 5000 });
-		await expect(input).toHaveAttribute("placeholder", "Ask anything...");
-	});
+  test("input state is active on load", async ({ page }) => {
+    await page.goto(SPRINT_PATH);
+    await expect(page.locator("#inputState")).toHaveClass(/active/);
+    await expect(page.locator("#sprintState")).not.toHaveClass(/active/);
+    await expect(page.locator("#answerState")).not.toHaveClass(/active/);
+  });
 
-	test("canvas exists for lava shader", async ({ page }) => {
-		await page.goto("/");
-		const canvas = page.locator("#c");
-		await expect(canvas).toBeAttached();
-		await expect(canvas).toHaveAttribute("aria-hidden", "true");
-	});
-
-	test("compile bar is hidden initially", async ({ page }) => {
-		await page.goto("/");
-		const bar = page.locator("#compileBar");
-		await expect(bar).not.toHaveClass(/visible/);
-	});
-
-	test("install CTA links to GitHub", async ({ page }) => {
-		await page.goto("/");
-		const cta = page.locator("#ctaInstall");
-		await expect(cta).toHaveAttribute("href", /github\.com\/grainulation/);
-	});
+  test("lava background exists", async ({ page }) => {
+    await page.goto(SPRINT_PATH);
+    const lava = page.locator("#lavaBg");
+    await expect(lava).toBeAttached();
+  });
 });
 
-// ── A11y landmarks & ARIA ────────────────────────────────────────────────────
+// ── Input state ─────────────────────────────────────────────────────────────
+
+test.describe("input state", () => {
+  test("input field is enabled and focusable on load", async ({ page }) => {
+    await page.goto(SPRINT_PATH);
+    const input = page.locator("#questionInput");
+    await expect(input).toBeEnabled({ timeout: 5000 });
+    await expect(input).toHaveAttribute("placeholder", /complex question/i);
+  });
+
+  test("submit button exists", async ({ page }) => {
+    await page.goto(SPRINT_PATH);
+    const btn = page.locator("#submitBtn");
+    await expect(btn).toBeVisible();
+    await expect(btn).toContainText(/run sprint/i);
+  });
+
+  test("compile bar is NOT visible initially", async ({ page }) => {
+    await page.goto(SPRINT_PATH);
+    const compiler = page.locator("#compilerLines");
+    const display = await compiler.evaluate(
+      (el) => getComputedStyle(el).display,
+    );
+    expect(display).toBe("none");
+  });
+});
+
+// ── Accessibility ───────────────────────────────────────────────────────────
 
 test.describe("accessibility", () => {
-	test("has required ARIA landmarks", async ({ page }) => {
-		await page.goto("/");
-		await expect(page.locator('main[role="log"]')).toBeAttached();
-		await expect(page.locator("#progress-announcer")).toHaveAttribute(
-			"aria-live",
-			"polite",
-		);
-		await expect(page.locator("#state-announcer")).toHaveAttribute(
-			"aria-live",
-			"assertive",
-		);
-		await expect(page.locator("#compiler-announcer")).toHaveAttribute(
-			"aria-live",
-			"polite",
-		);
-	});
+  test("has ARIA live region for announcements", async ({ page }) => {
+    await page.goto(SPRINT_PATH);
+    await expect(page.locator("#announcer")).toHaveAttribute(
+      "aria-live",
+      "polite",
+    );
+  });
 
-	test("input has associated label", async ({ page }) => {
-		await page.goto("/");
-		const label = page.locator('label[for="chatInput"]');
-		await expect(label).toBeAttached();
-		await expect(label).toHaveText(/research question/i);
-	});
-
-	test("new chat button has aria-label", async ({ page }) => {
-		await page.goto("/");
-		await expect(page.locator("#newChatBtn")).toHaveAttribute(
-			"aria-label",
-			"New chat",
-		);
-	});
+  test("phase tint overlay exists for color feedback", async ({ page }) => {
+    await page.goto(SPRINT_PATH);
+    await expect(page.locator("#phaseTint.phase-tint")).toBeAttached();
+  });
 });
 
-// ── Chat flow: question → response → claims ─────────────────────────────────
+// ── Sprint flow ─────────────────────────────────────────────────────────────
 
-test.describe("chat flow", () => {
-	test("submitting a question shows user message and AI response", async ({
-		page,
-	}) => {
-		await mockLLM(page.context());
-		await page.goto("/");
-		const input = page.locator("#chatInput");
-		await expect(input).toBeEnabled({ timeout: 5000 });
+test.describe("sprint flow", () => {
+  test.setTimeout(45000);
 
-		await input.fill("How should a startup approach SOC 2 compliance?");
-		await input.press("Enter");
+  test("submitting question transitions to sprint state", async ({ page }) => {
+    await mockLLM(page.context());
+    await page.goto(SPRINT_PATH);
+    await submitQuestion(page);
+    await expect(page.locator("#inputState")).not.toHaveClass(/active/);
+    await expect(page.locator("#sprintState")).toHaveClass(/active/);
+  });
 
-		// User message appears
-		const userMsg = page.locator(".msg-user").first();
-		await expect(userMsg).toBeVisible({ timeout: 5000 });
-		await expect(userMsg).toContainText("SOC 2");
+  test("phase label shows during sprint", async ({ page }) => {
+    await mockLLM(page.context());
+    await page.goto(SPRINT_PATH);
+    await submitQuestion(page);
+    const label = page.locator(".sprint-phase-label");
+    await expect(label).toBeVisible({ timeout: 5000 });
+    await expect(label).toContainText(
+      /researching|challenging|synthesizing|compiling|initializing/i,
+    );
+  });
 
-		// AI response appears — note: first .msg-ai is the welcome message,
-		// the LLM response is the second one (or the one containing our content)
-		const aiMsgs = page.locator(".msg-ai");
-		await expect(aiMsgs).toHaveCount(2, { timeout: 10000 });
-		await expect(aiMsgs.nth(1)).toContainText("SOC 2");
-	});
+  test("claim pills appear during sprint", async ({ page }) => {
+    await mockLLM(page.context());
+    await page.goto(SPRINT_PATH);
+    await submitQuestion(page);
+    const pills = page.locator(".claim-pill");
+    await expect(pills.first()).toBeAttached({ timeout: 15000 });
+  });
 
-	test("AI response includes claims toggle with correct count", async ({
-		page,
-	}) => {
-		await mockLLM(page.context());
-		await page.goto("/");
-		const input = page.locator("#chatInput");
-		await expect(input).toBeEnabled({ timeout: 5000 });
+  test("sprint completes and shows answer state", async ({ page }) => {
+    await mockLLM(page.context());
+    await page.goto(SPRINT_PATH);
+    await submitQuestion(page);
+    await waitForAnswer(page);
+    await expect(page.locator("#answerState")).toHaveClass(/active/);
+  });
 
-		await input.fill("How should a startup approach SOC 2 compliance?");
-		await input.press("Enter");
+  test("answer has claim bar with stats", async ({ page }) => {
+    await mockLLM(page.context());
+    await page.goto(SPRINT_PATH);
+    await submitQuestion(page);
+    await waitForAnswer(page);
+    const stats = page.locator(".stat-value");
+    expect(await stats.count()).toBeGreaterThanOrEqual(3);
+  });
 
-		// Wait for AI response
-		// Wait for LLM response (2nd .msg-ai, after welcome)
-		await expect(page.locator(".msg-ai")).toHaveCount(2, {
-			timeout: 10000,
-		});
+  test("answer has claims grouped by type", async ({ page }) => {
+    await mockLLM(page.context());
+    await page.goto(SPRINT_PATH);
+    await submitQuestion(page);
+    await waitForAnswer(page);
+    const headers = page.locator(".claims-group-header");
+    await expect(headers.first()).toBeVisible({ timeout: 5000 });
+    const cards = page.locator(".claim-card");
+    expect(await cards.count()).toBeGreaterThan(0);
+  });
 
-		// Claims toggle should appear
-		const toggle = page.locator(".claims-toggle").first();
-		await expect(toggle).toBeVisible({ timeout: 5000 });
-		await expect(toggle).toContainText(/claim/i);
-	});
+  test("answer has verdict with confidence score", async ({ page }) => {
+    await mockLLM(page.context());
+    await page.goto(SPRINT_PATH);
+    await submitQuestion(page);
+    await waitForAnswer(page);
+    const verdict = page.locator(".verdict-label");
+    await expect(verdict).toBeVisible({ timeout: 5000 });
+    await expect(verdict).toContainText(/confidence/i);
+    await expect(verdict).toContainText(/\d+\/100/);
+  });
 
-	test("claims toggle expands and shows claim badges", async ({ page }) => {
-		await mockLLM(page.context());
-		await page.goto("/");
-		const input = page.locator("#chatInput");
-		await expect(input).toBeEnabled({ timeout: 5000 });
+  test("CTA button exists with correct question", async ({ page }) => {
+    await mockLLM(page.context());
+    await page.goto(SPRINT_PATH);
+    await submitQuestion(page, "How does SOC 2 work?");
+    await waitForAnswer(page);
+    const ctaCode = page.locator("#ctaCode");
+    await expect(ctaCode).toBeVisible({ timeout: 5000 });
+    await expect(ctaCode).toContainText(/wheat init/);
+    await expect(ctaCode).toContainText(/SOC 2/);
+    await expect(page.locator("#ctaBtn")).toBeVisible();
+  });
 
-		await input.fill("How should a startup approach SOC 2 compliance?");
-		await input.press("Enter");
-
-		// Wait for LLM response (2nd .msg-ai, after welcome)
-		await expect(page.locator(".msg-ai")).toHaveCount(2, {
-			timeout: 10000,
-		});
-
-		const toggle = page.locator(".claims-toggle").first();
-		await expect(toggle).toBeVisible({ timeout: 5000 });
-		await toggle.click();
-
-		// Claims panel should expand
-		const panel = page.locator(".claims-panel").first();
-		await expect(panel).toHaveClass(/open/, { timeout: 2000 });
-
-		// Should have claim rows with type badges
-		const rows = panel.locator(".claim-row");
-		expect(await rows.count()).toBeGreaterThan(0);
-	});
-
-	test("thinking indicator shows during inference", async ({ page }) => {
-		// Delay the mock response so we can catch the thinking state
-		await page.context().route(/pollinations\.ai/, async (route) => {
-			await new Promise((r) => setTimeout(r, 1000));
-			route.fulfill({
-				status: 200,
-				contentType: "text/plain; charset=utf-8",
-				body: MOCK_LLM_RESPONSE,
-			});
-		});
-		await page.goto("/");
-		const input = page.locator("#chatInput");
-		await expect(input).toBeEnabled({ timeout: 5000 });
-
-		await input.fill("Test question");
-		await input.press("Enter");
-
-		// Thinking dots should appear
-		const thinking = page.locator("#thinkingMsg, .thinking-dots");
-		await expect(thinking.first()).toBeVisible({ timeout: 3000 });
-
-		// Then disappear when response arrives
-		// Wait for LLM response (2nd .msg-ai, after welcome)
-		await expect(page.locator(".msg-ai")).toHaveCount(2, {
-			timeout: 10000,
-		});
-	});
-
-	test("input clears after submission", async ({ page }) => {
-		await mockLLM(page.context());
-		await page.goto("/");
-		const input = page.locator("#chatInput");
-		await expect(input).toBeEnabled({ timeout: 5000 });
-
-		await input.fill("Test question");
-		await input.press("Enter");
-
-		await expect(input).toHaveValue("");
-	});
-
-	test("Shift+Enter does not submit", async ({ page }) => {
-		await mockLLM(page.context());
-		await page.goto("/");
-		const input = page.locator("#chatInput");
-		await expect(input).toBeEnabled({ timeout: 5000 });
-
-		await input.fill("Line 1");
-		await input.press("Shift+Enter");
-
-		// No user message should appear
-		await expect(page.locator(".msg-user")).toHaveCount(0);
-	});
+  test("ask a different question resets to input state", async ({ page }) => {
+    await mockLLM(page.context());
+    await page.goto(SPRINT_PATH);
+    await submitQuestion(page);
+    await waitForAnswer(page);
+    const restart = page.locator("#restartBtn");
+    await expect(restart).toBeVisible({ timeout: 5000 });
+    await restart.click();
+    await expect(page.locator("#inputState")).toHaveClass(/active/, {
+      timeout: 5000,
+    });
+    await expect(page.locator("#answerState")).not.toHaveClass(/active/);
+    const input = page.locator("#questionInput");
+    await expect(input).toHaveValue("");
+  });
 });
 
-// ── Compile flow ─────────────────────────────────────────────────────────────
+// ── Compile flow ────────────────────────────────────────────────────────────
 
 test.describe("compile flow", () => {
-	test("compile bar appears after enough claims accumulate", async ({
-		page,
-	}) => {
-		await mockLLM(page.context());
-		await page.goto("/");
-		const input = page.locator("#chatInput");
-		await expect(input).toBeEnabled({ timeout: 5000 });
+  test.setTimeout(45000);
 
-		// Send question to get claims
-		await input.fill("How should a startup approach SOC 2 compliance?");
-		await input.press("Enter");
-		// Wait for LLM response (2nd .msg-ai, after welcome message)
-		await expect(page.locator(".msg-ai")).toHaveCount(2, { timeout: 10000 });
+  test("compiler pass lines appear (7 total)", async ({ page }) => {
+    await mockLLM(page.context());
+    await page.goto(SPRINT_PATH);
+    await submitQuestion(page);
+    // Compiler runs during sprint, before answer renders
+    const passes = page.locator(".pass-line");
+    await expect(passes).toHaveCount(7, { timeout: 40000 });
+  });
 
-		// Compile bar should become visible (5+ claims, 2+ types from mock)
-		const bar = page.locator("#compileBar");
-		await expect(bar).toHaveClass(/visible/, { timeout: 5000 });
-	});
-
-	test("compile button shows claim count", async ({ page }) => {
-		await mockLLM(page.context());
-		await page.goto("/");
-		const input = page.locator("#chatInput");
-		await expect(input).toBeEnabled({ timeout: 5000 });
-
-		await input.fill("How should a startup approach SOC 2 compliance?");
-		await input.press("Enter");
-		// Wait for LLM response (2nd .msg-ai, after welcome)
-		await expect(page.locator(".msg-ai")).toHaveCount(2, {
-			timeout: 10000,
-		});
-
-		const btn = page.locator("#compileMsgBtn");
-		await expect(btn).toBeVisible({ timeout: 5000 });
-		await expect(btn).toContainText(/compile \d+ claims/i);
-	});
-
-	test("clicking compile runs 7 passes and shows verdict", async ({ page }) => {
-		test.setTimeout(60000);
-		await mockLLM(page.context());
-		await page.goto("/");
-		const input = page.locator("#chatInput");
-		await expect(input).toBeEnabled({ timeout: 5000 });
-
-		await input.fill("How should a startup approach SOC 2 compliance?");
-		await input.press("Enter");
-		// Wait for LLM response (2nd .msg-ai, after welcome)
-		await expect(page.locator(".msg-ai")).toHaveCount(2, {
-			timeout: 10000,
-		});
-
-		// Wait for compile bar and button to be ready
-		const btn = page.locator("#compileMsgBtn");
-		await expect(page.locator("#compileBar")).toHaveClass(/visible/, {
-			timeout: 5000,
-		});
-		await expect(btn).toBeEnabled({ timeout: 5000 });
-		// Use JS click — the compile bar can be overlapped by chat content
-		await btn.evaluate((el) => el.click());
-
-		// 7 pass lines should appear (each animated in with ~300ms delay)
-		const passes = page.locator(".pass-line");
-		await expect(passes).toHaveCount(7, { timeout: 15000 });
-
-		// Verdict should appear
-		const verdict = page.locator(".verdict-title, .verdict-body");
-		await expect(verdict.first()).toBeVisible({ timeout: 5000 });
-	});
-
-	test("handoff section appears after compile", async ({ page }) => {
-		test.setTimeout(60000);
-		await mockLLM(page.context());
-		await page.goto("/");
-		const input = page.locator("#chatInput");
-		await expect(input).toBeEnabled({ timeout: 5000 });
-
-		await input.fill("How should a startup approach SOC 2 compliance?");
-		await input.press("Enter");
-		// Wait for LLM response (2nd .msg-ai, after welcome)
-		await expect(page.locator(".msg-ai")).toHaveCount(2, {
-			timeout: 10000,
-		});
-
-		const compileBtn = page.locator("#compileMsgBtn");
-		await expect(page.locator("#compileBar")).toHaveClass(/visible/, {
-			timeout: 5000,
-		});
-		await expect(compileBtn).toBeEnabled({ timeout: 5000 });
-		await compileBtn.evaluate((el) => el.click());
-
-		// Wait for compile to finish (7 passes)
-		await expect(page.locator(".pass-line")).toHaveCount(7, {
-			timeout: 15000,
-		});
-
-		// Handoff section with copy button
-		const handoff = page.locator(".handoff-section");
-		await expect(handoff).toBeVisible({ timeout: 5000 });
-	});
+  test("verdict shows confidence score", async ({ page }) => {
+    await mockLLM(page.context());
+    await page.goto(SPRINT_PATH);
+    await submitQuestion(page);
+    await waitForAnswer(page);
+    const verdict = page.locator(".verdict-label");
+    await expect(verdict).toContainText(/\d+\/100/, { timeout: 5000 });
+  });
 });
 
-// ── State transitions ────────────────────────────────────────────────────────
-
-test.describe("state transitions", () => {
-	test("dim overlay activates on first message", async ({ page }) => {
-		await mockLLM(page.context());
-		await page.goto("/");
-		const input = page.locator("#chatInput");
-		await expect(input).toBeEnabled({ timeout: 5000 });
-
-		// Before chat — overlay should be transparent
-		const overlay = page.locator("#dimOverlay");
-		const opacityBefore = await overlay.evaluate(
-			(el) => getComputedStyle(el).opacity,
-		);
-		expect(Number(opacityBefore)).toBeLessThan(0.5);
-
-		// Send message
-		await input.fill("Test question");
-		await input.press("Enter");
-
-		// After chat — overlay should be opaque
-		await expect(page.locator(".msg-user")).toBeVisible({ timeout: 3000 });
-		await page.waitForTimeout(700); // transition duration
-		const opacityAfter = await overlay.evaluate(
-			(el) => getComputedStyle(el).opacity,
-		);
-		expect(Number(opacityAfter)).toBeGreaterThan(0.5);
-	});
-
-	test("app gets chat-active class on first message", async ({ page }) => {
-		await mockLLM(page.context());
-		await page.goto("/");
-		const input = page.locator("#chatInput");
-		await expect(input).toBeEnabled({ timeout: 5000 });
-
-		const app = page.locator("#app");
-		await expect(app).not.toHaveClass(/chat-active/);
-
-		await input.fill("Test");
-		await input.press("Enter");
-
-		await expect(app).toHaveClass(/chat-active/, { timeout: 3000 });
-	});
-});
-
-// ── New chat reset ───────────────────────────────────────────────────────────
-
-test.describe("new chat", () => {
-	test("new chat clears messages and resets state", async ({ page }) => {
-		await mockLLM(page.context());
-		await page.goto("/");
-		const input = page.locator("#chatInput");
-		await expect(input).toBeEnabled({ timeout: 5000 });
-
-		await input.fill("Test question");
-		await input.press("Enter");
-		// Wait for LLM response (2nd .msg-ai, after welcome)
-		await expect(page.locator(".msg-ai")).toHaveCount(2, {
-			timeout: 10000,
-		});
-
-		// Accept confirm dialog before clicking
-		page.on("dialog", (dialog) => dialog.accept());
-
-		await page.locator("#newChatBtn").click();
-
-		// Messages should be cleared
-		await expect(page.locator(".msg-user")).toHaveCount(0, { timeout: 5000 });
-
-		// Input should be re-enabled and empty
-		await expect(input).toBeEnabled();
-		await expect(input).toHaveValue("");
-	});
-});
-
-// ── Mobile viewport ──────────────────────────────────────────────────────────
+// ── Mobile viewport ─────────────────────────────────────────────────────────
 
 test.describe("mobile", () => {
-	test.use({ viewport: { width: 375, height: 667 } });
+  test.use({ viewport: { width: 375, height: 667 } });
 
-	test("input bar is visible and usable on mobile", async ({ page }) => {
-		await page.goto("/");
-		const input = page.locator("#chatInput");
-		await expect(input).toBeEnabled({ timeout: 5000 });
-		await expect(input).toBeVisible();
-		await expect(page.locator("#inputBar")).toHaveClass(/visible/);
-	});
+  test("input bar visible at 375px", async ({ page }) => {
+    await page.goto(SPRINT_PATH);
+    const input = page.locator("#questionInput");
+    await expect(input).toBeVisible();
+    await expect(input).toBeEnabled({ timeout: 5000 });
+    await expect(page.locator("#submitBtn")).toBeVisible();
+  });
 
-	test("chat flow works on mobile viewport", async ({ page }) => {
-		await mockLLM(page.context());
-		await page.goto("/");
-		const input = page.locator("#chatInput");
-		await expect(input).toBeEnabled({ timeout: 5000 });
-
-		await input.fill("Mobile test question");
-		await input.press("Enter");
-
-		await expect(page.locator(".msg-user").first()).toBeVisible({
-			timeout: 5000,
-		});
-		// Wait for LLM response (2nd .msg-ai, after welcome)
-		await expect(page.locator(".msg-ai")).toHaveCount(2, {
-			timeout: 10000,
-		});
-	});
+  test("sprint flow works on mobile", async ({ page }) => {
+    test.setTimeout(45000);
+    await mockLLM(page.context());
+    await page.goto(SPRINT_PATH);
+    await submitQuestion(page, "Mobile test question");
+    await waitForAnswer(page);
+    await expect(page.locator("#answerState")).toHaveClass(/active/);
+    const stats = page.locator(".stat-value");
+    expect(await stats.count()).toBeGreaterThanOrEqual(3);
+  });
 });
 
-// ── Service worker ───────────────────────────────────────────────────────────
+// ── Offline mode ────────────────────────────────────────────────────────────
 
-test.describe("service worker", () => {
-	test("registers without errors", async ({ page }) => {
-		const errors = [];
-		page.on("pageerror", (err) => errors.push(err.message));
+test.describe("offline mode", () => {
+  test.setTimeout(45000);
 
-		await page.goto("/");
-		// Give SW time to register
-		await page.waitForTimeout(2000);
+  test("?offline auto-starts sprint", async ({ page }) => {
+    await page.goto(SPRINT_PATH + "?offline");
+    // Sprint state should become active automatically
+    await expect(page.locator("#sprintState")).toHaveClass(/active/, {
+      timeout: 5000,
+    });
+  });
 
-		const swErrors = errors.filter(
-			(e) => e.includes("sw.js") || e.includes("ServiceWorker"),
-		);
-		expect(swErrors).toHaveLength(0);
-	});
+  test("shows TRACK_A claims", async ({ page }) => {
+    await page.goto(SPRINT_PATH + "?offline");
+    // Wait for answer state — offline mode uses TRACK_A claims and runs fast
+    await waitForAnswer(page);
+    const cards = page.locator(".claim-card");
+    expect(await cards.count()).toBeGreaterThanOrEqual(10);
+    // Verify TRACK_A claim content is present
+    const firstCard = page.locator(".claim-card-text").first();
+    await expect(firstCard).toContainText(/WCAG|accessibility|screen reader/i);
+  });
 });
 
-// ── PWA manifest ─────────────────────────────────────────────────────────────
+// ── PWA manifest ────────────────────────────────────────────────────────────
 
 test.describe("PWA", () => {
-	test("manifest is valid and linked", async ({ page }) => {
-		await page.goto("/");
-		const link = page.locator('link[rel="manifest"]');
-		await expect(link).toHaveAttribute("href", /manifest\.json/);
+  test("manifest is valid and linked", async ({ page }) => {
+    await page.goto("/");
+    const link = page.locator('link[rel="manifest"]');
+    await expect(link).toHaveAttribute("href", /manifest\.json/);
 
-		const res = await page.request.get("/manifest.json");
-		expect(res.ok()).toBeTruthy();
-		const manifest = await res.json();
-		expect(manifest.name).toBe("Grainulator");
-		expect(manifest.display).toBe("standalone");
-		expect(manifest.start_url).toBe("/");
-	});
+    const res = await page.request.get("/manifest.json");
+    expect(res.ok()).toBeTruthy();
+    const manifest = await res.json();
+    expect(manifest.name).toBe("Grainulator");
+    expect(manifest.display).toBe("standalone");
+    expect(manifest.start_url).toBe("/");
+  });
 });
 
-// ── Dead code verification ───────────────────────────────────────────────────
+// ── Service worker ──────────────────────────────────────────────────────────
+
+test.describe("service worker", () => {
+  test("registers without errors", async ({ page }) => {
+    const errors = [];
+    page.on("pageerror", (err) => errors.push(err.message));
+
+    await page.goto("/");
+    await page.waitForTimeout(2000);
+
+    const swErrors = errors.filter(
+      (e) => e.includes("sw.js") || e.includes("ServiceWorker"),
+    );
+    expect(swErrors).toHaveLength(0);
+  });
+});
+
+// ── Dead code verification ──────────────────────────────────────────────────
 
 test.describe("dead code removed", () => {
-	test("fuzzyMatchDemo and loadDemo no longer exist", async ({ page }) => {
-		await page.goto("/");
-		const result = await page.evaluate(() => {
-			return {
-				fuzzyMatchDefined: typeof window.fuzzyMatchDemo === "function",
-				loadDemoDefined: typeof window.loadDemo === "function",
-				scoreEntryDefined: typeof window.scoreEntry === "function",
-				demoLibraryDefined: typeof window.DEMO_LIBRARY !== "undefined",
-			};
-		});
-		// All dead code should be removed
-		expect(result.fuzzyMatchDefined).toBe(false);
-		expect(result.loadDemoDefined).toBe(false);
-		expect(result.scoreEntryDefined).toBe(false);
-		expect(result.demoLibraryDefined).toBe(false);
-	});
+  test("fuzzyMatchDemo does NOT exist", async ({ page }) => {
+    await page.goto(SPRINT_PATH);
+    const result = await page.evaluate(() => {
+      return {
+        fuzzyMatchDefined: typeof window.fuzzyMatchDemo === "function",
+        loadDemoDefined: typeof window.loadDemo === "function",
+        scoreEntryDefined: typeof window.scoreEntry === "function",
+        demoLibraryDefined: typeof window.DEMO_LIBRARY !== "undefined",
+      };
+    });
+    expect(result.fuzzyMatchDefined).toBe(false);
+    expect(result.loadDemoDefined).toBe(false);
+    expect(result.scoreEntryDefined).toBe(false);
+    expect(result.demoLibraryDefined).toBe(false);
+  });
 
-	test("demos.json is not in service worker cache list", async ({ page }) => {
-		const res = await page.request.get("/sw.js");
-		expect(res.ok()).toBeTruthy();
-		const swContent = await res.text();
-		expect(swContent).not.toContain("demos.json");
-	});
+  test("demos.json not in sw.js cache", async ({ page }) => {
+    const res = await page.request.get("/sw.js");
+    expect(res.ok()).toBeTruthy();
+    const swContent = await res.text();
+    expect(swContent).not.toContain("demos.json");
+  });
 });
