@@ -20,8 +20,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 
-<title>Grainulator — Research that compiles.</title>
-<meta name="description" content="Answers that show their work. Ask any question, get an evidence-graded answer with typed claims, tension detection, and confidence scoring. Open source, zero dependencies.">
+<title>Grainulator — Evidence Compiler for Technical Decisions</title>
+<meta name="description" content="Turn technical decisions into typed, evidence-graded claims — not paragraphs. Try the interactive demo, then install the CLI. Open source, zero npm dependencies. Research that compiles.">
 <meta name="keywords" content="research sprint, Claude Code, AI research, decision brief, evidence tracking, developer tools, CLI">
 <meta name="author" content="Grainulation">
 <link rel="canonical" href="https://grainulator.app/">
@@ -32,20 +32,20 @@
 <meta property="og:site_name" content="Grainulator">
 <meta property="og:locale" content="en_US">
 <meta property="og:title" content="Grainulator — Research that compiles.">
-<meta property="og:description" content="Answers that show their work. Ask any question, get an evidence-graded answer with typed claims, tension detection, and confidence scoring.">
+<meta property="og:description" content="ChatGPT gives you a paragraph. Grainulator gives you typed claims with conflicts highlighted. Try the interactive demo — then install the real thing.">
 <meta property="og:image" content="https://grainulator.app/og-image.png?v=2">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:type" content="image/png">
-<meta property="og:image:alt" content="Grainulator — lava lamp blobs on dark background with tagline: Research that compiles.">
+<meta property="og:image:alt" content="Grainulator — interactive evidence compiler demo. Lava lamp blobs on dark background. Tagline: Research that compiles.">
 <meta property="og:url" content="https://grainulator.app/">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Grainulator — Research that compiles.">
-<meta name="twitter:description" content="Answers that show their work. Ask any question, get an evidence-graded answer with typed claims, tension detection, and confidence scoring.">
+<meta name="twitter:description" content="ChatGPT gives you a paragraph. Grainulator gives you typed claims with conflicts highlighted. Try the interactive demo — then install the real thing.">
 <meta name="twitter:image" content="https://grainulator.app/og-image.png?v=2">
-<meta name="twitter:image:alt" content="Grainulator — lava lamp blobs on dark background with tagline: Research that compiles.">
+<meta name="twitter:image:alt" content="Grainulator — interactive evidence compiler demo. Lava lamp blobs on dark background. Tagline: Research that compiles.">
 
 <!-- Slack unfurl hints -->
 <meta name="twitter:label1" content="Install">
@@ -72,7 +72,7 @@
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   "name": "Grainulator",
-  "description": "Evidence-tracked research sprints for Claude Code. Ask any question, get an evidence-graded answer.",
+  "description": "Interactive demo of the Grainulator evidence compiler. Ask a technical question, get typed claims with evidence grades and conflict detection. Open source CLI tool, zero npm dependencies.",
   "url": "https://grainulator.app/",
   "applicationCategory": "DeveloperApplication",
   "operatingSystem": "macOS, Linux, Windows",
@@ -452,21 +452,28 @@ canvas.active{opacity:1}
   <div id="inputState" class="page-state active">
     <div class="input-container">
       <div class="input-logo">grainulator</div>
+      <p class="input-hint" style="max-width:540px;margin:0 auto 16px;font-size:.8125rem;line-height:1.5;color:rgba(255,255,255,0.45)">A <strong style="color:rgba(141,246,255,0.8)">claim</strong> is a single statement about your research — "Redis handles 100k ops/sec" is a factual claim. "We should use Redis" is a recommendation. Each one gets a type and an evidence grade, from "someone said it" to "measured in production."</p>
       <label for="questionInput" class="sr-only">Research question</label>
       <textarea
         id="questionInput"
         class="input-field"
         rows="2"
-        placeholder="What complex question are you investigating?"
+        placeholder="What technical decision needs evidence? e.g. &quot;Should we migrate to GraphQL?&quot;"
         autocomplete="off"
         spellcheck="false"
         maxlength="3000"
       ></textarea>
       <br>
       <button id="submitBtn" class="submit-btn" type="button" disabled>Run Sprint</button>
-      <div class="input-hint">3 autonomous passes. Evidence-tracked. Confidence-graded.</div>
-      <div class="input-hint">Questions are processed by <a href="/privacy" style="color:inherit;text-decoration:underline">Pollinations AI</a> — not stored.</div>
+      <div class="input-hint">3 research passes &#8594; compiler validates &#8594; typed claims with evidence grades and conflicts surfaced</div>
+      <div class="input-hint">Demo uses a lightweight model via <a href="/privacy" style="color:inherit;text-decoration:underline">Pollinations AI</a> (not stored). Install the plugin for Claude-powered analysis with substantially deeper evidence quality.</div>
     </div>
+  </div>
+
+  <div style="text-align:center;padding:24px 16px 0">
+    <p style="font-size:.875rem;color:rgba(255,255,255,0.5);margin-bottom:8px">Ready for the real thing?</p>
+    <code style="display:inline-block;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:10px 18px;font-size:.9375rem;color:rgba(141,246,255,0.9);letter-spacing:.01em">npx wheat init "Should we migrate to GraphQL?"</code>
+    <p style="font-size:.75rem;color:rgba(255,255,255,0.3);margin-top:8px">Requires Claude Code and Node.js 20+. Zero npm dependencies.</p>
   </div>
 
   <!-- STATE 2: SPRINT RUNNING -->
