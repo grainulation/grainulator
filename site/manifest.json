@@ -19,8 +19,8 @@
 	],
 	"icons": [
 		{
-			"src": "glitchy.png",
-			"sizes": "512x512",
+			"src": "glitchy-56.png",
+			"sizes": "56x56",
 			"type": "image/png",
 			"purpose": "any"
 		},
