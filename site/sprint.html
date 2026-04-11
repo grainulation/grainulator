@@ -801,14 +801,14 @@ async function streamPass(systemPrompt,userMessage,abortSignal){
         stream:false
       }),
       cache:'no-store',
-      signal:AbortSignal.any?AbortSignal.any([abortSignal,AbortSignal.timeout(25000)]):abortSignal
+      signal:AbortSignal.any?AbortSignal.any([abortSignal,AbortSignal.timeout(45000)]):abortSignal
     });
   }else{
     // Localhost: use GET (POST returns deprecation notices for localhost Origin)
     var url='https://text.pollinations.ai/'+encodeURIComponent(userMessage.substring(0,2000))+'?model=openai&system='+encodeURIComponent(systemPrompt.substring(0,1500))+'&nostream=true&_t='+Date.now();
     response=await fetch(url,{
       cache:'no-store',
-      signal:AbortSignal.any?AbortSignal.any([abortSignal,AbortSignal.timeout(25000)]):abortSignal
+      signal:AbortSignal.any?AbortSignal.any([abortSignal,AbortSignal.timeout(45000)]):abortSignal
     });
   }
 
