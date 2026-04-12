@@ -1012,8 +1012,8 @@ var COMPILER_PASSES = [
     for(var i=0;i<claims.length;i++){
       for(var j=i+1;j<claims.length;j++){
         var a=claims[i],b=claims[j];
-        // Opposing pairs: risk↔recommendation, constraint↔estimate, AND constraint↔recommendation
-        var opposing=(a.type==='risk'&&b.type==='recommendation')||(a.type==='recommendation'&&b.type==='risk')||(a.type==='constraint'&&b.type==='estimate')||(a.type==='constraint'&&b.type==='recommendation')||(a.type==='recommendation'&&b.type==='constraint');
+        // Opposing pairs: risk↔recommendation, constraint↔estimate (NOT constraint↔rec — that's handled by prerequisite check)
+        var opposing=(a.type==='risk'&&b.type==='recommendation')||(a.type==='recommendation'&&b.type==='risk')||(a.type==='constraint'&&b.type==='estimate');
         if(opposing){
           var wordsA=new Set(a.text.toLowerCase().split(/\W+/).filter(function(w){return w.length>4;}));
           var wordsB=new Set(b.text.toLowerCase().split(/\W+/).filter(function(w){return w.length>4;}));
@@ -1065,15 +1065,11 @@ var COMPILER_PASSES = [
     var score=70;
     if(prev[1].monoculture)score-=15;
     if(prev[2].weak)score-=10;
-    // Tensions: risk↔rec = -5, constraint↔rec = -10 (more serious)
-    var tensions=prev[3].tensions||[];
-    for(var t=0;t<tensions.length;t++){
-      var isConstraintRec=(tensions[t].a.type==='constraint'&&tensions[t].b.type==='recommendation')||(tensions[t].a.type==='recommendation'&&tensions[t].b.type==='constraint');
-      score-=isConstraintRec?10:5;
-    }
-    // Prerequisite violations: -15 each (serious)
+    // Tensions: -5 each (max 3 penalty)
+    if(prev[3].count>0)score-=5*Math.min(prev[3].count,3);
+    // Prerequisite violations: -12 each (serious — recommendation may not satisfy a constraint)
     var prereqViolations=prev[4].count||0;
-    score-=prereqViolations*15;
+    score-=prereqViolations*12;
     if(!prev[5].complete)score-=10;
     score+=Math.min(claims.length,15)*1.5;
     score=Math.max(10,Math.min(100,Math.round(score)));
