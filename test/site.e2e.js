@@ -87,7 +87,10 @@ test.describe("input state", () => {
 		await page.goto(SPRINT_PATH);
 		const input = page.locator("#questionInput");
 		await expect(input).toBeEnabled({ timeout: 5000 });
-		await expect(input).toHaveAttribute("placeholder", /complex question/i);
+		await expect(input).toHaveAttribute(
+			"placeholder",
+			/technical decision needs evidence/i,
+		);
 	});
 
 	test("submit button exists", async ({ page }) => {
@@ -233,9 +236,10 @@ test.describe("compile flow", () => {
 		await mockLLM(page.context());
 		await page.goto(SPRINT_PATH);
 		await submitQuestion(page);
-		// Compiler runs during sprint, before answer renders
+		// Wait for answer state — compiler runs before answer renders
+		await waitForAnswer(page);
 		const passes = page.locator(".pass-line");
-		await expect(passes).toHaveCount(7, { timeout: 40000 });
+		await expect(passes).toHaveCount(7, { timeout: 5000 });
 	});
 
 	test("verdict shows confidence score", async ({ page }) => {
