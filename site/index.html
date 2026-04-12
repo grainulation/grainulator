@@ -1012,7 +1012,8 @@ var COMPILER_PASSES = [
     for(var i=0;i<claims.length;i++){
       for(var j=i+1;j<claims.length;j++){
         var a=claims[i],b=claims[j];
-        var opposing=(a.type==='risk'&&b.type==='recommendation')||(a.type==='recommendation'&&b.type==='risk')||(a.type==='constraint'&&b.type==='estimate');
+        // Opposing pairs: risk↔recommendation, constraint↔estimate, AND constraint↔recommendation
+        var opposing=(a.type==='risk'&&b.type==='recommendation')||(a.type==='recommendation'&&b.type==='risk')||(a.type==='constraint'&&b.type==='estimate')||(a.type==='constraint'&&b.type==='recommendation')||(a.type==='recommendation'&&b.type==='constraint');
         if(opposing){
           var wordsA=new Set(a.text.toLowerCase().split(/\W+/).filter(function(w){return w.length>4;}));
           var wordsB=new Set(b.text.toLowerCase().split(/\W+/).filter(function(w){return w.length>4;}));
@@ -1025,6 +1026,35 @@ var COMPILER_PASSES = [
     }
     return{tensions:tensions,count:tensions.length,ok:true};
   }},
+  {name:'prerequisite check',fn:function(claims){
+    // Find constraints that state requirements (must/require/need) and check if
+    // any recommendation contradicts or ignores them
+    var prereqConstraints=claims.filter(function(c){
+      return c.type==='constraint'&&/\b(require|must|need|cannot|impossible|necessary)\b/i.test(c.text);
+    });
+    var recommendations=claims.filter(function(c){return c.type==='recommendation';});
+    var violations=[];
+    for(var i=0;i<prereqConstraints.length;i++){
+      var constraint=prereqConstraints[i];
+      var cWords=new Set(constraint.text.toLowerCase().split(/\W+/).filter(function(w){return w.length>4;}));
+      for(var j=0;j<recommendations.length;j++){
+        var rec=recommendations[j];
+        var rWords=new Set(rec.text.toLowerCase().split(/\W+/).filter(function(w){return w.length>4;}));
+        // Check if constraint and recommendation share topic words but recommend opposite action
+        var shared=Array.from(cWords).filter(function(w){return rWords.has(w);});
+        if(shared.length>=1){
+          // Constraint mentions the topic, recommendation mentions it too — potential violation
+          // Check for negation patterns: constraint says "requires X" but rec doesn't ensure X
+          var constraintRequires=/\b(require|must|need)\w*\b/i.test(constraint.text);
+          var constraintNegates=/\b(cannot|impossible|not feasible|not possible)\b/i.test(constraint.text);
+          if(constraintRequires||constraintNegates){
+            violations.push({constraint:constraint,recommendation:rec,shared:shared.slice(0,3)});
+          }
+        }
+      }
+    }
+    return{violations:violations,count:violations.length,ok:violations.length===0};
+  }},
   {name:'coverage check',fn:function(claims){
     var required=['constraint','factual','risk','recommendation'];
     var present=new Set(claims.map(function(c3){return c3.type;}));
@@ -1035,20 +1065,30 @@ var COMPILER_PASSES = [
     var score=70;
     if(prev[1].monoculture)score-=15;
     if(prev[2].weak)score-=10;
-    if(prev[3].count>0)score-=5*Math.min(prev[3].count,3);
-    if(!prev[4].complete)score-=10;
+    // Tensions: risk↔rec = -5, constraint↔rec = -10 (more serious)
+    var tensions=prev[3].tensions||[];
+    for(var t=0;t<tensions.length;t++){
+      var isConstraintRec=(tensions[t].a.type==='constraint'&&tensions[t].b.type==='recommendation')||(tensions[t].a.type==='recommendation'&&tensions[t].b.type==='constraint');
+      score-=isConstraintRec?10:5;
+    }
+    // Prerequisite violations: -15 each (serious)
+    var prereqViolations=prev[4].count||0;
+    score-=prereqViolations*15;
+    if(!prev[5].complete)score-=10;
     score+=Math.min(claims.length,15)*1.5;
     score=Math.max(10,Math.min(100,Math.round(score)));
     return{score:score,ok:score>=40};
   }},
   {name:'generate verdict',fn:function(claims,prev){
-    var score=prev[5].score;
+    var score=prev[6].score;
+    var prereqViolations=prev[4].count||0;
     var verdict;
-    if(score>=80)verdict='High confidence. Research is well-balanced with strong evidence.';
+    if(prereqViolations>0)verdict='Low confidence — recommendation may not satisfy a stated constraint. Verify prerequisites before acting.';
+    else if(score>=80)verdict='High confidence. Research is well-balanced with strong evidence.';
     else if(score>=60)verdict='Moderate confidence. Some gaps remain — consider additional research passes.';
     else if(score>=40)verdict='Low confidence. Significant gaps or tensions detected. More evidence needed.';
     else verdict='Insufficient. Claims lack diversity or evidence strength for a reliable brief.';
-    return{verdict:verdict,score:score,tensions:prev[3].tensions,missing:prev[4].missing,types:prev[1].types,ok:true};
+    return{verdict:verdict,score:score,tensions:prev[3].tensions,missing:prev[5].missing,types:prev[1].types,prereqViolations:prereqViolations,ok:true};
   }}
 ];
 
@@ -1248,9 +1288,9 @@ async function animateCompiler(claims) {
     var line = document.createElement('div');
     line.className = 'pass-line';
     var icon = result.ok ? '<span class="check">&#10003;</span>' : '<span class="fail">&#10007;</span>';
-    line.innerHTML = icon + 'pass ' + (i + 1) + '/7: ' + pass.name;
+    line.innerHTML = icon + 'pass ' + (i + 1) + '/8: ' + pass.name;
     container.appendChild(line);
-    announceCompilerPass('Pass ' + (i + 1) + ' of 7: ' + pass.name + ' — ' + (result.ok ? 'passed' : 'issue detected'));
+    announceCompilerPass('Pass ' + (i + 1) + ' of 8: ' + pass.name + ' — ' + (result.ok ? 'passed' : 'issue detected'));
     requestAnimationFrame(function() {
       var l = container.lastElementChild;
       if (l) l.classList.add('done');
@@ -1281,7 +1321,7 @@ function renderAnswer(claims, compilerResults, elapsedMs, passCount, sprintQuest
   var col = document.getElementById('answerColumn');
   col.innerHTML = '';
   col.setAttribute('aria-busy', 'false');
-  var final = compilerResults[6];
+  var final = compilerResults[7];
   var types = compilerResults[1].types;
   var total = claims.length;
 
