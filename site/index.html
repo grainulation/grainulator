@@ -21,8 +21,8 @@
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 
 <title>Grainulator — Evidence Compiler for Technical Decisions</title>
-<meta name="description" content="Turn technical decisions into typed, evidence-graded claims — not paragraphs. Try the interactive demo, then install the CLI. Open source, zero npm dependencies. Research that compiles.">
-<meta name="keywords" content="research sprint, Claude Code, AI research, decision brief, evidence tracking, developer tools, CLI">
+<meta name="description" content="Turn technical decisions into typed, evidence-graded claims — not paragraphs. Try the interactive demo, then install the plugin. Open source, zero npm dependencies. Research that compiles.">
+<meta name="keywords" content="research sprint, Claude Code, AI research, decision brief, evidence tracking, developer tools, plugin">
 <meta name="author" content="Grainulation">
 <link rel="canonical" href="https://grainulator.app/">
 <link rel="sitemap" type="application/xml" href="/sitemap.xml">
@@ -72,7 +72,7 @@
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   "name": "Grainulator",
-  "description": "Interactive demo of the Grainulator evidence compiler. Ask a technical question, get typed claims with evidence grades and conflict detection. Open source CLI tool, zero npm dependencies.",
+  "description": "Interactive demo of the Grainulator evidence compiler. Ask a technical question, get typed claims with evidence grades and conflict detection. Open source plugin, zero npm dependencies.",
   "url": "https://grainulator.app/",
   "applicationCategory": "DeveloperApplication",
   "operatingSystem": "macOS, Linux, Windows",
@@ -452,13 +452,13 @@ canvas.active{opacity:1}
   <div id="inputState" class="page-state active">
     <div class="input-container">
       <div class="input-logo">grainulator</div>
-      <p class="input-hint" style="max-width:540px;margin:0 auto 16px;font-size:.8125rem;line-height:1.5;color:rgba(255,255,255,0.45)">A <strong style="color:rgba(141,246,255,0.8)">claim</strong> is a single statement about your research — "Redis handles 100k ops/sec" is a factual claim. "We should use Redis" is a recommendation. Each one gets a type and an evidence grade, from "someone said it" to "measured in production."</p>
+      <p class="input-hint" style="max-width:540px;margin:0 auto 16px;font-size:.8125rem;line-height:1.5;color:rgba(255,255,255,0.45)">A <strong style="color:rgba(141,246,255,0.8)">claim</strong> is a single typed statement — "Adoption doubled after the redesign" is a factual claim. "We should delay the launch" is a recommendation. Each gets an evidence grade, from "someone said it" to "measured in production." The compiler catches conflicts between them.</p>
       <label for="questionInput" class="sr-only">Research question</label>
       <textarea
         id="questionInput"
         class="input-field"
         rows="2"
-        placeholder="What technical decision needs evidence? e.g. &quot;Should we migrate to GraphQL?&quot;"
+        placeholder="What technical decision needs evidence?"
         autocomplete="off"
         spellcheck="false"
         maxlength="3000"
@@ -466,14 +466,14 @@ canvas.active{opacity:1}
       <br>
       <button id="submitBtn" class="submit-btn" type="button" disabled>Run Sprint</button>
       <div class="input-hint">3 research passes &#8594; compiler validates &#8594; typed claims with evidence grades and conflicts surfaced</div>
-      <div class="input-hint">Demo uses a lightweight model via <a href="/privacy" style="color:inherit;text-decoration:underline">Pollinations AI</a> (not stored). Install the plugin for Claude-powered analysis with substantially deeper evidence quality.</div>
+      <div class="input-hint">Demo uses a lightweight model via <a href="/privacy" style="color:inherit;text-decoration:underline">Pollinations AI</a> (not stored). Install the plugin for Claude-powered analysis with web search, code analysis, and evidence tiers from 'documented' to 'tested'.</div>
     </div>
   </div>
 
   <div style="text-align:center;padding:24px 16px 0">
     <p style="font-size:.875rem;color:rgba(255,255,255,0.5);margin-bottom:8px">Ready for the real thing?</p>
-    <code style="display:inline-block;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:10px 18px;font-size:.9375rem;color:rgba(141,246,255,0.9);letter-spacing:.01em">npx wheat init "Should we migrate to GraphQL?"</code>
-    <p style="font-size:.75rem;color:rgba(255,255,255,0.3);margin-top:8px">Requires Claude Code and Node.js 20+. Zero npm dependencies.</p>
+    <code style="display:inline-block;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:10px 18px;font-size:.9375rem;color:rgba(141,246,255,0.9);letter-spacing:.01em">&#47;plugin install grainulator</code>
+    <p style="font-size:.75rem;color:rgba(255,255,255,0.3);margin-top:8px">Runs inside Claude Code. Node.js 20+. Zero npm dependencies.</p>
   </div>
 
   <!-- STATE 2: SPRINT RUNNING -->
@@ -1399,11 +1399,11 @@ function renderAnswer(claims, compilerResults, elapsedMs, passCount, sprintQuest
   var s6 = document.createElement('div');
   s6.className = 'answer-section';
   var question = sprintQuestion || document.getElementById('questionInput').value.trim() || TRACK_A_QUESTION;
-  var ctaCmd = 'wheat init --question "' + question.substring(0, 120).replace(/"/g, "'") + '"';
+  var ctaCmd = '/plugin install grainulator';
   s6.innerHTML = '<div class="cta-section">' +
     '<div class="cta-code" id="ctaCode" title="Click to copy">' + esc(ctaCmd) + '</div>' +
-    '<div class="cta-text">Demo powered by a lightweight model. The installed plugin runs on Claude for substantially deeper analysis, web search, and code-aware reasoning.</div>' +
-    '<button class="cta-btn" id="ctaBtn" type="button">Continue this sprint in Claude Code</button>' +
+    '<div class="cta-text">Demo powered by a lightweight model. The installed plugin runs on Claude with web search, code analysis, and evidence tiers from \'documented\' to \'tested\'.</div>' +
+    '<button class="cta-btn" id="ctaBtn" type="button">Open in Claude Code</button>' +
     '<br><button class="cta-restart" id="restartBtn" type="button">Ask a different question</button>' +
     '</div>';
   col.appendChild(s6);
@@ -1429,9 +1429,9 @@ function renderAnswer(claims, compilerResults, elapsedMs, passCount, sprintQuest
   document.getElementById('ctaBtn').addEventListener('click', function() {
     var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     if (isMobile) {
-      // Mobile: no Claude Code, just copy the command
-      navigator.clipboard.writeText(ctaCmd).then(function() {
-        showToast('Command copied! Paste in Claude Code on your computer.');
+      // Mobile: no Claude Code, just copy the install command
+      navigator.clipboard.writeText('/plugin install grainulator').then(function() {
+        showToast('Install command copied! Paste in Claude Code on desktop.');
       }).catch(function() {
         showToast('Install Claude Code on desktop: claude.ai/download');
       });
