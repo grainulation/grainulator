@@ -1561,6 +1561,34 @@ async function runSprint(question) {
     } else {
       // === ONLINE MODE: Pollinations API ===
 
+      // Pass 0: Pre-flight prerequisite extraction (~5s)
+      // Ask the LLM a simple direct question to surface implicit prerequisites
+      // that it cannot identify inside complex research prompts
+      setPhase('identifying prerequisites...', 'research');
+      try {
+        var preflightSys = 'Answer in EXACTLY one sentence. What physical thing or condition must be present at the destination for the task in this question to be completed? If there is no specific prerequisite, say "No specific prerequisite."';
+        var preflightText = await streamPassWithRetry(preflightSys, question, signal);
+        if (preflightText && preflightText.length > 10 && !/no specific prerequisite/i.test(preflightText)) {
+          var prereqCleanText = preflightText.replace(/^[^a-zA-Z]+/, '').replace(/\n.*/g, '').trim();
+          var prereqClaim = {
+            id: 'p00',
+            type: 'constraint',
+            tier: /\d{3,}|\bstudy|research\b/i.test(prereqCleanText) ? 'documented' : 'stated',
+            text: prereqCleanText
+          };
+          allClaims.push(prereqClaim);
+          addClaimPill(prereqClaim);
+          updateCounter(allClaims.length);
+        }
+      } catch (e) {
+        if (e.message === 'CANCELLED') throw e;
+        // Pre-flight failed — continue without it
+      }
+
+      if (!signal.aborted) {
+        await choreographedWait(8000, allClaims, signal);
+      }
+
       // Pass 1: Research
       setPhase('researching...', 'research');
       try {
