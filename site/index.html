@@ -1568,7 +1568,6 @@ async function runSprint(question) {
       try {
         var preflightSys = 'Extract the key object from this question. Complete this sentence in 1-3 words: "To accomplish the task in this question, the ___ must be present." If no specific physical object is needed, respond with just the word "nothing".';
         var preflightText = await streamPassWithRetry(preflightSys, question, signal);
-        console.log('[preflight] response:', JSON.stringify(preflightText?.substring(0, 100)));
         if (preflightText && preflightText.length > 2 && !/^nothing\.?$/i.test(preflightText.trim()) && !/no specific/i.test(preflightText)) {
           var prereqCleanText = preflightText.replace(/^[^a-zA-Z]+/, '').replace(/\n.*/g, '').replace(/\.$/,'').trim();
           // If the answer is very short (just the object name), wrap it into a constraint sentence
@@ -1587,7 +1586,6 @@ async function runSprint(question) {
         }
       } catch (e) {
         if (e.message === 'CANCELLED') throw e;
-        console.warn('[preflight] failed:', e.message);
         // Pre-flight failed — continue without it
       }
 
