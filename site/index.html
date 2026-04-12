@@ -1568,6 +1568,7 @@ async function runSprint(question) {
       try {
         var preflightSys = 'Answer in EXACTLY one sentence. What physical object must be brought to the location for this task to be performed on it? Think about what the service operates on — not whether the service is available. If no object needs to be brought, say "No specific prerequisite."';
         var preflightText = await streamPassWithRetry(preflightSys, question, signal);
+        console.log('[preflight] response:', JSON.stringify(preflightText?.substring(0, 100)));
         if (preflightText && preflightText.length > 2 && !/no specific prerequisite/i.test(preflightText)) {
           var prereqCleanText = preflightText.replace(/^[^a-zA-Z]+/, '').replace(/\n.*/g, '').replace(/\.$/,'').trim();
           // If the answer is very short (just the object name), wrap it into a constraint sentence
@@ -1586,6 +1587,7 @@ async function runSprint(question) {
         }
       } catch (e) {
         if (e.message === 'CANCELLED') throw e;
+        console.warn('[preflight] failed:', e.message);
         // Pre-flight failed — continue without it
       }
 
