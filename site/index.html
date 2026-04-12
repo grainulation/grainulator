@@ -1149,8 +1149,8 @@ async function streamPass(systemPrompt, userMessage, abortSignal) {
     fullText = rawText.trim();
   }
 
-  // Guard: empty or very short responses
-  if (!fullText || fullText.length < 20) {
+  // Guard: truly empty responses (allow short answers for preflight extraction)
+  if (!fullText || fullText.trim().length === 0) {
     throw new Error('API_EMPTY_RESPONSE');
   }
 
