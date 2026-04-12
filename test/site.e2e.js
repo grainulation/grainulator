@@ -154,7 +154,7 @@ test.describe("sprint flow", () => {
 		const label = page.locator(".sprint-phase-label");
 		await expect(label).toBeVisible({ timeout: 5000 });
 		await expect(label).toContainText(
-			/researching|challenging|synthesizing|compiling|initializing/i,
+			/researching|challenging|synthesizing|compiling|initializing|identifying prerequisites/i,
 		);
 	});
 
