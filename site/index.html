@@ -1564,7 +1564,7 @@ async function runSprint(question) {
       // Pass 0: Pre-flight prerequisite extraction (~5s)
       // Ask the LLM a simple direct question to surface implicit prerequisites
       // that it cannot identify inside complex research prompts
-      setPhase('identifying prerequisites...', 'research');
+      setPhase('initializing...', 'research');
       try {
         var preflightSys = 'Extract the key object from this question. Complete this sentence in 1-3 words: "To accomplish the task in this question, the ___ must be present." If no specific physical object is needed, respond with just the word "nothing".';
         var preflightText = await streamPassWithRetry(preflightSys, question, signal);
