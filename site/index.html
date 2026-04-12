@@ -1568,12 +1568,16 @@ async function runSprint(question) {
       try {
         var preflightSys = 'Answer in EXACTLY one sentence. What physical object must be brought to the location for this task to be performed on it? Think about what the service operates on — not whether the service is available. If no object needs to be brought, say "No specific prerequisite."';
         var preflightText = await streamPassWithRetry(preflightSys, question, signal);
-        if (preflightText && preflightText.length > 10 && !/no specific prerequisite/i.test(preflightText)) {
-          var prereqCleanText = preflightText.replace(/^[^a-zA-Z]+/, '').replace(/\n.*/g, '').trim();
+        if (preflightText && preflightText.length > 2 && !/no specific prerequisite/i.test(preflightText)) {
+          var prereqCleanText = preflightText.replace(/^[^a-zA-Z]+/, '').replace(/\n.*/g, '').replace(/\.$/,'').trim();
+          // If the answer is very short (just the object name), wrap it into a constraint sentence
+          if (prereqCleanText.split(/\s+/).length <= 4) {
+            prereqCleanText = prereqCleanText + ' must be physically present at the location for this task to be completed';
+          }
           var prereqClaim = {
             id: 'p00',
             type: 'constraint',
-            tier: /\d{3,}|\bstudy|research\b/i.test(prereqCleanText) ? 'documented' : 'stated',
+            tier: 'stated',
             text: prereqCleanText
           };
           allClaims.push(prereqClaim);
