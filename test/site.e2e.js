@@ -205,8 +205,7 @@ test.describe("sprint flow", () => {
 		await waitForAnswer(page);
 		const ctaCode = page.locator("#ctaCode");
 		await expect(ctaCode).toBeVisible({ timeout: 5000 });
-		await expect(ctaCode).toContainText(/wheat init/);
-		await expect(ctaCode).toContainText(/SOC 2/);
+		await expect(ctaCode).toContainText(/plugin install grainulator/);
 		await expect(page.locator("#ctaBtn")).toBeVisible();
 	});
 
@@ -232,14 +231,14 @@ test.describe("sprint flow", () => {
 test.describe("compile flow", () => {
 	test.setTimeout(45000);
 
-	test("compiler pass lines appear (7 total)", async ({ page }) => {
+	test("compiler pass lines appear (8 total)", async ({ page }) => {
 		await mockLLM(page.context());
 		await page.goto(SPRINT_PATH);
 		await submitQuestion(page);
 		// Wait for answer state — compiler runs before answer renders
 		await waitForAnswer(page);
 		const passes = page.locator(".pass-line");
-		await expect(passes).toHaveCount(7, { timeout: 5000 });
+		await expect(passes).toHaveCount(8, { timeout: 5000 });
 	});
 
 	test("verdict shows confidence score", async ({ page }) => {
