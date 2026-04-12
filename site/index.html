@@ -1566,10 +1566,10 @@ async function runSprint(question) {
       // that it cannot identify inside complex research prompts
       setPhase('identifying prerequisites...', 'research');
       try {
-        var preflightSys = 'Answer in EXACTLY one sentence. What physical object must be brought to the location for this task to be performed on it? Think about what the service operates on — not whether the service is available. If no object needs to be brought, say "No specific prerequisite."';
+        var preflightSys = 'Extract the key object from this question. Complete this sentence in 1-3 words: "To accomplish the task in this question, the ___ must be present." If no specific physical object is needed, respond with just the word "nothing".';
         var preflightText = await streamPassWithRetry(preflightSys, question, signal);
         console.log('[preflight] response:', JSON.stringify(preflightText?.substring(0, 100)));
-        if (preflightText && preflightText.length > 2 && !/no specific prerequisite/i.test(preflightText)) {
+        if (preflightText && preflightText.length > 2 && !/^nothing\.?$/i.test(preflightText.trim()) && !/no specific/i.test(preflightText)) {
           var prereqCleanText = preflightText.replace(/^[^a-zA-Z]+/, '').replace(/\n.*/g, '').replace(/\.$/,'').trim();
           // If the answer is very short (just the object name), wrap it into a constraint sentence
           if (prereqCleanText.split(/\s+/).length <= 4) {
