@@ -1566,7 +1566,7 @@ async function runSprint(question) {
       // that it cannot identify inside complex research prompts
       setPhase('identifying prerequisites...', 'research');
       try {
-        var preflightSys = 'Answer in EXACTLY one sentence. What physical thing or condition must be present at the destination for the task in this question to be completed? If there is no specific prerequisite, say "No specific prerequisite."';
+        var preflightSys = 'Answer in EXACTLY one sentence. What physical object must be brought to the location for this task to be performed on it? Think about what the service operates on — not whether the service is available. If no object needs to be brought, say "No specific prerequisite."';
         var preflightText = await streamPassWithRetry(preflightSys, question, signal);
         if (preflightText && preflightText.length > 10 && !/no specific prerequisite/i.test(preflightText)) {
           var prereqCleanText = preflightText.replace(/^[^a-zA-Z]+/, '').replace(/\n.*/g, '').trim();
