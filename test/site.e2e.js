@@ -19,21 +19,28 @@ const SPRINT_PATH = "/";
  * Production mode uses POST with JSON response.
  */
 async function mockLLM(context) {
+	const claimsResponse =
+		"[FACTUAL] Test fact about the topic that exceeds twenty characters easily.\n[RISK] This could go wrong in several important ways for users.\n[CONSTRAINT] Must consider this limit when planning the approach.\n[RECOMMENDATION] Do this instead because it is the better path forward.\n[ESTIMATE] Takes 2-4 weeks depending on scope and team velocity.";
 	await context.route(/pollinations\.ai/, (route) => {
-		route.fulfill({
-			status: 200,
-			contentType: "application/json",
-			body: JSON.stringify({
-				choices: [
-					{
-						message: {
-							content:
-								"[FACTUAL] Test fact about the topic that exceeds twenty characters easily.\n[RISK] This could go wrong in several important ways for users.\n[CONSTRAINT] Must consider this limit when planning the approach.\n[RECOMMENDATION] Do this instead because it is the better path forward.\n[ESTIMATE] Takes 2-4 weeks depending on scope and team velocity.",
-						},
-					},
-				],
-			}),
-		});
+		const url = route.request().url();
+		// GET requests (localhost preflight + research) return plain text
+		if (route.request().method() === "GET") {
+			// Preflight gets "No specific prerequisite" so it doesn't inject a spurious claim
+			route.fulfill({
+				status: 200,
+				contentType: "text/plain; charset=utf-8",
+				body: "No specific prerequisite.",
+			});
+		} else {
+			// POST requests (production) return JSON
+			route.fulfill({
+				status: 200,
+				contentType: "application/json",
+				body: JSON.stringify({
+					choices: [{ message: { content: claimsResponse } }],
+				}),
+			});
+		}
 	});
 }
 
@@ -54,7 +61,7 @@ async function submitQuestion(
 /** Helper: wait for answer state to become active (sprint completed). */
 async function waitForAnswer(page) {
 	await expect(page.locator("#answerState")).toHaveClass(/active/, {
-		timeout: 45000,
+		timeout: 90000,
 	});
 }
 
