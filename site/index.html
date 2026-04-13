@@ -1714,6 +1714,14 @@ document.getElementById('questionInput').addEventListener('input', function() {
   document.getElementById('submitBtn').disabled = !this.value.trim();
 });
 
+// Pause shader while typing for snappier input
+document.getElementById('questionInput').addEventListener('focus', function() {
+  if (typeof pauseShader === 'function') pauseShader();
+});
+document.getElementById('questionInput').addEventListener('blur', function() {
+  if (typeof resumeShader === 'function') resumeShader();
+});
+
 document.getElementById('submitBtn').addEventListener('click', function() {
   var q = document.getElementById('questionInput').value.trim();
   if (!q) return;
@@ -1731,10 +1739,15 @@ document.getElementById('cancelBtn').addEventListener('click', function() {
   if (_abortController) _abortController.abort();
 });
 
-// Auto-resize textarea
+// Auto-resize textarea (debounced to avoid reflow on every keystroke)
+var _resizeTimer = null;
 document.getElementById('questionInput').addEventListener('input', function() {
-  this.style.height = 'auto';
-  this.style.height = Math.min(this.scrollHeight, 160) + 'px';
+  var el = this;
+  if (_resizeTimer) clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(function() {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+  }, 50);
 });
 
 // New sprint button
