@@ -72,6 +72,9 @@ That's it. The plugin registers MCP servers, skills, hooks, and an autonomous ag
 
 ```bash
 git clone https://github.com/grainulation/grainulator.git ~/.claude/plugins/grainulator
+```
+
+```bash
 claude plugin add ~/.claude/plugins/grainulator
 ```
 
