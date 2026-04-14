@@ -49,15 +49,17 @@ The demo runs client-side to show the pipeline. The real tool (installed as a pl
 
 ## Install
 
-**Step 1** — Add the marketplace (one-time setup):
+From the terminal:
 
 ```bash
-/plugin marketplace add https://github.com/grainulation/grainulator/blob/main/.claude-plugin/marketplace.json
+claude plugin marketplace add https://github.com/grainulation/grainulator.git
+claude plugin install grainulator
 ```
 
-**Step 2** — Install the plugin:
+Or from inside Claude Code:
 
-```bash
+```
+/plugin marketplace add https://github.com/grainulation/grainulator.git
 /plugin install grainulator
 ```
 
@@ -72,14 +74,6 @@ That's it. The plugin registers MCP servers, skills, hooks, and an autonomous ag
 git clone https://github.com/grainulation/grainulator.git ~/.claude/plugins/grainulator
 claude plugin add ~/.claude/plugins/grainulator
 ```
-
-**SSH permission denied?** If you see `git@github.com: Permission denied (publickey)`:
-
-```bash
-git config --global url."https://github.com/".insteadOf "git@github.com:"
-```
-
-Then retry the install. This tells git to use HTTPS instead of SSH for GitHub repos.
 
 </details>
 
