@@ -49,19 +49,19 @@ The demo runs client-side to show the pipeline. The real tool (installed as a pl
 
 ## Install
 
-From the terminal:
+**Step 1** — Add the marketplace (one-time):
 
 ```bash
 claude plugin marketplace add https://github.com/grainulation/grainulator.git
+```
+
+**Step 2** — Install:
+
+```bash
 claude plugin install grainulator
 ```
 
-Or from inside Claude Code:
-
-```
-/plugin marketplace add https://github.com/grainulation/grainulator.git
-/plugin install grainulator
-```
+> Inside Claude Code, use `/plugin` instead of `claude plugin`.
 
 That's it. The plugin registers MCP servers, skills, hooks, and an autonomous agent.
 
