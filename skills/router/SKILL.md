@@ -12,20 +12,20 @@ Routes plain-language user messages to the appropriate grainulator skill.
 
 ## Intent Map
 
-| User says something like...                                            | Route to              | Why                      |
-| ---------------------------------------------------------------------- | --------------------- | ------------------------ |
-| "look into X", "what about X", "explore X"                             | `/research X`         | Information gathering    |
-| "build X", "try X", "make a quick X"                                   | `/prototype`          | Hands-on validation      |
-| "is p001 really true?", "I doubt X"                                    | `/challenge <id>`     | Adversarial testing      |
-| "check this: <url>", "does <url> support X"                            | `/witness <id> <url>` | External corroboration   |
-| "what are we missing", "any gaps?"                                     | `/blind-spot`         | Structural gap analysis  |
-| "where are we", "what's the status"                                    | `/status`             | Sprint snapshot          |
-| "write it up", "summarize for the team"                                | `/brief`              | Decision document        |
-| "make slides", "prepare for the meeting"                               | `/present`            | Stakeholder presentation |
-| "publish to confluence", "sync to confluence", "push to wiki"          | `/sync`               | Confluence publish       |
-| "pull from confluence", "import from wiki", "backfill from confluence" | `/pull <slug>`        | Confluence pull          |
+| User says something like...                                            | Route to              | Why                        |
+| ---------------------------------------------------------------------- | --------------------- | -------------------------- |
+| "look into X", "what about X", "explore X"                             | `/research X`         | Information gathering      |
+| "build X", "try X", "make a quick X"                                   | `/prototype`          | Hands-on validation        |
+| "is p001 really true?", "I doubt X"                                    | `/challenge <id>`     | Adversarial testing        |
+| "check this: <url>", "does <url> support X"                            | `/witness <id> <url>` | External corroboration     |
+| "what are we missing", "any gaps?"                                     | `/blind-spot`         | Structural gap analysis    |
+| "where are we", "what's the status"                                    | `/status`             | Sprint snapshot            |
+| "write it up", "summarize for the team"                                | `/brief`              | Decision document          |
+| "make slides", "prepare for the meeting"                               | `/present`            | Stakeholder presentation   |
+| "publish to confluence", "sync to confluence", "push to wiki"          | `/sync`               | Confluence publish         |
+| "pull from confluence", "import from wiki", "backfill from confluence" | `/pull <slug>`        | Confluence pull            |
 | "show the plan", "what sprints are next", "dependency graph"           | `/orchard`            | Multi-sprint orchestration |
-| "show analytics", "how healthy is this sprint", "stale claims"         | `/harvest`            | Sprint analytics         |
+| "show analytics", "how healthy is this sprint", "stale claims"         | `/harvest`            | Sprint analytics           |
 
 ## Instructions
 
