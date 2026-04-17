@@ -24,6 +24,8 @@ Routes plain-language user messages to the appropriate grainulator skill.
 | "make slides", "prepare for the meeting"                               | `/present`            | Stakeholder presentation |
 | "publish to confluence", "sync to confluence", "push to wiki"          | `/sync`               | Confluence publish       |
 | "pull from confluence", "import from wiki", "backfill from confluence" | `/pull <slug>`        | Confluence pull          |
+| "show the plan", "what sprints are next", "dependency graph"           | `/orchard`            | Multi-sprint orchestration |
+| "show analytics", "how healthy is this sprint", "stale claims"         | `/harvest`            | Sprint analytics         |
 
 ## Instructions
 
