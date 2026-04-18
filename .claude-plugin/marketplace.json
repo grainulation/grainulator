@@ -16,7 +16,7 @@
 				"url": "https://github.com/grainulation/grainulator.git"
 			},
 			"description": "Research sprint orchestrator for Claude Code",
-			"version": "1.6.0",
+			"version": "1.6.1",
 			"author": {
 				"name": "Grainulation"
 			},
