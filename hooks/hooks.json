@@ -1,30 +1,30 @@
 {
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "mcp__wheat__wheat_add-claim",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/lib/tips-hook.cjs"
-          },
-          {
-            "type": "command",
-            "command": "node -e \"const fs=require('fs'),p=require('path'),d=process.cwd();try{const c=JSON.parse(fs.readFileSync(p.join(d,'claims.json'),'utf8'));const m=c.meta||{};const active=c.claims?c.claims.filter(x=>x.status==='active').length:0;const conflicts=(()=>{try{const comp=JSON.parse(fs.readFileSync(p.join(d,'compilation.json'),'utf8'));return(comp.conflict_graph?.unresolved||[]).length}catch{return 0}})();const status=(()=>{try{return JSON.parse(fs.readFileSync(p.join(d,'compilation.json'),'utf8')).status||'unknown'}catch{return'unknown'}})();const payload=JSON.stringify({session_id:process.env.CLAUDE_SESSION_ID||'unknown',sprint:{question:(m.question||'').slice(0,120),claim_count:active,phase:m.phase||'unknown',conflict_count:conflicts,compile_status:status,timestamp:Date.now()}});const http=require('http');const req=http.request({hostname:'127.0.0.1',port:9090,path:'/hooks/sprint-status',method:'POST',headers:{'Content-Type':'application/json','Content-Length':Buffer.byteLength(payload)},timeout:2000},()=>{});req.on('error',()=>{});req.write(payload);req.end()}catch{}\""
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node -e \"const p=JSON.parse(process.env.CLAUDE_HOOK_CONTEXT||'{}'); const f=p.tool_input?.file_path||''; if(f.endsWith('/claims.json')){process.stderr.write('BLOCKED: Direct writes to claims.json are not allowed. Use wheat MCP tools instead:\\n  - wheat_add-claim: add a new claim\\n  - wheat_resolve: update or resolve an existing claim\\n  - wheat_compile: recompile sprint state\\nFile blocked: '+f+'\\n');process.exit(1)} if(f.endsWith('/compilation.json')){process.stderr.write('BLOCKED: Direct writes to compilation.json are not allowed. This file is auto-generated.\\nRun wheat_compile to regenerate it.\\nFile blocked: '+f+'\\n');process.exit(1)}\""
-          }
-        ]
-      }
-    ]
-  }
+	"hooks": {
+		"PostToolUse": [
+			{
+				"matcher": "mcp__wheat__wheat_add-claim",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node ${CLAUDE_PLUGIN_ROOT}/lib/tips-hook.cjs"
+					},
+					{
+						"type": "command",
+						"command": "node -e \"const fs=require('fs'),p=require('path'),d=process.cwd();try{const c=JSON.parse(fs.readFileSync(p.join(d,'claims.json'),'utf8'));const m=c.meta||{};const active=c.claims?c.claims.filter(x=>x.status==='active').length:0;const conflicts=(()=>{try{const comp=JSON.parse(fs.readFileSync(p.join(d,'compilation.json'),'utf8'));return(comp.conflict_graph?.unresolved||[]).length}catch{return 0}})();const status=(()=>{try{return JSON.parse(fs.readFileSync(p.join(d,'compilation.json'),'utf8')).status||'unknown'}catch{return'unknown'}})();const payload=JSON.stringify({session_id:process.env.CLAUDE_SESSION_ID||'unknown',sprint:{question:(m.question||'').slice(0,120),claim_count:active,phase:m.phase||'unknown',conflict_count:conflicts,compile_status:status,timestamp:Date.now()}});const http=require('http');const req=http.request({hostname:'127.0.0.1',port:9090,path:'/hooks/sprint-status',method:'POST',headers:{'Content-Type':'application/json','Content-Length':Buffer.byteLength(payload)},timeout:2000},()=>{});req.on('error',()=>{});req.write(payload);req.end()}catch{}\""
+					}
+				]
+			}
+		],
+		"PreToolUse": [
+			{
+				"matcher": "Write|Edit",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node -e \"const p=JSON.parse(process.env.CLAUDE_HOOK_CONTEXT||'{}'); const f=p.tool_input?.file_path||''; if(f.endsWith('/claims.json')){process.stderr.write('BLOCKED: Direct writes to claims.json are not allowed. Use wheat MCP tools instead:\\n  - wheat_add-claim: add a new claim\\n  - wheat_resolve: update or resolve an existing claim\\n  - wheat_compile: recompile sprint state\\nFile blocked: '+f+'\\n');process.exit(1)} if(f.endsWith('/compilation.json')){process.stderr.write('BLOCKED: Direct writes to compilation.json are not allowed. This file is auto-generated.\\nRun wheat_compile to regenerate it.\\nFile blocked: '+f+'\\n');process.exit(1)}\""
+					}
+				]
+			}
+		]
+	}
 }
