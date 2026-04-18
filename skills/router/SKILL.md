@@ -26,6 +26,7 @@ Routes plain-language user messages to the appropriate grainulator skill.
 | "pull from confluence", "import from wiki", "backfill from confluence" | `/pull <slug>`        | Confluence pull            |
 | "show the plan", "what sprints are next", "dependency graph"           | `/orchard`            | Multi-sprint orchestration |
 | "show analytics", "how healthy is this sprint", "stale claims"         | `/harvest`            | Sprint analytics           |
+| "fetch this url", "what does &lt;url&gt; say", "summarize &lt;url&gt;"             | `/fetch &lt;url&gt;`        | Size-efficient URL fetch   |
 
 ## Instructions
 

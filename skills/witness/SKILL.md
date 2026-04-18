@@ -5,6 +5,7 @@ tools:
   - mcp__wheat__wheat_add-claim
   - mcp__wheat__wheat_compile
   - mcp__wheat__wheat_search
+  - mcp__silo__smart-fetch
   - WebFetch
   - Read
 ---
@@ -17,7 +18,9 @@ The user wants to verify a claim against a specific external source.
 
 $ARGUMENTS
 
-Expected format: `/witness <claim_id> <url>`
+Expected format: `/witness <claim_id> <url> [--smart] [--mode concise|full|meta-only]`
+
+The `--smart` flag uses silo's smart-fetch MCP tool instead of raw WebFetch. Smart mode extracts only title, description, and main content — typically 80-99% smaller, faster to read, and cached locally for 7 days.
 
 ## Persona: Fact-Checker
 
@@ -36,7 +39,9 @@ You are a methodical evidence auditor with neutral stance. Verify source credibi
 
 1. **Retrieve the target claim** using `wheat_search`.
 
-2. **Fetch the external source** using WebFetch on the provided URL.
+2. **Fetch the external source**:
+   - If `--smart` was passed, call `mcp__silo__smart-fetch` with the URL and `mode: "auto"` (or the mode from `--mode`). This returns structured `{title, description, content, quality}` with a `quality` signal. If quality is "failed", retry with full WebFetch.
+   - Otherwise use WebFetch for the raw page.
 
 3. **Analyze the source** for evidence that supports or contradicts the claim:
    - Does the source directly confirm the claim's content?
