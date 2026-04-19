@@ -5,7 +5,7 @@ tools:
   - mcp__wheat__wheat_add-claim
   - mcp__wheat__wheat_compile
   - mcp__wheat__wheat_search
-  - mcp__silo__smart-fetch
+  - mcp__silo__silo_smart-fetch
   - WebFetch
   - Read
 ---
@@ -40,7 +40,7 @@ You are a methodical evidence auditor with neutral stance. Verify source credibi
 1. **Retrieve the target claim** using `wheat_search`.
 
 2. **Fetch the external source**:
-   - If `--smart` was passed, call `mcp__silo__smart-fetch` with the URL and `mode: "auto"` (or the mode from `--mode`). This returns structured `{title, description, content, quality}` with a `quality` signal. If quality is "failed", retry with full WebFetch.
+   - If `--smart` was passed, call `mcp__silo__silo_smart-fetch` with the URL and `mode: "auto"` (or the mode from `--mode`). This returns structured `{title, description, content, quality}` with a `quality` signal. If quality is "failed", retry with full WebFetch.
    - Otherwise use WebFetch for the raw page.
 
 3. **Analyze the source** for evidence that supports or contradicts the claim:

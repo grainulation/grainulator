@@ -2,7 +2,7 @@
 name: fetch
 description: Size-efficient URL fetch with semantic extraction. Use for ad-hoc web research when you want content without the raw HTML overhead.
 tools:
-  - mcp__silo__smart-fetch
+  - mcp__silo__silo_smart-fetch
   - WebFetch
   - Read
 ---
@@ -40,7 +40,7 @@ Expected: `/fetch <url> [--mode auto|concise|full|meta-only] [--no-cache] [--pri
 
 ## Instructions
 
-1. **Call `mcp__silo__smart-fetch`** with the URL and parsed flags.
+1. **Call `mcp__silo__silo_smart-fetch`** with the URL and parsed flags.
 
 2. **If the response `quality` is "failed"** (empty body, SPA, link list, HTTP error), tell the user:
    - What the reported quality was
