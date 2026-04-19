@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-04-19
+
+### Added
+
+- **Bearer auth on farmer hooks.** The sprint-status notifier hook now
+  attaches a Bearer token when `.farmer-token` is present. Narrow-scope
+  tokens ensure admin/viewer credentials can't be reused against hook
+  endpoints — aligns grainulator's hook transport with farmer's
+  opportunistic-auth hardening.
+- **`/healthcheck` host-capability probe.** Checks Claude Code's
+  current tool/MCP contract and flags drift before it causes silent
+  skill failures. Run before a sprint to verify the environment is
+  compatible.
+
+### Fixed
+
+- **Windows hook compatibility.** Inline JS in `hooks.json` silently
+  failed on Windows cmd.exe (no fail-closed). Extracted to `.cjs`
+  files invoked via `node ${CLAUDE_PLUGIN_ROOT}/hooks/<name>.cjs` so
+  Windows runs the same code path as macOS/Linux.
+- Port env override now respected by hook scripts.
+
+### Changed
+
+- Skills: extracted shared WCAG checklist so `brief` and `present`
+  skills reference one source instead of duplicating.
+
+### Internal
+
+- `.env` added to `.gitignore`.
+
 ## [1.6.2] - 2026-04-18
 
 ### Added

@@ -16,14 +16,20 @@
 				"url": "https://github.com/grainulation/grainulator.git"
 			},
 			"description": "Research sprint orchestrator for Claude Code",
-			"version": "1.6.2",
+			"version": "1.7.0",
 			"author": {
 				"name": "Grainulation"
 			},
 			"homepage": "https://grainulator.app",
 			"repository": "https://github.com/grainulation/grainulator",
 			"license": "MIT",
-			"keywords": ["research", "wheat", "claims", "evidence", "briefs"],
+			"keywords": [
+				"research",
+				"wheat",
+				"claims",
+				"evidence",
+				"briefs"
+			],
 			"category": "research",
 			"tags": [
 				"research-sprints",

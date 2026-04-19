@@ -1,6 +1,6 @@
 {
 	"name": "@grainulation/grainulator",
-	"version": "1.6.2",
+	"version": "1.7.0",
 	"description": "Research sprint orchestrator for Claude Code",
 	"type": "module",
 	"license": "MIT",
