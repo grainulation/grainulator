@@ -43,6 +43,13 @@ install it as a development plugin:
 5. Use Biome for formatting: `npx biome format --write .` before
    committing (CI enforces this).
 
+## End-to-end tests
+
+`npm test` runs the unit suite and is what CI gates on. Playwright
+e2e runs locally only — not in CI — out of the maintainer's ranch
+harness. Keeping it local keeps browser tooling out of this repo's
+dep tree and keeps CI fast.
+
 ## Skills
 
 Skills live in `skills/<name>/SKILL.md`. Each skill is one markdown
