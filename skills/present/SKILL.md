@@ -39,18 +39,15 @@ Optional: audience override, format (html, pdf). Default: html scroll-snap deck.
 
 5. **Generate** using `mill_convert` with the presentation template (dark scroll-snap for HTML).
 
-6. **WCAG compliance checklist** -- verify the generated HTML includes all of these:
-   - [ ] `<a href="#main-content" class="skip-nav">Skip to content</a>` as first child of `<body>`
+6. **WCAG compliance checklist** -- first read and apply every item from
+   `${CLAUDE_PLUGIN_ROOT}/skills/_templates/wcag-shared.md`, then verify
+   these presentation-specific items (the shared file defines the
+   `<main>` baseline; for presentations extend its role/aria-label):
    - [ ] `<main id="main-content" role="main" aria-roledescription="carousel" aria-label="...">` wrapping all slides
    - [ ] Each slide is `<section aria-roledescription="slide" aria-label="Slide N of M: Title" tabindex="0">` (NOT `<div class="slide">`)
    - [ ] First slide uses `<h1>`, all subsequent slides use `<h2>`, card titles within slides use `<h3>`
    - [ ] `<div id="slide-announcer" role="status" aria-live="polite" aria-atomic="true" class="sr-only">` for transition announcements
    - [ ] IntersectionObserver script that updates the announcer (no Space/ArrowKey trapping)
-   - [ ] `:focus-visible` outline styles (2px solid #4ecdc4, offset 2px)
-   - [ ] `.sr-only` utility class defined in CSS
-   - [ ] Risk indicators and tags include text labels, never color alone
-   - [ ] Gradient text has `@supports not (-webkit-background-clip: text)` fallback
-   - [ ] `<footer role="contentinfo">` wrapping the compilation certificate
 
 7. **Write output** to `output/presentation.<ext>`.
 
