@@ -34,7 +34,7 @@
 		"test:e2e": "GRAINULATOR_SITE_DIR=\"$PWD/site\" npm run e2e:grainulator --prefix ../ranch",
 		"test:all": "npm test && npm run test:e2e",
 		"sync-version": "node scripts/sync-version.js",
-		"version": "node scripts/sync-version.js && git add .claude-plugin/plugin.json .claude-plugin/marketplace.json"
+		"version": "node scripts/sync-version.js && npx --yes @biomejs/biome format --write .claude-plugin/ && git add .claude-plugin/plugin.json .claude-plugin/marketplace.json"
 	},
 	"engines": {
 		"node": ">=20"

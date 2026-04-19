@@ -23,13 +23,7 @@
 			"homepage": "https://grainulator.app",
 			"repository": "https://github.com/grainulation/grainulator",
 			"license": "MIT",
-			"keywords": [
-				"research",
-				"wheat",
-				"claims",
-				"evidence",
-				"briefs"
-			],
+			"keywords": ["research", "wheat", "claims", "evidence", "briefs"],
 			"category": "research",
 			"tags": [
 				"research-sprints",
