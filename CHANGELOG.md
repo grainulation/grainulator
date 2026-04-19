@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.2] - 2026-04-18
+
+### Added
+
+- `SECURITY.md` — private-disclosure policy via GitHub Security
+  Advisories or `security@grainulator.app`, 90-day window, explicit
+  scope and credit clauses.
+- `CODE_OF_CONDUCT.md` + `CONTRIBUTING.md` — standard OSS files aligned
+  with the rest of the ecosystem.
+- README "Troubleshooting" section covering MCP server reconnect
+  (`claude mcp add wheat|mill|silo ...`) and pointing at the
+  `/healthcheck` skill for diagnostics.
+- `skills/_templates/wcag-shared.md` — shared WCAG checklist that
+  brief + present skills now reference instead of inlining twice.
+- `scripts/sync-version.js` — source-of-truth for the 3-way version
+  sync (package.json → plugin.json → marketplace.json), wired into
+  the `npm version` lifecycle hook so bumps stay in sync.
+
+### Changed
+
+- Bumped `package.json` version from 1.6.0 to 1.6.2 so it matches
+  plugin.json and marketplace.json entries; prior drift meant users
+  pointing at the git HEAD saw one version while the marketplace
+  served another.
+
+### Fixed
+
+- Smart-fetch skill wrote `mcp__silo__smart-fetch` but the runtime
+  tool name is `mcp__silo__silo_smart-fetch`. Tool was unreachable.
+
 ## [1.3.0] - 2026-04-03
 
 ### Added
