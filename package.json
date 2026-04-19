@@ -1,6 +1,6 @@
 {
 	"name": "@grainulation/grainulator",
-	"version": "1.6.0",
+	"version": "1.6.2",
 	"description": "Research sprint orchestrator for Claude Code",
 	"type": "module",
 	"license": "MIT",
@@ -33,7 +33,8 @@
 		"test": "node --test test/*.test.js",
 		"test:e2e": "npx playwright test",
 		"test:all": "npm test && npm run test:e2e",
-		"prepublishOnly": "npm test"
+		"sync-version": "node scripts/sync-version.js",
+		"version": "node scripts/sync-version.js && git add .claude-plugin/plugin.json .claude-plugin/marketplace.json"
 	},
 	"engines": {
 		"node": ">=20"
