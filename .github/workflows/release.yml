@@ -1,0 +1,60 @@
+name: Release
+
+# Auto-create a GitHub Release whenever a v* tag is pushed.
+# Pulls release notes from the matching CHANGELOG.md section.
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          ref: ${{ github.ref }}
+
+      - name: Extract changelog section for this tag
+        id: changelog
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          # CHANGELOG uses Keep a Changelog format: "## [X.Y.Z] - YYYY-MM-DD"
+          # Extract the section between that header and the next "## " header.
+          awk -v ver="$VERSION" '
+            BEGIN { found = 0 }
+            /^## / {
+              if (found) exit
+              # Match "## [X.Y.Z]" or "## X.Y.Z"
+              if ($0 ~ ("^## \\[?" ver "\\]?") ) { found = 1; next }
+            }
+            found { print }
+          ' CHANGELOG.md > release-notes.md
+          # Trim leading/trailing blank lines
+          sed -i '/./,$!d' release-notes.md || true
+          if [ -s release-notes.md ]; then
+            echo "has_notes=true" >> "$GITHUB_OUTPUT"
+            echo "--- release notes for $VERSION ---"
+            cat release-notes.md
+          else
+            echo "has_notes=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No CHANGELOG entry found for $VERSION — using auto-generated notes"
+          fi
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ steps.changelog.outputs.has_notes }}" = "true" ]; then
+            gh release create "${GITHUB_REF_NAME}" \
+              --title "${GITHUB_REF_NAME}" \
+              --notes-file release-notes.md
+          else
+            gh release create "${GITHUB_REF_NAME}" \
+              --title "${GITHUB_REF_NAME}" \
+              --generate-notes
+          fi
