@@ -212,7 +212,7 @@ Grainulator is part of the [grainulation](https://github.com/grainulation/grainu
 | [orchard](https://github.com/grainulation/orchard) | Orchestration — multi-sprint coordination |
 | [grainulation](https://github.com/grainulation/grainulation) | Unified CLI — single entry point |
 
-**You don't need all eight.** `/plugin install grainulator` gives you everything.
+**You don't need all eight.** `/plugin install grainulator` gives you everything you need.
 
 ## Zero dependencies
 
