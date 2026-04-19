@@ -71,9 +71,50 @@ If Mill failed:
 If Silo failed:
 - Re-add: `claude mcp add silo -- npx -y @grainulation/silo serve-mcp`
 
+### Step 5: Host-capability probe (Claude Code version drift)
+
+After the three MCP pings succeed, verify the Claude Code host exposes
+the APIs grainulator needs. If Anthropic ships a breaking change in a
+minor version, this is how we detect it before the user sees silent
+hook failures.
+
+Check presence of each of these capabilities by inspecting your own
+tool availability (no network call needed):
+
+1. **Hook events in use:** PreToolUse, PostToolUse, SessionStart,
+   SessionEnd, Stop. Report any that appear unavailable.
+2. **Skill loader:** `${CLAUDE_PLUGIN_ROOT}` env var resolves to the
+   installed grainulator path. Verify by running (via Bash):
+
+   ```bash
+   echo "${CLAUDE_PLUGIN_ROOT}" | head -c 200
+   test -f "${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json" && echo "plugin manifest found"
+   ```
+
+   If the manifest is not found, the host's plugin path conventions
+   have drifted — surface this clearly so the user knows why their
+   skills may behave oddly.
+3. **Tool-call protocol:** the MCP pings above already exercise this;
+   if they succeeded, the tool-call path is healthy.
+
+If any capability check fails, append to the status table:
+
+```
+  host   ⚠ degraded  — <which capability> unavailable
+         → Claude Code may have introduced a breaking change.
+           Check release notes at https://claude.com/claude-code.
+           grainulator >= 1.6.2 requires: PreToolUse/PostToolUse hooks,
+           CLAUDE_PLUGIN_ROOT path resolution, MCP stdio protocol.
+```
+
+Do not block the user. Do surface the signal — a "degraded" row tells
+them which layer to investigate when skills misbehave.
+
 ### Rules
 
 - Do NOT retry a failed server. One attempt only. Report and move on.
 - Do NOT block the user from working if a server is down — suggest the fix and let them decide.
-- Total execution time should be under 10 seconds.
+- Total execution time should be under 10 seconds (Step 5 adds ~1s of filesystem check).
 - If ALL servers fail, suggest the user check their network connection and Node.js installation first.
+- If the host-capability probe flags degraded, suggest running
+  `claude --version` and comparing against the grainulator minimum.
