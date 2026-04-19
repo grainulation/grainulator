@@ -20,3 +20,8 @@ playwright-report/
 
 # Claude Code
 .claude/
+
+# Environment / secrets — never commit
+.env
+.env.local
+.env.*.local
