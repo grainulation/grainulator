@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.1] - 2026-04-19
+
+### Changed
+
+- Grainulator devDeps (`@playwright/test`, `serve`) moved out of this
+  repo into the maintainer's private ranch harness. Grainulator is
+  now truly zero-devDep, matching the published ecosystem's zero-dep
+  philosophy. E2E tests still pass (27/27); they now run locally only
+  via the ranch harness — see `CONTRIBUTING.md`.
+
+### Internal
+
+- Biome autofix pass on hooks and plugin JSON files.
+- CI: removed the e2e job (moved to the ranch harness, local-only).
+- Added `release.yml` — `v*` tag pushes now auto-create GitHub
+  Release objects with CHANGELOG-extracted notes.
+
 ## [1.7.0] - 2026-04-19
 
 ### Added
