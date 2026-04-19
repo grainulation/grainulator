@@ -27,11 +27,48 @@
 "use strict";
 
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 const http = require("node:http");
 
 const FARMER_PORT = Number.parseInt(process.env.FARMER_PORT, 10) || 9090;
 const FARMER_HOST = process.env.FARMER_HOST || "127.0.0.1";
+
+/**
+ * Read the hook-auth token paired with bs-19 / farmer's opportunistic Bearer
+ * auth on /hooks/*. Precedence:
+ *
+ *   1. FARMER_TOKEN env var (explicit override — useful for tests and CI)
+ *   2. <FARMER_DATA_DIR or ~/.farmer>/.farmer-token (JSON with `hook` field,
+ *      or plain-text fallback from the old single-token format)
+ *
+ * Returns "" if no token is available; farmer will still accept the POST
+ * in its opportunistic-auth mode (loopback + one-time stderr warning).
+ * Never throws — hook failures must never block the agent.
+ */
+function readFarmerHookToken() {
+  if (process.env.FARMER_TOKEN) return process.env.FARMER_TOKEN;
+  try {
+    const dataDir =
+      process.env.FARMER_DATA_DIR || path.join(os.homedir(), ".farmer");
+    const raw = fs.readFileSync(path.join(dataDir, ".farmer-token"), "utf8");
+    const trimmed = raw.trim();
+    if (!trimmed) return "";
+    if (trimmed.startsWith("{")) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        // Prefer the narrow-scope hook token; fall back to admin for
+        // pre-bs-19 farmer installs where `hook` doesn't exist yet.
+        return parsed.hook || parsed.admin || "";
+      } catch {
+        return "";
+      }
+    }
+    return trimmed;
+  } catch {
+    return "";
+  }
+}
 
 try {
 	const cwd = process.cwd();
@@ -83,16 +120,22 @@ try {
 		},
 	});
 
+	const headers = {
+		"Content-Type": "application/json",
+		"Content-Length": Buffer.byteLength(payload),
+	};
+	const hookToken = readFarmerHookToken();
+	if (hookToken) {
+		headers.Authorization = `Bearer ${hookToken}`;
+	}
+
 	const req = http.request(
 		{
 			hostname: FARMER_HOST,
 			port: FARMER_PORT,
 			path: "/hooks/sprint-status",
 			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				"Content-Length": Buffer.byteLength(payload),
-			},
+			headers,
 			timeout: 2000,
 		},
 		() => {},
