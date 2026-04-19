@@ -218,6 +218,10 @@ Grainulator is part of the [grainulation](https://github.com/grainulation/grainu
 
 Every grainulation tool runs on Node built-ins only. No npm install waterfall. No left-pad. No supply chain anxiety. MCP servers download on first use via `npx`.
 
+## Releases
+
+See [CHANGELOG.md](./CHANGELOG.md) for release history.
+
 ## License
 
 MIT
