@@ -31,17 +31,13 @@
 	},
 	"scripts": {
 		"test": "node --test test/*.test.js",
-		"test:e2e": "npx playwright test",
+		"test:e2e": "GRAINULATOR_SITE_DIR=\"$PWD/site\" npm run e2e:grainulator --prefix ../ranch",
 		"test:all": "npm test && npm run test:e2e",
 		"sync-version": "node scripts/sync-version.js",
 		"version": "node scripts/sync-version.js && git add .claude-plugin/plugin.json .claude-plugin/marketplace.json"
 	},
 	"engines": {
 		"node": ">=20"
-	},
-	"devDependencies": {
-		"@playwright/test": "^1.59.1",
-		"serve": "^14.2.6"
 	},
 	"private": true
 }
