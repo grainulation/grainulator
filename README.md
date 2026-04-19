@@ -95,6 +95,30 @@ For air-gapped environments, use `CLAUDE_CODE_PLUGIN_SEED_DIR` with the plugin b
 
 </details>
 
+## Troubleshooting
+
+**MCP server disconnected / "tool not found".** Claude Code's MCP
+registry occasionally drops stdio-connected servers (sleep, network
+hiccup, long-running session). Re-add the affected server:
+
+```bash
+claude mcp add wheat  -- npx -y -p @grainulation/wheat  wheat-mcp
+claude mcp add mill   -- npx -y    @grainulation/mill   serve-mcp
+claude mcp add silo   -- npx -y    @grainulation/silo   serve-mcp
+```
+
+Or run `/healthcheck` from any grainulator-enabled session to verify
+all three servers are responding and get the exact fix command for
+any that aren't.
+
+**Plugin commands not showing up.** Restart Claude Code after
+`claude plugin install` — plugin registration is read at startup.
+
+**Permission prompts from hooks.** Grainulator's hooks (pre-compile,
+post-claim) need `.claude/settings.json` permission. On first use
+Claude Code will prompt; allow, or pre-approve in your user or
+project settings.
+
 ## How it works
 
 **You ask a question. Grainulator runs a research sprint.**
