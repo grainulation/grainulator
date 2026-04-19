@@ -47,27 +47,27 @@ const FARMER_HOST = process.env.FARMER_HOST || "127.0.0.1";
  * Never throws — hook failures must never block the agent.
  */
 function readFarmerHookToken() {
-  if (process.env.FARMER_TOKEN) return process.env.FARMER_TOKEN;
-  try {
-    const dataDir =
-      process.env.FARMER_DATA_DIR || path.join(os.homedir(), ".farmer");
-    const raw = fs.readFileSync(path.join(dataDir, ".farmer-token"), "utf8");
-    const trimmed = raw.trim();
-    if (!trimmed) return "";
-    if (trimmed.startsWith("{")) {
-      try {
-        const parsed = JSON.parse(trimmed);
-        // Prefer the narrow-scope hook token; fall back to admin for
-        // pre-bs-19 farmer installs where `hook` doesn't exist yet.
-        return parsed.hook || parsed.admin || "";
-      } catch {
-        return "";
-      }
-    }
-    return trimmed;
-  } catch {
-    return "";
-  }
+	if (process.env.FARMER_TOKEN) return process.env.FARMER_TOKEN;
+	try {
+		const dataDir =
+			process.env.FARMER_DATA_DIR || path.join(os.homedir(), ".farmer");
+		const raw = fs.readFileSync(path.join(dataDir, ".farmer-token"), "utf8");
+		const trimmed = raw.trim();
+		if (!trimmed) return "";
+		if (trimmed.startsWith("{")) {
+			try {
+				const parsed = JSON.parse(trimmed);
+				// Prefer the narrow-scope hook token; fall back to admin for
+				// pre-bs-19 farmer installs where `hook` doesn't exist yet.
+				return parsed.hook || parsed.admin || "";
+			} catch {
+				return "";
+			}
+		}
+		return trimmed;
+	} catch {
+		return "";
+	}
 }
 
 try {
@@ -99,9 +99,8 @@ try {
 	const status = (() => {
 		try {
 			return (
-				JSON.parse(
-					fs.readFileSync(path.join(cwd, "compilation.json"), "utf8"),
-				).status || "unknown"
+				JSON.parse(fs.readFileSync(path.join(cwd, "compilation.json"), "utf8"))
+					.status || "unknown"
 			);
 		} catch {
 			return "unknown";
