@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.2] - 2026-09-08
+
+### Fixed
+
+- Recognize the supported host security wrapper in both MCP configuration formats without changing or removing the wrapper. Verify that it references the expected configuration and server, and retain checks on the original launch command, arguments and environment.
+- Protect native plugin configuration and integrity metadata from export overwrites, including paths through symbolic links and missing destination children.
+- Enforce the workspace boundary when reading the implicit synchronization log through MCP tools.
+- Return HTTP 400 for malformed preview request URLs instead of terminating the local server.
+- Make workspace configuration cleanup remove only temporary files created by the current save operation.
+- Redact known environment credential values from managed-runner results, stored traces and progress callbacks while preserving operational adapter/verifier inputs.
+
+### Verification scope
+
+- Added focused regressions for these defects and checked provider redirects, origin validation, request/response limits and cancellation. See the [security review](docs/SECURITY-REVIEW.md) for boundaries and remaining limits.
+- GitHub release only; no npm publication. Previously published release tags are unchanged.
+
 ## [2.0.1] - 2026-09-08
 
 ### Fixed

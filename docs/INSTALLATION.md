@@ -4,16 +4,16 @@ The root `@grainulation/grainulator` archive is the distribution boundary. Compo
 
 Already using 1.x? Start with the [upgrade checklist](UPGRADING.md). Updating source or a marketplace catalog does not update an installed plugin, its host scope, or a running conversation.
 
-## Obtain the v2.0.1 GitHub release
+## Obtain the v2.0.2 GitHub release
 
-Use Node.js 24 or later; Node 25 is the dogfood default. Get the tagged source from the [v2.0.1 GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.0.1). This GitHub release is not published to npm; installing the currently released npm package does not select this version. The playground's [local setup page](../site/install.html) provides the same source and archive instructions.
+Use Node.js 24 or later; Node 25 is the dogfood default. Get the tagged source from the [v2.0.2 GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.0.2). This GitHub release is not published to npm; installing the currently released npm package does not select this version. The playground's [local setup page](../site/install.html) provides the same source and archive instructions.
 
-Tagged releases and marketplace builds include `build-info.json`, an integrity manifest with an ID such as `release-2.0.1-<hash>`. Doctor checks its shipped-file checksums. A standard `npm pack --ignore-scripts` archive preserves that identity; `pack:local` below creates a distinct development build.
+Tagged releases and marketplace builds include `build-info.json`, an integrity manifest with an ID such as `release-2.0.2-<hash>`. Doctor checks its shipped-file checksums. A standard `npm pack --ignore-scripts` archive preserves that identity; `pack:local` below creates a distinct development build.
 
 Clone the release tag and install its source dependencies:
 
 ```sh
-git clone --branch v2.0.1 https://github.com/grainulation/grainulator.git
+git clone --branch v2.0.2 https://github.com/grainulation/grainulator.git
 cd grainulator
 npm ci --ignore-scripts
 node bin/grainulator.js doctor
@@ -30,7 +30,7 @@ From the full source checkout, create an archive with a build identity:
 npm run pack:local
 ```
 
-This stages a version such as `2.0.1-local.<16-character-hash>` without changing the checkout's public version or publishing anything. The command prints `archive`, `id`, `version`, `source_sha256`, and `archive_sha256`; the same report is saved to `.dogfood/builds/latest.json`. Copy the full `archive` path from that report. Do not substitute an older same-version tarball.
+This stages a version such as `2.0.2-local.<16-character-hash>` without changing the checkout's public version or publishing anything. The command prints `archive`, `id`, `version`, `source_sha256`, and `archive_sha256`; the same report is saved to `.dogfood/builds/latest.json`. Copy the full `archive` path from that report. Do not substitute an older same-version tarball.
 
 In a new, empty consumer directory, replace `<archive>` below with that exact printed path:
 
@@ -54,7 +54,7 @@ The source checkout, an npm consumer installation, and a host's plugin cache are
 
 For an existing local CLI installation, stop its preview or CLI process, install the newly printed archive path from that consumer directory, verify its build ID with doctor, and restart it. For a plugin, reinstall the intended local artifact through the host's local plugin mechanism, reload the plugin, and start a fresh test session. Verify the actual loaded cache, including skills, agents, and hooks; a direct MCP test does not exercise the full plugin.
 
-The bundled Claude marketplace entry does not pin your local artifact. Use the `v2.0.1` tagged checkout or an identified archive for release testing, and verify the loaded build. Follow the [fresh full-plugin acceptance guide](PLUGIN-TESTING.md) for the local installation and cache checks. Existing user sessions and global configuration are not automatically changed by packing or installing a CLI archive.
+The bundled Claude marketplace entry does not pin your local artifact. Use the `v2.0.2` tagged checkout or an identified archive for release testing, and verify the loaded build. Follow the [fresh full-plugin acceptance guide](PLUGIN-TESTING.md) for the local installation and cache checks. Existing user sessions and global configuration are not automatically changed by packing or installing a CLI archive.
 
 For an authenticated compatible endpoint, configure a local environment variable such as `MODEL_API_KEY` and append `--api-key-env MODEL_API_KEY` to the research command. Pass the variable name, never the secret itself. Custom endpoints do not inherit OpenAI or OpenRouter environment keys, and credential fields are excluded from exports. The playground shows this handoff note when Compatible endpoint is selected.
 

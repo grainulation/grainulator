@@ -55,7 +55,7 @@ Requires **Node.js 24+**. Node 25 is the development default.
 **Upgrading from 1.x?** Follow the [migration checklist](docs/UPGRADING.md) to update the correct plugin scope, reconnect the single MCP server, and review retired Farmer instructions without changing your research data.
 
 ```sh
-git clone --branch v2.0.1 https://github.com/grainulation/grainulator.git
+git clone --branch v2.0.2 https://github.com/grainulation/grainulator.git
 cd grainulator
 npm ci --ignore-scripts
 node bin/grainulator.js doctor
@@ -66,7 +66,7 @@ Open **[localhost:4517/playground/](http://127.0.0.1:4517/playground/)** to choo
 
 Want to look around first? The **[public playground](https://grainulator.app/playground/)** lets you explore the controls and export a setup. Model execution happens in your local installation.
 
-> **Distribution:** v2.0.1 is a [GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.0.1), not an npm registry release. For a separate local installation, follow the [archive installation guide](docs/INSTALLATION.md).
+> **Distribution:** v2.0.2 is a [GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.0.2), not an npm registry release. For a separate local installation, follow the [archive installation guide](docs/INSTALLATION.md).
 
 ### Connect your agent
 

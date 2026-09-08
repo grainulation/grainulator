@@ -20,8 +20,7 @@ Advisories on this repository (`Security` tab → `Report a vulnerability`).
 GitHub handles coordination and gives us a private space to discuss a fix.
 
 Alternative: email `security@grainulator.app` with a description of the
-issue, reproduction steps, and any relevant logs. Use the PGP key on
-the website to encrypt sensitive details.
+issue, reproduction steps, and relevant redacted logs. Do not include live credentials.
 
 ## Disclosure process
 
@@ -61,3 +60,12 @@ Out of scope:
 
 We credit reporters in release notes and the advisory. Let us know if
 you'd prefer to remain anonymous.
+
+
+## Local trust boundaries
+
+Grainulator runs with the permissions of its host process. MCP workspace containment and protected export paths are application checks, not an operating-system sandbox. Do not treat them as protection against another process that can concurrently replace local files or symbolic links.
+
+`doctor` compares package files with the bundled integrity manifest and recognizes only the supported security wrapper when its configuration, server, original command, arguments and environment match. The manifest is a reproducibility check, not a signed attestation or verification of the security wrapper executable itself. Keep host security controls enabled.
+
+Provider keys stay local and are excluded from session exports. Runner diagnostics redact known credential values from the process environment, but this does not prove arbitrary model or adapter output contains no sensitive information. Review artifacts before sharing them.

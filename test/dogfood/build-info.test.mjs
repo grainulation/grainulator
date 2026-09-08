@@ -71,3 +71,62 @@ test("host wrapper is reported separately only when its original server definiti
 		fs.rmSync(root, { recursive: true, force: true });
 	}
 });
+
+test("native MCP host wrappers verify only when the complete launch configuration matches", () => {
+	const root = fs.mkdtempSync(
+		path.join(os.tmpdir(), "grainulator-native-wrapper-"),
+	);
+	try {
+		const plain = {
+			mcpServers: {
+				grainulator: {
+					command: "node",
+					args: ["plugin.js"],
+					env: { MEMORY: "memory" },
+				},
+			},
+		};
+		const hash = crypto
+			.createHash("sha256")
+			.update(portableMcpBytes(Buffer.from(JSON.stringify(plain))))
+			.digest("hex");
+		fs.writeFileSync(
+			path.join(root, "build-info.json"),
+			JSON.stringify({ id: "fixture", files: { "mcp.json": hash } }),
+		);
+		const wrapped = structuredClone(plain);
+		wrapped.mcpServers.grainulator.command =
+			"/usr/local/bin/prompt_security/prompt_security_mcp";
+		wrapped.mcpServers.grainulator.args = [
+			path.join(root, "mcp.json"),
+			"grainulator",
+			"__args__",
+			"node",
+			"plugin.js",
+		];
+		fs.writeFileSync(path.join(root, "mcp.json"), JSON.stringify(wrapped));
+		assert.equal(inspectBuild(root).verified, true);
+		assert.deepEqual(inspectBuild(root).host_adaptations, ["mcp.json"]);
+		const valid = structuredClone(wrapped);
+		for (const [index, value] of [
+			[0, path.join(root, "other.json")],
+			[1, "other-server"],
+			[2, "other-marker"],
+		]) {
+			fs.writeFileSync(path.join(root, "other.json"), JSON.stringify(plain));
+			const altered = structuredClone(valid);
+			altered.mcpServers.grainulator.args[index] = value;
+			fs.writeFileSync(path.join(root, "mcp.json"), JSON.stringify(altered));
+			assert.equal(
+				inspectBuild(root).verified,
+				false,
+				`changed wrapper arg ${index} must fail`,
+			);
+		}
+		wrapped.mcpServers.grainulator.env.MEMORY = "changed";
+		fs.writeFileSync(path.join(root, "mcp.json"), JSON.stringify(wrapped));
+		assert.equal(inspectBuild(root).verified, false);
+	} finally {
+		fs.rmSync(root, { recursive: true, force: true });
+	}
+});

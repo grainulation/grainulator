@@ -12,7 +12,7 @@ const digest = crypto.createHash('sha256');
 const files = {};
 for (const name of names) {
   const source = fs.readFileSync(path.join(root, name));
-  const bytes = name === '.mcp.json' ? portableMcpBytes(source) : source;
+  const bytes = ['.mcp.json', 'mcp.json'].includes(name) ? portableMcpBytes(source, path.join(root, name)) : source;
   files[name] = crypto.createHash('sha256').update(bytes).digest('hex');
   digest.update(name).update('\0').update(bytes).update('\0');
 }

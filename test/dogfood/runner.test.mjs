@@ -69,6 +69,62 @@ test("a hung adapter is terminated by the timeout", async (t) => {
 	assert.match(result.error, /timed out/);
 });
 
+test("known environment credentials stay out of results, callbacks, and traces without changing verification inputs", async (t) => {
+	const keyName = "GRAINULATOR_TEST_API_KEY";
+	const secret = `fixture-credential-${Date.now()}`;
+	const previous = process.env[keyName];
+	process.env[keyName] = secret;
+	t.after(() => {
+		if (previous === undefined) delete process.env[keyName];
+		else process.env[keyName] = previous;
+	});
+	const callbacks = [];
+	const adapter = [
+		process.execPath,
+		"-e",
+		`let input='';process.stdin.on('data',d=>input+=d);process.stdin.on('end',()=>{const r=JSON.parse(input);if(!r.task.includes(process.env.${keyName})||(r.round===2&&!r.feedback.includes(process.env.${keyName})))process.exit(3);console.log(JSON.stringify({answer:process.env.${keyName}}));})`,
+	];
+	const verifier = [
+		process.execPath,
+		"-e",
+		`let input='';process.stdin.on('data',d=>input+=d);process.stdin.on('end',()=>{const r=JSON.parse(input);if(r.answer!==process.env.${keyName})process.exit(3);console.log('verification '+process.env.${keyName});process.exit(r.round===1?1:0);})`,
+	];
+	const result = await runTask({
+		...options(t),
+		task: `Verify ${secret}`,
+		adapter,
+		verifier,
+		onRound: (record) => callbacks.push(record),
+	});
+	assert.equal(result.status, "verified");
+	assert.equal(
+		result.rounds.length,
+		2,
+		"raw verifier feedback reaches the next adapter pass",
+	);
+	assert.equal(callbacks.length, 2);
+	for (const output of [
+		JSON.stringify(result),
+		JSON.stringify(callbacks),
+		fs.readFileSync(result.trace, "utf8"),
+	]) {
+		assert.ok(!output.includes(secret));
+		assert.match(output, /\[REDACTED\]/);
+	}
+	const failed = await runTask({
+		...options(t),
+		adapter: [
+			process.execPath,
+			"-e",
+			`process.stderr.write(process.env.${keyName});process.exit(1)`,
+		],
+	});
+	assert.equal(failed.status, "error");
+	assert.match(failed.error, /\[REDACTED\]/);
+	assert.ok(!JSON.stringify(failed).includes(secret));
+	assert.ok(!fs.readFileSync(failed.trace, "utf8").includes(secret));
+});
+
 test("cancellation kills a descendant even when its parent exits first", {
 	skip: process.platform === "win32",
 }, async (t) => {

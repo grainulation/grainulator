@@ -1,7 +1,7 @@
 {
 	"$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
 	"name": "grainulator",
-	"version": "2.0.1",
+	"version": "2.0.2",
 	"description": "Evidence and verification for model-assisted work, with portable workflows and clear next actions.",
 	"author": {
 		"name": "Grainulation"

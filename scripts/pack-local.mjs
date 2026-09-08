@@ -15,12 +15,12 @@ const sourceHash = crypto.createHash('sha256');
 const names = inventory.files.map(f => f.path).filter(name => name !== 'build-info.json').sort();
 for (const name of names) {
   const source = fs.readFileSync(path.join(root, name));
-  const bytes = name === '.mcp.json' ? portableMcpBytes(source) : source;
+  const bytes = ['.mcp.json', 'mcp.json'].includes(name) ? portableMcpBytes(source, path.join(root, name)) : source;
   sourceHash.update(name).update('\0').update(bytes).update('\0');
   const dest = path.join(stage, name);
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   fs.copyFileSync(path.join(root, name), dest);
-  if (name === '.mcp.json') fs.writeFileSync(dest, bytes);
+  if (['.mcp.json', 'mcp.json'].includes(name)) fs.writeFileSync(dest, bytes);
 }
 const source_sha256 = sourceHash.digest('hex');
 const id = `local-${source_sha256.slice(0, 16)}`;
