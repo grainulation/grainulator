@@ -1,0 +1,35 @@
+{
+	"name": "grainulator",
+	"version": "2.0.0",
+	"description": "Evidence and verification for model-assisted work. Portable workflows, a unified MCP interface, and clear next actions.",
+	"author": {
+		"name": "Grainulation"
+	},
+	"homepage": "https://grainulator.app",
+	"skills": "./skills/",
+	"mcpServers": {
+		"grainulator": {
+			"command": "node",
+			"env_vars": [
+				"GRAINULATOR_WORKSPACE"
+			]
+		}
+	},
+	"interface": {
+		"displayName": "Grainulator",
+		"shortDescription": "Build answers on evidence",
+		"longDescription": "Track evidence, challenge assumptions, resolve conflicting claims, and carry the work between models and sessions.",
+		"developerName": "Grainulation",
+		"category": "Productivity",
+		"capabilities": [
+			"Read",
+			"Write"
+		],
+		"websiteURL": "https://grainulator.app",
+		"defaultPrompt": [
+			"Use Grainulator to investigate this question.",
+			"Review the evidence and show the next steps."
+		],
+		"brandColor": "#98F3EF"
+	}
+}

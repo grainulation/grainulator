@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{TITLE}} -- {{SPRINT_NAME}}</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg2: #111827;
+    --bg3: #1e293b;
+    --accent: #3b82f6;
+    --accent-light: #60a5fa;
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.15);
+    --orange: #f59e0b;
+    --orange-dim: rgba(245,158,11,0.15);
+    --red: #e11d48;
+    --red-dim: rgba(225,29,72,0.15);
+    --purple: #a78bfa;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --border: rgba(255,255,255,0.06);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 10pt;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  section {
+    scroll-snap-align: start;
+    min-height: 100vh;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .header-section { justify-content: flex-end; padding-bottom: 80px; }
+  .header-section h1 {
+    font-size: 28pt;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 12px;
+  }
+  .meta-row {
+    display: flex;
+    gap: 24px;
+    color: var(--text-muted);
+    font-size: 10pt;
+    font-family: monospace;
+  }
+  .stats-bar {
+    display: flex;
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 24px;
+    text-align: center;
+  }
+  .stat-card .value {
+    font-size: 20pt;
+    font-weight: 800;
+    color: var(--accent-light);
+  }
+  .stat-card .label {
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+  .panel {
+    background: var(--bg2);
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .panel-title {
+    font-size: 9pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+  .timeline-entry {
+    display: flex;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .timeline-entry:last-child { border-bottom: none; }
+  .timeline-ts {
+    font-family: monospace;
+    font-size: 9pt;
+    color: var(--text-dim);
+    width: 120px;
+    flex-shrink: 0;
+  }
+  .timeline-body { flex: 1; color: var(--text-muted); font-size: 10pt; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 8pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .badge.new { color: var(--green); background: var(--green-dim); }
+  .badge.resolved { color: var(--accent-light); background: rgba(59,130,246,0.12); }
+  .badge.upgraded { color: var(--purple); background: rgba(167,139,250,0.12); }
+  .badge.constraint { color: var(--purple); background: rgba(167,139,250,0.12); }
+  .badge.factual { color: var(--accent-light); background: rgba(59,130,246,0.12); }
+  .badge.risk { color: var(--red); background: var(--red-dim); }
+  .badge.estimate { color: var(--orange); background: var(--orange-dim); }
+  .badge.recommendation { color: var(--green); background: var(--green-dim); }
+  .claim-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 9pt;
+  }
+  .claim-row:last-child { border-bottom: none; }
+  .claim-id { font-family: monospace; color: var(--text-dim); width: 60px; flex-shrink: 0; }
+  .claim-text { flex: 1; color: var(--text-muted); }
+  .upgrade-arrow {
+    font-family: monospace;
+    color: var(--text-dim);
+    padding: 0 8px;
+  }
+  .compilation-bar {
+    margin-top: 32px;
+    padding: 16px 24px;
+    background: var(--bg2);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    font-size: 9pt;
+    color: var(--text-dim);
+  }
+  @media (max-width: 768px) {
+    section { padding: 20px; min-height: auto; }
+    .header-section h1 { font-size: 18pt; }
+    .meta-row { flex-wrap: wrap; gap: 8px; font-size: 9pt; }
+    .stats-bar { flex-wrap: wrap; }
+    .stat-card { flex: 1 1 calc(50% - 8px); padding: 12px 16px; }
+    .stat-card .value { font-size: 16pt; }
+    .timeline-entry { flex-direction: column; gap: 4px; }
+    .timeline-ts { width: auto; }
+  }
+  @media print {
+    html { scroll-snap-type: none; }
+    section { min-height: auto; page-break-inside: avoid; padding: 16px 0; }
+    body { background: #fff; color: #111; }
+    .panel { border-color: #ccc; background: #f9f9f9; }
+    .badge { border: 1px solid #ccc; }
+    .compilation-bar { background: #f9f9f9; border-color: #ccc; }
+  }
+</style>
+</head>
+<body>
+
+<section class="header-section" aria-label="Changelog header">
+  <h1>{{TITLE}}</h1>
+  <div class="meta-row">
+    <span>Sprint: {{SPRINT_NAME}}</span>
+    <span>Compiled: {{COMPILED_AT}}</span>
+  </div>
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="value">{{TOTAL_CHANGES}}</div>
+      <div class="label">Total Changes</div>
+    </div>
+    <div class="stat-card">
+      <div class="value">{{NEW_COUNT}}</div>
+      <div class="label">New Claims</div>
+    </div>
+    <div class="stat-card">
+      <div class="value">{{RESOLVED_COUNT}}</div>
+      <div class="label">Resolved</div>
+    </div>
+  </div>
+</section>
+
+<section aria-label="Timeline">
+  <div class="panel">
+    <div class="panel-title">Timeline</div>
+    {{TIMELINE_ENTRIES}}
+  </div>
+</section>
+
+<section aria-label="New claims">
+  <div class="panel">
+    <div class="panel-title">New Claims</div>
+    {{NEW_CLAIMS}}
+  </div>
+</section>
+
+<section aria-label="Resolved conflicts">
+  <div class="panel">
+    <div class="panel-title">Resolved Conflicts</div>
+    {{RESOLVED_CONFLICTS}}
+  </div>
+</section>
+
+<section aria-label="Evidence upgrades">
+  <div class="panel">
+    <div class="panel-title">Evidence Upgrades</div>
+    {{EVIDENCE_UPGRADES}}
+  </div>
+</section>
+
+<section aria-label="Compilation footer">
+  <div class="compilation-bar">
+    <div>Compiled with barn</div>
+    <div style="font-family: monospace; font-size: 8pt;">{{CERTIFICATE_HASH}}</div>
+  </div>
+</section>
+
+</body>
+</html>

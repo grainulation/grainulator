@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{TITLE}} - Wiki</title>
+<style>
+  /* barn/templates/wiki-page.html — wiki/docs paste template
+     Minimal styling that survives Confluence, Notion, GitHub Wiki paste.
+     Self-contained, no external dependencies. */
+
+  :root {
+    --bg: #0a0e1a;
+    --bg2: #111827;
+    --bg3: #1e293b;
+    --accent: #3b82f6;
+    --accent-light: #60a5fa;
+    --green: #22c55e;
+    --orange: #f59e0b;
+    --red: #e11d48;
+    --purple: #a78bfa;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --border: rgba(255,255,255,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 11pt;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  header { margin-bottom: 32px; border-bottom: 2px solid var(--accent); padding-bottom: 24px; }
+  h1 { font-size: 28pt; font-weight: 700; color: #fff; margin-bottom: 8px; }
+  h2 { font-size: 18pt; font-weight: 600; color: #fff; margin: 32px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 14pt; font-weight: 600; color: var(--accent-light); margin: 20px 0 8px; }
+  p { color: var(--text-muted); margin-bottom: 12px; }
+
+  .meta { font-size: 10pt; color: var(--text-dim); margin-bottom: 4px; }
+  .meta span { margin-right: 16px; }
+
+  nav[aria-label="Table of contents"] {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 32px;
+  }
+
+  nav[aria-label="Table of contents"] h2 {
+    font-size: 12pt; margin: 0 0 12px; border: none; padding: 0;
+    color: var(--accent-light); text-transform: uppercase; letter-spacing: 0.08em;
+  }
+
+  nav[aria-label="Table of contents"] ul { list-style: none; padding: 0; }
+  nav[aria-label="Table of contents"] li { margin-bottom: 6px; }
+  nav[aria-label="Table of contents"] a {
+    color: var(--text-muted); text-decoration: none; font-size: 10pt;
+  }
+  nav[aria-label="Table of contents"] a:hover { color: var(--accent-light); }
+
+  details {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  summary {
+    padding: 12px 16px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text);
+    font-size: 11pt;
+    user-select: none;
+    list-style: none;
+  }
+
+  summary::before {
+    content: "+ ";
+    color: var(--accent-light);
+    font-family: monospace;
+    margin-right: 4px;
+  }
+
+  details[open] summary::before { content: "- "; }
+
+  .claim-body {
+    padding: 4px 16px 16px;
+    color: var(--text-muted);
+    font-size: 10pt;
+    border-top: 1px solid var(--border);
+  }
+
+  .evidence-legend {
+    background: var(--bg3);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 32px;
+  }
+
+  .evidence-legend h3 { margin-top: 0; }
+
+  .tier-list { list-style: none; padding: 0; }
+
+  .tier-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 4px 0;
+    font-size: 10pt;
+    color: var(--text-muted);
+  }
+
+  .tier-badge {
+    display: inline-block;
+    font-size: 8pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 8px;
+    border-radius: 3px;
+    min-width: 80px;
+    text-align: center;
+  }
+
+  .tier-stated { background: rgba(100,116,139,0.2); color: var(--text-dim); }
+  .tier-web { background: rgba(167,139,250,0.15); color: var(--purple); }
+  .tier-documented { background: rgba(59,130,246,0.15); color: var(--accent-light); }
+  .tier-tested { background: rgba(245,158,11,0.15); color: var(--orange); }
+  .tier-production { background: rgba(34,197,94,0.15); color: var(--green); }
+
+  .claim-ref { font-size: 8pt; color: var(--text-dim); font-family: monospace; }
+
+  footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 8pt;
+    color: var(--text-dim);
+  }
+
+  a { color: var(--accent-light); }
+  a:hover { text-decoration: underline; }
+
+  @media print {
+    body { background: #fff; color: #1a1a1a; max-width: 100%; }
+    header { border-color: #333; }
+    h1, h2, h3 { color: #111; }
+    p, .claim-body, .tier-list li { color: #333; }
+    nav[aria-label="Table of contents"], details, .evidence-legend { background: #f5f5f5; border-color: #ddd; }
+    summary { color: #111; }
+    summary::before { color: #333; }
+    a { color: #0066cc; }
+    .tier-badge { border: 1px solid #ccc; }
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 20px 16px; }
+    h1 { font-size: 20pt; }
+    h2 { font-size: 15pt; }
+    nav[aria-label="Table of contents"] { padding: 14px 16px; }
+    details summary { padding: 10px 12px; }
+    .claim-body { padding: 4px 12px 12px; }
+  }
+</style>
+</head>
+<body>
+<article aria-label="Wiki page: {{TITLE}}">
+
+  <header>
+    <div class="meta">
+      <span>Sprint: {{SPRINT_NAME}}</span>
+      <span>Audience: {{AUDIENCE}}</span>
+    </div>
+    <h1>{{TITLE}}</h1>
+    <p>{{QUESTION}}</p>
+  </header>
+
+  <nav aria-label="Table of contents">
+    <h2>Contents</h2>
+    {{TOC}}
+  </nav>
+
+  <section id="overview" aria-label="Sprint overview">
+    <h2>Overview</h2>
+    <p>{{QUESTION}}</p>
+  </section>
+
+  <section id="claims" aria-label="Claims">
+    <h2>Claims</h2>
+    {{CLAIM_SECTIONS}}
+  </section>
+
+  <section id="evidence" aria-label="Evidence tiers">
+    <div class="evidence-legend">
+      <h3>Evidence Tiers</h3>
+      <ul class="tier-list">
+        <li><span class="tier-badge tier-stated">stated</span> Stakeholder assertion, not independently verified</li>
+        <li><span class="tier-badge tier-web">web</span> Found online, not independently verified</li>
+        <li><span class="tier-badge tier-documented">documented</span> Present in source code, official docs, or ADRs</li>
+        <li><span class="tier-badge tier-tested">tested</span> Verified via prototype or benchmark</li>
+        <li><span class="tier-badge tier-production">production</span> Measured from live production systems</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>Built with barn -- grainulation</footer>
+
+</article>
+</body>
+</html>

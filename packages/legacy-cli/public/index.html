@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-tool="grainulation">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grainulation</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%230a0e1a'/><text x='32' y='34' text-anchor='middle' dominant-baseline='central' fill='%239ca3af' font-family='-apple-system,system-ui,sans-serif' font-size='34' font-weight='800'>G</text></svg>">
+<style>
+/* ── Tokens (inline, zero deps) ── */
+:root {
+  --bg:  #0a0e1a;
+  --bg2: #111827;
+  --bg3: #1e293b;
+  --bg4: #334155;
+  --fg:  #e2e8f0;
+  --fg2: #94a3b8;
+  --fg3: #64748b;
+  --border: #1e293b;
+  --border-subtle: rgba(255,255,255,0.08);
+  --green:  #34d399;
+  --red:    #f87171;
+  --blue:   #60a5fa;
+  --orange: #fb923c;
+  --purple: #a78bfa;
+  --cyan:   #22d3ee;
+  --accent:        #9ca3af;
+  --accent-light:  #d1d5db;
+  --accent-dim:    rgba(156,163,175,0.10);
+  --accent-border: rgba(156,163,175,0.25);
+  --radius: 8px;
+  --radius-sm: 4px;
+  --radius-lg: 12px;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+  --font-mono: 'SF Mono', 'Cascadia Code', 'JetBrains Mono', monospace;
+  --transition-fast: 0.1s ease;
+  --transition-base: 0.15s ease;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--fg3); }
+
+/* ── Layout ── */
+.app { max-width: 1080px; margin: 0 auto; padding: 24px 24px 0; }
+
+/* ── Header ── */
+.header {
+  display: flex; align-items: center; padding: 4px 24px; gap: 10px;
+  background: rgba(255,255,255,0.08); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+}
+.header canvas { flex-shrink: 0; }
+.header-spacer { flex: 1; }
+.header-right { display: flex; align-items: center; gap: 8px; }
+.conn-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); display: inline-block; }
+.conn-dot.disconnected { background: var(--red); }
+.reconnect-banner { position:fixed;top:0;left:0;right:0;z-index:9999;padding:8px 16px;background:#92400e;color:#fbbf24;font-size:12px;text-align:center;transform:translateY(-100%);transition:transform .3s;font-family:system-ui,sans-serif }
+.reconnect-banner.visible { transform:translateY(0) }
+.reconnect-banner button { background:none;border:1px solid #fbbf24;color:#fbbf24;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:11px;margin-inline-start:8px }
+.meta-tag {
+  font-size: 10px; color: var(--fg3);
+  background: var(--bg2); padding: 2px 8px; border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+/* ── Global controls ── */
+.global-controls {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px; gap: 12px;
+}
+.global-controls-left {
+  display: flex; align-items: center; gap: 8px;
+}
+.global-controls-right {
+  display: flex; align-items: center; gap: 8px;
+}
+.gc-btn {
+  font-size: 11px; font-weight: 600; padding: 6px 16px;
+  border-radius: var(--radius-sm); border: 1px solid var(--border);
+  background: var(--bg2); color: var(--fg2); cursor: pointer;
+  font-family: var(--font-sans); transition: all var(--transition-fast);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.gc-btn:hover { background: var(--bg3); color: var(--fg); border-color: var(--accent-border); }
+.gc-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.gc-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.gc-btn-start { border-color: rgba(52,211,153,0.3); color: var(--green); }
+.gc-btn-start:hover { background: rgba(52,211,153,0.08); border-color: rgba(52,211,153,0.5); }
+.gc-btn-stop { border-color: rgba(248,113,113,0.3); color: var(--red); }
+.gc-btn-stop:hover { background: rgba(248,113,113,0.08); border-color: rgba(248,113,113,0.5); }
+
+.status-summary {
+  font-size: 12px; color: var(--fg2); font-family: var(--font-mono);
+}
+.status-summary .count-running { color: var(--green); font-weight: 600; }
+.status-summary .count-stopped { color: var(--fg3); }
+
+/* ── Active sprint ── */
+.sprint-panel {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 20px 24px;
+  margin-bottom: 24px;
+}
+.sprint-panel.sprint-empty {
+  border-left: 3px solid var(--bg4);
+}
+.sprint-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.sprint-label {
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.8px; color: #fbbf24;
+}
+.sprint-count {
+  font-size: 10px; color: var(--fg3); font-weight: 500;
+}
+.sprint-panel.sprint-empty .sprint-label { color: var(--fg3); }
+.sprint-card {
+  padding: 14px 16px; border-radius: var(--radius);
+  background: var(--bg); border: 1px solid var(--border);
+  margin-bottom: 8px; transition: border-color 0.15s;
+}
+.sprint-card:last-child { margin-bottom: 0; }
+.sprint-card.sprint-active {
+  border-left: 3px solid #fbbf24;
+}
+.sprint-card-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+}
+.sprint-active-badge {
+  font-size: 9px; padding: 1px 6px; border-radius: 8px;
+  font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;
+  background: rgba(251,191,36,0.12); color: #fbbf24;
+}
+.sprint-phase {
+  font-size: 9px; padding: 2px 8px; border-radius: 10px;
+  font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;
+}
+.sprint-question {
+  font-size: 13px; font-weight: 600; color: var(--fg);
+  margin-bottom: 8px; line-height: 1.4;
+}
+.sprint-stats {
+  display: flex; gap: 16px; font-size: 11px; color: var(--fg2);
+}
+.sprint-stat { display: flex; align-items: center; gap: 4px; }
+.sprint-stat-value {
+  font-weight: 600; font-family: var(--font-mono); color: var(--fg);
+}
+.sprint-empty-msg {
+  font-size: 12px; color: var(--fg3);
+}
+.sprint-sub-header {
+  margin-top: 16px; margin-bottom: 8px; padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.sprint-sub-label {
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.6px; color: var(--fg3);
+}
+.sprint-example-badge {
+  font-size: 9px; padding: 1px 6px; border-radius: 8px;
+  font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;
+  background: rgba(100,116,139,0.15); color: #64748b;
+}
+
+/* ── Section title ── */
+.section-title {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.8px; color: var(--fg3); margin-bottom: 16px;
+}
+
+/* ── Tool grid (PM view) ── */
+.tool-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 12px; margin-bottom: 32px;
+}
+
+.tool-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px 16px 14px 20px;
+  transition: all var(--transition-base);
+  position: relative; overflow: hidden;
+}
+.tool-card:hover { border-color: var(--accent-border); transform: translateY(-1px); }
+.tool-card:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tool-card.tool-running { border-color: rgba(52,211,153,0.2); }
+
+.tool-card-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 6px;
+}
+.tool-icon {
+  width: 28px; height: 28px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800; font-family: var(--font-sans);
+  flex-shrink: 0; color: #fff;
+}
+.tool-name { font-weight: 600; font-size: 14px; flex: 1; }
+
+/* ── Status indicator (dot + label) ── */
+.tool-status-indicator {
+  display: flex; align-items: center; gap: 5px;
+}
+.tool-status-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  flex-shrink: 0; transition: background 0.3s;
+}
+.tool-status-dot.running { background: var(--green); box-shadow: 0 0 6px rgba(52,211,153,0.4); }
+.tool-status-dot.stopped { background: var(--red); opacity: 0.6; }
+.tool-status-dot.probing { background: var(--orange); animation: pulse-dot 1s infinite; }
+.tool-status-text {
+  font-size: 9px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.tool-status-text.running { color: var(--green); }
+.tool-status-text.stopped { color: var(--fg3); }
+.tool-status-text.probing { color: var(--orange); }
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.tool-role { font-size: 11px; color: var(--fg2); margin-bottom: 8px; }
+
+/* ── Tool metrics row ── */
+.tool-metrics {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 10px; font-family: var(--font-mono); color: var(--fg3);
+  margin-bottom: 10px;
+}
+.tool-metric {
+  display: flex; align-items: center; gap: 4px;
+}
+.tool-metric-label { color: var(--fg3); }
+.tool-metric-value { color: var(--fg2); }
+.tool-metric-value.latency-good { color: var(--green); }
+.tool-metric-value.latency-slow { color: var(--orange); }
+.tool-metric-value.latency-bad { color: var(--red); }
+
+/* ── Tool footer with actions ── */
+.tool-footer {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.tool-version {
+  font-size: 10px; font-family: var(--font-mono); color: var(--fg3);
+}
+.tool-method {
+  font-size: 9px; color: var(--fg3); background: var(--bg3);
+  padding: 1px 6px; border-radius: 8px;
+}
+.tool-actions { display: flex; gap: 6px; margin-inline-start: auto; }
+.tool-btn {
+  font-size: 10px; padding: 3px 10px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--bg3);
+  color: var(--fg2); cursor: pointer; text-decoration: none;
+  transition: all var(--transition-fast); font-family: var(--font-sans);
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.tool-btn:hover { background: var(--bg4); color: var(--fg); }
+.tool-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.tool-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.tool-btn-start {
+  border-color: rgba(52,211,153,0.3); color: var(--green);
+}
+.tool-btn-start:hover { background: rgba(52,211,153,0.1); }
+.tool-btn-stop {
+  border-color: rgba(248,113,113,0.3); color: var(--red);
+}
+.tool-btn-stop:hover { background: rgba(248,113,113,0.1); }
+.tool-btn-open {
+  background: var(--accent-dim); border-color: var(--accent-border);
+  color: var(--fg); text-decoration: none;
+}
+.tool-btn-open:hover { background: rgba(156,163,175,0.2); }
+
+/* ── Health checks ── */
+.check-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 32px; }
+.check-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; background: var(--bg2);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 12px;
+}
+.check-icon {
+  width: 18px; height: 18px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; flex-shrink: 0;
+}
+.check-pass .check-icon { background: rgba(52,211,153,0.15); color: var(--green); }
+.check-warning .check-icon { background: rgba(251,146,60,0.15); color: var(--orange); }
+.check-fail .check-icon { background: rgba(248,113,113,0.15); color: var(--red); }
+.check-info .check-icon { background: rgba(156,163,175,0.10); color: var(--fg3); }
+.check-name { font-weight: 500; min-width: 100px; }
+.check-detail { color: var(--fg3); font-family: var(--font-mono); font-size: 11px; }
+.check-cat {
+  font-size: 9px; color: var(--fg3); background: var(--bg3);
+  padding: 1px 6px; border-radius: 8px; margin-inline-start: auto;
+}
+
+/* ── Cross-tool nav ── */
+.nav-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 8px; margin-bottom: 32px;
+}
+.nav-link {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px; background: var(--bg2);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  text-decoration: none; color: var(--fg2);
+  font-size: 11px; font-weight: 500;
+  transition: all var(--transition-fast);
+}
+.nav-link:hover { background: var(--bg3); color: var(--fg); border-color: var(--accent-border); }
+.nav-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.nav-link.nav-offline { opacity: 0.4; pointer-events: none; }
+.nav-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.nav-port { font-size: 9px; color: var(--fg3); font-family: var(--font-mono); margin-inline-start: auto; }
+
+/* ── Footer ── */
+.footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 24px; border-top: 1px solid var(--border);
+  background: var(--bg2); font-size: 10px; color: var(--fg3);
+  margin-top: 32px;
+}
+.footer-links { display: flex; gap: 16px; }
+.footer a { color: var(--fg3); text-decoration: none; transition: color 0.15s; }
+.footer a:hover { color: var(--fg); }
+
+/* ── A11y ── */
+.skip-link{position:absolute;top:-40px;inset-inline-start:0;background:var(--accent);color:#000;padding:8px 16px;z-index:10000;font-size:14px;font-weight:600;transition:top .2s}
+.skip-link:focus{top:0}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .app { padding: 16px 16px 0; }
+  .header { padding: 4px 16px; gap: 8px; }
+  .tool-grid { grid-template-columns: 1fr; gap: 10px; }
+  .tool-card { padding: 14px 14px 12px 16px; }
+  .tool-name { font-size: 13px; }
+  .tool-metrics { flex-wrap: wrap; gap: 8px; }
+  .nav-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .nav-link { padding: 8px 10px; font-size: 10px; }
+  .sprint-panel { padding: 16px; }
+  .sprint-stats { flex-wrap: wrap; gap: 8px; }
+  .sprint-question { font-size: 12px; }
+  .global-controls { flex-wrap: wrap; gap: 8px; }
+  .global-controls-right { flex-wrap: wrap; }
+  .gc-btn { padding: 5px 12px; font-size: 10px; }
+  .check-item { padding: 6px 10px; font-size: 11px; }
+  .check-name { min-width: 80px; font-size: 11px; }
+  .check-detail { font-size: 10px; }
+  .footer { padding: 8px 16px; flex-wrap: wrap; gap: 8px; }
+  .footer-links { gap: 10px; }
+  .section-title { font-size: 10px; margin-bottom: 12px; }
+}
+@media (max-width: 480px) {
+  .app { padding: 12px 12px 0; }
+  .header { padding: 4px 12px; }
+  .nav-grid { grid-template-columns: 1fr; }
+  .sprint-card { padding: 10px 12px; }
+  .tool-card-header { gap: 8px; }
+  .tool-icon { width: 24px; height: 24px; font-size: 11px; }
+  .tool-footer { flex-wrap: wrap; gap: 6px; }
+  .footer { padding: 8px 12px; }
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<div id="live-status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+<div class="reconnect-banner" id="reconnectBanner" role="status" aria-live="polite"></div>
+<header class="header" role="banner">
+  <canvas id="grainLogo" width="256" height="256"></canvas>
+  <div class="header-spacer"></div>
+  <div class="header-right">
+    <span class="conn-dot" id="connDot" title="Server connection status"></span>
+  </div>
+</header>
+<div class="app">
+  <main id="main-content" role="main" aria-label="Grainulation workspace">
+  <!-- Global controls -->
+  <div class="global-controls">
+    <div class="global-controls-left">
+      <div class="status-summary" id="statusSummary" aria-live="polite">
+        <span class="count-running" id="runningCount">0</span> running
+        <span class="count-stopped"> / <span id="stoppedCount">0</span> stopped</span>
+      </div>
+    </div>
+    <div class="global-controls-right">
+      <button class="gc-btn gc-btn-start" id="btnStartAll" type="button" title="Start all tools">Start All</button>
+      <button class="gc-btn gc-btn-stop" id="btnStopAll" type="button" title="Stop all tools">Stop All</button>
+      <button class="gc-btn" id="btnRefresh" type="button" title="Refresh health probes">Refresh</button>
+    </div>
+  </div>
+
+  <!-- Active sprint -->
+  <section class="sprint-panel sprint-empty" id="sprintPanel" aria-label="Sprints">
+    <div class="sprint-header">
+      <span class="sprint-label">Active Sprint</span>
+    </div>
+    <div class="sprint-empty-msg">No active wheat sprint detected.</div>
+  </section>
+
+  <!-- Tool catalog (PM view) -->
+  <div class="section-title" id="toolCatalogLabel">Processes</div>
+  <div class="tool-grid" id="toolGrid" role="list" aria-labelledby="toolCatalogLabel"></div>
+
+  <!-- Health checks -->
+  <div class="section-title" id="healthLabel">Health Checks</div>
+  <div class="check-list" id="checkList" role="list" aria-labelledby="healthLabel"></div>
+
+  <!-- Cross-tool navigation -->
+  <div class="section-title" id="navLabel">Open Tools</div>
+  <nav class="nav-grid" id="navGrid" aria-labelledby="navLabel"></nav>
+
+  </main>
+</div>
+<footer class="footer">
+  <span>grainulation v1.0.2 -- @grainulation/grainulation</span>
+  <div class="footer-links">
+    <a href="http://localhost:9091">wheat</a>
+
+    <a href="http://localhost:9093">barn</a>
+    <a href="http://localhost:9094">mill</a>
+    <a href="http://localhost:9095">silo</a>
+    <a href="http://localhost:9096">harvest</a>
+    <a href="http://localhost:9097">orchard</a>
+  </div>
+</footer>
+
+<script>
+(function() {
+  'use strict';
+
+  function toolUrl(name, port) { return 'http://localhost:' + port; }
+
+
+  // ── Tool metadata ──
+  var TOOLS = [
+    { name: 'wheat',        port: 9091, accent: '#fbbf24', icon: 'W', role: 'Research sprint engine', category: 'core' },
+    { name: 'barn',         port: 9093, accent: '#f43f5e', icon: 'B', role: 'Design system & templates', category: 'foundation' },
+    { name: 'mill',         port: 9094, accent: '#a78bfa', icon: 'M', role: 'Export & publish engine', category: 'output' },
+    { name: 'silo',         port: 9095, accent: '#6ee7b7', icon: 'S', role: 'Reusable claim libraries', category: 'storage' },
+    { name: 'harvest',      port: 9096, accent: '#fb923c', icon: 'H', role: 'Analytics & retrospectives', category: 'analytics' },
+    { name: 'orchard',      port: 9097, accent: '#14b8a6', icon: 'O', role: 'Multi-sprint orchestrator', category: 'orchestration' },
+    { name: 'grainulation', port: 9098, accent: '#9ca3af', icon: 'G', role: 'The machine', category: 'meta' }
+  ];
+
+  var SVG_CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
+  var SVG_CROSS = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+
+  // ── State ──
+  var serverState = null;   // from SSE (ecosystem + doctor)
+  var probeState = {};       // client-side health probes: { toolName: { alive, latencyMs, lastProbe } }
+  var sprintData = null;
+  var sse = null;
+  var retryCount = 0;
+  var probeInterval = null;
+  var actionInFlight = {};   // track pending start/stop actions
+
+  // ── Helpers ──
+  function esc(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function announce(msg) {
+    var ls = document.getElementById('live-status');
+    if (ls) ls.textContent = msg;
+  }
+
+  // ── Reconnect banner ──
+  function showBanner(count) {
+    var b = document.getElementById('reconnectBanner');
+    if (count > 5) {
+      b.innerHTML = 'Connection lost. <button onclick="location.reload()">Retry now</button>';
+    } else if (count > 1) {
+      b.textContent = 'Reconnecting (attempt ' + count + ')...';
+    } else {
+      b.textContent = 'Reconnecting...';
+    }
+    b.classList.add('visible');
+  }
+
+  function hideBanner() {
+    document.getElementById('reconnectBanner').classList.remove('visible');
+  }
+
+  // ── Client-side health probing ──
+  // Directly fetch /health on each tool's port from the browser
+  function probeTool(tool) {
+    var start = performance.now();
+    var controller = new AbortController();
+    var timeoutId = setTimeout(function() { controller.abort(); }, 2000);
+
+    return fetch('http://localhost:' + tool.port + '/health', {
+      signal: controller.signal,
+      mode: 'no-cors'  // fallback — opaque response still means port is open
+    })
+    .then(function(res) {
+      clearTimeout(timeoutId);
+      var latency = Math.round(performance.now() - start);
+      // no-cors gives opaque response (type "opaque", status 0)
+      // but if we get here without error, the port is alive
+      return { alive: true, latencyMs: latency, status: res.status || 200 };
+    })
+    .catch(function() {
+      clearTimeout(timeoutId);
+      return { alive: false, latencyMs: null, status: null };
+    });
+  }
+
+  function probeAll() {
+    var promises = TOOLS.map(function(tool) {
+      return probeTool(tool).then(function(result) {
+        probeState[tool.name] = {
+          alive: result.alive,
+          latencyMs: result.latencyMs,
+          status: result.status,
+          lastProbe: Date.now()
+        };
+      });
+    });
+
+    return Promise.all(promises).then(function() {
+      render();
+    });
+  }
+
+  function startProbing() {
+    probeAll();
+    if (probeInterval) clearInterval(probeInterval);
+    probeInterval = setInterval(probeAll, 5000);
+  }
+
+  // ── SSE connection ──
+  function connect() {
+    sse = new EventSource('/events');
+    document.getElementById('connDot').className = 'conn-dot';
+
+    sse.onmessage = function(e) {
+      try {
+        var msg = JSON.parse(e.data);
+        if (msg.type === 'state' && msg.data) {
+          serverState = msg.data;
+          render();
+          announce('Ecosystem state refreshed');
+        }
+      } catch (err) { /* ignore parse errors */ }
+    };
+
+    sse.onopen = function() {
+      retryCount = 0;
+      document.getElementById('connDot').className = 'conn-dot';
+      if (window._grainSetState) window._grainSetState('idle');
+      fetchSprint();
+      probeAll();
+    };
+
+    sse.onerror = function() {
+      document.getElementById('connDot').className = 'conn-dot disconnected';
+      if (window._grainSetState) window._grainSetState('orbit');
+      sse.close();
+      var delay = Math.min(30000, 1000 * Math.pow(2, retryCount)) + Math.random() * 1000;
+      retryCount++;
+      setTimeout(connect, delay);
+    };
+  }
+
+  // ── PM actions (POST to server) ──
+  function pmAction(action, toolName) {
+    var url = '/api/pm/' + action;
+    var body = toolName ? JSON.stringify({ tool: toolName }) : JSON.stringify({ tool: 'all' });
+    actionInFlight[toolName || '_all'] = true;
+    render();
+
+    return fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: body
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      delete actionInFlight[toolName || '_all'];
+      // Re-probe after action to pick up new status
+      setTimeout(probeAll, 800);
+      return data;
+    })
+    .catch(function(err) {
+      delete actionInFlight[toolName || '_all'];
+      render();
+      return { error: err.message };
+    });
+  }
+
+  // ── Sprint detection ──
+  var allSprints = [];
+  var activeSprint = null;
+
+  function fetchSprint() {
+    var controller = new AbortController();
+    var timeoutId = setTimeout(function() { controller.abort(); }, 2000);
+
+    fetch('http://localhost:9091/api/state', { signal: controller.signal })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) {
+        clearTimeout(timeoutId);
+        if (data && data.sprints && data.sprints.length) {
+          allSprints = data.sprints;
+          activeSprint = data.activeSprint || allSprints[0];
+          renderSprint();
+        } else if (data && data.meta && data.meta.question) {
+          activeSprint = {
+            name: 'current',
+            question: data.meta.question,
+            phase: data.meta.phase,
+            claims_count: (data.claims || []).length,
+            active_claims: (data.claims || []).filter(function(c) { return !c.resolved_by; }).length
+          };
+          allSprints = [activeSprint];
+          renderSprint();
+        }
+      })
+      .catch(function() {
+        clearTimeout(timeoutId);
+        allSprints = [];
+        activeSprint = null;
+        renderSprint();
+      });
+  }
+
+  function phaseColor(phase) {
+    var map = { define: '#60a5fa', research: '#fbbf24', prototype: '#a78bfa', evaluate: '#34d399', archived: '#64748b' };
+    return map[phase] || '#fbbf24';
+  }
+
+  function sprintCard(s, isActive) {
+    var pc = phaseColor(s.phase);
+    return '<div class="sprint-card' + (isActive ? ' sprint-active' : '') + '">' +
+      '<div class="sprint-card-header">' +
+        '<span class="sprint-phase" style="background:' + pc + '1f;color:' + pc + '">' + esc(s.phase) + '</span>' +
+        (isActive ? '<span class="sprint-active-badge">active</span>' : '') +
+        (s.status === 'example' ? '<span class="sprint-example-badge">example</span>' : '') +
+      '</div>' +
+      '<div class="sprint-question">' + esc(s.question) + '</div>' +
+      '<div class="sprint-stats">' +
+        '<span class="sprint-stat"><span class="sprint-stat-value">' + (s.claims_count || 0) + '</span> claims</span>' +
+        '<span class="sprint-stat"><span class="sprint-stat-value">' + (s.active_claims || 0) + '</span> active</span>' +
+        (s.initiated ? '<span class="sprint-stat">' + esc(s.initiated) + '</span>' : '') +
+      '</div>' +
+    '</div>';
+  }
+
+  // ── Render sprint panel ──
+  function renderSprint() {
+    var panel = document.getElementById('sprintPanel');
+    if (!allSprints.length) {
+      panel.className = 'sprint-panel sprint-empty';
+      panel.innerHTML =
+        '<div class="sprint-header"><span class="sprint-label">Sprints</span></div>' +
+        '<div class="sprint-empty-msg">No wheat sprints detected. Start wheat to begin.</div>';
+      return;
+    }
+
+    // Only show active/candidate sprints — drop examples and archived
+    var active = [];
+    for (var i = 0; i < allSprints.length; i++) {
+      var s = allSprints[i];
+      if (s.status !== 'example' && s.status !== 'archived') {
+        active.push(s);
+      }
+    }
+
+    var html = '<div class="sprint-header"><span class="sprint-label">Sprints</span>' +
+      (active.length > 1 ? '<span style="font-size:10px;color:var(--fg3);margin-left:auto">' + active.length + ' active</span>' : '') +
+    '</div>';
+
+    if (active.length) {
+      for (var j = 0; j < active.length; j++) {
+        html += sprintCard(active[j], activeSprint && active[j].name === activeSprint.name);
+      }
+    } else {
+      html += '<div class="sprint-empty-msg">No active sprint.</div>';
+    }
+
+    panel.className = 'sprint-panel';
+    panel.innerHTML = html;
+  }
+
+  // ── Latency class ──
+  function latencyClass(ms) {
+    if (ms == null) return '';
+    if (ms < 50) return 'latency-good';
+    if (ms < 200) return 'latency-slow';
+    return 'latency-bad';
+  }
+
+  // ── Main render ──
+  function render() {
+    var tools = (serverState && serverState.ecosystem) ? serverState.ecosystem : [];
+    var doctor = (serverState && serverState.doctorResults) ? serverState.doctorResults : { checks: [], summary: {} };
+
+    // Build merged tool data: server state + client probes
+    var mergedTools = TOOLS.map(function(t) {
+      var serverTool = null;
+      for (var i = 0; i < tools.length; i++) {
+        if (tools[i].name === t.name) { serverTool = tools[i]; break; }
+      }
+      var probe = probeState[t.name] || {};
+      return {
+        name: t.name,
+        port: t.port,
+        accent: t.accent,
+        icon: t.icon,
+        role: t.role,
+        category: t.category,
+        installed: serverTool ? serverTool.installed : false,
+        version: serverTool ? serverTool.version : null,
+        method: serverTool ? serverTool.method : null,
+        alive: probe.alive || false,
+        latencyMs: probe.latencyMs || null,
+        lastProbe: probe.lastProbe || null,
+        inFlight: !!actionInFlight[t.name] || !!actionInFlight['_all']
+      };
+    });
+
+    // Counts
+    var runningCount = 0;
+    var stoppedCount = 0;
+    var installedCount = 0;
+    for (var i = 0; i < mergedTools.length; i++) {
+      if (mergedTools[i].alive) runningCount++;
+      else stoppedCount++;
+      if (mergedTools[i].installed) installedCount++;
+    }
+
+    document.getElementById('runningCount').textContent = runningCount;
+    document.getElementById('stoppedCount').textContent = stoppedCount;
+
+
+    // Tool grid
+    document.getElementById('toolGrid').innerHTML = mergedTools.map(function(tl) {
+      var isRunning = tl.alive;
+      var isSelf = tl.name === 'grainulation';
+      var statusDotCls = tl.inFlight ? 'probing' : (isRunning ? 'running' : 'stopped');
+      var statusText = tl.inFlight ? 'pending' : (isRunning ? 'running' : 'stopped');
+      var cardCls = 'tool-card' + (isRunning ? ' tool-running' : '');
+
+      // Metrics row (port, latency)
+      var metrics = '<div class="tool-metrics">';
+      metrics += '<span class="tool-metric"><span class="tool-metric-label">port</span> <span class="tool-metric-value">:' + tl.port + '</span></span>';
+      if (isRunning && tl.latencyMs != null) {
+        metrics += '<span class="tool-metric"><span class="tool-metric-label">latency</span> <span class="tool-metric-value ' + latencyClass(tl.latencyMs) + '">' + tl.latencyMs + 'ms</span></span>';
+      }
+      if (tl.lastProbe) {
+        var ago = Math.round((Date.now() - tl.lastProbe) / 1000);
+        metrics += '<span class="tool-metric"><span class="tool-metric-label">probed</span> <span class="tool-metric-value">' + ago + 's ago</span></span>';
+      }
+      metrics += '</div>';
+
+      // Actions
+      var actions = '';
+      if (isSelf) {
+        // Grainulation itself — always running (it's serving this page)
+        actions = '<span class="tool-method">self</span>';
+      } else if (isRunning) {
+        actions =
+          '<a class="tool-btn tool-btn-open" href="' + toolUrl(tl.name, tl.port) + '" target="_blank" rel="noopener">Open</a>' +
+          '<button class="tool-btn tool-btn-stop" type="button" onclick="pmStop(\'' + tl.name + '\')"' + (tl.inFlight ? ' disabled' : '') + '>Stop</button>';
+      } else {
+        actions =
+          '<button class="tool-btn tool-btn-start" type="button" onclick="pmStart(\'' + tl.name + '\')"' + (tl.inFlight ? ' disabled' : '') + '>Start</button>';
+      }
+
+      return '<div class="' + cardCls + '" role="listitem">' +
+        '<div style="position:absolute;top:0;left:0;width:3px;height:100%;background:' + tl.accent + ';border-radius:2px 0 0 2px;" aria-hidden="true"></div>' +
+        '<div class="tool-card-header">' +
+          '<span class="tool-icon" style="background:' + tl.accent + '" aria-hidden="true">' + tl.icon + '</span>' +
+          '<span class="tool-name">' + esc(tl.name) + '</span>' +
+          '<span class="tool-status-indicator">' +
+            '<span class="tool-status-dot ' + statusDotCls + '" aria-hidden="true"></span>' +
+            '<span class="tool-status-text ' + statusDotCls + '">' + statusText + '</span>' +
+          '</span>' +
+        '</div>' +
+        '<div class="tool-role">' + esc(tl.role) + '</div>' +
+        metrics +
+        '<div class="tool-footer">' +
+          '<span class="tool-version">' + (tl.installed ? 'v' + esc(tl.version) : (isSelf ? 'self' : '--')) + '</span>' +
+          (tl.method && !isSelf ? '<span class="tool-method">' + esc(tl.method) + '</span>' : '') +
+          '<div class="tool-actions">' + actions + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    // Doctor checklist
+    var checks = doctor.checks || [];
+    document.getElementById('checkList').innerHTML = checks.map(function(c) {
+      var cls = 'check-' + c.status;
+      var icon =
+        c.status === 'pass' ? SVG_CHECK :
+        c.status === 'warning' ? '!' :
+        c.status === 'fail' ? SVG_CROSS : '-';
+
+      return '<div class="check-item ' + cls + '" role="listitem">' +
+        '<span class="check-icon">' + icon + '</span>' +
+        '<span class="check-name">' + esc(c.name) + '</span>' +
+        '<span class="check-detail">' + esc(c.detail) + '</span>' +
+        '<span class="check-cat">' + esc(c.category) + '</span>' +
+      '</div>';
+    }).join('');
+
+    // Cross-tool nav — only show tools that are alive (excluding self)
+    var navTools = mergedTools.filter(function(tl) { return tl.name !== 'grainulation'; });
+    if (navTools.length > 0) {
+      document.getElementById('navGrid').innerHTML = navTools.map(function(tl) {
+        var isAlive = tl.alive;
+        var cls = 'nav-link' + (isAlive ? '' : ' nav-offline');
+        var href = isAlive ? toolUrl(tl.name, tl.port) : '#';
+        var target = isAlive ? ' target="_blank" rel="noopener"' : '';
+        return '<a class="' + cls + '" href="' + href + '"' + target + '>' +
+          '<span class="nav-dot" style="background:' + (isAlive ? tl.accent : 'var(--bg4)') + '" aria-hidden="true"></span>' +
+          esc(tl.name) +
+          '<span class="nav-port">:' + tl.port + '</span>' +
+        '</a>';
+      }).join('');
+    } else {
+      document.getElementById('navGrid').innerHTML =
+        '<div style="grid-column:1/-1;text-align:center;color:var(--fg3);padding:16px;font-size:12px;">No tools available.</div>';
+    }
+  }
+
+  // ── Global action handlers ──
+  window.pmStart = function(name) {
+    pmAction('start', name);
+  };
+
+  window.pmStop = function(name) {
+    pmAction('stop', name);
+  };
+
+  document.getElementById('btnStartAll').addEventListener('click', function() {
+    pmAction('up');
+  });
+
+  document.getElementById('btnStopAll').addEventListener('click', function() {
+    pmAction('down');
+  });
+
+  document.getElementById('btnRefresh').addEventListener('click', function() {
+    probeAll();
+  });
+
+  // ── Keyboard navigation ──
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    // j/k to navigate tool cards
+    if (e.target === document.body && (e.key === 'j' || e.key === 'k')) {
+      var cards = Array.from(document.querySelectorAll('.tool-card'));
+      if (cards.length === 0) return;
+      var focused = document.activeElement;
+      var idx = cards.indexOf(focused);
+      if (e.key === 'j') idx = Math.min(idx + 1, cards.length - 1);
+      else idx = Math.max(idx - 1, 0);
+      cards[idx].focus();
+    }
+    // r to refresh probes
+    if (e.target === document.body && e.key === 'r') {
+      probeAll();
+    }
+  });
+
+  // Make tool cards focusable
+  var observer = new MutationObserver(function() {
+    document.querySelectorAll('.tool-card:not([tabindex])').forEach(function(el) {
+      el.setAttribute('tabindex', '0');
+    });
+  });
+  observer.observe(document.getElementById('toolGrid'), { childList: true });
+
+  // Initialize the remaining tool views.
+  connect();
+  startProbing();
+})();
+</script>
+<script>
+(function() {
+  var LW = 0.025;
+  var TOOL = { name: 'Grainulation', letter: 'G', color: '#9ca3af' };
+  var _c, _ctx, _s, _cx, _textStart, _restText, _font;
+  var _state = 'drawon', _start = null, _raf, _pendingState = null;
+  var _openPts = null, _closedPts = null;
+
+  function _lerp(a,b,t){ return {x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t}; }
+  function _easeInOut(t){ return t<0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2; }
+
+  function _bracket(ctx, s, color, alpha) {
+    var lw=s*LW, cx=_cx, cy=s/2, gw=s*0.72, gh=s*0.68;
+    var topY=cy-gh/2, botY=cy+gh/2, fe=gw*0.30;
+    if(alpha!==undefined) ctx.globalAlpha=alpha;
+    ctx.strokeStyle=color; ctx.lineWidth=lw; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.beginPath(); ctx.moveTo(cx,topY); ctx.lineTo(cx-fe,topY);
+    ctx.bezierCurveTo(cx-gw*0.52,cy-gh*0.32, cx-gw*0.52,cy+gh*0.24, cx-fe,botY);
+    ctx.lineTo(cx,botY); ctx.stroke();
+    if(alpha!==undefined) ctx.globalAlpha=1;
+  }
+
+  function _drawBracket(ctx, s, color, progress) {
+    var lw=s*LW, cx=_cx, cy=s/2, gw=s*0.72, gh=s*0.68;
+    var topY=cy-gh/2, botY=cy+gh/2, fe=gw*0.30;
+    ctx.strokeStyle=color; ctx.lineWidth=lw; ctx.lineCap='round'; ctx.lineJoin='round';
+    var seg1=0.12, seg2=0.72;
+    ctx.beginPath();
+    if(progress<=seg1){ctx.moveTo(cx,topY);ctx.lineTo(cx-fe*(progress/seg1),topY);}
+    else if(progress<=seg1+seg2){ctx.moveTo(cx,topY);ctx.lineTo(cx-fe,topY);ctx.stroke();ctx.beginPath();
+      var bt=(progress-seg1)/seg2;
+      var p0={x:cx-fe,y:topY},p1={x:cx-gw*0.52,y:cy-gh*0.32},p2={x:cx-gw*0.52,y:cy+gh*0.24},p3={x:cx-fe,y:botY};
+      var q1=_lerp(p0,p1,bt),q2=_lerp(p1,p2,bt),q3=_lerp(p2,p3,bt);
+      var r1=_lerp(q1,q2,bt),r2=_lerp(q2,q3,bt),s1=_lerp(r1,r2,bt);
+      ctx.moveTo(p0.x,p0.y);ctx.bezierCurveTo(q1.x,q1.y,r1.x,r1.y,s1.x,s1.y);}
+    else{ctx.moveTo(cx,topY);ctx.lineTo(cx-fe,topY);
+      ctx.bezierCurveTo(cx-gw*0.52,cy-gh*0.32, cx-gw*0.52,cy+gh*0.24, cx-fe,botY);
+      ctx.lineTo((cx-fe)+fe*((progress-seg1-seg2)/(1-seg1-seg2)),botY);}
+    ctx.stroke();
+  }
+
+  function _drawName(ctx, s, spellP, alpha) {
+    var a = alpha !== undefined ? alpha : 1;
+    ctx.font = _font; ctx.textBaseline = 'middle';
+    var cy = s/2 + s*0.02;
+    ctx.globalAlpha = a; ctx.fillStyle = TOOL.color; ctx.textAlign = 'center';
+    ctx.fillText(TOOL.letter, _cx, cy);
+    if(_restText.length > 0 && spellP > 0) {
+      var n = _restText.length, num = Math.min(n, Math.ceil(spellP * n));
+      var rawP = spellP * n, charP = num >= n ? 1 : rawP - Math.floor(rawP);
+      var full = charP >= 1 ? num : num - 1;
+      ctx.fillStyle = '#e2e8f0'; ctx.textAlign = 'left';
+      if(full > 0) { ctx.globalAlpha = a; ctx.fillText(_restText.slice(0, full), _textStart, cy); }
+      if(full < num) {
+        var prevW = full > 0 ? ctx.measureText(_restText.slice(0, full)).width : 0;
+        ctx.globalAlpha = a * (0.3 + 0.7 * charP);
+        ctx.fillText(_restText[full], _textStart + prevW, cy);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function _getOpenPts(s) {
+    if(_openPts && _openPts._s === s) return _openPts;
+    var cx=_cx, cy=s/2, gw=s*0.72, gh=s*0.68, topY=cy-gh/2, botY=cy+gh/2, fe=gw*0.30;
+    var pts=[];
+    for(var t=0;t<=1;t+=0.05) pts.push({x:cx-fe*t,y:topY});
+    var p0={x:cx-fe,y:topY},p1={x:cx-gw*0.52,y:cy-gh*0.32},p2={x:cx-gw*0.52,y:cy+gh*0.24},p3={x:cx-fe,y:botY};
+    for(var t=0;t<=1;t+=0.02){var u=1-t;pts.push({x:u*u*u*p0.x+3*u*u*t*p1.x+3*u*t*t*p2.x+t*t*t*p3.x,y:u*u*u*p0.y+3*u*u*t*p1.y+3*u*t*t*p2.y+t*t*t*p3.y});}
+    for(var t=0;t<=1;t+=0.05) pts.push({x:(cx-fe)+fe*t,y:botY});
+    pts._s=s; _openPts=pts; return pts;
+  }
+
+  function _getClosedPts(s) {
+    if(_closedPts && _closedPts._s === s) return _closedPts;
+    var cx=_cx, cy=s/2, gw=s*0.72, gh=s*0.68, topY=cy-gh/2, botY=cy+gh/2, fe=gw*0.30;
+    var pts=[];
+    for(var t=0;t<=1;t+=0.03) pts.push({x:cx-fe*t,y:topY});
+    var lp0={x:cx-fe,y:topY},lp1={x:cx-gw*0.52,y:cy-gh*0.32},lp2={x:cx-gw*0.52,y:cy+gh*0.24},lp3={x:cx-fe,y:botY};
+    for(var t=0;t<=1;t+=0.02){var u=1-t;pts.push({x:u*u*u*lp0.x+3*u*u*t*lp1.x+3*u*t*t*lp2.x+t*t*t*lp3.x,y:u*u*u*lp0.y+3*u*u*t*lp1.y+3*u*t*t*lp2.y+t*t*t*lp3.y});}
+    for(var t=0;t<=1;t+=0.03) pts.push({x:(cx-fe)+2*fe*t,y:botY});
+    var rp0={x:cx+fe,y:botY},rp1={x:cx+gw*0.52,y:cy+gh*0.24},rp2={x:cx+gw*0.52,y:cy-gh*0.32},rp3={x:cx+fe,y:topY};
+    for(var t=0;t<=1;t+=0.02){var u=1-t;pts.push({x:u*u*u*rp0.x+3*u*u*t*rp1.x+3*u*t*t*rp2.x+t*t*t*rp3.x,y:u*u*u*rp0.y+3*u*u*t*rp1.y+3*u*t*t*rp2.y+t*t*t*rp3.y});}
+    for(var t=0;t<=1;t+=0.03) pts.push({x:(cx+fe)-fe*t,y:topY});
+    pts._s=s; _closedPts=pts; return pts;
+  }
+
+  function _frame(ts) {
+    if(!_c) return;
+    if(!_start) _start = ts;
+    var e = ts - _start, ctx = _ctx, s = _s;
+    ctx.clearRect(0, 0, _c.width, s);
+    switch(_state) {
+      case 'drawon':
+        var bp = _easeInOut(Math.min(1, e / 1400));
+        _drawBracket(ctx, s, TOOL.color, bp);
+        var la = Math.max(0, Math.min(1, (e - 900) / 400));
+        if(la > 0) {
+          ctx.font = _font; ctx.textBaseline = 'middle';
+          ctx.globalAlpha = la; ctx.fillStyle = TOOL.color; ctx.textAlign = 'center';
+          ctx.fillText(TOOL.letter, _cx, s/2 + s*0.02); ctx.globalAlpha = 1;
+        }
+        if(e > 1100 && _restText.length > 0) {
+          var sp = Math.min(1, (e - 1100) / (120 * _restText.length));
+          var n = _restText.length, num = Math.min(n, Math.ceil(sp * n));
+          if(num > 0) {
+            ctx.font = _font; ctx.textBaseline = 'middle';
+            var cy = s/2 + s*0.02, rawP = sp * n;
+            var charP = num >= n ? 1 : rawP - Math.floor(rawP);
+            var full = charP >= 1 ? num : num - 1;
+            ctx.fillStyle = '#e2e8f0'; ctx.textAlign = 'left';
+            if(full > 0) ctx.fillText(_restText.slice(0, full), _textStart, cy);
+            if(full < num) {
+              var prevW = full > 0 ? ctx.measureText(_restText.slice(0, full)).width : 0;
+              ctx.globalAlpha = 0.3 + 0.7 * charP;
+              ctx.fillText(_restText[full], _textStart + prevW, cy); ctx.globalAlpha = 1;
+            }
+          }
+        }
+        if(e > 1100 + 120 * _restText.length + 300) { _state = _pendingState || 'idle'; _pendingState = null; _start = ts; }
+        break;
+      case 'idle':
+        var breathe = 0.5 + 0.5 * (0.5 + 0.5 * Math.sin(e / 1200));
+        _bracket(ctx, s, TOOL.color, breathe);
+        var textBreath = 0.88 + 0.12 * (0.5 + 0.5 * Math.sin(e / 1800));
+        _drawName(ctx, s, 1, textBreath);
+        break;
+      case 'shimmer':
+        _bracket(ctx, s, TOOL.color, 0.2);
+        var spts = _getOpenPts(s), sspeed = 1800;
+        var spos = (e % sspeed) / sspeed;
+        var sidx = Math.floor(spos * (spts.length - 1));
+        var spt = spts[sidx];
+        var sgrad = ctx.createRadialGradient(spt.x, spt.y, 0, spt.x, spt.y, s * 0.10);
+        sgrad.addColorStop(0, TOOL.color + 'aa'); sgrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = sgrad; ctx.fillRect(0, 0, _c.width, s);
+        var strailFrac = 0.18;
+        var si0 = Math.max(0, Math.floor((spos - strailFrac) * (spts.length - 1)));
+        ctx.strokeStyle = TOOL.color; ctx.lineWidth = s * LW; ctx.lineCap = 'round';
+        ctx.globalAlpha = 0.85; ctx.beginPath(); ctx.moveTo(spts[si0].x, spts[si0].y);
+        for(var si = si0 + 1; si <= sidx; si++) ctx.lineTo(spts[si].x, spts[si].y);
+        ctx.stroke(); ctx.globalAlpha = 1;
+        _drawName(ctx, s, 1, undefined);
+        break;
+      case 'orbit':
+        _bracket(ctx, s, TOOL.color, 0.15);
+        _drawName(ctx, s, 1, 0.4);
+        var pts = _getOpenPts(s), speed = 1200, trailFrac = 0.28;
+        var halfCycle = (e % speed) / speed;
+        var cycle = (e % (speed * 2)) / (speed * 2);
+        var pos = cycle < 0.5 ? halfCycle : 1 - halfCycle;
+        var headIdx = Math.floor(pos * (pts.length - 1));
+        var trailLen = Math.floor(trailFrac * pts.length);
+        var dir = cycle < 0.5 ? 1 : -1;
+        ctx.lineWidth = s * LW; ctx.lineCap = 'round';
+        for(var i = 0; i < trailLen; i++) {
+          var idx = headIdx - dir * (trailLen - i);
+          if(idx < 0 || idx >= pts.length) continue;
+          var nxt = idx + dir;
+          if(nxt < 0 || nxt >= pts.length) continue;
+          ctx.globalAlpha = (i / trailLen) * 0.7; ctx.strokeStyle = TOOL.color;
+          ctx.beginPath(); ctx.moveTo(pts[idx].x, pts[idx].y); ctx.lineTo(pts[nxt].x, pts[nxt].y); ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+        break;
+      case 'dim':
+        var dim = 0.1 + 0.08 * Math.sin(e / 2000);
+        _bracket(ctx, s, TOOL.color, dim);
+        _drawName(ctx, s, 1, 0.2);
+        break;
+    }
+    _raf = requestAnimationFrame(_frame);
+  }
+
+  _c = document.getElementById('grainLogo');
+  if(_c) {
+    _c.style.width = '0px';
+    _s = 256;
+    var targetFontPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    var fontRatio = 0.38;
+    var dh = 64;
+    _c.height = _s; _c.width = 1024;
+    _ctx = _c.getContext('2d');
+    _cx = _s / 2;
+    _restText = TOOL.name.slice(1);
+    _font = '800 ' + (_s * fontRatio) + 'px -apple-system,"SF Pro Display","Helvetica Neue",Arial,sans-serif';
+    _ctx.font = _font;
+    var letterW = _ctx.measureText(TOOL.letter).width;
+    var restW = _restText.length > 0 ? _ctx.measureText(_restText).width : 0;
+    _textStart = _cx + letterW / 2 + _s * 0.02;
+    var totalW = Math.ceil(_textStart + restW + _s * 0.12);
+    _c.width = totalW;
+    _ctx = _c.getContext('2d');
+    _c.style.height = dh + 'px';
+    _c.style.width = Math.round(totalW / _s * dh) + 'px';
+    _state = 'drawon'; _start = null;
+    _raf = requestAnimationFrame(_frame);
+  }
+
+  window._grainSetState = function(state) {
+    if(_state === state) return;
+    if(_state === 'drawon') { _pendingState = state; return; }
+    _state = state; _start = null;
+    if(!_raf) _raf = requestAnimationFrame(_frame);
+  };
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+[
+	{
+		"id": "c1",
+		"type": "risk",
+		"topic": "data",
+		"content": "needs prod DB access I do not have; the exact check is X",
+		"source": {
+			"origin": "stakeholder"
+		},
+		"evidence": "documented",
+		"status": "active",
+		"conflicts_with": [],
+		"depends_on": [],
+		"resolved_by": null,
+		"tags": ["residual"]
+	}
+]

@@ -1,0 +1,20 @@
+{
+  "title": "Postmortem",
+  "description": "Calibration and retrospective document for sprint outcomes. Two-column prediction vs outcome comparison, accuracy scoring, surprises, and lessons learned.",
+  "tags": ["postmortem", "calibration", "retrospective", "learning"],
+  "author": "grainulation",
+  "version": "1.0.0",
+  "exportPresets": [
+    { "name": "pdf", "format": "pdf" },
+    { "name": "static-site", "format": "html" }
+  ],
+  "seedPacks": [],
+  "scaffoldConfig": {
+    "defaultPlaceholders": {
+      "TITLE": "Sprint Postmortem",
+      "SPRINT_NAME": "Untitled Sprint",
+      "OUTCOME": ""
+    },
+    "postInit": ["load-claims", "load-calibration"]
+  }
+}

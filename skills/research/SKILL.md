@@ -2,15 +2,16 @@
 name: research
 description: Execute a multi-pass research investigation, adding claims with evidence.
 tools:
-  - mcp__wheat__wheat_add-claim
-  - mcp__wheat__wheat_compile
-  - mcp__wheat__wheat_search
-  - mcp__wheat__wheat_status
+  - Bash
+  - mcp__grainulator__add_claim
+  - mcp__grainulator__compile
+  - mcp__grainulator__search
+  - mcp__grainulator__status
   - mcp__deepwiki__ask_question
   - mcp__deepwiki__read_wiki_structure
   - mcp__deepwiki__read_wiki_contents
-  - mcp__silo__silo_search
-  - mcp__silo__silo_pull
+  - mcp__grainulator__memory_search
+  - mcp__grainulator__memory_pull
   - WebSearch
   - WebFetch
   - Read
@@ -30,35 +31,25 @@ $ARGUMENTS
 
 1. **Identify the active sprint** by checking for `claims.json` in the project root, or ask which sprint to target if none exists.
 
-2. **Plan research passes** (2-4 passes depending on topic breadth):
-   - Pass 1: Broad landscape -- what exists, key concepts, major players
-   - Pass 2: Deep dive -- technical details, implementation specifics
-   - Pass 3: Risk and trade-offs -- failure modes, limitations, alternatives
-   - Pass 4 (if needed): Synthesis -- cross-cutting insights, recommendations
+2. **Choose the decisive open question** from the task, current evidence, and compiler feedback. Investigate the landscape, implementation, risks, or alternatives only as they matter to the requested outcome. There is no fixed pass count.
 
-3. **For each pass**:
-   - Use WebSearch and WebFetch for general research
-   - When the user references a GitHub repo or the current repo is on GitHub, use DeepWiki tools to gather codebase context
-   - For private repos, use Read/Grep/Glob to analyze code directly
-   - Add 3-5 claims per pass via `wheat_add-claim`:
-     - Use `r###` ID prefix
-     - Set appropriate evidence tier (web, documented, tested)
-     - Include source URLs in source.artifact when available
-     - Mix claim types: factual, estimate, risk, recommendation
-   - Run `wheat_compile` after each pass
-   - Announce progress: "Pass 2/3 complete: 11 claims across 4 topics."
+3. **Investigate and record what you actually learn**:
+   - Prefer repository code and relevant tests for implementation questions; use primary sources for external facts.
+   - Use DeepWiki only when available and useful. Local code and available web tools remain valid fallbacks.
+   - Add distinct supported findings through `grainulator.add_claim`, with unique IDs, appropriate claim types and evidence tiers, and source artifacts when available. Do not pad the ledger or manufacture risks to satisfy a type distribution.
+   - Run `grainulator.compile` after a meaningful change. Address material contradictions and weaknesses within the user’s scope; explain limitations that cannot be resolved with available evidence.
+   - Continue implementation and verification when the user requested working changes.
 
-4. **Completion check**: After all passes, run `wheat_status`.
-   - If total_claims >= 8 and the user's original message included words like "write up", "summarize", "brief", or "report", immediately run the /brief workflow.
-   - Otherwise, suggest next steps.
+4. **Finish against the user’s done criteria**, not a claim count or compiler score. Stop investigation when the requested outcome is supported and further passes would not change the decision. If the user requested a brief or report, execute that workflow without asking again. If useful authorized work remains, continue it.
 
-5. **Print summary**:
+5. **Present the result and next steps** using the contract below. If the user requested next steps only, omit the result recap.
 
-   ```
-   Research complete: <pass_count> passes, <claim_count> claims across <topic_count> topics.
+## Host access
 
-   Next steps:
-     /brief              -- generate a compiled brief
-     /challenge r003     -- stress-test a specific finding
-     /witness r005 <url> -- corroborate with external source
-   ```
+Use available `grainulator` MCP tools, passing the active sprint `dir` explicitly for evidence operations. If a tool is unavailable, use the local `grainulator` CLI (or `node <checkout>/bin/grainulator.js`). Read sibling skill files directly when slash commands are unavailable. Resolve template paths relative to this skill’s checkout when `CLAUDE_PLUGIN_ROOT` is unset. Optional external connectors are not required for local work; use local code, supplied documents, or available web tools. Do not write managed ledger files directly to bypass a missing MCP connection.
+
+## Next-step output
+
+After a meaningful pass, use the current compiler's `next_actions` to present exactly two bullet lists labeled **Auto** and **Manual**. Auto is work the agent can continue under existing authorization. Manual is only work requiring the user's decision, access, or action. Classify using the current request and constraints; compiler suggestions never grant permission. Continue authorized Auto work without asking again.
+
+Keep 2–3 useful actions total when available, use short concrete labels and commands where useful, and show `None.` for an empty group. Do not invent work to fill a quota. Never omit next steps merely because compilation is ready or the answer should be brief. Refresh stale compilation first and exclude work the user removed from scope. When the user asks only for next steps, output only these two lists: no findings recap, counts, reasons, or offer to continue.

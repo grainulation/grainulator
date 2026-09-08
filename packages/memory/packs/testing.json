@@ -1,0 +1,163 @@
+{
+  "name": "Testing Strategy",
+  "description": "Integration and smoke testing patterns for multi-tool ecosystems. Covers server endpoint testing, UI consistency validation, cross-tool integration, and CI pipeline alignment with zero external test dependencies.",
+  "version": "1.0.0",
+  "claims": [
+    {
+      "id": "test-001",
+      "type": "constraint",
+      "topic": "test framework",
+      "content": "All tests must use node:test and node:assert/strict with zero external dependencies. No Jest, Mocha, Vitest, or other frameworks.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-16T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["testing", "node-test", "zero-dep"]
+    },
+    {
+      "id": "test-002",
+      "type": "constraint",
+      "topic": "test isolation",
+      "content": "Tests must use real filesystem (mkdtempSync), real processes (child_process.spawn), and real HTTP. No mocks, no spies, no test doubles.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-16T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["testing", "integration", "no-mocks"]
+    },
+    {
+      "id": "test-003",
+      "type": "recommendation",
+      "topic": "server endpoint tests",
+      "content": "Every tool server needs endpoint tests: spawn server on random port, hit each route with node:http, assert status codes and response shapes, teardown. Covers /health, /api/state, SSE /events, and tool-specific CRUD endpoints.",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-16T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["testing", "server", "http", "endpoints"]
+    },
+    {
+      "id": "test-004",
+      "type": "recommendation",
+      "topic": "UI smoke tests",
+      "content": "Validate HTML consistency by parsing index.html as a string: check required DOM IDs (searchInput, grainLogo, main-content, sse-dot), CSS tokens (--bg, --accent), TOOL config object, self-contained rule (no external scripts/styles), and keyboard shortcut handlers.",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-16T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["testing", "ui", "smoke-test", "consistency"]
+    },
+    {
+      "id": "test-005",
+      "type": "recommendation",
+      "topic": "cross-tool integration",
+      "content": "Integration tests must validate the full pipeline: wheat init -> compile -> mill reads compilation, silo imports claims, barn detects sprints. Each test creates a temp sprint and cleans up.",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-16T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["testing", "integration", "cross-tool", "pipeline"]
+    },
+    {
+      "id": "test-006",
+      "type": "constraint",
+      "topic": "CI matrix",
+      "content": "CI must test on Node 18, 20, and 22. Every CI run verifies zero runtime dependencies, runs all tests, checks CLI --help, and performs a dry-run npm publish.",
+      "source": {
+        "origin": "architecture",
+        "artifact": ".github/workflows/ci.yml",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-16T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["testing", "ci", "node-matrix", "github-actions"]
+    },
+    {
+      "id": "test-007",
+      "type": "factual",
+      "topic": "test coverage baseline",
+      "content": "Baseline: 191 tests across 5 repos (wheat 25, barn 58, mill 30, silo 21, ranch 44). After adding server, UI smoke, and cross-tool tests: ~260 tests total.",
+      "source": {
+        "origin": "measurement",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-16T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["testing", "coverage", "baseline"]
+    },
+    {
+      "id": "test-008",
+      "type": "risk",
+      "topic": "server test port conflicts",
+      "content": "Server tests must use random ports (bind to port 0, read assigned port) to avoid conflicts with running dev servers or parallel CI jobs.",
+      "source": { "origin": "experience", "artifact": null, "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-16T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["testing", "server", "ports", "ci"]
+    },
+    {
+      "id": "test-009",
+      "type": "recommendation",
+      "topic": "SSE testing pattern",
+      "content": "Test SSE endpoints by connecting with http.get, reading the first data frame, parsing it as JSON, and asserting the state shape. Destroy the connection after assertion to avoid hanging tests.",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-16T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["testing", "sse", "server-sent-events", "pattern"]
+    },
+    {
+      "id": "test-010",
+      "type": "recommendation",
+      "topic": "test execution order",
+      "content": "Execute in layers: (1) fix broken tests, (2) server endpoint tests, (3) UI smoke tests, (4) cross-tool integration, (5) CI wiring. Each layer is independently valuable and ships as its own commit.",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-16T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["testing", "strategy", "execution-order"]
+    }
+  ]
+}

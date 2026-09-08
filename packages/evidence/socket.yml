@@ -1,0 +1,14 @@
+# Socket.dev configuration
+# https://docs.socket.dev/docs/socket-yml
+#
+# wheat uses execFileSync (not execSync) for git queries and compiler invocation.
+# execFileSync bypasses the shell entirely — arguments are passed as arrays,
+# not interpolated strings. No user input reaches these calls.
+#
+# The "shell access" alert is a static analysis heuristic that flags any
+# child_process import. This is a false positive for our usage pattern.
+
+issues:
+  # execFileSync with array args is not shell access
+  shellAccess:
+    - ignore

@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{TITLE}} — Handoff</title>
+<style>
+  /* barn/templates/handoff.html — knowledge transfer document
+     System font stack, no external dependencies, fully self-contained. */
+
+  :root {
+    --bg: #0a0e1a;
+    --bg2: #111827;
+    --bg3: #1e293b;
+    --accent: #3b82f6;
+    --accent-light: #60a5fa;
+    --green: #22c55e;
+    --orange: #f59e0b;
+    --red: #e11d48;
+    --purple: #a78bfa;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --border: rgba(255,255,255,0.06);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { height: 100%; scroll-behavior: smooth; scroll-snap-type: y mandatory; overflow-y: scroll; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 11pt;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  section {
+    min-height: 100vh;
+    padding: 60px 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    scroll-snap-align: start;
+    position: relative;
+  }
+
+  section::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 35%; height: 100%;
+    background: radial-gradient(ellipse at top right, rgba(59,130,246,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  h1 {
+    font-size: 36pt;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  h2 {
+    font-size: 24pt;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+    color: #fff;
+  }
+
+  .section-label {
+    display: inline-block;
+    font-size: 9pt;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent-light);
+    background: rgba(59,130,246,0.12);
+    padding: 4px 12px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+  }
+
+  .context-block {
+    background: var(--bg2);
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid var(--border);
+    margin-top: 20px;
+    max-width: 85%;
+  }
+
+  .context-row {
+    display: flex;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 10pt;
+  }
+
+  .context-row:last-child { border-bottom: none; }
+
+  .context-key {
+    width: 120px;
+    flex-shrink: 0;
+    color: var(--text-dim);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 9pt;
+    padding-top: 2px;
+  }
+
+  .context-value { color: var(--text-muted); line-height: 1.5; }
+
+  .timeline-item {
+    display: flex;
+    gap: 20px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+  }
+
+  .timeline-item:last-child { border-bottom: none; }
+
+  .timeline-phase {
+    width: 100px;
+    flex-shrink: 0;
+    font-size: 9pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-light);
+    padding-top: 2px;
+  }
+
+  .timeline-phase.completed { color: var(--green); }
+  .timeline-phase.active { color: var(--orange); }
+  .timeline-content { font-size: 10pt; color: var(--text-muted); line-height: 1.5; }
+
+  .decision-card {
+    background: var(--bg2);
+    border-radius: 10px;
+    padding: 16px 20px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--green);
+    margin-bottom: 12px;
+  }
+
+  .decision-title { font-size: 11pt; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .decision-detail { font-size: 10pt; color: var(--text-muted); line-height: 1.4; }
+  .decision-ref { font-family: monospace; font-size: 8pt; color: var(--text-dim); margin-top: 6px; }
+
+  .open-card {
+    background: var(--bg2);
+    border-radius: 10px;
+    padding: 16px 20px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--orange);
+    margin-bottom: 12px;
+  }
+
+  .claim-table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+
+  .claim-table th {
+    text-align: left;
+    padding: 8px 12px;
+    background: var(--bg2);
+    color: var(--text-dim);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 8pt;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .claim-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: var(--text-muted); }
+  .claim-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 8pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .badge.factual { color: var(--accent-light); background: rgba(59,130,246,0.12); }
+  .badge.constraint { color: var(--purple); background: rgba(167,139,250,0.12); }
+  .badge.estimate { color: var(--orange); background: rgba(245,158,11,0.12); }
+  .badge.risk { color: var(--red); background: rgba(225,29,72,0.12); }
+  .badge.recommendation { color: var(--green); background: rgba(34,197,94,0.12); }
+  .badge.feedback { color: #f472b6; background: rgba(244,114,182,0.12); }
+
+  .next-steps-list { list-style: none; padding: 0; }
+
+  .next-steps-list li {
+    background: var(--bg2);
+    border-radius: 10px;
+    padding: 16px 20px;
+    border: 1px solid var(--border);
+    margin-bottom: 10px;
+    font-size: 10pt;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .next-steps-list li code {
+    font-family: monospace;
+    font-size: 9pt;
+    background: var(--bg3);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--accent-light);
+  }
+
+  .barn-footer {
+    position: absolute;
+    bottom: 24px; right: 40px;
+    font-size: 8pt;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+
+  nav[aria-label="sections"] {
+    position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 8px; z-index: 100;
+  }
+
+  nav[aria-label="sections"] a {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--text-dim); display: block; transition: all 0.2s;
+  }
+
+  nav[aria-label="sections"] a:hover { background: var(--accent); transform: scale(1.5); }
+
+  @media (max-width: 768px) {
+    section { padding: 32px 20px; height: auto; }
+    h1 { font-size: 22pt; } h2 { font-size: 18pt; }
+    .context-block { max-width: 100%; }
+    .context-row { flex-direction: column; gap: 2px; }
+    .context-key { width: auto; }
+    .timeline-item { flex-direction: column; gap: 4px; }
+    .timeline-phase { width: auto; }
+    .claim-table { font-size: 8pt; }
+    .claim-table th, .claim-table td { padding: 6px 8px; }
+    .claim-table th:nth-child(4), .claim-table td:nth-child(4) { display: none; }
+    nav[aria-label="sections"] { display: none; }
+    .barn-footer { right: 20px; bottom: 16px; }
+  }
+
+  @media print {
+    html { scroll-snap-type: none; }
+    section { min-height: auto; height: auto; page-break-after: always; padding: 40px; }
+    body { background: #fff; color: #1a1a1a; }
+    h1 { background: none; -webkit-text-fill-color: #1a1a1a; }
+    h2 { color: #1a1a1a; }
+    .context-block, .decision-card, .open-card, .next-steps-list li { background: #f5f5f5; border-color: #ddd; }
+    .context-value, .decision-detail, .timeline-content { color: #333; }
+    nav[aria-label="sections"], .barn-footer { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav aria-label="sections">
+  <a href="#context" title="Sprint Context"></a>
+  <a href="#timeline" title="Timeline"></a>
+  <a href="#decisions" title="Key Decisions"></a>
+  <a href="#open" title="Open Questions"></a>
+  <a href="#inventory" title="Claim Inventory"></a>
+  <a href="#continue" title="How to Continue"></a>
+</nav>
+
+<section id="context" aria-label="Sprint Context">
+  <span class="section-label">Handoff Document</span>
+  <h1>{{TITLE}}</h1>
+  <div class="context-block">
+    <div class="context-row">
+      <div class="context-key">Sprint</div>
+      <div class="context-value">{{SPRINT_NAME}}</div>
+    </div>
+    <div class="context-row">
+      <div class="context-key">Question</div>
+      <div class="context-value">{{QUESTION}}</div>
+    </div>
+    <div class="context-row">
+      <div class="context-key">Audience</div>
+      <div class="context-value">{{AUDIENCE}}</div>
+    </div>
+  </div>
+  <div class="barn-footer">Built with barn</div>
+</section>
+
+<section id="timeline" aria-label="What You Need to Know">
+  <span class="section-label">Timeline</span>
+  <h2>What You Need to Know</h2>
+  {{TIMELINE}}
+</section>
+
+<section id="decisions" aria-label="Key Decisions">
+  <span class="section-label">Decisions Made</span>
+  <h2>Key Decisions</h2>
+  {{DECISIONS}}
+</section>
+
+<section id="open" aria-label="Open Questions">
+  <span class="section-label">Unresolved</span>
+  <h2>Open Questions</h2>
+  {{OPEN_QUESTIONS}}
+</section>
+
+<section id="inventory" aria-label="Claim Inventory">
+  <span class="section-label">Full Inventory</span>
+  <h2>All Claims</h2>
+  <table class="claim-table">
+    <thead>
+      <tr><th>ID</th><th>Type</th><th>Content</th><th>Evidence</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      {{CLAIM_TABLE}}
+    </tbody>
+  </table>
+</section>
+
+<section id="continue" aria-label="How to Continue">
+  <span class="section-label">Next Steps</span>
+  <h2>How to Continue</h2>
+  <ul class="next-steps-list">
+    {{NEXT_STEPS}}
+  </ul>
+</section>
+
+</body>
+</html>

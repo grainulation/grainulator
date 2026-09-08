@@ -1,0 +1,199 @@
+{
+  "name": "PR QA Simulation",
+  "description": "Repo-agnostic playbook for simulating a QA pass on a pull request. Binary PASS/FAIL verdict based on CI, acceptance criteria, diff audit, build, tests, and preview verification.",
+  "version": "2.0.0",
+  "claims": [
+    {
+      "id": "qa001",
+      "type": "constraint",
+      "topic": "ci-status",
+      "content": "All CI checks must be passing. FAIL if any required check is failed or pending.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-28T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["ci", "gate"]
+    },
+    {
+      "id": "qa002",
+      "type": "constraint",
+      "topic": "acceptance-criteria",
+      "content": "Every acceptance criterion in the linked Jira ticket must be verified against the PR diff and repo state. FAIL if any AC item cannot be verified.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-28T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["jira", "verification"]
+    },
+    {
+      "id": "qa003",
+      "type": "constraint",
+      "topic": "diff-audit",
+      "content": "Every changed file must be classified as test, config, docs, or production. All changes must be accounted for. FAIL if unexpected production changes exist in a test-only PR.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-28T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["diff", "audit"]
+    },
+    {
+      "id": "qa004",
+      "type": "constraint",
+      "topic": "build-verification",
+      "content": "The project must build successfully. Build command auto-detected from package.json: prefer 'build', fall back to 'dist', 'compile', 'tsc'. FAIL if build fails.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-28T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["build", "gate"]
+    },
+    {
+      "id": "qa005",
+      "type": "constraint",
+      "topic": "test-suite",
+      "content": "Full test suite must pass. Test command auto-detected from package.json: prefer 'test:cov:full', 'test:coverage', 'test:ci', fall back to 'test'. FAIL if any test fails.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-28T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["test", "gate"]
+    },
+    {
+      "id": "qa006",
+      "type": "recommendation",
+      "topic": "risk-tier",
+      "content": "Auto-detect risk tier from diff. Tier 1 (test-only): >90% test/config/docs files. Tier 2 (runtime): significant production changes, requires human spot-check of affected areas.",
+      "source": { "origin": "experience", "artifact": null, "connector": null },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-28T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["risk", "tier"]
+    },
+    {
+      "id": "qa007",
+      "type": "recommendation",
+      "topic": "human-checkpoint",
+      "content": "Tier 2 PRs require a human spot-check: (1) affected UI renders correctly, (2) affected endpoints respond, (3) no console errors. Tier 1 PRs skip this.",
+      "source": { "origin": "experience", "artifact": null, "connector": null },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-28T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["human-in-the-loop", "tier-2"]
+    },
+    {
+      "id": "qa008",
+      "type": "constraint",
+      "topic": "verdict",
+      "content": "Verdict is binary: PASS or FAIL. PASS = all checks green, ready to merge. FAIL = one or more checks failed, fix and re-run. No intermediate states.",
+      "source": { "origin": "experience", "artifact": null, "connector": null },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-28T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["verdict", "binary"]
+    },
+    {
+      "id": "qa009",
+      "type": "recommendation",
+      "topic": "presentation",
+      "content": "Output a 5-slide HTML presentation: (1) title + verdict + metadata, (2) what changed, (3) coverage impact, (4) verification results table, (5) post-merge checklist. Dark scroll-snap theme, self-contained, no external deps.",
+      "source": { "origin": "experience", "artifact": null, "connector": null },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-28T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["output", "presentation"]
+    },
+    {
+      "id": "qa010",
+      "type": "recommendation",
+      "topic": "dependencies",
+      "content": "Check for new or changed dependencies in package.json and lockfiles. PASS if no changes or changes are expected.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-28T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["dependencies", "audit"]
+    },
+    {
+      "id": "qa011",
+      "type": "recommendation",
+      "topic": "preview-build",
+      "content": "If the project has PR preview builds, verify HTTP 200 and app renders. If no preview exists for this repo type, PASS.",
+      "source": { "origin": "experience", "artifact": null, "connector": null },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-28T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["preview", "deployment"]
+    },
+    {
+      "id": "qa012",
+      "type": "recommendation",
+      "topic": "post-merge",
+      "content": "Post-merge checklist: (1) verify CI on main stays green, (2) confirm production build/deploy succeeds, (3) monitor error reporting for 1h.",
+      "source": { "origin": "experience", "artifact": null, "connector": null },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-28T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["post-merge", "monitoring"]
+    }
+  ]
+}

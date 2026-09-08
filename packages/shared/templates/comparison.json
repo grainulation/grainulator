@@ -1,0 +1,19 @@
+{
+  "title": "Comparison",
+  "description": "Side-by-side option comparison for evaluating alternatives. Multi-column layout with claims, evidence badges, risks, and a verdict row.",
+  "tags": ["comparison", "evaluate", "options", "side-by-side", "decision"],
+  "author": "grainulation",
+  "version": "1.0.0",
+  "exportPresets": [
+    { "name": "pdf-landscape", "format": "pdf" },
+    { "name": "static-site", "format": "html" }
+  ],
+  "seedPacks": ["architecture"],
+  "scaffoldConfig": {
+    "defaultPlaceholders": {
+      "TITLE": "Option Comparison",
+      "QUESTION": "Which approach should we take?"
+    },
+    "postInit": ["load-claims", "group-by-topic"]
+  }
+}

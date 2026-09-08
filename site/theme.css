@@ -1,0 +1,8 @@
+:root{
+  color-scheme:dark;
+  --page:#060d10;--surface:rgba(6,13,16,.92);--panel:rgba(255,255,255,.04);
+  --text:#e2e8f0;--muted:#a5b7bd;--accent:#8df6ff;--line:rgba(141,246,255,.2);--veil:rgba(6,13,16,.72);
+  --amber:#ffd58c;--success:#a1e5ba;--radius:4px;
+  --space-1:.5rem;--space-2:1rem;--space-3:1.5rem;--space-4:2rem;--space-6:3rem;--space-8:4rem;
+  --mono:'JetBrains Mono','SF Mono','Fira Code',monospace;
+}

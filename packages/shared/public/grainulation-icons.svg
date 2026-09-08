@@ -1,0 +1,47 @@
+<!--
+  grainulation-icons.svg — Triple-encoding icon sprite
+  WCAG 1.4.1 compliant: each status indicator has a distinctive shape
+  so meaning is never conveyed by color alone.
+
+  Usage:
+    <svg class="icon" aria-hidden="true">
+      <use href="grainulation-icons.svg#checkmark-circle" />
+    </svg>
+    <span>Success message</span>
+
+  Icons:
+    checkmark-circle  — success  (circle + checkmark)
+    x-circle          — error    (circle + X)
+    triangle-alert    — warning  (triangle + exclamation)
+    info-circle       — info     (circle + i)
+-->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+
+  <!-- ✓ Success: checkmark inside circle -->
+  <symbol id="checkmark-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <path d="M9 12l2 2 4-4" />
+  </symbol>
+
+  <!-- ✗ Error: X inside circle -->
+  <symbol id="x-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <path d="M15 9l-6 6" />
+    <path d="M9 9l6 6" />
+  </symbol>
+
+  <!-- ⚠ Warning: exclamation inside triangle -->
+  <symbol id="triangle-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+    <line x1="12" y1="9" x2="12" y2="13" />
+    <line x1="12" y1="17" x2="12.01" y2="17" />
+  </symbol>
+
+  <!-- ℹ Info: i inside circle -->
+  <symbol id="info-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="16" x2="12" y2="12" />
+    <line x1="12" y1="8" x2="12.01" y2="8" />
+  </symbol>
+
+</svg>

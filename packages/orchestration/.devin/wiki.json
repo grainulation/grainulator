@@ -1,0 +1,30 @@
+{
+  "repo_notes": [
+    {
+      "content": "Orchard is the multi-sprint portfolio coordinator of the grainulation ecosystem. It runs above individual sprints, tracking dependencies between them, detecting conflicts that span sprints, and producing unified dashboards for teams running many parallel research efforts. One command to see 12 sprints at once, with their status, conflicts, and blockers.",
+      "author": "grainulation-core"
+    },
+    {
+      "content": "When documenting orchard, emphasize: (1) it is the TEAM-scale tool (one sprint = wheat, many sprints = orchard), (2) the dependency graph is the core primitive — sprints have explicit dependencies on other sprints' claims, (3) orchard detects cross-sprint conflicts that a single-sprint compiler cannot see, (4) orchard aggregates harvest's calibration scores across the portfolio, (5) it does not rewrite individual claims — it only reads + cross-references.",
+      "author": "grainulation-core"
+    }
+  ],
+  "pages": [
+    {
+      "title": "Quick start",
+      "purpose": "Install via npx @grainulation/orchard, the 30-second pitch on portfolio coordination, a first orchard-status run against a directory of wheat sprints."
+    },
+    {
+      "title": "Core concepts",
+      "purpose": "Portfolio model (sprints as nodes, dependencies as edges), cross-sprint conflict detection, unified dashboards, portfolio status aggregation, the orchard template library, how orchard ingests wheat sprint data."
+    },
+    {
+      "title": "API reference",
+      "purpose": "CLI (bin/orchard.js), template library (lib/templates), dashboard output formats, portfolio-config schema."
+    },
+    {
+      "title": "Ecosystem integration",
+      "purpose": "How orchard relates to wheat (orchard reads many wheat sprints, never mutates them), barn (uses barn's sprint detection to discover sprints across a workspace), mill (orchard hands its unified output to mill for format conversion), harvest (pulls harvest calibration scores into the portfolio dashboard), silo (queries silo for knowledge shared by multiple sprints in the portfolio)."
+    }
+  ]
+}

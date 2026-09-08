@@ -1,0 +1,106 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://github.com/grainulation/bean/schemas/trace.schema.json",
+	"title": "bean run trace artifact (v0)",
+	"description": "Stable post-run record emitted by bean-run to .bean/runs/<run_id>.json. v0 is an EMIT-ONLY artifact: it lets future tooling analyze runs without scraping transcripts. It does NOT make bean learn across tasks — no memory mutation, prompt rewriting, or cross-run optimization. The top-level shape is FIXED: unknown top-level keys are rejected; additive/experimental fields go under `metadata`.",
+	"type": "object",
+	"required": [
+		"schema_version",
+		"run_id",
+		"goal",
+		"started_at",
+		"ended_at",
+		"status",
+		"certificate",
+		"rounds",
+		"pivot_count",
+		"blockers_opened",
+		"blockers_closed",
+		"blocker_codes",
+		"verifier_verdicts",
+		"residuals",
+		"artifacts_changed"
+	],
+	"additionalProperties": false,
+	"properties": {
+		"schema_version": { "const": "trace/v0" },
+		"run_id": {
+			"type": "string",
+			"description": "Unique per run, e.g. run-<nanos-since-epoch>."
+		},
+		"goal": {
+			"type": "string",
+			"description": "The run goal (from run.json), or a placeholder."
+		},
+		"started_at": {
+			"type": "integer",
+			"description": "Run start, milliseconds since the Unix epoch."
+		},
+		"ended_at": {
+			"type": "integer",
+			"description": "Run end, milliseconds since the Unix epoch."
+		},
+		"status": {
+			"type": "string",
+			"enum": ["ready", "converged-with-residuals", "budget-exceeded", "stuck"],
+			"description": "Final run outcome."
+		},
+		"certificate": {
+			"type": "string",
+			"description": "Final convergence certificate from bean-check."
+		},
+		"rounds": {
+			"type": "integer",
+			"minimum": 0,
+			"description": "Number of driver rounds executed."
+		},
+		"pivot_count": {
+			"type": "integer",
+			"minimum": 0,
+			"description": "No-progress rounds turned into pivots."
+		},
+		"blockers_opened": {
+			"type": "integer",
+			"minimum": 0,
+			"description": "Distinct open fronts (code:claim) seen across the run."
+		},
+		"blockers_closed": {
+			"type": "integer",
+			"minimum": 0,
+			"description": "Of those, the count not present in the final signal."
+		},
+		"blocker_codes": {
+			"type": "array",
+			"items": { "type": "string" },
+			"uniqueItems": true,
+			"description": "The set of distinct blocker codes (E_*) OBSERVED DURING the run, including ones whose blockers were later closed — sorted, de-duplicated. Not a count, not final-state-only. Lets analyzers rank which gate conditions recur."
+		},
+		"verifier_verdicts": {
+			"type": "array",
+			"description": "The scrubbed verdicts bean-verify deposited under .bean/verdicts/, embedded verbatim.",
+			"items": { "type": "object" }
+		},
+		"residuals": {
+			"type": "array",
+			"description": "Claims tagged residual, with their stated reason (the claim content).",
+			"items": {
+				"type": "object",
+				"required": ["id", "reason"],
+				"properties": {
+					"id": { "type": "string" },
+					"reason": { "type": "string" }
+				}
+			}
+		},
+		"artifacts_changed": {
+			"type": "array",
+			"description": "Files the run changed, when available. v0 does not track this yet; emitted as [] for shape stability.",
+			"items": { "type": "string" }
+		},
+		"metadata": {
+			"type": "object",
+			"additionalProperties": true,
+			"description": "Documented extension hatch. The top-level shape is fixed; additive or experimental fields go here so adding them never breaks v0 validation. Emitted as {} by default."
+		}
+	}
+}

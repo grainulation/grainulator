@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="index, follow">
+<title>Orchard — Multi-Sprint Orchestration for Wheat</title>
+<meta name="description" content="Orchestrate multiple wheat sprints across your org. Track dependencies, catch cross-sprint conflicts, assign owners. One dashboard for all research.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Orchard — Orchestrate research across your organization">
+<meta property="og:description" content="One sprint is manageable. Twelve in parallel is chaos. Orchard tracks dependencies, detects conflicts, and gives you one dashboard.">
+<meta property="og:url" content="https://orchard.grainulation.com/">
+<meta property="og:image" content="https://orchard.grainulation.com/og-image.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Orchard — Orchestrate research across your organization">
+<meta name="twitter:description" content="Track dependencies, detect cross-sprint conflicts, and see everything in one dashboard.">
+<meta name="twitter:image" content="https://orchard.grainulation.com/og-image.png">
+<link rel="canonical" href="https://orchard.grainulation.com/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" media="print" href="/grainulation-print.css">
+<style>
+:root{--bg:#0a0e1a;--bg-2:#111827;--surface:rgba(255,255,255,0.03);--surface-hover:rgba(255,255,255,0.06);--border:rgba(255,255,255,0.07);--border-light:rgba(255,255,255,0.12);--accent:#d4a574;--accent-dim:rgba(212,165,116,0.12);--green:#34d399;--red:#f87171;--blue:#60a5fa;--text:#e8ecf1;--text-2:#9ba5b7;--text-3:#8b95a5;--mono:'SF Mono','Fira Code','Cascadia Code','Consolas',monospace;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;--max-w:1080px;--ease:cubic-bezier(.22,1,.36,1)}*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth;overflow-x:hidden}body{font-family:var(--sans);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;line-height:1.6;overflow-x:hidden}a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}code,pre{font-family:var(--mono)}.bg-ambient{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;contain:paint}.bg-ambient .orb{position:absolute;border-radius:50%;filter:blur(120px);opacity:.04;animation:drift 28s ease-in-out infinite alternate}.bg-ambient .orb:nth-child(1){width:600px;height:600px;background:var(--accent);top:-10%;left:25%}.bg-ambient .orb:nth-child(2){width:400px;height:400px;background:var(--blue);bottom:10%;right:0;animation-delay:-12s}@keyframes drift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(20px,-15px) scale(1.03)}100%{transform:translate(-12px,10px) scale(.97)}}.page{position:relative;z-index:2;max-width:100vw;overflow-x:hidden}.container{max-width:var(--max-w);margin:0 auto;padding:0 24px}.rv{opacity:0;transform:translateY(24px);transition:opacity .6s var(--ease),transform .6s var(--ease)}.rv.vis{opacity:1;transform:none}.rv-d1{transition-delay:.08s}.rv-d2{transition-delay:.16s}.rv-d3{transition-delay:.24s}.rv-d4{transition-delay:.32s}.hf{opacity:0;transform:translateY(16px);animation:hIn .65s var(--ease) forwards}.hf1{animation-delay:.05s}.hf2{animation-delay:.15s}.hf3{animation-delay:.25s}.hf4{animation-delay:.4s}@keyframes hIn{to{opacity:1;transform:none}}nav{position:sticky;top:0;z-index:100;background:rgba(10,14,26,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:14px 0}nav .container{display:flex;align-items:center;justify-content:space-between}.nav-logo{font-weight:700;font-size:2rem;letter-spacing:-.02em;color:var(--text);text-decoration:none}.nav-logo span{color:var(--accent)}.nav-links{display:flex;gap:24px;font-size:.875rem;color:var(--text-2);align-items:center}.nav-links a{color:var(--text-2);transition:color .2s}.nav-links a:hover{color:var(--text);text-decoration:none}.nav-cta{background:transparent;border:none;color:var(--text-2);padding:6px;display:flex;align-items:center;transition:color .2s}.nav-cta:hover{color:var(--text);text-decoration:none}.hero{padding:100px 0 80px;text-align:center}.hero-badge{display:inline-block;padding:5px 14px;border:1px solid var(--border-light);border-radius:100px;font-size:.75rem;color:var(--text-2);margin-bottom:24px;letter-spacing:.04em;text-transform:uppercase}.hero h1{font-size:clamp(2.4rem,5.5vw,3.8rem);font-weight:800;letter-spacing:-.035em;line-height:1.1;margin-bottom:20px}.hero h1 em{font-style:normal;color:var(--accent)}.hero p.hero-sub{font-size:clamp(1.05rem,2vw,1.25rem);color:var(--text-2);max-width:600px;margin:0 auto 40px;line-height:1.55}.hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:10px;font-weight:600;font-size:.9375rem;transition:all .2s}.btn svg { transition: transform 0.2s ease; }
+.btn:hover svg { transform: translateX(3px); }
+.btn-primary{background:var(--accent);color:#000}.btn-primary:hover{opacity:.88;text-decoration:none;transform:translateY(-1px)}.btn-ghost{border:1px solid var(--border-light);color:var(--text)}.btn-ghost:hover{background:var(--surface-hover);text-decoration:none;transform:translateY(-1px)}.section-label{font-size:1.5rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:12px;font-weight:600}.section-title{font-size:clamp(1.6rem,3.5vw,2.2rem);font-weight:800;letter-spacing:-.03em;margin-bottom:16px;line-height:1.15}.section-sub{color:var(--text-2);font-size:1.05rem;max-width:620px;margin-bottom:48px;line-height:1.55}.what-is{padding:80px 0 60px}.what-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:40px 36px;max-width:720px;margin:0 auto;text-align:center}.what-box h2{font-size:1.3rem;font-weight:700;margin-bottom:16px}.what-box p{color:var(--text-2);font-size:1rem;line-height:1.65;margin-bottom:10px}.what-box p:last-child{margin-bottom:0}.quickstart{padding:80px 0 60px}.qs-label{text-align:center;font-size:1.5rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:40px;font-weight:600}.qs-steps{display:grid;grid-template-columns:1fr;gap:24px;max-width:680px;margin:0 auto}.qs-step{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:32px 28px;overflow:hidden;min-width:0}.qs-num{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--accent-dim);color:var(--accent);font-weight:700;font-size:.875rem;margin-bottom:16px}.qs-step h3{font-size:1.05rem;font-weight:700;margin-bottom:8px}.qs-step p{color:var(--text-2);font-size:.875rem;line-height:1.55;margin-bottom:16px}.qs-code{background:var(--bg);border:none;border-radius:0;padding:16px 20px;font-size:.8125rem;overflow-x:auto;white-space:pre;position:relative;line-height:1.6;color:var(--green);max-width:100%}.qs-code .dim{color:var(--text-3)}.qs-output{margin-top:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:.75rem;color:var(--text-3);font-family:var(--mono);line-height:1.5;white-space:pre;overflow-x:auto;max-width:100%}.example{padding:80px 0}.term-block{background:var(--bg-2);border:1px solid var(--border);border-radius:12px;padding:24px;font-family:var(--mono);font-size:.8125rem;line-height:1.8;overflow-x:auto}.term-block .prompt{color:var(--text-3)}.term-block .cmd{color:var(--accent)}.term-block .output{color:var(--text-2)}.term-block .hl{color:var(--accent)}.term-block .success{color:var(--green)}.term-block .warn{color:var(--red)}.term-block .active{color:var(--green)}.dep-graph{display:flex;flex-direction:column;gap:8px;margin-top:24px;padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:12px}.dep-node{display:flex;align-items:center;gap:12px;padding:8px 12px;border-radius:8px;font-size:.8125rem}.dep-node .node-box{padding:6px 14px;border-radius:6px;font-weight:600;font-family:var(--mono);font-size:.75rem;border:1px solid var(--border)}.dep-node .arrow{color:var(--text-3)}.dep-node .status{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.example-timeline{display:flex;flex-direction:column;gap:0;position:relative;margin-top:32px}
+.example-timeline::before{content:'';position:absolute;left:23px;top:28px;bottom:28px;width:2px;background:var(--border);border-radius:1px}
+.ex-step{display:grid;grid-template-columns:48px 1fr;gap:20px;padding:24px 0;position:relative}
+.ex-dot{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;z-index:1;font-weight:700}
+.ex-dot.init{background:var(--accent-dim);color:var(--accent)}
+.ex-dot.plant{background:rgba(96,165,250,0.1);color:var(--blue)}
+.ex-dot.status{background:rgba(52,211,153,0.1);color:var(--green)}
+.ex-body h4{font-size:.9375rem;font-weight:700;margin-bottom:4px}
+.ex-body .ex-cmd{font-family:var(--mono);font-size:.8125rem;color:var(--accent);margin-bottom:6px;overflow-wrap:break-word;word-break:break-all}
+.ex-body p{color:var(--text-2);font-size:.875rem;line-height:1.5}
+.ex-body .ex-output{margin-top:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 18px;font-size:.8rem;color:var(--text-2);font-family:var(--mono);line-height:1.6;overflow-x:auto;white-space:pre;max-width:100%}
+.ex-body .ex-output .hl{color:var(--accent)}
+.ex-body .ex-output .success{color:var(--green)}
+.ex-body .ex-output .active-s{color:var(--blue)}
+.ex-body .ex-output .blocked{color:var(--red)}
+.ex-body .ex-output .done{color:var(--text-3)}
+.term-sim .typing-cursor::after{content:'|';animation:term-blink 1s step-end infinite;color:var(--accent);font-weight:400}
+@keyframes term-blink{0%,100%{opacity:1}50%{opacity:0}}
+.term-sim .ex-output{opacity:0;transform:translateY(4px);transition:opacity .3s var(--ease),transform .3s var(--ease)}
+.term-sim .ex-output.t-visible{opacity:1;transform:none}
+.term-sim .ex-step{opacity:0;transform:translateY(12px);transition:opacity .4s var(--ease),transform .4s var(--ease)}
+.term-sim .ex-step.t-active{opacity:1;transform:none}
+.term-sim.t-done .ex-step{opacity:1;transform:none;transition:none}
+.term-sim.t-done .ex-output{opacity:1;transform:none;transition:none}
+.term-sim.t-done .typing-cursor::after{display:none}.features{padding:80px 0}.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}.feature-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px 24px;transition:border-color .2s}.feature-card:hover{border-color:rgba(212,165,116,.25)}.feature-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;font-size:18px;background:var(--accent-dim);color:var(--accent)}.feature-card h3{font-size:.9375rem;font-weight:700;margin-bottom:6px}.feature-card p{font-size:.8125rem;color:var(--text-2);line-height:1.6}.faq{padding:80px 0}.faq-list{max-width:700px;margin:0 auto}.faq-item{border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden}.faq-q{padding:20px 24px;font-weight:700;font-size:.9375rem;cursor:pointer;display:flex;align-items:center;gap:4px;background:var(--surface);transition:background .2s;user-select:none}.faq-q:hover{background:var(--surface-hover)}.faq-q svg{flex-shrink:0;margin-left:auto;transition:transform .25s var(--ease);color:var(--text-3)}.faq-item.open .faq-q svg{transform:rotate(180deg)}.faq-a{max-height:0;overflow:hidden;transition:max-height .35s var(--ease),padding .35s var(--ease)}.faq-item.open .faq-a{max-height:300px;padding:12px 24px 20px}.faq-a p{color:var(--text-2);font-size:.875rem;line-height:1.65}.ecosystem{padding:80px 0}.eco-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;max-width:860px;margin:0 auto}.eco-chip{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:.8125rem;color:var(--text-2);transition:border-color .2s}.eco-chip:hover{border-color:var(--accent);text-decoration:none;color:var(--text)}.eco-chip.current{border-color:var(--accent);color:var(--text)}.eco-chip .eco-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}.eco-chip .eco-name{font-weight:600;color:var(--text)}footer{border-top:1px solid var(--border);padding:32px 0;text-align:center;font-size:.8125rem;color:var(--text-3)}footer a{color:var(--text-2)}footer p{margin-bottom:6px}.sep{border:none;border-top:1px solid var(--border);margin:0}
+/* Terminal chrome */
+.copy-wrap{position:relative;border-radius:8px;overflow:hidden;background:var(--bg);border:1px solid var(--border)}
+.copy-wrap::before{content:'';display:block;height:32px;background:rgba(255,255,255,0.03);border-bottom:1px solid var(--border);position:relative;background-image:radial-gradient(circle at 16px 50%,#e11d48 4px,transparent 4px),radial-gradient(circle at 32px 50%,#f59e0b 4px,transparent 4px),radial-gradient(circle at 48px 50%,#22c55e 4px,transparent 4px)}
+.copy-btn{position:absolute;top:4px;right:8px;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text-3);border-radius:6px;padding:4px 12px;font-size:.7rem;cursor:pointer;font-family:var(--sans);transition:all .15s;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:2;line-height:1}
+.copy-btn:hover{color:var(--text);border-color:var(--border-light);background:rgba(255,255,255,0.10)}
+.copy-btn.copied{color:var(--green);border-color:var(--green)}
+
+.qs-code,.qs-output,.term-block,.ex-output{max-width:100%;overflow-x:auto;word-break:break-all}
+@media(max-width:720px){nav{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(10,14,26,.98)}.copy-btn{backdrop-filter:none;-webkit-backdrop-filter:none}.bg-ambient{display:none}.rv{opacity:1;transform:none;transition:none}.rv.vis{opacity:1;transform:none}.hf{opacity:1;transform:none;animation:none}.qs-steps,.features-grid,.eco-grid{grid-template-columns:1fr}.hero{padding:56px 0 40px}.hero h1{font-size:2rem}.term-block,.qs-code,.qs-out,.qs-output,.ex-output,.ex-body .ex-output,pre,code{font-size:12px;overflow-x:auto;max-width:100%;white-space:pre-wrap;word-break:break-word}.container{padding:0 16px}section,.what-is,.quickstart,.features,.faq,.ecosystem,.example{padding:40px 0}.hero{padding:48px 0 32px}.term-block{max-width:100%;overflow-x:auto}.what-box{padding:28px 20px}.faq-q{padding:18px 20px}.dep-node{flex-wrap:wrap}.dep-node .node-box{font-size:.7rem;padding:4px 10px}.qs-step{padding:20px 16px}.ex-step{grid-template-columns:36px 1fr;gap:14px}.ex-dot{width:36px;height:36px;font-size:.9rem}.example-timeline::before{left:17px}.ex-body .ex-output{font-size:.7rem;padding:10px 12px;white-space:pre-wrap;word-break:break-word}.ex-body .ex-cmd{word-break:break-all}.copy-btn{display:none !important}}
+@media(max-width:480px){.nav-logo{font-size:1.5rem}.hero h1{font-size:1.6rem}.hero-sub,.section-sub{font-size:0.95rem}.nav-links a:not(.nav-cta){display:none}.hero-actions{flex-direction:column}.btn{width:100%;justify-content:center;min-height:44px}.eco-chip{padding:10px 12px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms !important;transition-duration:0.01ms !important}}
+*:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+.skip-link{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:1000}
+.skip-link:focus{position:fixed;top:8px;left:8px;width:auto;height:auto;padding:12px 24px;background:var(--accent);color:#000;font-weight:700;font-size:.875rem;border-radius:8px;text-decoration:none;z-index:10000}
+.copy-btn{min-width:44px;min-height:24px;display:inline-flex;align-items:center;justify-content:center}
+.nav-links a{min-height:44px;display:inline-flex;align-items:center}
+</style>
+<meta name="theme-color" content="#d4a574">
+<meta property="og:site_name" content="Grainulation">
+<meta property="og:locale" content="en_US">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "@grainulation/orchard",
+  "description": "One sprint is manageable. Twelve running in parallel is chaos. Orchard tracks dependencies, detects conflicts, and gives you one dashboard for all sprints.",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Organization", "name": "Grainulation", "url": "https://grainulation.com" },
+  "license": "https://opensource.org/licenses/MIT"
+}
+</script>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+<div class="bg-ambient" aria-hidden="true"><div class="orb"></div><div class="orb"></div></div>
+<div class="page">
+<nav aria-label="Main navigation"><div class="container"><a href="#" class="nav-logo"><svg width="114" height="48" viewBox="0 0 90 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;position:relative;top:-4px"><path d="M22,8 L16,8 C10.5,12.5 10.5,25.5 16,30 L22,30" stroke="#d4a574" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="23" y="19" text-anchor="middle" dominant-baseline="central" fill="#d4a574" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">O</text><text x="29.5" y="19" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">rchard</text></svg></a><div class="nav-links"><a href="#what">About</a><a href="#quickstart">Quick Start</a><a href="#features">Features</a><a href="https://github.com/grainulation/orchard" class="nav-cta" aria-label="GitHub"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a></div></div></nav><main id="main">
+<section class="hero"><div class="container"><h1 class="hf hf2">One sprint is manageable.<br><em>Twelve running in parallel is chaos.</em></h1><p class="hero-sub hf hf3"><strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">o</span>rchard</strong> orchestrates multiple <strong style="color:#fff;font-size:110%"><span style="color:#fbbf24">w</span>heat</strong> sprints across your organization. Track dependencies between sprints, detect when two teams reach contradicting conclusions, assign owners, and see everything in one dashboard. Cross-sprint contradictions are caught the same way single-sprint contradictions are — automatically, by the compiler.</p><div class="hero-actions hf hf4"><a href="#quickstart" class="btn btn-primary"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M3 8h10M9 4l4 4-4 4"/></svg> Get started</a><a href="#example" class="btn btn-ghost">See it in action</a></div></div></section>
+<hr class="sep">
+<section class="what-is" id="what"><div class="container"><div class="what-box rv"><h2>What is <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">o</span>rchard</strong>?</h2><p><strong style="color:#fff;font-size:110%"><span style="color:#fbbf24">w</span>heat</strong> is a research framework for making technical decisions. When your organization runs multiple <strong style="color:#fff;font-size:110%"><span style="color:#fbbf24">w</span>heat</strong> sprints at once — different teams researching different questions — you need coordination.</p><p><strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">o</span>rchard</strong> is that coordination layer. It reads all your sprints from a config file, maps their dependencies, flags when Sprint A's conclusions contradict Sprint B's, and produces a unified dashboard. Think of it as a project manager for research sprints.</p></div></div></section>
+<hr class="sep">
+<section class="quickstart" id="quickstart"><div class="container"><div class="qs-label rv">Quick start — 3 commands</div><div class="qs-steps">
+  <div class="qs-step rv rv-d1"><div class="qs-num">1</div><h3>Create <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">o</span>rchard</strong>.json</h3><p>Define sprints, owners, dependencies, and deadlines in one config file.</p><div class="copy-wrap"><pre class="qs-code"><code><span class="dim">$</span> npx @grainulation/orchard init</code></pre><button class="copy-btn" onclick="copyText(this,'npx @grainulation/orchard init')">Copy</button></div><div class="qs-output">Created orchard.json with sprint definitions.
+Edit to add your sprints, owners, and deps.</div></div>
+  <div class="qs-step rv rv-d2"><div class="qs-num">2</div><h3>Plan the work</h3><p>See the dependency graph, critical path, and what can run in parallel.</p><div class="copy-wrap"><pre class="qs-code"><code><span class="dim">$</span> npx @grainulation/orchard plan</code></pre><button class="copy-btn" onclick="copyText(this,'npx @grainulation/orchard plan')">Copy</button></div><div class="qs-output">Critical path: auth-scaling -> perf-baseline
+Parallel: data-migration (independent)
+Conflict: r005 contradicts r012</div></div>
+  <div class="qs-step rv rv-d3"><div class="qs-num">3</div><h3>Check status</h3><p>One command shows all sprints, progress, and cross-sprint conflicts.</p><div class="copy-wrap"><pre class="qs-code"><code><span class="dim">$</span> npx @grainulation/orchard status</code></pre><button class="copy-btn" onclick="copyText(this,'npx @grainulation/orchard status')">Copy</button></div><div class="qs-output">4 sprints: 2 active, 1 done, 1 blocked
+Blocked: perf-baseline (waiting on auth)</div></div>
+</div></div></section>
+<hr class="sep">
+<section class="example" id="example"><div class="container">
+  <div class="section-label rv">Real example</div>
+  <h2 class="section-title rv rv-d1">A platform migration in three commands</h2>
+  <p class="section-sub rv rv-d2">Your team is migrating a platform. The API layer depends on the data model, and the frontend depends on the API layer. <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">o</span>rchard</strong> tracks the tree so nothing runs before its dependencies are done.</p>
+  <div class="example-timeline">
+    <div class="ex-step">
+      <div class="ex-dot init">1</div>
+      <div class="ex-body">
+        <div class="ex-cmd">$ npx @grainulation/orchard init --root platform-migration</div>
+        <h4>Create an <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">o</span>rchard</strong></h4>
+        <p>Define the root project. <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">o</span>rchard</strong> scaffolds a tree you can grow with sprints and dependency edges.</p>
+        <div class="ex-output"><span class="success">&#10003; Created orchard: platform-migration</span></div>
+      </div>
+    </div>
+    <div class="ex-step">
+      <div class="ex-dot plant">2</div>
+      <div class="ex-body">
+        <div class="ex-cmd">$ npx @grainulation/orchard plant api-layer --depends-on data-model</div>
+        <h4>Plant a sprint</h4>
+        <p>Add sprints to the tree with explicit dependencies. <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">o</span>rchard</strong> tracks the graph and knows what can run in parallel.</p>
+        <div class="ex-output"><span class="success">&#10003; Planted sprint: api-layer</span> <span class="done">(depends on: data-model)</span></div>
+      </div>
+    </div>
+    <div class="ex-step">
+      <div class="ex-dot status">3</div>
+      <div class="ex-body">
+        <div class="ex-cmd">$ npx @grainulation/orchard status</div>
+        <h4>See the whole picture</h4>
+        <p>One command shows every sprint, its progress bar, and dependency status. Blocked sprints tell you exactly what they are waiting on.</p>
+        <div class="ex-output"><span class="hl">platform-migration</span>
+  &#9500;&#9472;&#9472; data-model      <span class="success">&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;</span> <span class="success">complete</span>
+  &#9500;&#9472;&#9472; api-layer       <span class="active-s">&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;</span><span class="done">&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;</span> <span class="active-s">research</span>   <span class="done">(depends: data-model</span> <span class="success">&#10003;</span><span class="done">)</span>
+  &#9492;&#9472;&#9472; frontend        <span class="done">&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;</span> <span class="blocked">blocked</span>    <span class="done">(depends: api-layer</span> <span class="blocked">&#9203;</span><span class="done">)</span></div>
+      </div>
+    </div>
+  </div>
+</div></section>
+<hr class="sep">
+<section class="features" id="features"><div class="container"><div class="section-label rv">Key features</div><h2 class="section-title rv rv-d1">Research at organizational scale</h2><p class="section-sub rv rv-d2">When one sprint is not enough. Coordinate, detect conflicts, and see the big picture.</p><div class="features-grid">
+  <div class="feature-card rv rv-d1"><div class="feature-icon"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 012 2v7"/><path d="M6 9v12"/></svg></div><h3>Dependency Graphs</h3><p>Sprint B needs Sprint A's results. <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">o</span>rchard</strong> tracks it and shows the critical path so nothing gets stuck. <strong style="color:#fff;font-size:110%"><span style="color:#e11d48">b</span>arn</strong> handles sprint detection across repos so <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">o</span>rchard</strong> always has an up-to-date map.</p></div>
+  <div class="feature-card rv rv-d2"><div class="feature-icon"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><h3>Conflict Detection</h3><p>Two sprints reach opposing conclusions? <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">o</span>rchard</strong> flags it before it becomes a production problem. When conflicts need ranking, <strong style="color:#fff;font-size:110%"><span style="color:#fb923c">h</span>arvest</strong> calibration data shows which sprint's claims have historically been more accurate.</p></div>
+  <div class="feature-card rv rv-d3"><div class="feature-icon"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div><h3>Team Assignment</h3><p>See who is running what, who is overloaded, and which sprints need owners.</p></div>
+  <div class="feature-card rv rv-d4"><div class="feature-icon"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div><h3>Unified Dashboard</h3><p>One self-contained HTML file. Every sprint, every claim, every deadline. Share with leadership.</p></div>
+  <div class="feature-card rv rv-d1"><div class="feature-icon"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><h3>Claim Lineage</h3><p>Trace how a claim evolved across sprints — from <code>stated</code> to <code>tested</code> to <code>production</code>. See the full evidence journey of every decision in your <strong style="color:#fff;font-size:110%"><span style="color:#fbbf24">w</span>heat</strong> portfolio. <strong style="color:#fff;font-size:110%"><span style="color:#6ee7b7">s</span>ilo</strong> indexes these lineage chains for instant cross-sprint lookups.</p></div>
+  <div class="feature-card rv rv-d2"><div class="feature-icon"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><h3>Knowledge Decay</h3><p>Claims age. <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">o</span>rchard</strong> flags findings whose evidence may be outdated based on age, topic volatility, and ecosystem changes — before stale data drives new decisions.</p></div>
+</div></div></section>
+<hr class="sep">
+<section class="faq" id="faq"><div class="container"><div class="section-label rv" style="text-align:center">Frequently asked questions</div><div class="faq-list">
+  <div class="faq-item rv rv-d1"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Do I need Node.js?<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></div><div class="faq-a"><p>Yes, Node 20 or later. But your projects can use any language or framework.</p></div></div>
+  <div class="faq-item rv rv-d2"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')"><span>How many sprints before I need <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">o</span>rchard</strong>?</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></div><div class="faq-a"><p>If you have 3 or more concurrent sprints, or any sprints with dependencies, <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">o</span>rchard</strong> starts saving time.</p></div></div>
+  <div class="faq-item rv rv-d3"><div class="faq-q" onclick="this.parentElement.classList.toggle('open')"><span>How does <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">o</span>rchard</strong> handle conflicting claims across sprints?</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></div><div class="faq-a"><p><strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">o</span>rchard</strong> compares claim IDs and content across all tracked sprints. When two sprints assert contradictory facts, it flags the conflict in the status output so you can resolve it before either sprint ships.</p></div></div>
+</div></div></section>
+<hr class="sep">
+<section class="ecosystem" id="ecosystem"><div class="container" style="text-align:center"><h2 class="section-title rv rv-d1">The ecosystem</h2><p class="section-sub rv rv-d2" style="margin-left:auto;margin-right:auto"><strong style="color:#fff;font-size:110%"><span style="color:#fbbf24">w</span>heat</strong> runs sprints. <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">o</span>rchard</strong> coordinates them across your organization.</p><div class="eco-grid rv rv-d3"><a href="https://wheat.grainulation.com/" class="eco-chip"><span class="eco-dot" style="background:#fbbf24"></span><span class="eco-name"><span style="color:#fbbf24">w</span>heat</span> compiler</a><a href="https://barn.grainulation.com/" class="eco-chip"><span class="eco-dot" style="background:#e11d48"></span><span class="eco-name"><span style="color:#e11d48">b</span>arn</span> shared tools</a><a href="https://mill.grainulation.com/" class="eco-chip"><span class="eco-dot" style="background:#a78bfa"></span><span class="eco-name"><span style="color:#a78bfa">m</span>ill</span> export</a><a href="https://silo.grainulation.com/" class="eco-chip"><span class="eco-dot" style="background:#6ee7b7"></span><span class="eco-name"><span style="color:#6ee7b7">s</span>ilo</span> knowledge packs</a><a href="https://harvest.grainulation.com/" class="eco-chip"><span class="eco-dot" style="background:#fb923c"></span><span class="eco-name"><span style="color:#fb923c">h</span>arvest</span> analytics</a><a href="https://orchard.grainulation.com/" class="eco-chip current"><span class="eco-dot" style="background:#d4a574"></span><span class="eco-name"><span style="color:#d4a574">o</span>rchard</span> orchestration</a><a href="https://grainulation.com/" class="eco-chip"><span class="eco-dot" style="background:#9ca3af"></span><span class="eco-name"><span style="color:#9ca3af">gr</span>ainulation</span> ecosystem</a></div></div></section>
+</main><footer><div class="container"><div style="display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap"><a href="https://github.com/grainulation/orchard">GitHub</a><a href="https://grainulation.com/" style="text-decoration:none;display:inline-flex;align-items:center"><svg width="120" height="40" viewBox="0 0 140 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;"><path d="M22,8 L16,8 C10.5,12.5 10.5,25.5 16,30 L22,30" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="23" y="19" text-anchor="middle" dominant-baseline="central" fill="#9ca3af" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">G</text><text x="29.5" y="19" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">rainulation</text></svg></a><a href="https://deepwiki.com/grainulation/orchard">Docs</a></div><div style="text-align:center;color:rgba(255,255,255,0.15);font-size:0.6rem;margin-top:1rem">Research that compiles.</div></div></footer>
+</div>
+<script>
+const obs=new IntersectionObserver(e=>{e.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');obs.unobserve(e.target)}})},{threshold:.1,rootMargin:'0px 0px -40px 0px'});document.querySelectorAll('.rv').forEach(el=>obs.observe(el));function copyText(b,t){navigator.clipboard.writeText(t).then(()=>{var w=window.innerWidth;b.textContent=w<=720?'\u2713':'Copied';b.classList.add('copied');setTimeout(()=>{b.textContent='Copy';b.classList.remove('copied')},1200)})}
+
+/* Terminal simulation for example timeline */
+(function() {
+  var TYPING_SPEED = 35;
+  var LINE_PAUSE = 150;
+  var STEP_PAUSE = 300;
+  var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches || window.innerWidth <= 720;
+
+  var timeline = document.querySelector('.example-timeline');
+  if (!timeline) return;
+
+  var steps = timeline.querySelectorAll('.ex-step');
+  var cmdTexts = [];
+  var cmdEls = [];
+  var outputEls = [];
+
+  steps.forEach(function(step) {
+    var cmd = step.querySelector('.ex-cmd');
+    var output = step.querySelector('.ex-output');
+    cmdTexts.push(cmd ? cmd.textContent : '');
+    cmdEls.push(cmd);
+    outputEls.push(output);
+    if (cmd) cmd.textContent = '';
+    if (output) output.style.opacity = '0';
+    step.style.opacity = '0';
+  });
+
+  timeline.classList.add('term-sim');
+  var animated = false;
+
+  function showFinalState() {
+    timeline.classList.add('t-done');
+    steps.forEach(function(step, i) {
+      step.classList.add('t-active');
+      step.style.opacity = '';
+      step.style.transform = '';
+      if (cmdEls[i]) { cmdEls[i].textContent = cmdTexts[i]; cmdEls[i].classList.remove('typing-cursor'); }
+      if (outputEls[i]) { outputEls[i].classList.add('t-visible'); outputEls[i].style.opacity = ''; }
+    });
+  }
+
+  function typeText(el, text, cb) {
+    var idx = 0;
+    el.classList.add('typing-cursor');
+    function tick() {
+      if (idx < text.length) {
+        el.textContent += text[idx];
+        idx++;
+        setTimeout(tick, TYPING_SPEED);
+      } else {
+        el.classList.remove('typing-cursor');
+        cb();
+      }
+    }
+    tick();
+  }
+
+  function animateStep(i, cb) {
+    if (i >= steps.length) { cb(); return; }
+    var step = steps[i];
+    step.classList.add('t-active');
+    step.style.opacity = '';
+    step.style.transform = '';
+    setTimeout(function() {
+      if (cmdEls[i] && cmdTexts[i]) {
+        typeText(cmdEls[i], cmdTexts[i], function() {
+          setTimeout(function() {
+            if (outputEls[i]) {
+              outputEls[i].style.opacity = '';
+              outputEls[i].classList.add('t-visible');
+            }
+            setTimeout(function() { animateStep(i + 1, cb); }, STEP_PAUSE);
+          }, LINE_PAUSE);
+        });
+      } else {
+        setTimeout(function() { animateStep(i + 1, cb); }, STEP_PAUSE);
+      }
+    }, 100);
+  }
+
+  if (reducedMotion) {
+    showFinalState();
+    return;
+  }
+
+  var termObs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting && !animated) {
+        animated = true;
+        termObs.unobserve(timeline);
+        animateStep(0, function() { timeline.classList.add('t-done'); });
+      }
+    });
+  }, { threshold: 0.15 });
+
+  /* Handle fast scroll -- if user scrolls past, show final state */
+  var scrollTimer;
+  function onScroll() {
+    if (animated) { window.removeEventListener('scroll', onScroll); return; }
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(function() {
+      if (!animated) {
+        var rect = timeline.getBoundingClientRect();
+        if (rect.bottom < 0) {
+          animated = true;
+          termObs.unobserve(timeline);
+          showFinalState();
+          window.removeEventListener('scroll', onScroll);
+        }
+      }
+    }, 100);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  termObs.observe(timeline);
+
+  /* Fallback: if IntersectionObserver hasn't fired after 2s (e.g. mobile iframe), show final state */
+  setTimeout(function() { if (!animated) { animated = true; termObs.unobserve(timeline); showFinalState(); window.removeEventListener('scroll', onScroll); } }, 2000);
+})();
+</script>
+</body>
+</html>

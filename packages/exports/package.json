@@ -1,0 +1,63 @@
+{
+  "name": "@grainulation/mill",
+  "version": "1.1.4",
+  "description": "Turn wheat sprint artifacts into shareable formats",
+  "main": "lib/index.js",
+  "bin": {
+    "mill": "bin/mill.js"
+  },
+  "exports": {
+    ".": "./lib/index.js",
+    "./formats/markdown": "./lib/formats/markdown.mjs",
+    "./formats/csv": "./lib/formats/csv.mjs",
+    "./formats/json-ld": "./lib/formats/json-ld.mjs",
+    "./tokens": "./public/grainulation-tokens.css"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "public/",
+    "CHANGELOG.md",
+    "LICENSE",
+    "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md"
+  ],
+  "scripts": {
+    "test": "node test/basic.test.js && node test/formats-esm.test.js && node --test test/server.test.js test/ui-smoke.test.js test/serve-mcp.test.js test/tarball.test.js",
+    "start": "node bin/mill.js",
+    "serve": "node bin/mill.js serve",
+    "format": "npx prettier@3.3 --write .",
+    "format:check": "npx prettier@3.3 --check ."
+  },
+  "dependencies": {
+    "@grainulation/barn": "^1.3.0"
+  },
+  "keywords": [
+    "wheat",
+    "sprint",
+    "export",
+    "pdf",
+    "csv",
+    "markdown",
+    "json-ld",
+    "publishing"
+  ],
+  "author": "grainulation contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grainulation/mill.git"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "bugs": {
+    "url": "https://github.com/grainulation/mill/issues"
+  },
+  "homepage": "https://mill.grainulation.com",
+  "publishConfig": {
+    "access": "public"
+  },
+  "private": true
+}

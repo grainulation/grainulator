@@ -1,0 +1,61 @@
+{
+  "name": "@grainulation/silo",
+  "version": "1.2.3",
+  "description": "Reusable knowledge for research sprints -- shared claim libraries, templates, and knowledge packs",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./server": "./lib/server.js",
+    "./tokens": "./public/grainulation-tokens.css"
+  },
+  "bin": {
+    "silo": "bin/silo.js"
+  },
+  "scripts": {
+    "test": "node test/basic.test.js && node --test test/smart-fetch.test.js test/fetch-cache.test.js test/smart-fetch.live.test.js test/server.test.js test/ui-smoke.test.js test/serve-mcp.test.js test/tarball.test.js",
+    "test:live": "FETCH_LIVE=1 npm test",
+    "start": "node bin/silo.js serve",
+    "serve": "node bin/silo.js serve",
+    "format": "npx prettier@3.3 --write .",
+    "format:check": "npx prettier@3.3 --check ."
+  },
+  "dependencies": {
+    "@grainulation/barn": "^1.3.0"
+  },
+  "keywords": [
+    "research",
+    "claims",
+    "knowledge",
+    "templates",
+    "sprint"
+  ],
+  "author": "grainulation contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grainulation/silo.git"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "bugs": {
+    "url": "https://github.com/grainulation/silo/issues"
+  },
+  "homepage": "https://silo.grainulation.com",
+  "files": [
+    "bin/",
+    "lib/",
+    "packs/",
+    "public/",
+    "CHANGELOG.md",
+    "LICENSE",
+    "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "private": true
+}

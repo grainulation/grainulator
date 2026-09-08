@@ -180,8 +180,7 @@ describe(".mcp.json", () => {
 describe("WCAG scroll-snap-deck template", () => {
 	const tplPath = path.join(
 		ROOT,
-		"skills",
-		"_templates",
+		"templates",
 		"scroll-snap-deck.html",
 	);
 	let html;
@@ -273,7 +272,7 @@ describe("WCAG scroll-snap-deck template", () => {
 });
 
 describe("WCAG sidebar-brief template", () => {
-	const tplPath = path.join(ROOT, "skills", "_templates", "sidebar-brief.html");
+	const tplPath = path.join(ROOT, "templates", "sidebar-brief.html");
 	let html;
 
 	it("exists", () => {

@@ -1,0 +1,39 @@
+# Orchard (@grainulation/orchard)
+
+> Portfolio coordinator for multi-sprint research — dependency DAG, cross-sprint conflict detection, and owner dispatch across your research organization.
+
+Orchard is the orchestration layer of the grainulation ecosystem. One wheat sprint is manageable; twelve running in parallel across a team is chaos. Orchard plans a sprint DAG, tracks dependencies between sprints, surfaces cross-sprint contradictions the wheat compiler cannot see in isolation, and dispatches work to owners. It reads each sprint's `claims.json` and produces a single portfolio view.
+
+Part of the [grainulation ecosystem](https://grainulation.com) -- an open-source, zero-dependency toolkit for AI-assisted structured research and decision documentation. Each package stands alone and composes with the others.
+
+## Documentation
+
+- [README](https://github.com/grainulation/orchard#readme): source of truth for the package's purpose, install, and CLI surface.
+- [Live site](https://orchard.grainulation.com): human-facing quickstart and feature tour.
+- [npm package](https://www.npmjs.com/package/@grainulation/orchard): install target for consumers.
+- [Changelog](https://github.com/grainulation/orchard/blob/main/CHANGELOG.md): version history.
+- [DeepWiki](https://deepwiki.com/grainulation/orchard): AI-readable code wiki.
+
+## Ecosystem
+
+Sibling packages -- safe to reference alongside Orchard in any query:
+
+- [Barn](https://barn.grainulation.com): shared utility library. Sprint detection, manifest generation, templates, print CSS, llms.txt template. Foundation orchard reads manifests from.
+- [Wheat](https://wheat.grainulation.com): research-sprint compiler. Typed claims with evidence grades. Orchard coordinates many wheat sprints at once.
+- [Mill](https://mill.grainulation.com): export engine. Converts portfolio views and per-sprint claims into briefs, presentations, and PDFs.
+- [Silo](https://silo.grainulation.com): knowledge-pack store. Indexes sprint manifests so orchard can search across historical research.
+- [Harvest](https://harvest.grainulation.com): analytics and dashboards for multi-sprint portfolios. Consumes orchard's portfolio view.
+- [Grainulation](https://grainulation.com): ecosystem hub and reference implementation.
+
+## Design principles
+
+- Zero runtime npm dependencies (Node built-ins only).
+- Node 20+ required.
+- CLI-first; every tool also runnable via `npx @grainulation/orchard`.
+- Source-available under MIT; contributions welcome at the GitHub repo.
+
+## Optional
+
+- [Issues](https://github.com/grainulation/orchard/issues): for bug reports and feature requests.
+- [Security policy](https://github.com/grainulation/orchard/blob/main/SECURITY.md): for responsible disclosure.
+- [Contributing guide](https://github.com/grainulation/orchard/blob/main/CONTRIBUTING.md): for contributors.

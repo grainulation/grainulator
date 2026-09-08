@@ -1,0 +1,29 @@
+{
+  "title": "Certificate",
+  "description": "Compilation certificate rendered as a formal visual artifact. Shows hash, claim count, evidence breakdown, and conflict status with a centered, framed layout.",
+  "tags": [
+    "certificate",
+    "compilation",
+    "verification",
+    "reproducible",
+    "hash"
+  ],
+  "author": "grainulation",
+  "version": "1.0.0",
+  "exportPresets": [
+    { "name": "pdf", "format": "pdf" },
+    { "name": "static-site", "format": "html" }
+  ],
+  "seedPacks": [],
+  "scaffoldConfig": {
+    "defaultPlaceholders": {
+      "SPRINT_NAME": "Sprint",
+      "HASH": "",
+      "CLAIM_COUNT": "0",
+      "COMPILED_AT": "",
+      "COMPILER_VERSION": "1.0.0",
+      "CONFLICT_STATUS": "resolved"
+    },
+    "postInit": ["load-claims"]
+  }
+}

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Harvest Retrospective</title>
+  <style>
+    :root {
+      --bg: #0c0a09;
+      --surface: #1c1917;
+      --surface-2: #292524;
+      --border: #44403c;
+      --text: #e7e5e4;
+      --text-muted: #a8a29e;
+      --accent: #f97316;
+      --accent-dim: #c2410c;
+      --green: #22c55e;
+      --red: #e11d48;
+      --yellow: #eab308;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 2rem;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    header {
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    header p {
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .meta {
+      display: flex;
+      gap: 2rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .meta-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      min-width: 140px;
+    }
+
+    .meta-item .label {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .meta-item .value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-top: 0.25rem;
+    }
+
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    h2 {
+      color: var(--accent);
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h3 {
+      color: var(--text);
+      font-size: 0.95rem;
+      margin: 1rem 0 0.5rem;
+    }
+
+    .insight {
+      background: var(--surface-2);
+      border-left: 3px solid var(--accent);
+      padding: 0.75rem 1rem;
+      margin: 1rem 0;
+      font-style: italic;
+      color: var(--text-muted);
+    }
+
+    .bar-row {
+      display: flex;
+      align-items: center;
+      margin: 0.35rem 0;
+      gap: 0.75rem;
+    }
+
+    .bar-label {
+      min-width: 110px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .bar {
+      background: linear-gradient(90deg, var(--accent), var(--accent-dim));
+      color: var(--bg);
+      padding: 0.15rem 0.5rem;
+      border-radius: 3px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      min-width: 24px;
+      text-align: right;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.5rem 0;
+      font-size: 0.85rem;
+    }
+
+    th {
+      text-align: left;
+      color: var(--accent);
+      font-weight: 600;
+      padding: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    td {
+      padding: 0.4rem 0.5rem;
+      border-bottom: 1px solid var(--surface-2);
+      color: var(--text-muted);
+    }
+
+    tr:hover td {
+      color: var(--text);
+      background: var(--surface-2);
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    ul li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--surface-2);
+    }
+
+    ul li:last-child {
+      border-bottom: none;
+    }
+
+    ul li strong {
+      color: var(--accent);
+    }
+
+    .severity-high { border-left: 3px solid var(--red); padding-left: 0.75rem; }
+    .severity-medium { border-left: 3px solid var(--yellow); padding-left: 0.75rem; }
+    .severity-low { border-left: 3px solid var(--text-muted); padding-left: 0.75rem; }
+
+    .muted { color: var(--text-muted); }
+
+    footer {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 1rem; font-size: 13px; }
+      .meta { gap: 0.75rem; }
+      .meta-item { min-width: 100px; padding: 0.75rem; }
+      .meta-item .value { font-size: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Harvest Retrospective</h1>
+    <p>Are your decisions getting better?</p>
+    <div class="meta">
+      <div class="meta-item">
+        <div class="label">Sprints</div>
+        <div class="value">{{SPRINT_COUNT}}</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Claims</div>
+        <div class="value">{{CLAIM_COUNT}}</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Avg/Sprint</div>
+        <div class="value">{{AVG_CLAIMS}}</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Accuracy</div>
+        <div class="value">{{ACCURACY_RATE}}</div>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <h2>Calibration</h2>
+    <p>How often were our predictions right?</p>
+    <div class="meta" style="margin-bottom:1rem">
+      <div class="meta-item">
+        <div class="label">Estimates</div>
+        <div class="value">{{ESTIMATE_COUNT}}</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Matched</div>
+        <div class="value">{{MATCHED_COUNT}}</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Unmatched</div>
+        <div class="value">{{UNMATCHED_COUNT}}</div>
+      </div>
+    </div>
+    <div class="insight">{{CALIBRATION_INSIGHT}}</div>
+  </section>
+
+  <section>
+    <h2>Claim Analysis</h2>
+    <h3>By Type</h3>
+    {{TYPE_DISTRIBUTION}}
+    <h3>By Evidence Tier</h3>
+    {{EVIDENCE_DISTRIBUTION}}
+    <h3>Weak Claims (low evidence)</h3>
+    {{WEAK_CLAIMS_TABLE}}
+  </section>
+
+  <section>
+    <h2>Decision Patterns</h2>
+    <p>{{PATTERN_COUNT}} positive patterns, {{ANTI_PATTERN_COUNT}} anti-patterns detected.</p>
+    <div class="insight">{{PATTERN_INSIGHT}}</div>
+    <h3>Good Patterns</h3>
+    {{PATTERNS_LIST}}
+    <h3>Anti-Patterns</h3>
+    {{ANTI_PATTERNS_LIST}}
+  </section>
+
+  <section>
+    <h2>Knowledge Decay</h2>
+    <div class="meta" style="margin-bottom:1rem">
+      <div class="meta-item">
+        <div class="label">Stale</div>
+        <div class="value">{{STALE_COUNT}}</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Decaying</div>
+        <div class="value">{{DECAYING_COUNT}}</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Unresolved</div>
+        <div class="value">{{UNRESOLVED_COUNT}}</div>
+      </div>
+    </div>
+    <div class="insight">{{DECAY_INSIGHT}}</div>
+    {{DECAY_TABLE}}
+  </section>
+
+  <section>
+    <h2>Velocity</h2>
+    <div class="meta" style="margin-bottom:1rem">
+      <div class="meta-item">
+        <div class="label">Avg Duration</div>
+        <div class="value">{{AVG_DURATION}}</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Claims/Day</div>
+        <div class="value">{{AVG_CLAIMS_PER_DAY}}</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Stalls</div>
+        <div class="value">{{TOTAL_STALLS}}</div>
+      </div>
+    </div>
+    <div class="insight">{{VELOCITY_INSIGHT}}</div>
+    {{VELOCITY_TABLE}}
+  </section>
+
+  <footer>
+    Generated {{GENERATED_DATE}} by <strong>@grainulation/harvest</strong>
+  </footer>
+</body>
+</html>

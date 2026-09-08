@@ -1,0 +1,210 @@
+{
+  "name": "Hackathon: Innovation Night",
+  "description": "Creative hackathon category pack for open-ended innovation events. Judging weights: 30% creativity, 25% novelty, 25% evidence quality, 20% feasibility. Rewards divergent thinking and cross-domain synthesis.",
+  "version": "1.0.0",
+  "judging": {
+    "weights": {
+      "creativity": 0.3,
+      "novelty": 0.25,
+      "evidence": 0.25,
+      "feasibility": 0.2
+    },
+    "auto_score_dimensions": {
+      "creativity": {
+        "type_diversity": 0.35,
+        "recommendation_ratio": 0.3,
+        "cross_topic_breadth": 0.35
+      },
+      "novelty": {
+        "challenge_depth": 0.4,
+        "tag_diversity": 0.3,
+        "recommendation_ratio": 0.3
+      },
+      "evidence": {
+        "evidence_tier": 0.5,
+        "corroboration": 0.3,
+        "health": 0.2
+      },
+      "feasibility": {
+        "constraint_satisfaction": 0.4,
+        "estimate_claims_present": 0.3,
+        "risk_claims_present": 0.3
+      }
+    },
+    "human_score_dimensions": [
+      "novelty_of_approach",
+      "synthesis_quality",
+      "practical_creativity"
+    ],
+    "final_blend": {
+      "auto": 0.5,
+      "human": 0.5
+    }
+  },
+  "claims": [
+    {
+      "id": "hin-001",
+      "type": "constraint",
+      "topic": "innovation night format",
+      "content": "Innovation Night is an open-ended creative hackathon format. Teams choose from themed challenge packs or propose their own research question. Output is a 3-minute demo pitch backed by a compiled wheat brief. The format rewards divergent thinking and cross-domain synthesis.",
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "innovation", "creative", "format"]
+    },
+    {
+      "id": "hin-002",
+      "type": "constraint",
+      "topic": "creativity scoring",
+      "content": "Creativity is the dominant judging dimension at 30%. Scored across: (1) Type diversity — exploring problems from multiple angles (constraints, risks, estimates, recommendations). (2) Recommendation originality — actionable insights that propose novel combinations. (3) Cross-topic breadth — drawing from diverse knowledge domains to synthesize new understanding.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "innovation", "creativity", "scoring"]
+    },
+    {
+      "id": "hin-003",
+      "type": "constraint",
+      "topic": "novelty scoring",
+      "content": "Novelty is weighted at 25%. Scored across: (1) Challenge depth — questioning assumptions and resolving conflicting evidence. (2) Tag diversity — exploring across many distinct knowledge areas. (3) Recommendation ratio — generating original actionable insights rather than just collecting facts.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "innovation", "novelty", "scoring"]
+    },
+    {
+      "id": "hin-004",
+      "type": "constraint",
+      "topic": "evidence scoring",
+      "content": "Evidence quality is weighted at 25%. Even creative ideas need grounding. Scored across: (1) Evidence tier distribution — higher tiers show the team validated their creative ideas. (2) Corroboration — cross-referencing diverse sources is a hallmark of innovative research. (3) Health — clean compilation despite creative exploration.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "innovation", "evidence", "scoring"]
+    },
+    {
+      "id": "hin-005",
+      "type": "constraint",
+      "topic": "feasibility scoring",
+      "content": "Feasibility is weighted at 20%. Creative ideas must be implementable. Scored across: (1) Constraint satisfaction — does the sprint acknowledge real-world constraints? (2) Estimate claims — are there cost, timeline, or effort projections? (3) Risk claims — has the team considered what could go wrong?",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "innovation", "feasibility", "scoring"]
+    },
+    {
+      "id": "hin-006",
+      "type": "recommendation",
+      "topic": "themed challenge packs",
+      "content": "Innovation Night should ship with themed creative challenge packs: (1) 'Moonshot' — solve a problem that seems impossible. (2) 'Cross-pollinate' — apply techniques from an unrelated domain. (3) 'Reverse engineer' — start with a desired outcome and work backward. (4) 'Constraint art' — maximum creativity under tight constraints. Themed challenges with creative constraints produce higher quality output than 'build anything'.",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "innovation", "themes", "challenge-packs"]
+    },
+    {
+      "id": "hin-007",
+      "type": "recommendation",
+      "topic": "hybrid voting",
+      "content": "Innovation Night uses hybrid voting: peer voting for 'People's Choice' plus judge panel for category awards. Peer voting increases engagement among non-participants. Categories: Overall Popular Vote, Most Creative, Best Use of AI, Most Likely to Be Implemented.",
+      "source": {
+        "origin": "research",
+        "artifact": "https://info.devpost.com/blog/private-hackathon-voting",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "innovation", "voting", "peer-voting"]
+    },
+    {
+      "id": "hin-008",
+      "type": "risk",
+      "topic": "inclusion and accessibility",
+      "content": "Risk: evening/weekend hackathons exclude parents, caregivers, and anyone with work-life boundaries. Innovation Night template should explicitly offer async submission as an alternative, or run during protected work hours. Non-technical participants must not be disadvantaged — judge on insight quality, not tool proficiency.",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "innovation", "inclusion", "risk"]
+    },
+    {
+      "id": "hin-009",
+      "type": "recommendation",
+      "topic": "demo format",
+      "content": "Standard demo format: 3-minute pitch covering (1) the problem — why does this matter? (2) the approach — what creative angle did you take? (3) the findings — what did you discover? (4) the evidence — how do you know? Demo-first, slides optional. The compiled wheat brief is the supporting artifact.",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "innovation", "demo", "presentation"]
+    },
+    {
+      "id": "hin-010",
+      "type": "recommendation",
+      "topic": "human judge criteria",
+      "content": "Human judges for Innovation Night score on: (1) Novelty of approach — did the team explore an unexpected angle? (2) Synthesis quality — are diverse findings woven into coherent insight? (3) Practical creativity — are recommendations actionable and non-obvious?",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "innovation", "human-judging", "criteria"]
+    }
+  ]
+}

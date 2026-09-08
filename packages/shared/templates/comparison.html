@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comparison — {{TITLE}}</title>
+<style>
+  /* barn/templates/comparison.html — side-by-side option comparison
+     System font stack, no external dependencies, fully self-contained. */
+
+  :root {
+    --bg: #0a0e1a;
+    --bg-card: #1e293b;
+    --bg-card-alt: #1a2332;
+    --accent: #3b82f6;
+    --accent-light: #60a5fa;
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.15);
+    --orange: #f59e0b;
+    --orange-dim: rgba(245,158,11,0.15);
+    --red: #e11d48;
+    --red-dim: rgba(225,29,72,0.15);
+    --purple: #a78bfa;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --border: rgba(255,255,255,0.06);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 10pt;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    padding: 40px;
+    min-height: 100vh;
+  }
+
+  .comparison-header {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .comparison-header h1 {
+    font-size: 24pt;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .comparison-header .meta {
+    display: flex;
+    gap: 24px;
+    color: var(--text-muted);
+    font-size: 10pt;
+  }
+
+  .question {
+    font-size: 13pt;
+    font-weight: 600;
+    color: var(--accent-light);
+    margin-bottom: 32px;
+    padding: 16px 24px;
+    background: rgba(59,130,246,0.08);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+  }
+
+  .columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .option-column {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .option-column.recommended {
+    border-color: var(--green);
+    box-shadow: 0 0 0 1px var(--green), 0 0 20px rgba(34,197,94,0.08);
+  }
+
+  .option-name {
+    font-size: 14pt;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .section-label {
+    font-size: 8pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  .claim-item {
+    padding: 10px 12px;
+    background: var(--bg-card-alt);
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+
+  .claim-item .claim-text {
+    font-size: 10pt;
+    color: var(--text-muted);
+    line-height: 1.4;
+    margin-bottom: 6px;
+  }
+
+  .claim-item .claim-meta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 8pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .badge.factual { color: var(--accent-light); background: rgba(59,130,246,0.12); }
+  .badge.constraint { color: var(--purple); background: rgba(167,139,250,0.12); }
+  .badge.estimate { color: var(--orange); background: var(--orange-dim); }
+  .badge.risk { color: var(--red); background: var(--red-dim); }
+  .badge.recommendation { color: var(--green); background: var(--green-dim); }
+  .badge.feedback { color: #f472b6; background: rgba(244,114,182,0.12); }
+
+  .badge.production { color: var(--green); background: var(--green-dim); }
+  .badge.tested { color: var(--accent-light); background: rgba(59,130,246,0.12); }
+  .badge.documented { color: var(--purple); background: rgba(167,139,250,0.12); }
+  .badge.web { color: var(--orange); background: var(--orange-dim); }
+  .badge.stated { color: var(--text-dim); background: rgba(100,116,139,0.15); }
+
+  .risk-list, .constraint-list { list-style: none; }
+  .risk-list li, .constraint-list li {
+    padding: 6px 0; border-bottom: 1px solid var(--border);
+    color: var(--text-muted); font-size: 10pt;
+  }
+  .risk-list li::before { content: "-- "; color: var(--red); font-weight: 700; }
+  .constraint-list li::before { content: "| "; color: var(--purple); font-weight: 700; }
+
+  .verdict-panel {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--green);
+  }
+
+  .verdict-panel .verdict-label {
+    font-size: 9pt; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--green); margin-bottom: 12px;
+  }
+  .verdict-panel .verdict-text { font-size: 12pt; font-weight: 600; color: var(--text); line-height: 1.5; }
+  .verdict-panel .verdict-rationale { margin-top: 12px; font-size: 10pt; color: var(--text-muted); line-height: 1.5; }
+
+  .compilation-bar {
+    margin-top: 32px;
+    padding: 16px 24px;
+    background: var(--bg-card);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 9pt;
+    color: var(--text-dim);
+  }
+
+  .compilation-bar .certificate {
+    font-family: monospace;
+    font-size: 8pt;
+  }
+
+  @media (max-width: 768px) {
+    body { padding: 16px; }
+    .comparison-header h1 { font-size: 16pt; }
+    .comparison-header .meta { flex-wrap: wrap; gap: 8px 16px; }
+    .columns { grid-template-columns: 1fr; }
+    .option-column { padding: 16px; }
+    .question { font-size: 11pt; padding: 12px 16px; }
+    .compilation-bar { flex-direction: column; gap: 8px; text-align: center; }
+  }
+
+  @media print {
+    body { background: #fff; color: #1a1a1a; padding: 20px; }
+    .comparison-header h1 { -webkit-text-fill-color: #1a1a1a; background: none; }
+    .option-column, .verdict-panel, .compilation-bar { border-color: #ddd; background: #fafafa; }
+    .badge { border: 1px solid #ccc; }
+    .question { background: #f0f4ff; border-left-color: #3b82f6; }
+    .claim-item { background: #f5f5f5; }
+  }
+</style>
+</head>
+<body>
+
+<header class="comparison-header" role="banner">
+  <h1>{{TITLE}}</h1>
+  <div class="meta">
+    <span>Sprint: <strong>{{SPRINT_NAME}}</strong></span>
+    <span>Template: Comparison</span>
+  </div>
+</header>
+
+<div class="question" role="heading" aria-level="2">{{QUESTION}}</div>
+
+<section class="columns" aria-label="Option columns">
+  {{OPTION_COLUMNS}}
+  <!-- Structure per column: .option-column > .option-name + .section-label
+       + .claim-item (.claim-text + .claim-meta > .badge) + .risk-list + .constraint-list -->
+</section>
+
+<section class="verdict-panel" aria-label="Verdict">
+  <div class="verdict-label">Verdict</div>
+  <div class="verdict-text">{{VERDICT}}</div>
+  <div class="verdict-rationale">{{VERDICT_RATIONALE}}</div>
+</section>
+
+<footer class="compilation-bar" role="contentinfo">
+  <div>Compiled with barn</div>
+  <div class="certificate">{{CERTIFICATE_HASH}}</div>
+</footer>
+
+</body>
+</html>

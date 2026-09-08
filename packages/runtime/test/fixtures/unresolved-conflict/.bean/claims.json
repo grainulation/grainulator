@@ -1,0 +1,34 @@
+[
+	{
+		"id": "c1",
+		"type": "factual",
+		"topic": "schema",
+		"content": "c1 content",
+		"source": {
+			"origin": "codebase",
+			"artifact": null,
+			"connector": null
+		},
+		"evidence": "tested",
+		"status": "active",
+		"conflicts_with": ["c2"],
+		"resolved_by": null,
+		"tags": []
+	},
+	{
+		"id": "c2",
+		"type": "factual",
+		"topic": "schema",
+		"content": "c2 content",
+		"source": {
+			"origin": "docs",
+			"artifact": null,
+			"connector": null
+		},
+		"evidence": "tested",
+		"status": "active",
+		"conflicts_with": [],
+		"resolved_by": null,
+		"tags": []
+	}
+]

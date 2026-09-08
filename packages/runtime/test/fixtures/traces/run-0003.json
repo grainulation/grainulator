@@ -1,0 +1,20 @@
+{
+	"schema_version": "trace/v0",
+	"run_id": "run-0003",
+	"goal": "g3",
+	"started_at": 1,
+	"ended_at": 2,
+	"status": "budget-exceeded",
+	"certificate": "c3",
+	"rounds": 5,
+	"pivot_count": 2,
+	"blockers_opened": 1,
+	"blockers_closed": 0,
+	"blocker_codes": ["E_CONFLICT"],
+	"verifier_verdicts": [
+		{ "verifier": "unit", "verdict": "fail", "claim": "c1" }
+	],
+	"residuals": [],
+	"artifacts_changed": [],
+	"metadata": {}
+}

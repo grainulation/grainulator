@@ -1,0 +1,59 @@
+{
+  "name": "@grainulation/bean",
+  "version": "2.1.0",
+  "description": "A recursive convergence loop for Claude Code and Codex: investigate, record evidence in a claim ledger, compile, revise beliefs, and loop until converged. Ships bean-check, a zero-dependency convergence compiler that exits nonzero until the loop converges; grainulator/wheat optional. Verbose by default.",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "bean-check": "./bin/bean-check.js"
+  },
+  "files": [
+    ".claude-plugin/",
+    ".codex-plugin/",
+    "skills/",
+    "bin/",
+    "schemas/",
+    "install.sh",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node test/smoke.test.js && node test/codex-portability.test.js && node test/bean-check.test.js",
+    "typecheck": "tsc --noEmit",
+    "format": "npx prettier@3.3 --write .",
+    "format:check": "npx prettier@3.3 --check .",
+    "test:conformance": "node test/conformance.mjs"
+  },
+  "keywords": [
+    "execution-discipline",
+    "stage-plan",
+    "delegation",
+    "verification",
+    "self-critique",
+    "codex",
+    "blindspot",
+    "fable-mode",
+    "claude",
+    "skill"
+  ],
+  "author": "grainulation contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grainulation/bean.git"
+  },
+  "bugs": {
+    "url": "https://github.com/grainulation/bean/issues"
+  },
+  "homepage": "https://github.com/grainulation/bean",
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

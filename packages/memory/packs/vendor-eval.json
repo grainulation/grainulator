@@ -1,0 +1,219 @@
+{
+  "name": "Vendor Evaluation Framework",
+  "description": "Enterprise due diligence framework for evaluating vendors and third-party tools. Covers security posture, compliance, pricing, integration, and operational risk. Drop into any vendor assessment sprint.",
+  "version": "1.0.0",
+  "claims": [
+    {
+      "id": "vend-001",
+      "type": "constraint",
+      "topic": "security posture assessment",
+      "content": "Vendor must hold SOC 2 Type II certification with a clean audit report from the most recent period. Request the full report, not just the bridge letter. If no SOC 2, require ISO 27001 or equivalent third-party security attestation.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": "AICPA Trust Services Criteria",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vendor", "security", "soc2", "due-diligence"]
+    },
+    {
+      "id": "vend-002",
+      "type": "constraint",
+      "topic": "data residency and sovereignty",
+      "content": "Vendor must disclose all data processing locations. For EU customers: data must reside in EEA or be covered by Standard Contractual Clauses. For regulated industries: verify no data leaves approved jurisdictions.",
+      "source": {
+        "origin": "regulation",
+        "artifact": "GDPR Articles 44-49",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vendor", "data-residency", "gdpr", "sovereignty"]
+    },
+    {
+      "id": "vend-003",
+      "type": "constraint",
+      "topic": "SSO and identity integration",
+      "content": "Vendor must support SAML 2.0 or OIDC for SSO. SCIM provisioning required for teams > 50 users. Verify: does SSO work with your IdP (Okta, Azure AD, Google Workspace)? Test before signing.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vendor", "sso", "identity", "integration"]
+    },
+    {
+      "id": "vend-004",
+      "type": "risk",
+      "topic": "vendor lock-in assessment",
+      "content": "Evaluate data export capabilities before signing. Key questions: (1) Can you export all your data in standard formats? (2) What's the export process and timeline? (3) Is there an API for continuous data extraction? (4) What happens to your data after contract termination?",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vendor", "lock-in", "data-portability", "risk"]
+    },
+    {
+      "id": "vend-005",
+      "type": "constraint",
+      "topic": "pricing model analysis",
+      "content": "Analyze total cost of ownership: base license + per-seat + overage + implementation + training + integration. Get pricing in writing for current headcount AND 2x growth. Negotiate multi-year for 20-40% discount. Compare against at least 2 alternatives.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vendor", "pricing", "tco", "negotiation"]
+    },
+    {
+      "id": "vend-006",
+      "type": "risk",
+      "topic": "vendor financial viability",
+      "content": "Assess vendor financial health: funding stage, runway, revenue trajectory, customer count. For startups: what happens if they shut down? For public companies: check last 2 quarterly earnings. A vendor going bankrupt mid-contract is an operational risk.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vendor", "financial", "viability", "risk"]
+    },
+    {
+      "id": "vend-007",
+      "type": "constraint",
+      "topic": "SLA and support requirements",
+      "content": "Define minimum SLA: uptime guarantee (99.9% = 8.76h downtime/year), response times by severity (P1: 15min, P2: 1h, P3: 4h, P4: 24h), communication channels, escalation path, and financial penalties for SLA breach.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vendor", "sla", "support", "uptime"]
+    },
+    {
+      "id": "vend-008",
+      "type": "constraint",
+      "topic": "API and integration capabilities",
+      "content": "Vendor must provide a documented REST or GraphQL API with: versioning policy, rate limits, webhook support, and sandbox/staging environment. SDKs for your primary languages are a strong positive signal.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vendor", "api", "integration", "developer-experience"]
+    },
+    {
+      "id": "vend-009",
+      "type": "risk",
+      "topic": "subprocessor chain risk",
+      "content": "Vendor's subprocessors inherit your data risk. Request the full subprocessor list. Evaluate: (1) How many subprocessors? (2) What data does each access? (3) Are they SOC 2 compliant? (4) Does the vendor notify you of subprocessor changes?",
+      "source": {
+        "origin": "regulation",
+        "artifact": "GDPR Article 28",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vendor", "subprocessors", "supply-chain", "gdpr"]
+    },
+    {
+      "id": "vend-010",
+      "type": "recommendation",
+      "topic": "vendor evaluation process",
+      "content": "Structured evaluation process: (1) Define requirements as constraints before evaluating. (2) Score each vendor against constraints independently. (3) Run a proof-of-concept with top 2 candidates. (4) Check references — talk to customers at similar scale. (5) Negotiate contract with clear exit clauses.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vendor", "process", "evaluation", "recommendation"]
+    },
+    {
+      "id": "vend-011",
+      "type": "factual",
+      "topic": "vendor due diligence timeline",
+      "content": "Enterprise vendor due diligence averages 45 days for onboarding. Security questionnaires take days to weeks (400+ questions common). Legal review cycles run 8-12 weeks without pre-prepared documentation. Compressed timelines are possible when vendors provide complete compliance documentation upfront.",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vendor", "timeline", "due-diligence", "enterprise"]
+    },
+    {
+      "id": "vend-012",
+      "type": "constraint",
+      "topic": "IP indemnification",
+      "content": "For AI/ML vendors: require IP indemnification clause covering generated output. Verify: does the vendor indemnify against IP claims from training data? GitHub Copilot Enterprise includes this; many competitors do not.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vendor", "ip-indemnity", "ai", "legal"]
+    }
+  ]
+}

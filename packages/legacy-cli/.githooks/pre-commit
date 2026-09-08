@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+
+# Lint with Biome (skip if npx is not available, but fail on lint errors)
+if command -v npx >/dev/null 2>&1; then
+  npx --no biome check --staged --no-errors-on-unmatched
+fi
+
+# Syntax-check staged JS files
+for f in $(git diff --cached --name-only --diff-filter=ACM -- '*.js'); do
+  node --check "$f"
+done

@@ -1,0 +1,19 @@
+{
+  "title": "Changelog",
+  "description": "Sprint changelog showing what changed since last compile. Timeline view with new claims, resolved conflicts, and evidence upgrades.",
+  "tags": ["changelog", "history", "timeline", "diff"],
+  "author": "grainulation",
+  "version": "1.0.0",
+  "exportPresets": [
+    { "name": "pdf", "format": "pdf" },
+    { "name": "markdown-outline", "format": "md" }
+  ],
+  "seedPacks": [],
+  "scaffoldConfig": {
+    "defaultPlaceholders": {
+      "TITLE": "Sprint Changelog",
+      "SPRINT_NAME": "Untitled Sprint"
+    },
+    "postInit": ["load-claims", "diff-previous-compile"]
+  }
+}

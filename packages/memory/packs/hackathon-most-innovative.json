@@ -1,0 +1,179 @@
+{
+  "name": "Hackathon: Most Innovative",
+  "description": "Scoring rubric and seed claims for the 'Most Innovative' hackathon category. Weights type diversity and recommendation ratio heavily — rewards creative, wide-ranging research with novel insights.",
+  "version": "1.0.0",
+  "claims": [
+    {
+      "id": "hinn-001",
+      "type": "constraint",
+      "topic": "type diversity scoring",
+      "content": "Type diversity sub-score = (distinct_types / 6) * 100. Weight: 30% — the dominant factor. Innovative sprints explore problems from multiple angles: constraints, risks, estimates, recommendations, not just facts.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "scoring", "type-diversity", "most-innovative"]
+    },
+    {
+      "id": "hinn-002",
+      "type": "constraint",
+      "topic": "recommendation ratio scoring",
+      "content": "Recommendation ratio sub-score = (recommendation_claims / total_claims) * 100. Weight: 25%. Innovative sprints produce actionable insights, not just observations. High recommendation ratio signals original thinking.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "scoring", "recommendations", "most-innovative"]
+    },
+    {
+      "id": "hinn-003",
+      "type": "constraint",
+      "topic": "evidence tier scoring",
+      "content": "Evidence tier sub-score uses weighted sum normalized to 0-100. Weight: 15%. Even innovative ideas need some grounding — but less weight than rigor category.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "scoring", "evidence-tier", "most-innovative"]
+    },
+    {
+      "id": "hinn-004",
+      "type": "constraint",
+      "topic": "challenge depth scoring",
+      "content": "Challenge depth sub-score = (challenge_claims + resolved_conflicts) / total_claims * 100. Weight: 15%. Innovation often emerges from challenging assumptions and resolving conflicting viewpoints.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "scoring", "challenge-depth", "most-innovative"]
+    },
+    {
+      "id": "hinn-005",
+      "type": "constraint",
+      "topic": "corroboration scoring",
+      "content": "Corroboration sub-score = witnessed_claims / total_claims * 100. Weight: 15%. Cross-referencing diverse sources is a hallmark of innovative research that synthesizes across domains.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "scoring", "corroboration", "most-innovative"]
+    },
+    {
+      "id": "hinn-006",
+      "type": "recommendation",
+      "topic": "innovation signals",
+      "content": "Signals of innovation in a wheat sprint: (1) cross-domain tag diversity, (2) claims that bridge multiple topics, (3) recommendations that propose novel combinations, (4) challenges to conventional wisdom with evidence.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "innovation-signals", "most-innovative"]
+    },
+    {
+      "id": "hinn-007",
+      "type": "risk",
+      "topic": "diversity gaming",
+      "content": "Teams may add shallow claims of all 6 types just to maximize diversity score. Counter: human judges in final round assess whether type usage is genuine (does the 'risk' claim identify a real risk?).",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "gaming", "type-diversity", "risk"]
+    },
+    {
+      "id": "hinn-008",
+      "type": "factual",
+      "topic": "pointwise rubric evaluation",
+      "content": "Research on automated evaluation shows category-specific rubrics outperform generic rubrics. Each hackathon category needs its own weighted rubric — 'Most Innovative' values different signals than 'Most Rigorous'.",
+      "source": {
+        "origin": "research",
+        "artifact": "https://arxiv.org/html/2503.23989v1",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "rubric", "evaluation", "best-practice"]
+    },
+    {
+      "id": "hinn-009",
+      "type": "recommendation",
+      "topic": "non-technical fairness",
+      "content": "Non-technical participants must not be disadvantaged. Guided mode + smart defaults normalize quality. Judge on output quality — insight depth and novelty — not tool proficiency.",
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "fairness", "non-technical", "most-innovative"]
+    },
+    {
+      "id": "hinn-010",
+      "type": "recommendation",
+      "topic": "human judge criteria",
+      "content": "Human judges for 'Most Innovative' score on: (1) novelty of approach — did the team explore an unexpected angle? (2) synthesis quality — are diverse findings woven into coherent insight? (3) practical creativity — are recommendations actionable and non-obvious?",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "human-judging", "criteria", "most-innovative"]
+    }
+  ]
+}

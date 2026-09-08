@@ -1,0 +1,29 @@
+{
+  "title": "Request for Comments",
+  "description": "RFC / design doc format for engineering proposals. Includes problem statement, proposed solution, alternatives with trade-off analysis, open questions from unresolved claims, rollout plan, and full claim inventory appendix.",
+  "tags": ["rfc", "design-doc", "proposal", "review", "engineering"],
+  "author": "grainulation",
+  "version": "1.0.0",
+  "exportPresets": [
+    { "name": "pdf", "format": "pdf" },
+    { "name": "static-site", "format": "html" },
+    { "name": "markdown-outline", "format": "md" }
+  ],
+  "seedPacks": ["architecture", "api-design"],
+  "scaffoldConfig": {
+    "defaultPlaceholders": {
+      "RFC_NUMBER": "000",
+      "TITLE": "Untitled RFC",
+      "AUTHOR": "",
+      "STATUS": "status-draft",
+      "DATE": "",
+      "PROBLEM": "",
+      "PROPOSAL": "",
+      "ALTERNATIVES": "",
+      "OPEN_QUESTIONS": "",
+      "ROLLOUT": "",
+      "CLAIM_APPENDIX": ""
+    },
+    "postInit": ["load-claims", "compile-brief"]
+  }
+}

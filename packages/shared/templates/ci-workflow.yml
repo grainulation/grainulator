@@ -1,0 +1,52 @@
+# Grainulation CI Workflow Template
+#
+# Reusable GitHub Actions workflow for all 8 grainulation repos.
+# Copy this file to .github/workflows/ci.yml in each repo.
+#
+# What it does:
+#   1. Runs npm test across Node 18, 20, 22
+#   2. Verifies zero npm dependencies (core ecosystem constraint d001)
+#   3. Dry-run npm pack to catch packaging issues before publish
+#
+# Addresses blind spots r042/r059: no GitHub Actions workflow for any of the 8 repos.
+
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm test
+
+  zero-dep-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify zero dependencies
+        run: |
+          node -e "
+            const pkg = require('./package.json');
+            if (pkg.dependencies && Object.keys(pkg.dependencies).length > 0) {
+              console.error('Found dependencies:', pkg.dependencies);
+              process.exit(1);
+            }
+            console.log('Zero dependencies verified');
+          "
+
+  publish-dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm pack --dry-run

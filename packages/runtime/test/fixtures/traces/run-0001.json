@@ -1,0 +1,18 @@
+{
+	"schema_version": "trace/v0",
+	"run_id": "run-0001",
+	"goal": "g1",
+	"started_at": 1,
+	"ended_at": 2,
+	"status": "ready",
+	"certificate": "c1",
+	"rounds": 1,
+	"pivot_count": 0,
+	"blockers_opened": 1,
+	"blockers_closed": 1,
+	"blocker_codes": ["E_OPEN_RISK"],
+	"verifier_verdicts": [],
+	"residuals": [{ "id": "r1", "reason": "no write access to staging" }],
+	"artifacts_changed": [],
+	"metadata": {}
+}

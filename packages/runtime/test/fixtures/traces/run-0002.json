@@ -1,0 +1,18 @@
+{
+	"schema_version": "trace/v0",
+	"run_id": "run-0002",
+	"goal": "g2",
+	"started_at": 1,
+	"ended_at": 2,
+	"status": "converged-with-residuals",
+	"certificate": "c2",
+	"rounds": 4,
+	"pivot_count": 3,
+	"blockers_opened": 2,
+	"blockers_closed": 1,
+	"blocker_codes": ["E_CONFLICT", "E_OPEN_RISK"],
+	"verifier_verdicts": [],
+	"residuals": [{ "id": "r2", "reason": "No  write access to  staging" }],
+	"artifacts_changed": [],
+	"metadata": {}
+}

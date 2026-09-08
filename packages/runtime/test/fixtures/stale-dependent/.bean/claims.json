@@ -1,0 +1,32 @@
+[
+	{
+		"id": "c1",
+		"type": "factual",
+		"topic": "schema",
+		"content": "c1 content",
+		"source": {
+			"origin": "stakeholder"
+		},
+		"evidence": "tested",
+		"status": "superseded",
+		"conflicts_with": [],
+		"depends_on": [],
+		"resolved_by": null,
+		"tags": []
+	},
+	{
+		"id": "c2",
+		"type": "recommendation",
+		"topic": "approach",
+		"content": "c2 content",
+		"source": {
+			"origin": "stakeholder"
+		},
+		"evidence": "tested",
+		"status": "active",
+		"conflicts_with": [],
+		"depends_on": ["c1"],
+		"resolved_by": null,
+		"tags": []
+	}
+]

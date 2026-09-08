@@ -1,0 +1,78 @@
+{
+  "scope": "local dogfood consolidation and compatibility review",
+  "issues": [
+    {
+      "path": "packages/evidence/lib/claims-ops.js",
+      "severity": "high",
+      "status": "fixed",
+      "finding": "Unserialized ledger mutations and nonpersistent resolution rationale",
+      "verification": "test/dogfood/integrity.test.mjs"
+    },
+    {
+      "path": "packages/memory/lib/import-export.js",
+      "severity": "high",
+      "status": "fixed",
+      "finding": "Imports discarded sprint envelope and could reuse IDs",
+      "verification": "test/dogfood/integrity.test.mjs"
+    },
+    {
+      "path": "site/research.html",
+      "severity": "high",
+      "status": "fixed",
+      "finding": "Failed live research substituted canned claims under a user question",
+      "verification": "scripts/demo-check.mjs"
+    },
+    {
+      "path": "../grainulation-dogfood/site/index.html",
+      "severity": "medium",
+      "status": "fixed",
+      "finding": "Old organization page presented eight separate tools and overflowed on phone and tablet; replaced with a new single-product organization site.",
+      "verification": "scripts/organization-check.mjs: four responsive widths, keyboard links, local product navigation, no-JS content; organization SEO checks."
+    },
+    {
+      "path": "docs/ADAPTERS.md",
+      "severity": "medium",
+      "status": "documented-limitation",
+      "claude_behavior": "Existing plugin integrates through local MCP and host hooks",
+      "codex_gap": "Native lifecycle enforcement is not established by CLI/MCP access alone",
+      "recommended_fallback": "Use CLI or printed MCP config for evidence; use managed command runner for bounded tasks"
+    },
+    {
+      "path": "site/index.html",
+      "severity": "medium",
+      "status": "fixed",
+      "finding": "Old demo was slow and did not explain how Grainulator fits around existing capable models; user requested same-tab GitHub links and retention of the background",
+      "verification": "scripts/workbench-check.mjs and scripts/record-handoff.mjs; four responsive widths passed, no external homepage requests, real local guard trace recorded with synthetic claims"
+    },
+    {
+      "path": "site/research/",
+      "severity": "medium",
+      "status": "fixed",
+      "finding": "Playground lacked portable configuration and explanations of product-specific capabilities. Added shared browser/CLI sessions, feature controls with real effects, validated claims, and a pre-synthesis evidence gate.",
+      "verification": "26 core tests plus scripts/playground-check.mjs. Live paid-provider quality remains unverified."
+    },
+    {
+      "path": "package.json",
+      "severity": "high",
+      "status": "open",
+      "finding": "Fresh local tarball installation succeeds but installed CLI fails to resolve internal @grainulation/barn workspace alias.",
+      "verification": "scripts/package-isolation-check.mjs; .dogfood/package-isolation-audit.json"
+    },
+    {
+      "path": ".github/workflows/deploy.yml",
+      "severity": "high",
+      "status": "open",
+      "finding": "Static deployment artifact has no local research API; clean-route parity and public playground behavior are not validated.",
+      "verification": "Code review of deploy.yml and scripts/preview.mjs; deployment itself not exercised."
+    },
+    {
+      "path": "site/research/session.js",
+      "severity": "medium",
+      "status": "fixed",
+      "finding": "Valid large Unicode exports exceeded the former browser/CLI file-import ceiling. Shared 8 MiB export/import limit now preserves round trips.",
+      "verification": "27 core regressions including a real CLI preparation above the old limit."
+    }
+  ],
+  "readiness": "local-dogfood-only",
+  "readiness_report": "docs/READINESS.md"
+}

@@ -1,0 +1,50 @@
+[
+	{
+		"id": "c1",
+		"type": "constraint",
+		"topic": "scope",
+		"content": "c1 content",
+		"source": {
+			"origin": "stakeholder",
+			"artifact": null,
+			"connector": null
+		},
+		"evidence": "stated",
+		"status": "active",
+		"conflicts_with": [],
+		"resolved_by": null,
+		"tags": []
+	},
+	{
+		"id": "c2",
+		"type": "factual",
+		"topic": "schema",
+		"content": "c2 content",
+		"source": {
+			"origin": "codebase",
+			"artifact": null,
+			"connector": null
+		},
+		"evidence": "tested",
+		"status": "active",
+		"conflicts_with": [],
+		"resolved_by": null,
+		"tags": ["load-bearing"]
+	},
+	{
+		"id": "c3",
+		"type": "recommendation",
+		"topic": "approach",
+		"content": "c3 content",
+		"source": {
+			"origin": "analysis",
+			"artifact": null,
+			"connector": null
+		},
+		"evidence": "documented",
+		"status": "active",
+		"conflicts_with": [],
+		"resolved_by": null,
+		"tags": []
+	}
+]

@@ -1,0 +1,215 @@
+{
+  "name": "CI/CD and Deployment",
+  "description": "Pipeline design patterns, deployment strategies (blue-green, canary, rolling), feature flags, rollback procedures, and artifact management for continuous delivery.",
+  "version": "1.0.0",
+  "claims": [
+    {
+      "id": "cicd-001",
+      "type": "constraint",
+      "topic": "pipeline time budget",
+      "content": "CI pipelines should complete in under 10 minutes for the critical path (lint, test, build). Pipelines over 15 minutes measurably reduce PR throughput and encourage developers to batch changes, increasing merge conflict risk. Parallelize test suites and cache dependencies aggressively.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["ci-cd", "pipeline", "performance", "developer-experience"]
+    },
+    {
+      "id": "cicd-002",
+      "type": "factual",
+      "topic": "blue-green deployment mechanics",
+      "content": "Blue-green deployment maintains two identical production environments. Traffic routes to blue (current) while green receives the new version. After green passes health checks, traffic switches via load balancer. Rollback is instant (switch back to blue). Cost: 2x infrastructure during deployment window. Database migrations must be backwards-compatible since both versions share the database.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["ci-cd", "deployment", "blue-green", "rollback"]
+    },
+    {
+      "id": "cicd-003",
+      "type": "recommendation",
+      "topic": "canary deployment percentage",
+      "content": "Canary deployments should start at 1-5% of traffic, bake for 10-15 minutes while monitoring error rates and latency, then expand to 25%, 50%, 100% with automated rollback if error rate exceeds 1% above baseline or p99 latency increases by more than 50%. Full rollout should take 30-60 minutes minimum.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["ci-cd", "deployment", "canary", "progressive-rollout"]
+    },
+    {
+      "id": "cicd-004",
+      "type": "risk",
+      "topic": "database migration coupling",
+      "content": "Deploying application code and database migrations simultaneously causes failures if the migration is slow or fails mid-deploy. Decouple migrations: deploy migration first (must be backwards-compatible with current code), verify, then deploy application code. Use expand-and-contract pattern for schema changes.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["ci-cd", "database", "migrations", "deployment"]
+    },
+    {
+      "id": "cicd-005",
+      "type": "recommendation",
+      "topic": "feature flag lifecycle",
+      "content": "Feature flags should have an owner, a creation date, and a planned removal date. Flags older than 90 days without removal should trigger a tech debt alert. Stale feature flags accumulate as dead code paths and make testing combinatorially complex. Use a flag management service (LaunchDarkly, Unleash, or custom) rather than config files.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["ci-cd", "feature-flags", "tech-debt", "lifecycle"]
+    },
+    {
+      "id": "cicd-006",
+      "type": "constraint",
+      "topic": "immutable build artifacts",
+      "content": "Build artifacts must be immutable: the exact same artifact (Docker image, binary, package) that passes CI is the one deployed to staging and production. Never rebuild for different environments. Use environment variables or config injection for environment-specific settings. Tag artifacts with git SHA for traceability.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["ci-cd", "artifacts", "immutability", "docker"]
+    },
+    {
+      "id": "cicd-007",
+      "type": "risk",
+      "topic": "rollback without data rollback",
+      "content": "Code rollbacks do not roll back data. If version N+1 wrote data in a new format, rolling back to version N may leave incompatible data in the database. Design writes to be forward-compatible: version N should tolerate data written by N+1. This constraint makes additive-only schema changes critical.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["ci-cd", "rollback", "database", "data-compatibility"]
+    },
+    {
+      "id": "cicd-008",
+      "type": "factual",
+      "topic": "DORA metrics benchmarks",
+      "content": "DORA elite team benchmarks (2023): deployment frequency (on-demand, multiple per day), lead time for changes (less than 1 hour), mean time to restore (less than 1 hour), change failure rate (0-15%). High performers deploy 973x more frequently than low performers. Measure these four metrics to assess CI/CD health.",
+      "source": { "origin": "industry", "artifact": null, "connector": null },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["ci-cd", "dora", "metrics", "engineering-effectiveness"]
+    },
+    {
+      "id": "cicd-009",
+      "type": "recommendation",
+      "topic": "trunk-based development",
+      "content": "Trunk-based development (short-lived branches merged to main within 1-2 days) correlates with higher DORA metrics than Gitflow. Long-lived feature branches (over 3 days) have exponentially higher merge conflict probability. Use feature flags instead of feature branches for incomplete work.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["ci-cd", "branching", "trunk-based", "gitflow"]
+    },
+    {
+      "id": "cicd-010",
+      "type": "recommendation",
+      "topic": "test pyramid enforcement",
+      "content": "Enforce the test pyramid in CI: 70% unit tests (fast, isolated), 20% integration tests (database, APIs), 10% end-to-end tests (browser, full stack). Inverted pyramids (heavy E2E, few unit tests) result in slow, flaky pipelines. Quarantine flaky tests immediately rather than retrying them.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["ci-cd", "testing", "test-pyramid", "flaky-tests"]
+    },
+    {
+      "id": "cicd-011",
+      "type": "risk",
+      "topic": "secret exposure in CI logs",
+      "content": "CI systems frequently leak secrets in build logs through debug output, error messages, or environment variable dumps. Use secret masking features in your CI platform. Never pass secrets as command-line arguments (visible in process listings). Audit CI logs quarterly for accidental secret exposure.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["ci-cd", "security", "secrets", "logs"]
+    },
+    {
+      "id": "cicd-012",
+      "type": "estimate",
+      "topic": "deploy frequency impact on MTTR",
+      "content": "Teams deploying daily have a mean time to restore (MTTR) of 1-4 hours. Teams deploying weekly average 1-3 days MTTR. Teams deploying monthly average 1-2 weeks MTTR. Smaller, more frequent deploys are easier to diagnose because the blast radius of each change is smaller.",
+      "source": { "origin": "industry", "artifact": null, "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["ci-cd", "deploy-frequency", "mttr", "reliability"]
+    }
+  ]
+}

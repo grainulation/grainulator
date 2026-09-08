@@ -1,0 +1,403 @@
+{
+  "name": "Release Readiness",
+  "description": "Reusable playbook for moving an npm-published ecosystem from 'works on my machine' / 'pet project' to production-grade release. Covers CI gates, publish workflows, documentation honesty, test coverage, security hygiene, and the specific gotchas that bite multi-package releases. Distilled from a real 38-claim production-polish sprint against a 9-repo ecosystem at ~10k monthly downloads. Pull this pack at the start of any 'prep for v1' sprint.",
+  "version": "1.0.0",
+  "claims": [
+    {
+      "id": "release-001",
+      "type": "constraint",
+      "topic": "ci-gate-honesty",
+      "content": "Any 'zero dependencies' or similar marketing claim enforced in CI must match reality. If the CI step `if dependencies != 0 then fail` exists, the package must genuinely have zero runtime deps. If the package has internal-only deps, the gate should whitelist them (e.g. `@yourorg/*`) and reject third-party, not reject all. A self-contradicting gate means main CI is either red-and-bypassed or the gate is being skipped — both are worse than no gate.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-04-18T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["ci", "honesty", "ship-blocker"]
+    },
+    {
+      "id": "release-002",
+      "type": "recommendation",
+      "topic": "publish-workflow",
+      "content": "Every publishable package must publish via a tag-triggered CI workflow, not a desk `npm publish`. The workflow should: (1) trigger on `v*` tag push, (2) verify tag matches package.json version, (3) run tests, (4) `npm publish --provenance --access public` with `permissions: id-token: write`. This gives cryptographic linkage between git commit and npm tarball, eliminates shared-credential leakage, and reproducibility. Adopt npm Trusted Publishers to remove NPM_TOKEN entirely.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-04-18T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["ci", "supply-chain", "ship-blocker"]
+    },
+    {
+      "id": "release-003",
+      "type": "risk",
+      "topic": "trusted-publishing-npm-version",
+      "content": "npm trusted publishing (OIDC auth without NPM_TOKEN) requires npm >= 11.5.1 (GA Sept 2025). Node 20 LTS bundles npm 10.x. A publish.yml that skips `npm install -g npm@latest` before the publish step silently falls back to classic auth, fails 401, and the first publish blows up publicly. Either add the upgrade step or pin node-version to a version whose bundled npm meets the floor.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-04-18T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["ci", "npm", "ship-blocker"]
+    },
+    {
+      "id": "release-004",
+      "type": "constraint",
+      "topic": "marketing-claim-verification",
+      "content": "Every number in a README is a claim that can be tested. 'Zero dependencies', '24 formats', '131 curated claims', 'under 3 seconds' — each must be verified against the actual behavior before publish. A pre-flight grep + code check catches drift: README count vs filesystem count, performance claim vs timed run, 'works offline' vs network calls. Docs that overstate are worse than docs that understate — they burn credibility.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-04-18T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["docs", "honesty", "ship-blocker"]
+    },
+    {
+      "id": "release-005",
+      "type": "constraint",
+      "topic": "changelog-currency",
+      "content": "CHANGELOG top entry must match the current package.json version. Drift of even one minor version signals 'abandoned project' to anyone doing `npm info`. Backfill missing entries before v1 by mining `git log --oneline <prev-tag>..HEAD` per version boundary; rewrite terse commit messages into user-facing entries grouped by Added / Changed / Fixed / Removed (Keep a Changelog format). Drop pure version-bump and formatting commits.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-04-18T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["docs", "release"]
+    },
+    {
+      "id": "release-006",
+      "type": "constraint",
+      "topic": "oss-credibility-files",
+      "content": "Every repo must ship: LICENSE, README.md, CHANGELOG.md, CODE_OF_CONDUCT.md, CONTRIBUTING.md, SECURITY.md. SECURITY.md is the most commonly missing and the most damaging when absent — for a tool that touches the user's filesystem, spawns subprocesses, or stores credentials, the absence says 'nobody is maintaining this.' A 60-line template covering supported versions, private disclosure path (GitHub Security Advisories + maintainer email), 90-day window, and credit policy is the minimum.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-04-18T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["docs", "security", "hygiene"]
+    },
+    {
+      "id": "release-007",
+      "type": "risk",
+      "topic": "tarball-files-enumeration",
+      "content": "`package.json.files[]` that enumerates individual files instead of directories silently drops new additions. If the array lists `lib/index.js, lib/server.js` and later someone adds `lib/helpers.js`, the helpers file is omitted from the tarball — the package installs but crashes at runtime on the missing import. Use directory-level entries (`bin/`, `lib/`, `public/`) and narrow exceptions with `!` rules rather than enumerating. Validate with `npm pack --dry-run` before every release.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-04-18T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["packaging", "ship-blocker"]
+    },
+    {
+      "id": "release-008",
+      "type": "risk",
+      "topic": "process-exit-in-library",
+      "content": "Any code path reachable from a library caller (MCP server, programmatic API, imported helper) must throw Error instead of `process.exit(1)`. An MCP server that `process.exit`s on malformed input kills the entire stdio connection — the Claude Code session sees an MCP disconnect and the user has to restart. Move all `process.exit` calls to the CLI entry point, where they wrap the library call in try/catch. For each public export, ask: 'if this is called from another process that wants to survive the failure, what happens?' If the answer is 'it dies', that's the bug.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-04-18T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["mcp", "reliability", "ship-blocker"]
+    },
+    {
+      "id": "release-009",
+      "type": "risk",
+      "topic": "import-side-effects",
+      "content": "Any module exported via `package.json.exports` must be safe to `import` without side effects — no server boots, no argv parsing, no `process.exit` at module load. Gate CLI behavior behind `if (import.meta.url === \\`file://${process.argv[1]}\\`)` (ESM) or `if (require.main === module)` (CJS). An `exports['./server']` that calls `server.listen()` at module load is a foot-gun: a consumer doing `import '@scope/pkg/server'` to reuse classes gets a live HTTP server on port N and a fatal uncaughtException handler installed globally.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-04-18T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["packaging", "reliability", "ship-blocker"]
+    },
+    {
+      "id": "release-010",
+      "type": "constraint",
+      "topic": "ssrf-on-url-fetch",
+      "content": "Any tool that fetches arbitrary URLs (smart-fetch, preview, webhook caller) must reject RFC1918, loopback, link-local, and cloud-metadata IPs by default. Without this guard an LLM-driven MCP call can exfiltrate AWS credentials from 169.254.169.254/latest/meta-data/iam/security-credentials/. Resolve the hostname, check every returned address (DNS rebinding defense — reject if ANY is private), and re-validate on every redirect hop. Provide an `allowPrivate: true` escape hatch for local dev. Block non-http(s) schemes (file://, gopher://, data:).",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-04-18T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["security", "ssrf", "ship-blocker"]
+    },
+    {
+      "id": "release-011",
+      "type": "risk",
+      "topic": "path-traversal-realpath",
+      "content": "Path-containment checks (`isInsideDir`, `resolveSafe`) that use `path.resolve` alone do NOT follow symlinks. A directory containing a symlink `evil -> /etc` passes every check — and any tool accepting user-supplied paths will happily read /etc/passwd. Use `fs.realpathSync` (with try/catch falling back to logical resolve for not-yet-created paths) before comparison. Applies to any MCP tool or CLI command that takes a file path argument.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-04-18T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["security", "path-traversal"]
+    },
+    {
+      "id": "release-012",
+      "type": "risk",
+      "topic": "command-injection-via-exec",
+      "content": "`child_process.exec` and `execSync` with string interpolation (e.g. `execSync(\\`cmd \"${userPath}\"\\`)`) allow shell injection via filenames containing quotes or shell metacharacters. Always use `execFile`/`execFileSync`/`spawn` with array args and no `shell: true`. The array form never invokes a shell interpreter. Applies to ANY code that spawns a subprocess with user-derived data — including filename-as-CLI-arg patterns like PDF conversion, image processing, git log mining.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-04-18T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["security", "injection"]
+    },
+    {
+      "id": "release-013",
+      "type": "constraint",
+      "topic": "test-coverage-mcp-surface",
+      "content": "For each MCP tool exposed, write a test that: (1) spawns the server over stdio, (2) sends a valid `initialize`, (3) issues `tools/call` with representative args, (4) asserts on response shape + status, (5) covers at least one error path (missing arg, invalid input). The MCP protocol is the primary integration surface with Claude Code — untested tool handlers become silent regressions the moment the schema drifts. External-service tools (HTTP fetchers, API calls) covered only on error paths to avoid network-dependent CI flake.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-04-18T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["testing", "mcp"]
+    },
+    {
+      "id": "release-014",
+      "type": "risk",
+      "topic": "mcp-stdio-pollution",
+      "content": "MCP servers communicate via newline-delimited JSON-RPC 2.0 over stdio. Any `console.log` (stdout) written before the first JSON-RPC response breaks the protocol — clients see malformed JSON and disconnect. Log to stderr only; keep stdout strictly structured. Validate with `echo 'initialize-request' | node serve-mcp.js | head -c 100` — the first byte of stdout must be `{`. Install-prompts, update checks, welcome banners are all common culprits.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-04-18T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["mcp", "protocol"]
+    },
+    {
+      "id": "release-015",
+      "type": "risk",
+      "topic": "publish-order-lockfile-drift",
+      "content": "In a multi-package ecosystem where package B depends on new exports from package A, the publish sequence matters. Tagging B before A is on npm = B's CI `npm ci` resolves A's old version, test fails, publish fails. Even worse: B's package.json says `^1.2.1` but lockfile pins `1.2.0` = `npm ci` errors on mismatch BEFORE ever hitting the registry. Sequence: (1) publish A, (2) refresh B's lockfile via `npm install`, commit, (3) tag B. Never race-tag consumer packages with their dependency.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-04-18T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["release", "coordination"]
+    },
+    {
+      "id": "release-016",
+      "type": "risk",
+      "topic": "dual-package-hazard",
+      "content": "A package that ships both ESM and CJS (conditional exports `{ import, require }`) risks double-instantiation if one consumer's graph loads both variants. Module-level state (feature flags, caches, verbose settings) gets split into two singletons. Before shipping dual-package, audit every top-level `let` / `const` for state that would misbehave under double-load. Either drop the less-used variant or store state in `globalThis` under a namespaced key.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-04-18T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["packaging"]
+    },
+    {
+      "id": "release-017",
+      "type": "recommendation",
+      "topic": "pre-publish-red-team",
+      "content": "Before publish, run at least 4 parallel adversarial audits treating the next 12 hours as real production load (not a demo): (1) fresh-install smoke — pack, install in a tempdir, run every documented primary operation; (2) MCP protocol — adversarial JSON-RPC, malformed payloads, large inputs, concurrent calls, stdout pollution check, SIGTERM clean-shutdown; (3) release plumbing — OIDC + workflow YAML validation, tag↔pkg guard simulation, trusted-publisher config alignment; (4) docs drift — every README command + CLI flag verified against code, marketing numbers counted. Fold findings into the sprint's claims before tagging.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-04-18T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["process", "release"]
+    },
+    {
+      "id": "release-018",
+      "type": "constraint",
+      "topic": "cli-flag-consistency",
+      "content": "Across a multi-tool ecosystem, `--help`, `--version`, `--json`, `--verbose` should behave identically. A user switching between `tool-a --help` and `tool-b --help` (where one uses `help` subcommand, the other uses `--help`) pays an attention tax. Pick one convention per flag, document it in one shared place, and smoke-test every CLI against it before each release.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-04-18T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["cli", "ux"]
+    },
+    {
+      "id": "release-019",
+      "type": "risk",
+      "topic": "r-claim-verification-gate",
+      "content": "Research-phase claims generated from grep-without-verification have a ~40% false-positive rate on architectural duplication. 'File X and file Y look like duplicates' generated by scanning without reading the consumers misses: different semantics (space-separated vs comma-separated args), different transport (OAuth vs env var), different abstraction levels. Gate every `factual` claim about duplication with: grep the fact, READ both files end-to-end, CHECK consumer call sites, then accept or refute. Refute early — the pattern is 'same word, different meaning'.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-04-18T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["process", "claims"]
+    },
+    {
+      "id": "release-020",
+      "type": "recommendation",
+      "topic": "refuted-as-first-class-status",
+      "content": "The research-sprint compiler should support `refuted` as a distinct claim status (alongside active / resolved / conflicted / superseded). During adversarial review, claims get disproven (not replaced by a newer claim on the same topic, which is `superseded`). Without a first-class state, sprints have to misuse `superseded` — losing the audit signal that distinguishes 'earlier idea improved upon' from 'claim was wrong.' The compiler must exclude `refuted` claims from corroboration / coverage calculations — a disproven claim cannot lend evidentiary weight.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-04-18T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["process", "compiler"]
+    },
+    {
+      "id": "release-021",
+      "type": "risk",
+      "topic": "dead-code-deletion-verification",
+      "content": "A static analysis that flags 'X is dead code' must verify three things before deletion: (1) check README and docs/ for X as a documented public API, (2) check package.json.exports / main / bin for X being re-exported, (3) check test/ for X being exercised. Deletion-on-confidence of 'no grep hits in main codebase' misses the 10% of cases where X is a plugin extension point, public API contract, or test-only symbol. Ship dead-code findings as 'candidates for deletion' that require a human + test-suite confirmation, never as direct 'delete this' prescriptions.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-04-18T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["process", "refactoring"]
+    },
+    {
+      "id": "release-022",
+      "type": "constraint",
+      "topic": "lockfile-policy-per-repo",
+      "content": "Every repo in a publishable ecosystem should commit its lockfile (package-lock.json for npm, pnpm-lock.yaml for pnpm). Exceptions require a documented reason. Inconsistent policy is the real problem — one repo committing, another gitignoring — because `npm ci` in CI only works for repos with lockfiles, and the ones without silently drift within their caret ranges. Once a repo has even one runtime dependency, the lockfile is mandatory for reproducible builds.",
+      "source": {
+        "origin": "architecture",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-04-18T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["release", "reproducibility"]
+    }
+  ]
+}

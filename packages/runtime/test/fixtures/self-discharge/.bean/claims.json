@@ -1,0 +1,34 @@
+[
+	{
+		"id": "c1",
+		"type": "risk",
+		"topic": "data",
+		"content": "c1 content",
+		"source": {
+			"origin": "stakeholder",
+			"artifact": null,
+			"connector": null
+		},
+		"evidence": "documented",
+		"status": "active",
+		"conflicts_with": [],
+		"resolved_by": "c1",
+		"tags": []
+	},
+	{
+		"id": "c2",
+		"type": "risk",
+		"topic": "perf",
+		"content": "c2 content",
+		"source": {
+			"origin": "stakeholder",
+			"artifact": null,
+			"connector": null
+		},
+		"evidence": "documented",
+		"status": "active",
+		"conflicts_with": [],
+		"resolved_by": "ghost",
+		"tags": []
+	}
+]

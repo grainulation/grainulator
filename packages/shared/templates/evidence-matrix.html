@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{TITLE}} -- {{SPRINT_NAME}}</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg2: #111827;
+    --bg3: #1e293b;
+    --accent: #3b82f6;
+    --accent-light: #60a5fa;
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.15);
+    --orange: #f59e0b;
+    --orange-dim: rgba(245,158,11,0.15);
+    --red: #e11d48;
+    --red-dim: rgba(225,29,72,0.15);
+    --purple: #a78bfa;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --border: rgba(255,255,255,0.06);
+    --heat-0: rgba(59,130,246,0.00);
+    --heat-1: rgba(59,130,246,0.12);
+    --heat-2: rgba(59,130,246,0.25);
+    --heat-3: rgba(59,130,246,0.40);
+    --heat-4: rgba(59,130,246,0.55);
+    --heat-5: rgba(59,130,246,0.70);
+    --gap-bg: rgba(225,29,72,0.08);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 10pt;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  section {
+    scroll-snap-align: start;
+    min-height: 100vh;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .header-section { justify-content: flex-end; padding-bottom: 80px; }
+  .header-section h1 {
+    font-size: 28pt;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 12px;
+  }
+  .meta-row {
+    display: flex;
+    gap: 24px;
+    color: var(--text-muted);
+    font-size: 10pt;
+  }
+  .coverage-badge {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 6px;
+    font-size: 14pt;
+    font-weight: 800;
+    color: var(--accent-light);
+    background: rgba(59,130,246,0.12);
+    margin-top: 16px;
+  }
+  .panel {
+    background: var(--bg2);
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid var(--border);
+  }
+  .panel-title {
+    font-size: 9pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+  .matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9pt;
+  }
+  .matrix-table th {
+    padding: 10px 12px;
+    text-align: center;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 8pt;
+    color: var(--text-dim);
+    background: var(--bg3);
+    border-bottom: 2px solid var(--border);
+  }
+  .matrix-table th:first-child { text-align: left; }
+  .matrix-table td {
+    padding: 10px 12px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .matrix-table td:first-child {
+    text-align: left;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 8pt;
+    letter-spacing: 0.06em;
+    color: var(--text);
+  }
+  .matrix-table td.total-cell {
+    color: var(--text);
+    font-weight: 800;
+    background: var(--bg3);
+  }
+  .matrix-table td.gap-cell {
+    background: var(--gap-bg);
+    color: var(--red);
+    font-style: italic;
+    font-size: 8pt;
+  }
+  .matrix-table td.heat-1 { background: var(--heat-1); }
+  .matrix-table td.heat-2 { background: var(--heat-2); }
+  .matrix-table td.heat-3 { background: var(--heat-3); }
+  .matrix-table td.heat-4 { background: var(--heat-4); }
+  .matrix-table td.heat-5 { background: var(--heat-5); color: #fff; }
+  .gap-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 9pt;
+    color: var(--text-muted);
+  }
+  .gap-item:last-child { border-bottom: none; }
+  .gap-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--red);
+    flex-shrink: 0;
+  }
+  .compilation-bar {
+    margin-top: 32px;
+    padding: 16px 24px;
+    background: var(--bg2);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    font-size: 9pt;
+    color: var(--text-dim);
+  }
+  @media (max-width: 768px) {
+    section { padding: 20px; min-height: auto; }
+    .header-section h1 { font-size: 18pt; }
+    .meta-row { flex-wrap: wrap; gap: 8px; }
+    .matrix-table { font-size: 8pt; }
+    .matrix-table th, .matrix-table td { padding: 6px 8px; }
+    .panel { padding: 16px; overflow-x: auto; }
+  }
+  @media print {
+    html { scroll-snap-type: none; }
+    section { min-height: auto; page-break-inside: avoid; padding: 16px 0; }
+    body { background: #fff; color: #111; }
+    .panel { border-color: #ccc; background: #f9f9f9; }
+    .matrix-table td.gap-cell { background: #fee; }
+    .compilation-bar { background: #f9f9f9; border-color: #ccc; }
+  }
+</style>
+</head>
+<body>
+
+<section class="header-section" aria-label="Evidence matrix header">
+  <h1>{{TITLE}}</h1>
+  <div class="meta-row">
+    <span>Sprint: {{SPRINT_NAME}}</span>
+  </div>
+  <div class="coverage-badge">{{COVERAGE_PCT}}% Coverage</div>
+</section>
+
+<section aria-label="Evidence heatmap">
+  <div class="panel">
+    <div class="panel-title">Claim Type / Evidence Tier Matrix</div>
+    <table class="matrix-table" role="grid" aria-label="Evidence coverage heatmap">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Stated</th>
+          <th>Web</th>
+          <th>Documented</th>
+          <th>Tested</th>
+          <th>Production</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{MATRIX_DATA}}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section aria-label="Gap analysis">
+  <div class="panel">
+    <div class="panel-title">Gap Analysis</div>
+    {{GAP_SUMMARY}}
+  </div>
+</section>
+
+<section aria-label="Compilation footer">
+  <div class="compilation-bar">
+    <div>Compiled with barn</div>
+    <div style="font-family: monospace; font-size: 8pt;">{{CERTIFICATE_HASH}}</div>
+  </div>
+</section>
+
+</body>
+</html>

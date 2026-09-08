@@ -1,0 +1,30 @@
+{
+  "repo_notes": [
+    {
+      "content": "Barn is the shared-utilities foundation of the grainulation ecosystem. It provides sprint detection (by scanning for claims.json), manifest generation (compact JSON indexes under 10KB for AI sessions), the library of HTML templates used by wheat and mill (dark scroll-snap explainers, dashboards, presentation layouts), and a PDF builder. Every other grainulation package (wheat, farmer, mill, silo, harvest, orchard) depends on or integrates with barn. Zero runtime dependencies — standard library only.",
+      "author": "grainulation-core"
+    },
+    {
+      "content": "When documenting barn, emphasize that it is the LOW-LEVEL building block, not a user-facing research tool. Users typically encounter barn transitively through wheat or mill. Barn's API surface is intentionally small and stable: sprint detection, manifest read/write, template rendering, PDF generation. Avoid confusing it with silo (which handles knowledge packs) or mill (which handles output format conversion).",
+      "author": "grainulation-core"
+    }
+  ],
+  "pages": [
+    {
+      "title": "Quick start",
+      "purpose": "Installation via npm (npx @grainulation/barn ...), the 30-second pitch, the minimum example showing sprint detection on an existing claims.json."
+    },
+    {
+      "title": "Core concepts",
+      "purpose": "Sprint detection heuristic (scan for claims.json, rank by git recency), manifest shape (what fields, size budget under 10KB, why AI-session-friendly), template library catalogue (17 templates, when to use each), PDF build pipeline."
+    },
+    {
+      "title": "API reference",
+      "purpose": "Public library exports (sprint detection, manifest helpers, template rendering, build-pdf), CLI surface (bin/barn.js commands and flags), exit codes."
+    },
+    {
+      "title": "Ecosystem integration",
+      "purpose": "How barn relates to wheat (wheat consumes barn's sprint detection + templates), farmer (reads barn-detected sprint state), mill (builds on barn's templates for output formats), silo (indexes barn-produced manifests), harvest, orchard. Dependency direction flows: others -> barn, never the reverse."
+    }
+  ]
+}

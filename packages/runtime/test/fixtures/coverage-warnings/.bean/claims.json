@@ -1,0 +1,23 @@
+[
+	{
+		"id": "c1",
+		"type": "factual",
+		"topic": "t",
+		"content": "a",
+		"evidence": "tested"
+	},
+	{
+		"id": "c2",
+		"type": "factual",
+		"topic": "t",
+		"content": "b",
+		"evidence": "tested"
+	},
+	{
+		"id": "c3",
+		"type": "factual",
+		"topic": "t",
+		"content": "c",
+		"evidence": "tested"
+	}
+]

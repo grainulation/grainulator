@@ -1,0 +1,18 @@
+node_modules/
+.DS_Store
+*.log
+review/
+.farmer-state.json
+bean-stalk.md
+**/.bean/state.json
+**/.bean/runs/
+**/.bean/verdicts-raw/
+
+rs/target/
+/bin/bean-check
+/bin/bean-verify
+/bin/bean-run
+/bin/bean-hook
+
+# internal AppWorld benchmark scratch (harness, run logs, results) — not for the public repo
+benchmark/

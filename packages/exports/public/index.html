@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-tool="mill">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mill</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%230a0e1a'/><text x='32' y='34' text-anchor='middle' dominant-baseline='central' fill='%23a78bfa' font-family='-apple-system,system-ui,sans-serif' font-size='34' font-weight='800'>M</text></svg>">
+  <!-- STYLE 1: shared tokens -->
+  <style>
+:root {
+  --bg: #0a0e1a; --bg2: #111827; --bg3: #1e293b; --bg4: #334155;
+  --fg: #e2e8f0; --fg2: #94a3b8; --fg3: #64748b;
+  --border: #1e293b; --border-subtle: rgba(255,255,255,0.08);
+  --green: #34d399; --red: #f87171; --blue: #60a5fa; --purple: #a78bfa; --orange: #fb923c; --cyan: #22d3ee;
+  --space-xs: 4px; --space-sm: 8px; --space-md: 12px; --space-lg: 16px; --space-xl: 24px; --space-2xl: 32px;
+  --radius: 8px; --radius-sm: 4px; --radius-lg: 12px;
+  --font-sans: -apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
+  --font-mono: 'SF Mono','Cascadia Code','JetBrains Mono','Fira Code',monospace;
+  --text-xs: 9px; --text-sm: 10px; --text-base: 12px; --text-md: 13px; --text-lg: 15px; --text-xl: 18px;
+  --line-height: 1.5;
+  --transition-fast: 0.1s ease; --transition-base: 0.15s ease;
+  /* mill accent */
+  --accent: #a78bfa; --accent-light: #c4b5fd; --accent-dim: rgba(167,139,250,0.10); --accent-border: rgba(167,139,250,0.25);
+}
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: var(--font-sans); background: var(--bg); color: var(--fg);
+  background-image: radial-gradient(ellipse at 20% 50%, rgba(59,130,246,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(167,139,250,0.06) 0%, transparent 50%);
+  font-size: var(--text-md); line-height: var(--line-height);
+  -webkit-font-smoothing: antialiased;
+}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+*:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  </style>
+  <!-- STYLE 2: shared layout -->
+  <style>
+.app { display:grid; grid-template-columns:320px 1fr; grid-template-rows:auto 1fr auto; height:100vh; overflow:hidden }
+.toolbar { grid-column:1/-1; display:flex; align-items:center; padding:4px var(--space-xl); border-bottom:1px solid var(--border); background:rgba(255,255,255,0.08); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); gap:10px }
+.toolbar canvas { flex-shrink:0 }
+.toolbar-spacer { flex:1 }
+.toolbar-right { display:flex; align-items:center; gap:var(--space-sm) }
+.status-dot { width:6px; height:6px; border-radius:50%; background:var(--fg3); flex-shrink:0; transition:background 0.3s,box-shadow 0.3s }
+.status-dot.ok { background:var(--green); box-shadow:0 0 6px rgba(52,199,89,0.5) }
+.reconnect-banner { position:fixed;top:0;left:0;right:0;z-index:9999;padding:8px 16px;background:#92400e;color:#fbbf24;font-size:12px;text-align:center;transform:translateY(-100%);transition:transform .3s;font-family:system-ui,sans-serif }
+.reconnect-banner.visible { transform:translateY(0) }
+.reconnect-banner button { background:none;border:1px solid #fbbf24;color:#fbbf24;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:11px;margin-inline-start:8px }
+.sidebar { background:var(--bg2); border-inline-end:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden }
+.content { display:flex; flex-direction:column; overflow:hidden; min-height:0 }
+.footer { grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; padding:var(--space-xs) var(--space-xl); border-top:1px solid var(--border); background:var(--bg2); font-size:var(--text-xs); color:var(--fg3) }
+.footer-links { display:flex; gap:var(--space-lg) }
+.footer a { color:var(--fg3); text-decoration:none; transition:color var(--transition-fast) }
+.footer a:hover { color:var(--accent) }
+.mobile-nav { display:none; grid-column:1/-1; background:var(--bg2); border-bottom:1px solid var(--border) }
+.mobile-nav-bar { display:flex }
+.mobile-tab { flex:1; padding:12px 0; text-align:center; font-size:12px; font-weight:600; color:var(--fg3); background:none; border:none; border-bottom:2px solid transparent; cursor:pointer; font-family:var(--font-sans) }
+.mobile-tab:hover { color:var(--fg2) }
+.mobile-tab.active { color:var(--accent); border-bottom-color:var(--accent) }
+.welcome { padding:var(--space-xl); max-width:600px; margin:0 auto }
+.welcome h2 { font-size:18px; font-weight:700; color:var(--fg); margin-bottom:var(--space-sm) }
+.welcome .subtitle { font-size:13px; color:var(--fg2); line-height:1.6; margin-bottom:var(--space-xl) }
+.welcome-section { margin-bottom:var(--space-xl) }
+.welcome-section h3 { font-size:11px; text-transform:uppercase; letter-spacing:0.8px; color:var(--fg3); margin-bottom:var(--space-md) }
+.welcome-step { display:flex; gap:var(--space-md); align-items:flex-start; margin-bottom:var(--space-md) }
+.welcome-step-num { width:22px; height:22px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent-border); color:var(--accent); font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0 }
+.welcome-step-text { font-size:12px; color:var(--fg2); line-height:1.5 }
+.welcome-step-text strong { color:var(--fg); font-weight:600 }
+.welcome-kbd { display:inline-block; padding:1px 5px; background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius-sm); font-family:var(--font-mono); font-size:10px; color:var(--fg2) }
+.spinner { width:14px; height:14px; border:2px solid var(--bg4); border-top-color:var(--accent); border-radius:50%; animation:spin 0.6s linear infinite; display:inline-block }
+@keyframes spin { to { transform:rotate(360deg) } }
+.toast-container { position:fixed; bottom:var(--space-xl); right:var(--space-xl); z-index:100; display:flex; flex-direction:column; gap:var(--space-sm) }
+.toast { padding:var(--space-sm) var(--space-lg); background:var(--bg3); border:1px solid var(--accent-border); border-radius:var(--radius); font-size:var(--text-sm); color:var(--fg); animation:slideIn 0.2s ease }
+@keyframes slideIn { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
+.skip-link { position:absolute; top:-40px; inset-inline-start:0; background:var(--accent); color:#000; padding:8px 16px; z-index:10000; font-size:14px; font-weight:600; transition:top .2s }
+.skip-link:focus { top:0 }
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0 }
+@media (max-width:768px) {
+  .app { grid-template-columns:1fr; grid-template-rows:auto auto auto 1fr auto }
+  .toolbar { grid-column:1 }
+  .mobile-nav { display:block }
+  .sidebar { border-inline-end:none; border-bottom:1px solid var(--border); display:none }
+  .sidebar.mobile-visible { display:flex; max-height:none }
+  .content.mobile-hidden { display:none }
+  .footer { grid-column:1 }
+}
+@media (prefers-reduced-motion:reduce) {
+  *,*::before,*::after { animation-duration:0.01ms !important; transition-duration:0.01ms !important; scroll-behavior:auto !important }
+}
+/* -- sidebar items -- */
+.search-box { padding:var(--space-md); border-bottom:1px solid var(--border) }
+.search-box input { width:100%; padding:var(--space-sm) var(--space-md); border-radius:var(--radius); background:var(--bg3); border:1px solid var(--border); color:var(--fg); font-size:16px; font-family:var(--font-sans); outline:none; transition:border-color var(--transition-fast) }
+.search-box input::placeholder { color:var(--fg3) }
+.search-box input:focus { border-color:var(--accent-border) }
+.search-box .search-label { display:block; font-size:var(--text-xs); font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:var(--fg3); padding:0 0 var(--space-xs) }
+.search-box .search-count { font-size:var(--text-xs); color:var(--fg3); padding-top:var(--space-xs) }
+.item-list { flex:1; overflow-y:auto; padding:var(--space-sm) }
+.item-card { padding:var(--space-md); margin-bottom:var(--space-sm); border-radius:var(--radius); background:var(--bg); border:1px solid var(--border); cursor:pointer; transition:border-color var(--transition-fast),background var(--transition-fast) }
+.item-card:hover { border-color:var(--accent-border); background:var(--accent-dim) }
+.item-card.active { border-color:var(--accent); background:var(--accent-dim) }
+.item-name { font-size:var(--text-md); font-weight:600; color:var(--fg) }
+.item-desc { font-size:11px; color:var(--fg2); line-height:1.4; margin-top:2px }
+.item-meta { display:flex; gap:var(--space-sm); flex-wrap:wrap; margin-top:var(--space-xs) }
+.item-badge { font-size:var(--text-xs); padding:1px 6px; border-radius:var(--radius-sm); background:var(--bg3); color:var(--fg3); border:1px solid var(--border) }
+.item-badge.feature { color:var(--blue); background:rgba(59,130,246,0.08); border-color:rgba(59,130,246,0.15); cursor:pointer }
+.item-badge.feature:hover { background:rgba(59,130,246,0.18); border-color:rgba(59,130,246,0.3) }
+.item-badge.feature.active-filter { background:rgba(59,130,246,0.25); border-color:var(--blue) }
+.item-no-results { padding:var(--space-xl); text-align:center; color:var(--fg3); font-size:var(--text-sm) }
+  </style>
+  <!-- STYLE 3: mill-specific -->
+  <style>
+.format-detail { display:flex; flex-wrap:wrap; gap:var(--space-md); margin-bottom:var(--space-lg); padding:var(--space-md) var(--space-lg); background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); font-size:var(--text-sm); color:var(--fg2); line-height:1.5 }
+.format-detail-desc { flex:1 1 100%; color:var(--fg); font-size:var(--text-md) }
+.format-detail-meta { display:flex; flex-wrap:wrap; gap:var(--space-sm) var(--space-lg); font-size:var(--text-xs); color:var(--fg3) }
+.format-detail-tag { display:inline-flex; align-items:center; gap:3px; padding:2px 8px; background:var(--bg3); border:1px solid var(--border-subtle); border-radius:var(--radius-sm); white-space:nowrap }
+.format-detail-tag a { color:var(--blue); text-decoration:none }
+.format-detail-tag a:hover { text-decoration:underline }
+.content-header { display:flex; align-items:center; justify-content:space-between; padding:var(--space-md) var(--space-xl); border-bottom:1px solid var(--border); background:var(--bg); min-height:46px }
+.content-title { font-size:var(--text-lg); font-weight:600 }
+.content-actions { display:flex; gap:var(--space-sm) }
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:var(--space-xs); padding:var(--space-xs) var(--space-md); border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg3); color:var(--fg); font-size:var(--text-sm); font-family:var(--font-sans); cursor:pointer; transition:all var(--transition-base); white-space:nowrap }
+.btn:hover { border-color:var(--accent-border); background:var(--accent-dim) }
+.btn:disabled { opacity:0.4; cursor:not-allowed }
+.btn-primary { background:var(--accent); color:var(--bg); border-color:var(--accent); font-weight:600 }
+.btn-primary:hover { background:var(--accent-light); border-color:var(--accent-light) }
+.btn-primary:disabled { opacity:0.4 }
+.preview-area { flex:1; overflow:auto; padding:var(--space-xl) }
+.preview-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--fg3); text-align:center; gap:var(--space-md) }
+.preview-empty-icon { font-size:48px; opacity:0.3 }
+.preview-empty-text { font-size:var(--text-lg); color:var(--fg2) }
+.preview-empty-hint { font-size:var(--text-sm); color:var(--fg3); max-width:340px; line-height:1.5 }
+.welcome-cat { margin-bottom:var(--space-sm) }
+.welcome-cat-label { font-size:11px; font-weight:600; color:var(--fg3); margin-bottom:var(--space-xs) }
+.welcome-cat-items { font-size:11px; color:var(--fg2); line-height:1.6 }
+.preview-output { font-family:var(--font-mono); font-size:var(--text-base); line-height:1.6; color:var(--fg); white-space:pre-wrap; word-break:break-word; background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:var(--space-xl); min-height:200px }
+.preview-stats { display:flex; gap:var(--space-xl); margin-bottom:var(--space-lg); padding:var(--space-md) var(--space-lg); background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius) }
+.preview-stat { display:flex; flex-direction:column; gap:2px }
+.preview-stat-label { font-size:var(--text-xs); color:var(--fg3); text-transform:uppercase; letter-spacing:0.5px }
+.preview-stat-value { font-size:var(--text-md); font-weight:600; color:var(--fg) }
+.preview-loading { display:flex; align-items:center; justify-content:center; height:100%; gap:var(--space-sm); color:var(--fg3) }
+.history-panel { border-top:1px solid var(--border); background:var(--bg2); max-height:160px; overflow:auto }
+.history-header { display:flex; align-items:center; justify-content:space-between; padding:var(--space-sm) var(--space-xl); border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--bg2); z-index:1 }
+.history-title { font-size:var(--text-xs); font-weight:600; text-transform:uppercase; letter-spacing:0.8px; color:var(--fg3) }
+.history-toggle { font-size:var(--text-xs); color:var(--accent); cursor:pointer; background:none; border:none; font-family:var(--font-sans) }
+.history-table { width:100%; border-collapse:collapse }
+.history-table th { padding:var(--space-xs) var(--space-xl); font-size:var(--text-xs); font-weight:600; text-transform:uppercase; letter-spacing:0.5px; color:var(--fg3); text-align:start; border-bottom:1px solid var(--border) }
+.history-table td { padding:var(--space-sm) var(--space-xl); font-size:var(--text-sm); border-bottom:1px solid var(--border-subtle) }
+.history-table tr:last-child td { border-bottom:none }
+.history-format { font-family:var(--font-mono); color:var(--accent); font-weight:500 }
+.history-time { color:var(--fg3); font-size:var(--text-xs) }
+.history-size { color:var(--fg2); text-align:end }
+.history-empty { padding:var(--space-xl); text-align:center; color:var(--fg3); font-size:var(--text-sm) }
+@media (max-width:768px) {
+  .preview-stats { flex-wrap:wrap; gap:var(--space-md) }
+  .footer { font-size:8px; padding:var(--space-xs) var(--space-md) }
+}
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+  <div id="live-status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+  <div class="reconnect-banner" id="reconnectBanner" role="status" aria-live="polite"></div>
+  <div class="app">
+    <header class="toolbar" role="banner">
+      <canvas id="grainLogo" width="256" height="256"></canvas>
+      <div class="toolbar-spacer"></div>
+      <div class="toolbar-right">
+        <div class="status-dot" id="sse-dot" aria-label="Connection status" role="status"></div>
+      </div>
+    </header>
+    <nav class="mobile-nav" aria-label="Mobile navigation">
+      <div class="mobile-nav-bar">
+        <button class="mobile-tab active" data-panel="content">Preview</button>
+        <button class="mobile-tab" data-panel="sidebar">Formats</button>
+      </div>
+    </nav>
+    <aside class="sidebar" aria-label="Format list">
+      <div class="search-box">
+        <input type="search" id="searchInput" placeholder="Filter formats..." aria-label="Filter formats" />
+      </div>
+      <div class="item-list" id="format-list" role="listbox" aria-label="Available formats"></div>
+    </aside>
+    <main class="content" id="main-content" aria-label="Mill workspace">
+      <div class="content-header" id="content-header" style="display:none">
+        <div class="content-title" id="content-title"></div>
+        <div class="content-actions" id="content-actions">
+          <button class="btn" id="btn-copy">Copy</button>
+          <button class="btn btn-primary" id="btn-download">Download</button>
+        </div>
+      </div>
+      <div class="preview-area" id="preview-area">
+        <div class="welcome" id="mill-welcome"><h2>Mill</h2><div class="subtitle">Loading formats...</div></div>
+      </div>
+      <div class="history-panel" id="history-panel">
+        <div class="history-header">
+          <span class="history-title">Export History</span>
+          <button class="history-toggle" id="history-toggle">clear</button>
+        </div>
+        <div class="history-list" id="history-list">
+          <div class="history-empty">No exports yet</div>
+        </div>
+      </div>
+    </main>
+    <footer class="footer">
+      <span>mill v1.0.2 -- @grainulation/mill</span>
+      <div class="footer-links">
+        <a href="http://localhost:9091">wheat</a>
+        <a href="http://localhost:9093">barn</a>
+        <a href="http://localhost:9095">silo</a>
+
+        <a href="http://localhost:9096">harvest</a>
+        <span style="color:var(--border)">&middot;</span>
+        <a href="https://github.com/grainulation/mill" target="_blank" rel="noopener noreferrer">github</a>
+      </div>
+    </footer>
+  </div>
+  <div class="toast-container" id="toast-container" aria-live="polite" role="status"></div>
+
+  <!-- SCRIPT 1: shared helpers + SSE + mobile nav -->
+  <script>
+// -- Shared: helpers --
+var $ = function(id) { return document.getElementById(id); };
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+// -- Shared: SSE with exponential backoff --
+var sseRetryCount = 0;
+var sseSource = null;
+function showBanner(count) {
+  var b = $('reconnectBanner');
+  if (count > 5) {
+    b.textContent = '';
+    b.appendChild(document.createTextNode('Connection lost. '));
+    var btn = document.createElement('button');
+    btn.textContent = 'Retry now';
+    btn.addEventListener('click', function() { sseRetryCount = 0; connectSSE(); });
+    b.appendChild(btn);
+  } else if (count > 1) {
+    b.textContent = 'Reconnecting (attempt ' + count + ')...';
+  } else {
+    b.textContent = 'Reconnecting...';
+  }
+  b.classList.add('visible');
+}
+function hideBanner() { $('reconnectBanner').classList.remove('visible'); }
+
+function connectSSE() {
+  sseSource = new EventSource('/events');
+  sseSource.onopen = function() {
+    sseRetryCount = 0;
+    $('sse-dot').className = 'status-dot ok';
+    if (window._grainSetState) window._grainSetState('idle');
+  };
+  sseSource.onerror = function() {
+    sseSource.close();
+    $('sse-dot').className = 'status-dot';
+    if (window._grainSetState) window._grainSetState('orbit');
+    var delay = Math.min(30000, 1000 * Math.pow(2, sseRetryCount)) + Math.random() * 1000;
+    sseRetryCount++;
+    setTimeout(connectSSE, delay);
+  };
+  sseSource.onmessage = function(e) {
+    try {
+      var msg = JSON.parse(e.data);
+      onSSEMessage(msg);
+    } catch(ex) {}
+  };
+}
+
+// -- Shared: mobile panel switching --
+function switchMobilePanel(panel) {
+  var sidebar = document.querySelector('.sidebar');
+  var content = document.querySelector('.content');
+  document.querySelectorAll('.mobile-tab').forEach(function(tb) { tb.classList.toggle('active', tb.dataset.panel === panel); });
+  sidebar.classList.remove('mobile-visible');
+  content.classList.remove('mobile-hidden');
+  if (panel === 'sidebar') { sidebar.classList.add('mobile-visible'); content.classList.add('mobile-hidden'); }
+}
+document.querySelector('.mobile-nav-bar').addEventListener('click', function(e) {
+  var tab = e.target.closest('[data-panel]');
+  if (tab) switchMobilePanel(tab.dataset.panel);
+});
+  </script>
+
+  <!-- SCRIPT 2: mill-specific logic -->
+  <script>
+// -- Mill helpers --
+var _dtf = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+function formatBytes(bytes) {
+  if (bytes == null) return '--';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+function formatTime(iso) {
+  if (!iso) return '--';
+  try { return _dtf.format(new Date(iso)); } catch(ex) { return iso; }
+}
+function formatLabel(name) {
+  if (!name) return '';
+  var labels = {
+    'json-ld': 'JSON-LD', 'csv': 'CSV', 'ndjson': 'NDJSON', 'sql': 'SQL',
+    'html-report': 'HTML Report', 'executive-summary': 'Executive Summary',
+    'slide-deck': 'Slide Deck', 'evidence-matrix': 'Evidence Matrix',
+    'jira-csv': 'Jira CSV', 'github-issues': 'GitHub Issues',
+    'html-treemap': 'Treemap', 'html-sankey': 'Sankey', 'json': 'JSON',
+    'yaml': 'YAML', 'pdf': 'PDF', 'typescript-defs': 'TypeScript Defs',
+    'graphml': 'GraphML', 'dot': 'DOT (Graphviz)', 'static-site': 'Static Site',
+  };
+  return labels[name] || name.charAt(0).toUpperCase() + name.slice(1).replace(/-/g, ' ');
+}
+
+// -- Category assignments --
+var CATEGORIES = [
+  { id: 'document', label: 'Document', formats: ['markdown', 'html-report', 'executive-summary', 'slide-deck', 'pdf', 'changelog'] },
+  { id: 'data', label: 'Data', formats: ['csv', 'json', 'json-ld', 'ndjson', 'yaml', 'sql', 'typescript-defs'] },
+  { id: 'research', label: 'Research', formats: ['evidence-matrix', 'bibtex', 'ris', 'rss', 'opml', 'obsidian'] },
+  { id: 'visual', label: 'Visual', formats: ['graphml', 'dot', 'treemap', 'sankey', 'static-site'] },
+  { id: 'integrate', label: 'Integrate', formats: ['jira-csv', 'github-issues'] },
+];
+
+// -- Format context: where each format goes, what opens it, docs links --
+var FORMAT_CONTEXT = {
+  'markdown':           { use: 'README, wiki, docs', opens: 'Any text editor, GitHub, GitLab', docs: 'https://commonmark.org/help/' },
+  'html-report':        { use: 'Email, share in browser', opens: 'Any browser -- self-contained, no server needed' },
+  'executive-summary':  { use: 'Stakeholder updates, decision docs', opens: 'Browser, print to PDF' },
+  'slide-deck':         { use: 'Presentations, sprint reviews', opens: 'Browser -- keyboard nav built in' },
+  'pdf':                { use: 'Formal deliverables', opens: 'Any PDF reader', needs: 'pandoc or weasyprint' },
+  'changelog':          { use: 'Release notes, sprint history', opens: 'Text editor, GitHub releases' },
+  'csv':                { use: 'Spreadsheet analysis', opens: 'Excel, Google Sheets, Numbers', docs: 'https://support.google.com/docs/answer/40608' },
+  'json':               { use: 'API payloads, programmatic access', opens: 'Any JSON viewer, jq' },
+  'json-ld':            { use: 'Semantic web, structured data', opens: 'JSON-LD Playground, Google Rich Results', docs: 'https://json-ld.org/' },
+  'ndjson':             { use: 'Streaming, log pipelines', opens: 'jq, ndjson-cli, Elasticsearch bulk API', docs: 'https://ndjson.org/' },
+  'yaml':               { use: 'Config files, CI/CD', opens: 'Any text editor, Kubernetes, Ansible' },
+  'sql':                { use: 'Database import', opens: 'SQLite, PostgreSQL, MySQL, DBeaver' },
+  'typescript-defs':    { use: 'Type-safe integration', opens: 'VS Code, TypeScript compiler' },
+  'evidence-matrix':    { use: 'Gap analysis, audit trail', opens: 'Excel, Google Sheets -- pivot table ready' },
+  'bibtex':             { use: 'Academic citations', opens: 'LaTeX, Overleaf, Zotero, Mendeley', docs: 'https://www.bibtex.org/' },
+  'ris':                { use: 'Reference management', opens: 'Zotero, Mendeley, EndNote, Paperpile', docs: 'https://en.wikipedia.org/wiki/RIS_(file_format)' },
+  'rss':                { use: 'Feed readers, notifications', opens: 'Feedly, Inoreader, Thunderbird', docs: 'https://www.rssboard.org/rss-specification' },
+  'opml':               { use: 'Outliners, feed bundles', opens: 'OmniOutliner, Feedly (import), WorkFlowy', docs: 'https://opml.org/spec2.opml' },
+  'obsidian':           { use: 'Knowledge base, PKM', opens: 'Obsidian -- paste into vault, wikilinks work', docs: 'https://help.obsidian.md/' },
+  'graphml':            { use: 'Network analysis', opens: 'yEd, Gephi, Cytoscape', docs: 'http://graphml.graphdrawing.org/' },
+  'dot':                { use: 'Graph visualization', opens: 'Graphviz, VS Code (preview ext), edotor.net', docs: 'https://graphviz.org/doc/info/lang.html' },
+  'treemap':            { use: 'Proportional visualization', opens: 'D3.js, Observable, any JSON consumer' },
+  'sankey':             { use: 'Flow visualization (type -> evidence -> status)', opens: 'D3.js, Google Charts, SankeyMATIC' },
+  'static-site':        { use: 'Publish as website', opens: 'Hugo -- drop into content/, run hugo serve', docs: 'https://gohugo.io/getting-started/quick-start/' },
+  'jira-csv':           { use: 'Import claims as Jira issues', opens: 'Jira Cloud (External system import), Jira Server', docs: 'https://support.atlassian.com/jira-cloud-administration/docs/import-data-from-a-csv-file/' },
+  'github-issues':      { use: 'Import claims as GitHub issues', opens: 'gh issue create, GitHub API', docs: 'https://docs.github.com/en/issues' },
+};
+
+// -- State --
+var state = null;
+var selectedFormat = null;
+var currentPreview = null;
+var history = [];
+// -- SSE message handler (called by shared SSE) --
+function onSSEMessage(msg) {
+  if (msg.type === 'state' || msg.type === 'source-changed') {
+    state = msg.data;
+    renderState();
+    var ls = $('live-status');
+    if (ls) ls.textContent = 'Updated: ' + (state.claimCount || 0) + ' claims loaded';
+  }
+  if (msg.type === 'export-complete') { addHistoryItem(msg.data); }
+}
+
+// -- Render format list --
+function renderState() {
+  if (!state) return;
+  var _cc = $('claim-count'); if (_cc) _cc.textContent = state.claimCount || 0;
+  renderFormats(state.formats || []);
+  if (!selectedFormat) renderWelcome();
+}
+
+function renderFormats(formats) {
+  var container = $('format-list');
+  var query = ($('searchInput').value || '').toLowerCase().trim();
+  container.innerHTML = '';
+
+  var fmtMap = {};
+  for (var f of formats) { fmtMap[f.name] = f; }
+
+  // Flatten all categories into one list, preserving category order
+  var allItems = [];
+  for (var cat of CATEGORIES) {
+    for (var name of cat.formats) {
+      if (fmtMap[name]) allItems.push({ name: name, fmt: fmtMap[name], cat: cat.label });
+    }
+  }
+
+  // Add uncategorized formats
+  var categorized = new Set();
+  for (var cat2 of CATEGORIES) { for (var n of cat2.formats) { categorized.add(n); } }
+  for (var uf of formats) {
+    if (!categorized.has(uf.name)) allItems.push({ name: uf.name, fmt: uf, cat: 'Other' });
+  }
+
+  // Filter
+  var filtered = allItems.filter(function(item) {
+    if (!query) return true;
+    return item.name.toLowerCase().includes(query)
+      || (item.fmt.description || '').toLowerCase().includes(query)
+      || (item.fmt.extension || '').toLowerCase().includes(query)
+      || formatLabel(item.name).toLowerCase().includes(query);
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="item-no-results">No formats match your search</div>';
+    return;
+  }
+
+  for (var i = 0; i < filtered.length; i++) {
+    var item = filtered[i];
+    var ctx = FORMAT_CONTEXT[item.name] || {};
+    var hint = ctx.use || item.fmt.description || '';
+    var card = document.createElement('div');
+    card.className = 'item-card' + (selectedFormat === item.name ? ' active' : '');
+    card.setAttribute('role', 'option');
+    card.setAttribute('aria-selected', selectedFormat === item.name ? 'true' : 'false');
+    card.dataset.format = item.name;
+    card.innerHTML =
+      '<div class="item-name">' + esc(formatLabel(item.name)) + '</div>' +
+      '<div class="item-desc">' + esc(hint) + '</div>' +
+      '<div class="item-meta">' +
+        '<span class="item-badge">' + esc(item.fmt.extension) + '</span>' +
+        '<span class="item-badge">' + esc(item.cat) + '</span>' +
+      '</div>';
+    card.addEventListener('click', (function(n) {
+      return function() { selectFormat(n); };
+    })(item.name));
+    container.appendChild(card);
+  }
+}
+
+// -- Welcome page --
+function renderWelcome() {
+  var formats = state?.formats || [];
+  var area = $('preview-area');
+
+  var catSummary = '';
+  for (var cat of CATEGORIES) {
+    var matching = cat.formats.filter(function(n) { return formats.some(function(f) { return f.name === n; }); });
+    if (matching.length === 0) continue;
+    catSummary += '<div class="welcome-cat">' +
+      '<div class="welcome-cat-label">' + esc(cat.label) + ' (' + matching.length + ')</div>' +
+      '<div class="welcome-cat-items">' + matching.map(function(n) { return esc(formatLabel(n)); }).join(', ') + '</div>' +
+    '</div>';
+  }
+
+  area.innerHTML =
+    '<div class="welcome">' +
+      '<h2>Mill</h2>' +
+      '<div class="subtitle">' +
+        'Export your wheat sprint data in ' + formats.length + ' formats. ' +
+        'Mill converts compilation data into documents, spreadsheets, citations, visualizations, ' +
+        'and integrations for tools like Jira, GitHub, Obsidian, Zotero, and more.' +
+      '</div>' +
+
+      '<div class="welcome-section">' +
+        '<h3>How it works</h3>' +
+        '<div class="welcome-step">' +
+          '<span class="welcome-step-num">1</span>' +
+          '<div class="welcome-step-text"><strong>Pick a format</strong> -- choose from the sidebar. Formats are grouped by purpose: documents for stakeholders, data for pipelines, research for citations, visual for charts, integrate for project trackers.</div>' +
+        '</div>' +
+        '<div class="welcome-step">' +
+          '<span class="welcome-step-num">2</span>' +
+          '<div class="welcome-step-text"><strong>Preview instantly</strong> -- clicking a format loads the preview immediately. You see exactly what the output looks like, with format details and compatible tools.</div>' +
+        '</div>' +
+        '<div class="welcome-step">' +
+          '<span class="welcome-step-num">3</span>' +
+          '<div class="welcome-step-text"><strong>Download or copy</strong> -- use the toolbar buttons to download the file or copy to clipboard. Export history is tracked at the bottom.</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="welcome-section">' +
+        '<h3>Available formats</h3>' +
+        catSummary +
+      '</div>' +
+
+      '<div class="welcome-section">' +
+        '<h3>Keyboard shortcuts</h3>' +
+        '<div class="welcome-step">' +
+          '<div class="welcome-step-text">' +
+            '<span class="welcome-kbd">/</span> Focus search ' +
+            '&nbsp;&nbsp;<span class="welcome-kbd">Esc</span> Return to this page' +
+            '&nbsp;&nbsp;<span class="welcome-kbd">[</span> <span class="welcome-kbd">]</span> Switch panels' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+}
+
+// -- Format selection: click -> instant preview --
+function selectFormat(name) {
+  selectedFormat = name;
+  document.title = 'Mill - ' + formatLabel(name);
+  renderFormats(state?.formats || []);
+  loadPreview(name);
+}
+
+// -- Preview --
+async function loadPreview(formatName) {
+  $('content-header').style.display = 'flex';
+  $('content-title').textContent = formatLabel(formatName);
+  $('btn-copy').disabled = true;
+  $('btn-download').disabled = true;
+  $('preview-area').innerHTML = '<div class="preview-loading"><div class="spinner"></div> Loading preview...</div>';
+
+  try {
+    var url = '/api/preview?format=' + encodeURIComponent(formatName);
+    var resp = await fetch(url);
+    var data = await resp.json();
+
+    if (data.error) { showPreviewError(data.error); return; }
+
+    currentPreview = data;
+    renderPreview(data);
+    $('btn-copy').disabled = false;
+    $('btn-download').disabled = false;
+    var ls = $('live-status');
+    if (ls) ls.textContent = 'Preview loaded: ' + formatLabel(data.format) + ', ' + formatBytes(data.size);
+  } catch (err) {
+    showPreviewError(err.message);
+  }
+}
+
+function renderPreview(data) {
+  var area = $('preview-area');
+  var fmt = (state.formats || []).find(function(f) { return f.name === data.format; });
+  var ctx = FORMAT_CONTEXT[data.format] || {};
+
+  var detail = '<div class="format-detail">';
+  detail += '<div class="format-detail-desc">' + esc(fmt?.description || '') + '</div>';
+  detail += '<div class="format-detail-meta">';
+  if (ctx.opens) detail += '<span class="format-detail-tag">Opens with: ' + esc(ctx.opens) + '</span>';
+  if (ctx.needs) detail += '<span class="format-detail-tag">Requires: ' + esc(ctx.needs) + '</span>';
+  if (ctx.docs) detail += '<span class="format-detail-tag"><a href="' + esc(ctx.docs) + '" target="_blank" rel="noopener noreferrer">Docs</a></span>';
+  detail += '</div></div>';
+
+  var stats =
+    '<div class="preview-stats">' +
+      '<div class="preview-stat"><span class="preview-stat-label">Format</span><span class="preview-stat-value">' + esc(formatLabel(data.format)) + '</span></div>' +
+      '<div class="preview-stat"><span class="preview-stat-label">Extension</span><span class="preview-stat-value" style="font-family:var(--font-mono)">' + esc(fmt?.extension || '') + '</span></div>' +
+      '<div class="preview-stat"><span class="preview-stat-label">Size</span><span class="preview-stat-value">' + formatBytes(data.size) + '</span></div>' +
+      '<div class="preview-stat"><span class="preview-stat-label">Lines</span><span class="preview-stat-value">' + data.output.split('\n').length + '</span></div>' +
+    '</div>';
+
+  var escaped = data.output.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  area.innerHTML = detail + stats + '<pre class="preview-output">' + escaped + '</pre>';
+}
+
+function showPreviewError(message) {
+  $('preview-area').innerHTML =
+    '<div class="preview-empty">' +
+      '<div class="preview-empty-icon" style="color: var(--red);">!</div>' +
+      '<div class="preview-empty-text">' + esc(message) + '</div>' +
+    '</div>';
+  $('content-actions').style.display = 'none';
+}
+
+// -- Copy --
+async function copyPreview() {
+  if (!currentPreview || !currentPreview.output) return;
+  try { await navigator.clipboard.writeText(currentPreview.output); } catch(ex) {
+    var ta = document.createElement('textarea');
+    ta.value = currentPreview.output; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+  }
+  toast('Copied to clipboard');
+  addToHistory('clipboard');
+}
+
+// -- Download --
+function downloadPreview() {
+  if (!currentPreview || !currentPreview.output) return;
+  var fmt = (state.formats || []).find(function(f) { return f.name === selectedFormat; });
+  var blob = new Blob([currentPreview.output], { type: fmt?.mimeType || 'text/plain' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'export' + (fmt?.extension || '.txt');
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Downloaded ' + formatLabel(selectedFormat) + ' (' + formatBytes(currentPreview.size) + ')');
+  addToHistory('download');
+}
+
+function addToHistory(method) {
+  if (!currentPreview) return;
+  history.unshift({
+    format: currentPreview.format,
+    timestamp: new Date().toISOString(),
+    outputSize: currentPreview.size,
+    claimCount: state?.claimCount || 0,
+    method: method,
+  });
+  renderHistory();
+}
+
+// -- History --
+function addHistoryItem(job) { history.unshift(job); renderHistory(); }
+
+function renderHistory() {
+  var list = $('history-list');
+  if (history.length === 0) {
+    list.innerHTML = '<div class="history-empty">No exports yet</div>';
+    return;
+  }
+  list.innerHTML = '<table class="history-table" role="table"><thead><tr>' +
+    '<th scope="col">Format</th><th scope="col">Time</th><th scope="col">Size</th>' +
+    '</tr></thead><tbody>' +
+    history.slice(0, 20).map(function(job) {
+      return '<tr>' +
+        '<td class="history-format">' + esc(formatLabel(job.format)) + '</td>' +
+        '<td class="history-time">' + esc(formatTime(job.timestamp)) + '</td>' +
+        '<td class="history-size">' + esc(formatBytes(job.outputSize)) + '</td>' +
+      '</tr>';
+    }).join('') +
+    '</tbody></table>';
+}
+
+function clearHistory() { history = []; renderHistory(); }
+
+// -- Toast --
+function toast(message) {
+  var container = $('toast-container');
+  var el = document.createElement('div');
+  el.className = 'toast'; el.textContent = message;
+  container.appendChild(el);
+  setTimeout(function() { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s ease'; setTimeout(function() { el.remove(); }, 300); }, 3000);
+}
+
+// -- Event listeners --
+
+// Search
+$('searchInput').addEventListener('input', function() {
+  renderFormats(state?.formats || []);
+});
+
+// Mobile nav keyboard
+document.querySelector('.mobile-nav-bar').addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    e.preventDefault();
+    var panels = ['content', 'sidebar'];
+    var current = document.querySelector('.mobile-tab.active')?.dataset.panel || 'content';
+    var idx = panels.indexOf(current);
+    var next = panels[(idx + (e.key === 'ArrowRight' ? 1 : panels.length - 1)) % panels.length];
+    switchMobilePanel(next);
+    document.querySelector('.mobile-tab[data-panel="' + next + '"]')?.focus();
+  }
+});
+
+// Buttons
+$('btn-copy').addEventListener('click', copyPreview);
+$('btn-download').addEventListener('click', downloadPreview);
+$('history-toggle').addEventListener('click', clearHistory);
+
+// Keyboard
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && !e.target.matches('input')) {
+    selectedFormat = null; currentPreview = null;
+    document.title = 'Mill';
+    renderFormats(state?.formats || []);
+    $('content-header').style.display = 'none';
+    renderWelcome();
+    var ls = $('live-status'); if (ls) ls.textContent = 'Selection cleared';
+  }
+  if (e.key === '/' && !e.target.matches('input,textarea,select')) {
+    e.preventDefault();
+    $('searchInput').focus();
+  }
+  if (e.key === '[' && !e.target.matches('input,textarea')) { e.preventDefault(); document.querySelector('.sidebar').setAttribute('tabindex','-1'); document.querySelector('.sidebar').focus(); }
+  if (e.key === ']' && !e.target.matches('input,textarea')) { e.preventDefault(); document.querySelector('.content').setAttribute('tabindex','-1'); document.querySelector('.content').focus(); }
+});
+
+// -- Init --
+connectSSE();
+fetch('/api/state').then(function(r) { return r.json(); }).then(function(data) { state = data; renderState(); }).catch(function() {});
+  </script>
+
+  <!-- SCRIPT 3: grain logo animation -->
+  <script>
+(function() {
+  var LW = 0.025;
+  var TOOL = { name: 'Mill', letter: 'M', color: '#a78bfa' };
+  var _c, _ctx, _s, _cx, _textStart, _restText, _font;
+  var _state = 'drawon', _start = null, _raf, _pendingState = null;
+  var _openPts = null, _closedPts = null;
+
+  function _lerp(a,b,t){ return {x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t}; }
+  function _easeInOut(t){ return t<0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2; }
+
+  function _bracket(ctx, s, color, alpha) {
+    var lw=s*LW, cx=_cx, cy=s/2, gw=s*0.72, gh=s*0.68;
+    var topY=cy-gh/2, botY=cy+gh/2, fe=gw*0.30;
+    if(alpha!==undefined) ctx.globalAlpha=alpha;
+    ctx.strokeStyle=color; ctx.lineWidth=lw; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.beginPath(); ctx.moveTo(cx,topY); ctx.lineTo(cx-fe,topY);
+    ctx.bezierCurveTo(cx-gw*0.52,cy-gh*0.32, cx-gw*0.52,cy+gh*0.24, cx-fe,botY);
+    ctx.lineTo(cx,botY); ctx.stroke();
+    if(alpha!==undefined) ctx.globalAlpha=1;
+  }
+
+  function _drawBracket(ctx, s, color, progress) {
+    var lw=s*LW, cx=_cx, cy=s/2, gw=s*0.72, gh=s*0.68;
+    var topY=cy-gh/2, botY=cy+gh/2, fe=gw*0.30;
+    ctx.strokeStyle=color; ctx.lineWidth=lw; ctx.lineCap='round'; ctx.lineJoin='round';
+    var seg1=0.12, seg2=0.72;
+    ctx.beginPath();
+    if(progress<=seg1){ctx.moveTo(cx,topY);ctx.lineTo(cx-fe*(progress/seg1),topY);}
+    else if(progress<=seg1+seg2){ctx.moveTo(cx,topY);ctx.lineTo(cx-fe,topY);ctx.stroke();ctx.beginPath();
+      var bt=(progress-seg1)/seg2;
+      var p0={x:cx-fe,y:topY},p1={x:cx-gw*0.52,y:cy-gh*0.32},p2={x:cx-gw*0.52,y:cy+gh*0.24},p3={x:cx-fe,y:botY};
+      var q1=_lerp(p0,p1,bt),q2=_lerp(p1,p2,bt),q3=_lerp(p2,p3,bt);
+      var r1=_lerp(q1,q2,bt),r2=_lerp(q2,q3,bt),s1=_lerp(r1,r2,bt);
+      ctx.moveTo(p0.x,p0.y);ctx.bezierCurveTo(q1.x,q1.y,r1.x,r1.y,s1.x,s1.y);}
+    else{ctx.moveTo(cx,topY);ctx.lineTo(cx-fe,topY);
+      ctx.bezierCurveTo(cx-gw*0.52,cy-gh*0.32, cx-gw*0.52,cy+gh*0.24, cx-fe,botY);
+      ctx.lineTo((cx-fe)+fe*((progress-seg1-seg2)/(1-seg1-seg2)),botY);}
+    ctx.stroke();
+  }
+
+  function _drawName(ctx, s, spellP, alpha) {
+    var a = alpha !== undefined ? alpha : 1;
+    ctx.font = _font; ctx.textBaseline = 'middle';
+    var cy = s/2 + s*0.02;
+    ctx.globalAlpha = a; ctx.fillStyle = TOOL.color; ctx.textAlign = 'center';
+    ctx.fillText(TOOL.letter, _cx, cy);
+    if(_restText.length > 0 && spellP > 0) {
+      var n = _restText.length, num = Math.min(n, Math.ceil(spellP * n));
+      var rawP = spellP * n, charP = num >= n ? 1 : rawP - Math.floor(rawP);
+      var full = charP >= 1 ? num : num - 1;
+      ctx.fillStyle = '#e2e8f0'; ctx.textAlign = 'left';
+      if(full > 0) { ctx.globalAlpha = a; ctx.fillText(_restText.slice(0, full), _textStart, cy); }
+      if(full < num) {
+        var prevW = full > 0 ? ctx.measureText(_restText.slice(0, full)).width : 0;
+        ctx.globalAlpha = a * (0.3 + 0.7 * charP);
+        ctx.fillText(_restText[full], _textStart + prevW, cy);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function _getOpenPts(s) {
+    if(_openPts && _openPts._s === s) return _openPts;
+    var cx=_cx, cy=s/2, gw=s*0.72, gh=s*0.68, topY=cy-gh/2, botY=cy+gh/2, fe=gw*0.30;
+    var pts=[];
+    for(var t=0;t<=1;t+=0.05) pts.push({x:cx-fe*t,y:topY});
+    var p0={x:cx-fe,y:topY},p1={x:cx-gw*0.52,y:cy-gh*0.32},p2={x:cx-gw*0.52,y:cy+gh*0.24},p3={x:cx-fe,y:botY};
+    for(var t=0;t<=1;t+=0.02){var u=1-t;pts.push({x:u*u*u*p0.x+3*u*u*t*p1.x+3*u*t*t*p2.x+t*t*t*p3.x,y:u*u*u*p0.y+3*u*u*t*p1.y+3*u*t*t*p2.y+t*t*t*p3.y});}
+    for(var t=0;t<=1;t+=0.05) pts.push({x:(cx-fe)+fe*t,y:botY});
+    pts._s=s; _openPts=pts; return pts;
+  }
+
+  function _getClosedPts(s) {
+    if(_closedPts && _closedPts._s === s) return _closedPts;
+    var cx=_cx, cy=s/2, gw=s*0.72, gh=s*0.68, topY=cy-gh/2, botY=cy+gh/2, fe=gw*0.30;
+    var pts=[];
+    for(var t=0;t<=1;t+=0.03) pts.push({x:cx-fe*t,y:topY});
+    var lp0={x:cx-fe,y:topY},lp1={x:cx-gw*0.52,y:cy-gh*0.32},lp2={x:cx-gw*0.52,y:cy+gh*0.24},lp3={x:cx-fe,y:botY};
+    for(var t=0;t<=1;t+=0.02){var u=1-t;pts.push({x:u*u*u*lp0.x+3*u*u*t*lp1.x+3*u*t*t*lp2.x+t*t*t*lp3.x,y:u*u*u*lp0.y+3*u*u*t*lp1.y+3*u*t*t*lp2.y+t*t*t*lp3.y});}
+    for(var t=0;t<=1;t+=0.03) pts.push({x:(cx-fe)+2*fe*t,y:botY});
+    var rp0={x:cx+fe,y:botY},rp1={x:cx+gw*0.52,y:cy+gh*0.24},rp2={x:cx+gw*0.52,y:cy-gh*0.32},rp3={x:cx+fe,y:topY};
+    for(var t=0;t<=1;t+=0.02){var u=1-t;pts.push({x:u*u*u*rp0.x+3*u*u*t*rp1.x+3*u*t*t*rp2.x+t*t*t*rp3.x,y:u*u*u*rp0.y+3*u*u*t*rp1.y+3*u*t*t*rp2.y+t*t*t*rp3.y});}
+    for(var t=0;t<=1;t+=0.03) pts.push({x:(cx+fe)-fe*t,y:topY});
+    pts._s=s; _closedPts=pts; return pts;
+  }
+
+  function _frame(ts) {
+    if(!_c) return;
+    if(!_start) _start = ts;
+    var e = ts - _start, ctx = _ctx, s = _s;
+    ctx.clearRect(0, 0, _c.width, s);
+    switch(_state) {
+      case 'drawon':
+        var bp = _easeInOut(Math.min(1, e / 1400));
+        _drawBracket(ctx, s, TOOL.color, bp);
+        var la = Math.max(0, Math.min(1, (e - 900) / 400));
+        if(la > 0) {
+          ctx.font = _font; ctx.textBaseline = 'middle';
+          ctx.globalAlpha = la; ctx.fillStyle = TOOL.color; ctx.textAlign = 'center';
+          ctx.fillText(TOOL.letter, _cx, s/2 + s*0.02); ctx.globalAlpha = 1;
+        }
+        if(e > 1100 && _restText.length > 0) {
+          var sp = Math.min(1, (e - 1100) / (120 * _restText.length));
+          var n = _restText.length, num = Math.min(n, Math.ceil(sp * n));
+          if(num > 0) {
+            ctx.font = _font; ctx.textBaseline = 'middle';
+            var cy = s/2 + s*0.02, rawP = sp * n;
+            var charP = num >= n ? 1 : rawP - Math.floor(rawP);
+            var full = charP >= 1 ? num : num - 1;
+            ctx.fillStyle = '#e2e8f0'; ctx.textAlign = 'left';
+            if(full > 0) ctx.fillText(_restText.slice(0, full), _textStart, cy);
+            if(full < num) {
+              var prevW = full > 0 ? ctx.measureText(_restText.slice(0, full)).width : 0;
+              ctx.globalAlpha = 0.3 + 0.7 * charP;
+              ctx.fillText(_restText[full], _textStart + prevW, cy); ctx.globalAlpha = 1;
+            }
+          }
+        }
+        if(e > 1100 + 120 * _restText.length + 300) { _state = _pendingState || 'idle'; _pendingState = null; _start = ts; }
+        break;
+      case 'idle':
+        var breathe = 0.5 + 0.5 * (0.5 + 0.5 * Math.sin(e / 1200));
+        _bracket(ctx, s, TOOL.color, breathe);
+        var textBreath = 0.88 + 0.12 * (0.5 + 0.5 * Math.sin(e / 1800));
+        _drawName(ctx, s, 1, textBreath);
+        break;
+      case 'shimmer':
+        _bracket(ctx, s, TOOL.color, 0.2);
+        var spts = _getOpenPts(s), sspeed = 1800;
+        var spos = (e % sspeed) / sspeed;
+        var sidx = Math.floor(spos * (spts.length - 1));
+        var spt = spts[sidx];
+        var sgrad = ctx.createRadialGradient(spt.x, spt.y, 0, spt.x, spt.y, s * 0.10);
+        sgrad.addColorStop(0, TOOL.color + 'aa'); sgrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = sgrad; ctx.fillRect(0, 0, _c.width, s);
+        var strailFrac = 0.18;
+        var si0 = Math.max(0, Math.floor((spos - strailFrac) * (spts.length - 1)));
+        ctx.strokeStyle = TOOL.color; ctx.lineWidth = s * LW; ctx.lineCap = 'round';
+        ctx.globalAlpha = 0.85; ctx.beginPath(); ctx.moveTo(spts[si0].x, spts[si0].y);
+        for(var si = si0 + 1; si <= sidx; si++) ctx.lineTo(spts[si].x, spts[si].y);
+        ctx.stroke(); ctx.globalAlpha = 1;
+        _drawName(ctx, s, 1, undefined);
+        break;
+      case 'orbit':
+        _bracket(ctx, s, TOOL.color, 0.15);
+        _drawName(ctx, s, 1, 0.4);
+        var pts = _getOpenPts(s), speed = 1200, trailFrac = 0.28;
+        var halfCycle = (e % speed) / speed;
+        var cycle = (e % (speed * 2)) / (speed * 2);
+        var pos = cycle < 0.5 ? halfCycle : 1 - halfCycle;
+        var headIdx = Math.floor(pos * (pts.length - 1));
+        var trailLen = Math.floor(trailFrac * pts.length);
+        var dir = cycle < 0.5 ? 1 : -1;
+        ctx.lineWidth = s * LW; ctx.lineCap = 'round';
+        for(var i = 0; i < trailLen; i++) {
+          var idx = headIdx - dir * (trailLen - i);
+          if(idx < 0 || idx >= pts.length) continue;
+          var nxt = idx + dir;
+          if(nxt < 0 || nxt >= pts.length) continue;
+          ctx.globalAlpha = (i / trailLen) * 0.7; ctx.strokeStyle = TOOL.color;
+          ctx.beginPath(); ctx.moveTo(pts[idx].x, pts[idx].y); ctx.lineTo(pts[nxt].x, pts[nxt].y); ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+        break;
+      case 'dim':
+        var dim = 0.1 + 0.08 * Math.sin(e / 2000);
+        _bracket(ctx, s, TOOL.color, dim);
+        _drawName(ctx, s, 1, 0.2);
+        break;
+    }
+    _raf = requestAnimationFrame(_frame);
+  }
+
+  _c = document.getElementById('grainLogo');
+  if(_c) {
+    _c.style.width = '0px';
+    _s = 256;
+    var targetFontPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    var fontRatio = 0.38;
+    var dh = 64;
+    _c.height = _s; _c.width = 1024;
+    _ctx = _c.getContext('2d');
+    _cx = _s / 2;
+    _restText = TOOL.name.slice(1);
+    _font = '800 ' + (_s * fontRatio) + 'px -apple-system,"SF Pro Display","Helvetica Neue",Arial,sans-serif';
+    _ctx.font = _font;
+    var letterW = _ctx.measureText(TOOL.letter).width;
+    var restW = _restText.length > 0 ? _ctx.measureText(_restText).width : 0;
+    _textStart = _cx + letterW / 2 + _s * 0.02;
+    var totalW = Math.ceil(_textStart + restW + _s * 0.12);
+    _c.width = totalW;
+    _ctx = _c.getContext('2d');
+    _c.style.height = dh + 'px';
+    _c.style.width = Math.round(totalW / _s * dh) + 'px';
+    _state = 'drawon'; _start = null;
+    _raf = requestAnimationFrame(_frame);
+  }
+
+  window._grainSetState = function(state) {
+    if(_state === state) return;
+    if(_state === 'drawon') { _pendingState = state; return; }
+    _state = state; _start = null;
+    if(!_raf) _raf = requestAnimationFrame(_frame);
+  };
+})();
+  </script>
+</body>
+</html>

@@ -1,120 +1,35 @@
 ---
 name: healthcheck
-description: Fast pre-flight health check for all Grainulator MCP servers. Pings each server once, reports status in a table, and provides exact fix commands for any that are down. Use before starting any Grainulator session to avoid wasting time on MCP disconnections.
+description: Check the unified Grainulator MCP server and local CLI without blocking useful work on optional connectors.
 tools:
-  - mcp__wheat__wheat_status
-  - mcp__silo__silo_list
-  - mcp__mill__mill_formats
+  - mcp__grainulator__status
+  - mcp__grainulator__memory_list
+  - mcp__grainulator__exports_formats
   - Bash
+  - Read
 ---
 
-# /healthcheck -- Pre-flight MCP server verification
+# /healthcheck — Verify the local connection
 
-Fast health check for all Grainulator MCP servers. One ping per server, no retries, immediate fix commands if anything is down.
+Check the three capability groups exposed by the single `grainulator` server:
 
-## Arguments
+- `grainulator.status` with the active sprint `dir`: evidence operations. No sprint found is a valid connected response.
+- `grainulator.memory_list`: local knowledge storage.
+- `grainulator.exports_formats`: document conversion.
 
-$ARGUMENTS
+Batch independent checks where the host supports it. Distinguish an unavailable tool from a connected tool returning an application error. Report actual results; an advertised tool alone does not prove a successful call.
 
-## Instructions
+If MCP is unavailable, run `node <checkout>/bin/grainulator.js doctor` and continue through the local CLI. Generate the intended connection with `grainulator connect --dir <sprint>`. In a plugin host, reload its registration before adding duplicates; in another host, use its supported local MCP configuration. Do not silently edit global settings.
 
-### Step 1: Ping all three servers in parallel
+Check optional external connectors only when needed. Their failure does not make the core connection unhealthy. Hooks are host-specific: an MCP ping does not prove that PreToolUse or PostToolUse fired. Report hook behavior as unverified unless exercised. CLI and MCP remain usable in hosts without hooks; skills still supply the next-step output contract.
 
-Call these three tools simultaneously (in a single message):
+Keep diagnostics concise and continue already authorized work. List any action that truly needs the user under Manual; otherwise use Auto.
+## Host access
 
-1. `wheat_status` — verifies the Wheat claims engine
-2. `mill_formats` — verifies the Mill format converter
-3. `silo_list` — verifies the Silo knowledge store
+Use available `grainulator` MCP tools, passing the active sprint `dir` explicitly for evidence operations. If a tool is unavailable, use the local `grainulator` CLI (or `node <checkout>/bin/grainulator.js`). Read sibling skill files directly when slash commands are unavailable. Resolve template paths relative to this skill’s checkout when `CLAUDE_PLUGIN_ROOT` is unset. Optional external connectors are not required for local work; use local code, supplied documents, or available web tools. Do not write managed ledger files directly to bypass a missing MCP connection.
 
-### Step 2: Report results
+## Next-step output
 
-Print a status table:
+After a meaningful pass, use the current compiler's `next_actions` to present exactly two bullet lists labeled **Auto** and **Manual**. Auto is work the agent can continue under existing authorization. Manual is only work requiring the user's decision, access, or action. Classify using the current request and constraints; compiler suggestions never grant permission. Continue authorized Auto work without asking again.
 
-```
-Grainulator Health Check
-========================
-  wheat  ✓ healthy   — claims engine
-  mill   ✓ healthy   — format conversion
-  silo   ✓ healthy   — knowledge storage
-
-All servers operational.
-```
-
-If any server fails, show:
-
-```
-Grainulator Health Check
-========================
-  wheat  ✗ FAILED    — claims engine
-  mill   ✓ healthy   — format conversion
-  silo   ✓ healthy   — knowledge storage
-
-Fix commands:
-  wheat: claude mcp add wheat -- npx -y -p @grainulation/wheat wheat-mcp
-```
-
-### Step 3: Diagnose failure class (only if a server failed)
-
-Distinguish two failure types by the error message:
-
-1. **"tool not found"** or **"not registered"** — the MCP server is not connected. Fix: re-add it.
-2. **"tool call failed"** or **timeout** — the server is registered but the process crashed or network is down. Fix: check Node.js/network, then re-add.
-
-### Step 4: Provide fix commands
-
-If Wheat failed:
-- Re-add: `claude mcp add wheat -- npx -y -p @grainulation/wheat wheat-mcp`
-
-If Mill failed:
-- Re-add: `claude mcp add mill -- npx -y @grainulation/mill serve-mcp`
-
-If Silo failed:
-- Re-add: `claude mcp add silo -- npx -y @grainulation/silo serve-mcp`
-
-### Step 5: Host-capability probe (Claude Code version drift)
-
-After the three MCP pings succeed, verify the Claude Code host exposes
-the APIs grainulator needs. If Anthropic ships a breaking change in a
-minor version, this is how we detect it before the user sees silent
-hook failures.
-
-Check presence of each of these capabilities by inspecting your own
-tool availability (no network call needed):
-
-1. **Hook events in use:** PreToolUse, PostToolUse, SessionStart,
-   SessionEnd, Stop. Report any that appear unavailable.
-2. **Skill loader:** `${CLAUDE_PLUGIN_ROOT}` env var resolves to the
-   installed grainulator path. Verify by running (via Bash):
-
-   ```bash
-   echo "${CLAUDE_PLUGIN_ROOT}" | head -c 200
-   test -f "${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json" && echo "plugin manifest found"
-   ```
-
-   If the manifest is not found, the host's plugin path conventions
-   have drifted — surface this clearly so the user knows why their
-   skills may behave oddly.
-3. **Tool-call protocol:** the MCP pings above already exercise this;
-   if they succeeded, the tool-call path is healthy.
-
-If any capability check fails, append to the status table:
-
-```
-  host   ⚠ degraded  — <which capability> unavailable
-         → Claude Code may have introduced a breaking change.
-           Check release notes at https://claude.com/claude-code.
-           grainulator >= 1.6.2 requires: PreToolUse/PostToolUse hooks,
-           CLAUDE_PLUGIN_ROOT path resolution, MCP stdio protocol.
-```
-
-Do not block the user. Do surface the signal — a "degraded" row tells
-them which layer to investigate when skills misbehave.
-
-### Rules
-
-- Do NOT retry a failed server. One attempt only. Report and move on.
-- Do NOT block the user from working if a server is down — suggest the fix and let them decide.
-- Total execution time should be under 10 seconds (Step 5 adds ~1s of filesystem check).
-- If ALL servers fail, suggest the user check their network connection and Node.js installation first.
-- If the host-capability probe flags degraded, suggest running
-  `claude --version` and comparing against the grainulator minimum.
+Keep 2–3 useful actions total when available, use short concrete labels and commands where useful, and show `None.` for an empty group. Do not invent work to fill a quota. Never omit next steps merely because compilation is ready or the answer should be brief. Refresh stale compilation first and exclude work the user removed from scope. When the user asks only for next steps, output only these two lists: no findings recap, counts, reasons, or offer to continue.

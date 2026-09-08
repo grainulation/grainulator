@@ -1,0 +1,27 @@
+{
+  "title": "Architecture Decision Record",
+  "description": "Standard ADR format for documenting architecture decisions. Includes context, decision, consequences, alternatives considered, and related ADRs. Follows the widely adopted ADR convention that engineering teams already know.",
+  "tags": ["adr", "architecture", "decision-record", "engineering"],
+  "author": "grainulation",
+  "version": "1.0.0",
+  "exportPresets": [
+    { "name": "pdf", "format": "pdf" },
+    { "name": "static-site", "format": "html" },
+    { "name": "markdown-outline", "format": "md" }
+  ],
+  "seedPacks": ["architecture"],
+  "scaffoldConfig": {
+    "defaultPlaceholders": {
+      "ADR_NUMBER": "000",
+      "TITLE": "Untitled Decision",
+      "STATUS": "status-proposed",
+      "DATE": "",
+      "CONTEXT": "",
+      "DECISION": "",
+      "CONSEQUENCES": "",
+      "ALTERNATIVES": "",
+      "RELATED": ""
+    },
+    "postInit": ["load-claims", "compile-brief"]
+  }
+}

@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — {{SPRINT_QUESTION}}</title>
+<style>
+  /* barn/templates/dashboard.html — sprint dashboard template
+     System font stack, no external dependencies, fully self-contained. */
+
+  :root {
+    --bg-dark: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-alt: #1a2332;
+    --accent: #3b82f6;
+    --accent-light: #60a5fa;
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.15);
+    --orange: #f59e0b;
+    --orange-dim: rgba(245,158,11,0.15);
+    --red: #e11d48;
+    --red-dim: rgba(225,29,72,0.15);
+    --purple: #a78bfa;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --border: rgba(255,255,255,0.06);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text);
+    font-size: 10pt;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    padding: 40px;
+    min-height: 100vh;
+  }
+
+  .dashboard-header {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .dashboard-header h1 {
+    font-size: 24pt;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .dashboard-header .meta {
+    display: flex;
+    gap: 24px;
+    color: var(--text-muted);
+    font-size: 10pt;
+  }
+
+  .dashboard-header .meta .status {
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 4px;
+  }
+
+  .status.ready { color: var(--green); background: var(--green-dim); }
+  .status.blocked { color: var(--red); background: var(--red-dim); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  .grid.three { grid-template-columns: 1fr 1fr 1fr; }
+  .grid.full { grid-template-columns: 1fr; }
+
+  .panel {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid var(--border);
+  }
+
+  .panel-title {
+    font-size: 9pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+
+  .phase-track {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .phase-step {
+    flex: 1;
+    text-align: center;
+    padding: 10px 8px;
+    border-radius: 8px;
+    font-size: 9pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--bg-card-alt);
+    color: var(--text-dim);
+    position: relative;
+  }
+
+  .phase-step.done {
+    background: var(--green-dim);
+    color: var(--green);
+  }
+
+  .phase-step.current {
+    background: rgba(59,130,246,0.15);
+    color: var(--accent-light);
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+
+  .phase-step .count {
+    display: block;
+    font-size: 16pt;
+    font-weight: 800;
+    margin-bottom: 2px;
+  }
+
+  .phase-connector {
+    width: 20px;
+    height: 2px;
+    background: var(--text-dim);
+    flex-shrink: 0;
+  }
+
+  .phase-connector.done { background: var(--green); }
+
+  .evidence-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .evidence-row .topic {
+    width: 140px;
+    font-weight: 600;
+    color: var(--text);
+    font-size: 10pt;
+    flex-shrink: 0;
+  }
+
+  .evidence-bar-track {
+    flex: 1;
+    height: 24px;
+    background: var(--bg-card-alt);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .evidence-bar {
+    height: 100%;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    padding-left: 8px;
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.9);
+    transition: width 0.6s ease;
+  }
+
+  .evidence-bar.production { background: linear-gradient(90deg, #22c55e, #16a34a); }
+  .evidence-bar.tested { background: linear-gradient(90deg, #3b82f6, #2563eb); }
+  .evidence-bar.documented { background: linear-gradient(90deg, #a78bfa, #7c3aed); }
+  .evidence-bar.web { background: linear-gradient(90deg, #f59e0b, #d97706); }
+  .evidence-bar.stated { background: linear-gradient(90deg, #64748b, #475569); }
+
+  .evidence-row .tier-label {
+    width: 80px;
+    font-size: 9pt;
+    color: var(--text-dim);
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .evidence-row .claim-count {
+    width: 30px;
+    font-size: 9pt;
+    color: var(--text-dim);
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .conflict-item {
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    border-left: 3px solid var(--red);
+    background: var(--red-dim);
+  }
+
+  .conflict-item.resolved {
+    border-left-color: var(--green);
+    background: var(--green-dim);
+  }
+
+  .conflict-item .conflict-label {
+    font-size: 8pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+
+  .conflict-item .conflict-label { color: var(--red); }
+  .conflict-item.resolved .conflict-label { color: var(--green); }
+
+  .conflict-item .conflict-text {
+    font-size: 10pt;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+
+  .conflict-item .claim-ids {
+    font-size: 8pt;
+    color: var(--text-dim);
+    font-family: monospace;
+    margin-top: 4px;
+  }
+
+  .connector-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 10pt;
+    color: var(--text-muted);
+  }
+
+  .connector-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: rgba(59,130,246,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12pt;
+    flex-shrink: 0;
+  }
+
+  .activity-item {
+    display: flex;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 9pt;
+  }
+
+  .activity-item .time {
+    color: var(--text-dim);
+    width: 60px;
+    flex-shrink: 0;
+    font-family: monospace;
+  }
+
+  .activity-item .message {
+    color: var(--text-muted);
+  }
+
+  .claim-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9pt;
+  }
+
+  .claim-table th {
+    text-align: left;
+    padding: 8px 12px;
+    background: var(--bg-card-alt);
+    color: var(--text-dim);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 8pt;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .claim-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+
+  .claim-table tr:hover td {
+    background: rgba(255,255,255,0.02);
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 8pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .badge.factual { color: var(--accent-light); background: rgba(59,130,246,0.12); }
+  .badge.constraint { color: var(--purple); background: rgba(167,139,250,0.12); }
+  .badge.estimate { color: var(--orange); background: var(--orange-dim); }
+  .badge.risk { color: var(--red); background: var(--red-dim); }
+  .badge.recommendation { color: var(--green); background: var(--green-dim); }
+  .badge.feedback { color: #f472b6; background: rgba(244,114,182,0.12); }
+
+  .badge.production { color: var(--green); background: var(--green-dim); }
+  .badge.tested { color: var(--accent-light); background: rgba(59,130,246,0.12); }
+  .badge.documented { color: var(--purple); background: rgba(167,139,250,0.12); }
+  .badge.web { color: var(--orange); background: var(--orange-dim); }
+  .badge.stated { color: var(--text-dim); background: rgba(100,116,139,0.15); }
+
+  .compilation-bar {
+    margin-top: 32px;
+    padding: 16px 24px;
+    background: var(--bg-card);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 9pt;
+    color: var(--text-dim);
+  }
+
+  .compilation-bar .certificate {
+    font-family: monospace;
+    font-size: 8pt;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 32px;
+    color: var(--text-dim);
+    font-style: italic;
+  }
+
+  @media (max-width: 768px) {
+    body { padding: 16px; }
+    .dashboard-header h1 { font-size: 16pt; }
+    .dashboard-header .meta { flex-wrap: wrap; gap: 8px 16px; font-size: 9pt; }
+    .grid, .grid.three { grid-template-columns: 1fr; gap: 16px; }
+    .panel { padding: 16px; }
+    .phase-track { flex-wrap: wrap; gap: 8px; }
+    .phase-step { flex: 0 0 calc(50% - 16px); padding: 8px 6px; font-size: 8pt; }
+    .phase-step .count { font-size: 14pt; }
+    .phase-connector { display: none; }
+    .evidence-row { flex-wrap: wrap; gap: 4px 8px; }
+    .evidence-row .topic { width: 100%; font-size: 9pt; margin-bottom: -2px; }
+    .evidence-bar-track { min-width: 0; }
+    .evidence-row .claim-count { width: 24px; font-size: 8pt; }
+    .claim-table { font-size: 8pt; }
+    .claim-table th, .claim-table td { padding: 6px 8px; }
+    .claim-table th:nth-child(4), .claim-table td:nth-child(4) { display: none; }
+    .compilation-bar { flex-direction: column; gap: 8px; text-align: center; }
+  }
+
+  @media (max-width: 480px) {
+    body { padding: 12px; }
+    .dashboard-header h1 { font-size: 14pt; }
+    .phase-step { flex: 0 0 calc(50% - 8px); }
+    .claim-table th:nth-child(3), .claim-table td:nth-child(3) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TEMPLATE: Populate with data from compilation.json -->
+
+<div class="dashboard-header">
+  <h1>{{SPRINT_QUESTION}}</h1>
+  <div class="meta">
+    <span>Phase: <strong>{{PHASE}}</strong></span>
+    <span>Claims: <strong>{{TOTAL_CLAIMS}}</strong></span>
+    <span>Day {{DAY_COUNT}}</span>
+    <span class="status {{STATUS_CLASS}}">{{STATUS}}</span>
+  </div>
+</div>
+
+<div class="grid full">
+  <div class="panel">
+    <div class="panel-title">Phase Progress</div>
+    <div class="phase-track">
+      <div class="phase-step done">
+        <span class="count">3</span>
+        Define
+      </div>
+      <div class="phase-connector done"></div>
+      <div class="phase-step current">
+        <span class="count">12</span>
+        Research
+      </div>
+      <div class="phase-connector"></div>
+      <div class="phase-step">
+        <span class="count">0</span>
+        Prototype
+      </div>
+      <div class="phase-connector"></div>
+      <div class="phase-step">
+        <span class="count">0</span>
+        Evaluate
+      </div>
+      <div class="phase-connector"></div>
+      <div class="phase-step">
+        <span class="count">&mdash;</span>
+        Compile
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="panel">
+    <div class="panel-title">Evidence Strength by Topic</div>
+    <div class="evidence-row">
+      <div class="topic">{{TOPIC_NAME}}</div>
+      <div class="evidence-bar-track">
+        <div class="evidence-bar tested" style="width: {{PERCENT}}%">{{TIER}}</div>
+      </div>
+      <div class="claim-count">{{N}}</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Conflicts</div>
+    <div class="conflict-item">
+      <div class="conflict-label">Unresolved</div>
+      <div class="conflict-text">{{DESCRIPTION}}</div>
+      <div class="claim-ids">{{CLAIM_A}} vs {{CLAIM_B}}</div>
+    </div>
+    <div class="conflict-item resolved">
+      <div class="conflict-label">Resolved</div>
+      <div class="conflict-text">{{DESCRIPTION}}</div>
+      <div class="claim-ids">{{WINNER}} over {{LOSER}} — {{REASON}}</div>
+    </div>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="panel">
+    <div class="panel-title">Connected Sources</div>
+    <div class="connector-item">
+      <div class="connector-icon">{{ICON}}</div>
+      <div>{{CONNECTOR_TARGET}}</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Recent Activity</div>
+    <div class="activity-item">
+      <div class="time">{{TIME}}</div>
+      <div class="message">{{COMMIT_MESSAGE}}</div>
+    </div>
+  </div>
+</div>
+
+<div class="grid full">
+  <div class="panel">
+    <div class="panel-title">Claim Inventory</div>
+    <table class="claim-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Type</th>
+          <th>Topic</th>
+          <th>Content</th>
+          <th>Evidence</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>{{ID}}</code></td>
+          <td><span class="badge {{TYPE}}">{{TYPE}}</span></td>
+          <td>{{TOPIC}}</td>
+          <td>{{CONTENT}}</td>
+          <td><span class="badge {{EVIDENCE}}">{{EVIDENCE}}</span></td>
+          <td>{{STATUS}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="compilation-bar">
+  <div>Compiled with barn</div>
+  <div class="certificate">{{CERTIFICATE_HASH}}</div>
+</div>
+
+</body>
+</html>

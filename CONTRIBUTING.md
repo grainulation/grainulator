@@ -57,9 +57,9 @@ file with YAML frontmatter (`name`, `description`, `tools`) and a
 prompt body. Keep tools lists minimal — only what the skill actually
 needs.
 
-Shared snippets live under `skills/_templates/` (files prefixed `_`
+Shared snippets live under `templates/` (files prefixed `_`
 are not loaded as skills). Reference them from a SKILL.md with the
-`${CLAUDE_PLUGIN_ROOT}/skills/_templates/<file>` path.
+`${CLAUDE_PLUGIN_ROOT}/templates/<file>` path.
 
 ## Version bumps
 

@@ -1,0 +1,21 @@
+{
+  "title": "Slide Deck",
+  "description": "Full-screen presentation slides with keyboard navigation. Arrow keys and number keys for slide control, progress bar, and slide counter.",
+  "tags": ["presentation", "slides", "meeting", "fullscreen", "keyboard"],
+  "author": "grainulation",
+  "version": "1.0.0",
+  "exportPresets": [
+    { "name": "pdf", "format": "pdf" },
+    { "name": "static-site", "format": "html" }
+  ],
+  "seedPacks": ["architecture"],
+  "scaffoldConfig": {
+    "defaultPlaceholders": {
+      "TITLE": "Sprint Presentation",
+      "SUBTITLE": "Key findings and recommendations",
+      "SPRINT_NAME": "Sprint",
+      "DATE": ""
+    },
+    "postInit": ["load-claims", "compile-brief"]
+  }
+}

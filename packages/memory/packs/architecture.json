@@ -1,0 +1,211 @@
+{
+  "name": "Architecture Decision Templates",
+  "description": "Constraint and risk claims for common architecture decisions -- monolith vs microservices, build vs buy, sync vs async, SQL vs NoSQL. Drop into any ADR sprint.",
+  "version": "1.0.0",
+  "claims": [
+    {
+      "id": "arch-001",
+      "type": "constraint",
+      "topic": "microservices operational overhead",
+      "content": "Microservices add operational overhead proportional to service count: each service needs its own CI/CD pipeline, monitoring, alerting, and on-call rotation. Below ~10 engineers, this cost often exceeds the benefit.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["architecture", "microservices", "team-size"]
+    },
+    {
+      "id": "arch-002",
+      "type": "risk",
+      "topic": "distributed transaction complexity",
+      "content": "Distributed transactions across microservices require saga patterns or two-phase commit. Both add complexity and failure modes that don't exist in a monolith.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["architecture", "microservices", "transactions"]
+    },
+    {
+      "id": "arch-003",
+      "type": "factual",
+      "topic": "event-driven eventual consistency",
+      "content": "Event-driven architectures decouple producers from consumers but introduce eventual consistency. Any user-facing flow that requires strong consistency must use synchronous calls or compensating transactions.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["architecture", "event-driven", "consistency"]
+    },
+    {
+      "id": "arch-004",
+      "type": "recommendation",
+      "topic": "modular monolith first",
+      "content": "Start with a modular monolith (clear module boundaries, separate data access per module) and extract services only when a module has a distinct scaling, deployment, or team-ownership need.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["architecture", "monolith", "modularity"]
+    },
+    {
+      "id": "arch-005",
+      "type": "risk",
+      "topic": "build vs buy cost analysis",
+      "content": "Build vs buy: custom solutions accumulate maintenance cost of ~15-20% of initial build cost per year. SaaS vendors average 5-10% annual price increases. Break-even is typically 3-5 years.",
+      "source": { "origin": "industry", "artifact": null, "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["architecture", "build-vs-buy", "cost"]
+    },
+    {
+      "id": "arch-006",
+      "type": "constraint",
+      "topic": "SQL vs NoSQL decision criteria",
+      "content": "SQL databases provide ACID transactions and are the correct default for structured data with relationships. NoSQL is justified when: (a) schema is truly unpredictable, (b) horizontal write scaling is required, or (c) access patterns are pure key-value.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["architecture", "database", "sql", "nosql"]
+    },
+    {
+      "id": "arch-007",
+      "type": "factual",
+      "topic": "CAP theorem",
+      "content": "CAP theorem: a distributed system can provide at most two of Consistency, Availability, and Partition tolerance. Since network partitions are inevitable, the real choice is between CP (consistent but may reject requests) and AP (available but may return stale data).",
+      "source": { "origin": "academic", "artifact": null, "connector": null },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["architecture", "cap-theorem", "distributed"]
+    },
+    {
+      "id": "arch-008",
+      "type": "risk",
+      "topic": "shared database coupling",
+      "content": "Shared databases between services create hidden coupling. Schema changes in one service break others. Each service should own its data store, exposing data only through APIs.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["architecture", "database", "coupling"]
+    },
+    {
+      "id": "arch-009",
+      "type": "recommendation",
+      "topic": "cache invalidation strategy",
+      "content": "For cache invalidation, prefer short TTLs with stale-while-revalidate over complex invalidation logic. Cache invalidation bugs are the #1 source of data inconsistency in production systems.",
+      "source": { "origin": "industry", "artifact": null, "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["architecture", "caching", "invalidation"]
+    },
+    {
+      "id": "arch-010",
+      "type": "constraint",
+      "topic": "per-client rate limiting",
+      "content": "API gateway rate limiting must be set per client, not globally. Global limits allow a single misbehaving client to consume the entire quota. Use token bucket or sliding window algorithms.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["architecture", "api", "rate-limiting"]
+    },
+    {
+      "id": "arch-011",
+      "type": "recommendation",
+      "topic": "circuit breaker pattern",
+      "content": "Circuit breakers (open after N failures, half-open after timeout, close after success) prevent cascade failures. Every synchronous cross-service call should have a circuit breaker with configurable thresholds.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["architecture", "resilience", "circuit-breaker"]
+    },
+    {
+      "id": "arch-012",
+      "type": "factual",
+      "topic": "p99 latency over average",
+      "content": "Latency at the 99th percentile (p99) matters more than average latency for user experience. A system with 50ms average but 2s p99 feels worse than one with 100ms average and 200ms p99.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["architecture", "latency", "performance"]
+    }
+  ]
+}

@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0e1a">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%230a0e1a'/><text x='32' y='34' text-anchor='middle' dominant-baseline='central' fill='%23fb923c' font-family='-apple-system,system-ui,sans-serif' font-weight='800' font-size='32'>H</text></svg>">
+<title>Harvest</title>
+<style>
+:root {
+  --bg: #0a0e1a; --bg-s: #111827; --bg-e: #1a2332; --bg-h: #1e293b;
+  --bdr: #1e293b; --bdr-f: #334155;
+  --txt: #e2e8f0; --txt-m: #94a3b8; --txt-d: #8494a7;
+  --acc: #fb923c; --acc-d: #7c4a1e;
+  --grn: #22c55e; --grn-d: rgba(34,197,94,0.12);
+  --ylw: #eab308; --ylw-d: rgba(234,179,8,0.08);
+  --org: #f97316; --org-d: rgba(249,115,22,0.1);
+  --red: #ef4444; --red-d: rgba(239,68,68,0.1);
+  --pur: #a855f7; --pur-d: rgba(168,85,247,0.1);
+  --cyn: #06b6d4; --cyn-d: rgba(6,182,212,0.1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'SF Mono','Fira Code','JetBrains Mono',monospace;background:var(--bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(59,130,246,0.08) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(167,139,250,0.06) 0%,transparent 50%);color:var(--txt);line-height:1.6;overflow-y:auto}
+
+/* Accessibility: skip link */
+.skip-link{position:absolute;top:-100px;left:0;background:var(--acc);color:#fff;padding:8px 16px;z-index:1000;font-size:12px;text-decoration:none;border-radius:0 0 4px 0}
+.skip-link:focus{top:0}
+
+/* Accessibility: screen-reader-only text */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* Accessibility: visible focus outlines */
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+
+/* Accessibility: status labels for color-coded elements */
+.status-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-left:4px}
+.status-label-good{color:var(--grn)}.status-label-warn{color:var(--ylw)}.status-label-critical{color:var(--red)}
+
+/* Accessibility: reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .hero-spark .bar, .collapsible-header .arrow, .collapsible-body { transition: none !important; animation: none !important; }
+}
+
+/* 8px grid spacing */
+.app{max-width:1120px;margin:0 auto;padding:32px 24px;padding-left:calc(24px + env(safe-area-inset-left));padding-right:calc(24px + env(safe-area-inset-right));padding-bottom:calc(32px + env(safe-area-inset-bottom));overflow-x:hidden}
+
+/* Toolbar */
+.toolbar{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.08);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--bdr);padding:4px 24px;padding-top:calc(4px + env(safe-area-inset-top));padding-left:calc(24px + env(safe-area-inset-left));padding-right:calc(24px + env(safe-area-inset-right));display:flex;align-items:center;gap:10px}
+.toolbar canvas{flex-shrink:0}
+.tool-status{font-size:10px;color:var(--txt-d);transition:color 0.3s}
+.toolbar-spacer{flex:1}
+.toolbar-right{display:flex;align-items:center;gap:8px}
+.sprint-select{padding:6px 28px 6px 12px;border-radius:6px;background:#111827;border:1px solid #1e293b;color:#e2e8f0;font-size:12px;font-family:inherit;outline:none;cursor:pointer;max-width:320px;text-overflow:ellipsis;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+.status-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--txt-d);transition:background 0.3s,box-shadow 0.3s}
+.status-dot.ok{background:#34c759;box-shadow:0 0 6px rgba(52,199,89,0.5)}
+header .meta{color:var(--txt-d);font-size:11px;display:flex;gap:16px;flex-wrap:wrap;flex:1;display:none}
+
+/* Hero metric */
+.hero{background:var(--bg-s);border:1px solid var(--bdr);border-radius:4px;padding:24px;margin-bottom:24px;display:flex;flex-direction:column;gap:12px;overflow:hidden}
+.hero-top{display:flex;align-items:flex-start;gap:24px}
+.hero-score{font-size:48px;font-weight:700;line-height:1;letter-spacing:-1px;flex-shrink:0}
+.hero-detail{flex:1;min-width:0}
+.hero-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--txt-d);margin-bottom:4px}
+.hero-prose{font-size:13px;color:var(--txt-m);line-height:1.6;margin-top:8px}
+.hero-prose strong{color:var(--txt)}
+.hero-spark{display:flex;align-items:flex-end;gap:2px;height:48px;overflow:hidden;min-width:0;padding-right:8px}
+.hero-spark .bar{flex:1 1 0;max-width:24px;min-width:2px;border-radius:2px 2px 0 0;background:var(--acc);opacity:0.5;transition:height 0.3s}
+.hero-spark .bar.current{opacity:1}
+.hero-spark-labels{display:flex;gap:2px;margin-top:4px;font-size:9px;color:var(--txt-d);overflow:hidden;padding-right:8px}
+.hero-spark-labels span{flex:1 1 0;max-width:24px;min-width:0;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hero-spark-labels .current{color:var(--acc);font-weight:700}
+
+/* KPI sections */
+.kpi-group{margin-bottom:24px}
+.kpi-group-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--txt-d);margin-bottom:8px;padding-left:4px}
+.kpi-row{display:grid;gap:16px;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr))}
+.kpi{background:var(--bg-s);border:1px solid var(--bdr);border-radius:4px;padding:16px}
+.kpi-label{font-size:10px;text-transform:uppercase;letter-spacing:0.6px;color:var(--txt-d);margin-bottom:4px}
+.kpi-value{font-size:24px;font-weight:700;line-height:1.2}
+.kpi-delta{font-size:11px;margin-top:4px;display:flex;align-items:center;gap:4px}
+.kpi-delta.up{color:var(--grn)}.kpi-delta.down{color:var(--red)}.kpi-delta.neutral{color:var(--txt-d)}
+.kpi-spark{display:flex;align-items:flex-end;gap:1px;height:24px;margin-top:8px}
+.kpi-spark .bar{flex:1;min-width:2px;border-radius:1px 1px 0 0;background:var(--acc);opacity:0.4}
+.kpi-spark .bar.current{opacity:1}
+
+/* Section headers */
+.section{margin-bottom:32px}
+.section-title{font-size:13px;font-weight:600;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px}
+.section-title .count{color:var(--txt-d);font-size:11px;font-weight:400}
+
+/* Heatmap */
+.heatmap-wrap{overflow-x:auto;margin:0 -4px;padding:0 4px}
+.heatmap{border-collapse:collapse;width:100%;font-size:11px}
+.heatmap th{padding:6px 8px;text-align:left;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--txt-d);border-bottom:1px solid var(--bdr);position:sticky;top:0;background:var(--bg)}
+.heatmap th.rotate{writing-mode:vertical-lr;text-align:center;padding:8px 4px;min-width:32px}
+.heatmap td{padding:4px 8px;border-bottom:1px solid var(--bdr)}
+.heatmap tr:hover{background:var(--bg-s)}
+.heatmap .topic-name{color:var(--txt-m);font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.heatmap .cell{text-align:center;min-width:32px;border-radius:2px;font-size:10px;color:var(--txt)}
+.heatmap .cell.has-conflict{outline:1px solid var(--ylw);outline-offset:-1px}
+.heat-0{background:transparent;color:var(--txt-d)}.heat-1{background:rgba(59,130,246,0.15)}.heat-2{background:rgba(59,130,246,0.25)}
+.heat-3{background:rgba(59,130,246,0.4)}.heat-4{background:rgba(59,130,246,0.55)}.heat-5{background:rgba(59,130,246,0.7)}
+
+/* Collapsible sections */
+.collapsible{margin-bottom:24px;border:1px solid var(--bdr);border-radius:4px;overflow:hidden}
+.collapsible-header{padding:12px 16px;background:var(--bg-s);cursor:pointer;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;user-select:none}
+.collapsible-header:hover{background:var(--bg-e)}
+.collapsible-header:active{background:var(--bg-h);transform:scale(0.995)}
+.collapsible-header .arrow{color:var(--txt-d);font-size:10px;transition:transform 0.2s}
+.collapsible.open .arrow{transform:rotate(90deg)}
+.collapsible-body{display:none;padding:16px;border-top:1px solid var(--bdr)}
+.collapsible.open .collapsible-body{display:block}
+
+/* Decay list */
+.decay-item{display:flex;align-items:center;gap:12px;padding:6px 0;border-bottom:1px solid var(--bdr);font-size:11px}
+.decay-item:last-child{border-bottom:none}
+.decay-score{width:40px;text-align:right;font-weight:600;flex-shrink:0}
+.decay-bar{width:60px;height:6px;background:var(--bg-h);border-radius:3px;overflow:hidden;flex-shrink:0}
+.decay-fill{height:100%;border-radius:3px}
+.decay-content{flex:1;color:var(--txt-m);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.decay-id{color:var(--txt-d);width:36px;flex-shrink:0;font-size:10px}
+.decay-tier{font-size:9px;padding:1px 4px;border-radius:2px;flex-shrink:0}
+
+/* Claims table */
+.claims-table{width:100%;border-collapse:collapse;font-size:11px}
+.claims-table th{text-align:left;padding:6px 8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--txt-d);border-bottom:1px solid var(--bdr);position:sticky;top:0;background:var(--bg)}
+.claims-table td{padding:5px 8px;border-bottom:1px solid var(--bdr);vertical-align:top}
+.claims-table tr:hover{background:var(--bg-s)}
+.claims-table .content-cell{max-width:400px;color:var(--txt-m);cursor:pointer}
+.claims-table .content-cell.collapsed{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.claims-table .content-cell.expanded{white-space:normal;word-break:break-word}
+.badge{font-size:9px;padding:1px 5px;border-radius:2px;font-weight:600;display:inline-block}
+.badge-factual{background:var(--acc-d);color:var(--acc)}
+.badge-risk{background:var(--red-d);color:var(--red)}
+.badge-recommendation{background:var(--grn-d);color:var(--grn)}
+.badge-constraint{background:var(--pur-d);color:var(--pur)}
+.badge-estimate{background:var(--ylw-d);color:var(--ylw)}
+.badge-feedback{background:var(--org-d);color:var(--org)}
+
+/* Phase bars */
+.phase-bars{display:flex;flex-direction:column;gap:4px}
+.phase-bar{display:flex;align-items:center;gap:8px;font-size:11px}
+.phase-bar .label{width:80px;text-align:right;color:var(--txt-d);font-size:10px;flex-shrink:0}
+.phase-bar .track{flex:1;height:16px;background:var(--bg-h);border-radius:2px;overflow:hidden;position:relative}
+.phase-bar .fill{height:100%;border-radius:2px;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-size:9px;color:var(--txt);min-width:20px}
+.phase-bar .count{width:32px;text-align:right;color:var(--txt-m);font-size:11px;flex-shrink:0}
+
+/* Small multiples (cross-sprint comparison) */
+.small-multiples{display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:16px}
+.mini-chart{background:var(--bg-s);border:1px solid var(--bdr);border-radius:4px;padding:16px}
+.mini-chart-title{font-size:11px;font-weight:600;margin-bottom:12px;color:var(--txt-m)}
+.mini-bars{display:flex;flex-direction:column;gap:3px}
+.mini-bar{display:flex;align-items:center;gap:6px;font-size:10px}
+.mini-bar .label{width:70px;text-align:right;color:var(--txt-d);flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mini-bar .track{flex:1;height:10px;background:var(--bg-h);border-radius:2px;overflow:hidden}
+.mini-bar .fill{height:100%;border-radius:2px;display:block}
+.mini-bar .val{width:24px;text-align:right;color:var(--txt-d);flex-shrink:0}
+
+/* Search/filter */
+.filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.filter-bar input{background:var(--bg-s);border:1px solid var(--bdr);color:var(--txt);padding:6px 12px;border-radius:3px;font-family:inherit;font-size:11px;flex:1;min-width:200px}
+.filter-bar input:focus{outline:none;border-color:var(--acc)}
+.filter-btn{background:var(--bg-s);border:1px solid var(--bdr);color:var(--txt-m);padding:8px 12px;border-radius:3px;font-family:inherit;font-size:10px;cursor:pointer;min-height:36px}
+.filter-btn:hover{border-color:var(--bdr-f);color:var(--txt)}
+.filter-btn.active{border-color:var(--acc);color:var(--acc);background:var(--acc-d)}
+.filter-btn:active{transform:scale(0.96);opacity:0.8}
+
+/* Actions */
+.actions{display:flex;flex-direction:column;gap:8px}
+.action{display:flex;gap:12px;padding:12px 16px;background:var(--bg-s);border:1px solid var(--bdr);border-radius:4px;align-items:flex-start;font-size:12px;border-left:3px solid var(--acc)}
+.action.a-crit{border-left-color:var(--red)}
+.action.a-warn{border-left-color:var(--ylw)}
+.action.a-info{border-left-color:var(--acc)}
+.action.a-good{border-left-color:var(--grn)}
+.action-priority{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:2px 6px;border-radius:2px;flex-shrink:0;min-width:28px;text-align:center}
+.action-priority.p1{background:var(--red-d);color:var(--red)}
+.action-priority.p2{background:var(--ylw-d);color:var(--ylw)}
+.action-priority.p3{background:var(--acc-d);color:var(--acc)}
+.action-body{flex:1;min-width:0}
+.action-title{font-weight:600;color:var(--txt);margin-bottom:2px}
+.action-detail{font-size:11px;color:var(--txt-m);line-height:1.5}
+.action-cmd{font-size:10px;color:var(--acc);margin-top:4px;font-family:inherit}
+.action-targets{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.action-target{font-size:9px;padding:1px 5px;background:var(--bg-h);border-radius:2px;color:var(--txt-d)}
+
+/* Footer */
+footer{margin-top:32px;padding-top:16px;border-top:1px solid var(--bdr);color:var(--txt-d);font-size:10px;display:flex;justify-content:space-between}
+.grain-idle { display: block; margin: 0 auto 10px; }
+
+/* Mobile */
+@media(max-width:768px){
+  .toolbar{padding:4px 12px}
+  .app{padding:16px 12px}
+  .hero{padding:14px;gap:10px}
+  .hero-top{gap:12px;flex-direction:column}
+  .hero-score{font-size:22px}
+  .hero-spark{height:32px}
+  .kpi-row{grid-template-columns:1fr 1fr}
+  .kpi{padding:10px}
+  .kpi-value{font-size:18px}
+  .kpi-spark{height:18px}
+  .section{margin-bottom:16px}
+  .heatmap-grid{font-size:9px}
+  .small-multiples{grid-template-columns:1fr}
+  .claims-list .claim{padding:8px 10px}
+  .collapsible-header{padding:10px 12px;font-size:11px}
+  .collapsible-body{padding:10px}
+  .action-card{padding:8px 10px}
+  .sprint-select{max-width:180px}
+}
+/* Small phones */
+@media(max-width:480px){
+  .toolbar{padding:4px 8px;gap:6px}
+  .app{padding:12px 8px}
+  .hero{padding:10px}
+  .hero-top{gap:8px}
+  .hero-score{font-size:18px}
+  .kpi-row{grid-template-columns:1fr}
+  .kpi-value{font-size:16px}
+  .sprint-select{max-width:140px}
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- Toolbar -->
+<header class="toolbar" role="banner">
+  <canvas id="grainLogo" width="256" height="256"></canvas>
+  <div class="toolbar-spacer"></div>
+  <div class="toolbar-right">
+    <select id="sprintSelector" class="sprint-select" aria-label="Select sprint to analyze"></select>
+    <div class="status-dot" id="statusDot"></div>
+  </div>
+</header>
+
+<div class="app">
+<!-- Layer 2: Overview — Hero + KPIs -->
+<main id="main-content">
+<div class="hero" id="hero" role="region" aria-label="Sprint health overview"></div>
+
+<!-- Actions: what to do right now -->
+<div id="actions-section" style="margin-bottom:24px"></div>
+
+<div id="kpi-groups"></div>
+
+<!-- Layer 3: Diagnosis — Topic Coverage Heatmap -->
+<div class="section" id="heatmap-section" role="region" aria-label="Topic coverage heatmap">
+  <div class="section-title">Topic Coverage <span class="count" id="heatmap-count"></span></div>
+  <div class="heatmap-wrap">
+    <table class="heatmap" id="heatmap" role="table" aria-label="Claim counts by topic and type"></table>
+  </div>
+</div>
+
+<!-- Layer 3b: Small Multiples (cross-sprint comparison) -->
+<div class="section" id="multiples-section" style="display:none">
+  <div class="section-title">Cross-Sprint Comparison</div>
+  <div class="small-multiples" id="small-multiples"></div>
+</div>
+
+<!-- Layer 4: Details — Collapsible -->
+<div class="collapsible" id="decay-section">
+  <div class="collapsible-header" role="button" tabindex="0" aria-expanded="false" aria-controls="decay-body" onclick="toggle('decay-section')" onkeydown="toggleKey(event,'decay-section')">
+    <span class="arrow" aria-hidden="true">&#9654;</span>
+    Decay Analysis
+    <span class="count" id="decay-count"></span>
+  </div>
+  <div class="collapsible-body" id="decay-body" role="region" aria-label="Decay analysis details"></div>
+</div>
+
+<div class="collapsible" id="phase-section">
+  <div class="collapsible-header" role="button" tabindex="0" aria-expanded="false" aria-controls="phase-body" onclick="toggle('phase-section')" onkeydown="toggleKey(event,'phase-section')">
+    <span class="arrow" aria-hidden="true">&#9654;</span>
+    Phase Breakdown
+    <span class="count" id="phase-count"></span>
+  </div>
+  <div class="collapsible-body" id="phase-body" role="region" aria-label="Phase breakdown details"></div>
+</div>
+
+<div class="collapsible" id="insights-section">
+  <div class="collapsible-header" role="button" tabindex="0" aria-expanded="false" aria-controls="insights-body" onclick="toggle('insights-section')" onkeydown="toggleKey(event,'insights-section')">
+    <span class="arrow" aria-hidden="true">&#9654;</span>
+    Insights
+    <span class="count" id="insights-count"></span>
+  </div>
+  <div class="collapsible-body" id="insights-body" role="region" aria-label="Insights details"></div>
+</div>
+
+<!-- Layer 5: Data — Full Claims Table -->
+<div class="collapsible" id="claims-section">
+  <div class="collapsible-header" role="button" tabindex="0" aria-expanded="false" aria-controls="claims-body" onclick="toggle('claims-section')" onkeydown="toggleKey(event,'claims-section')">
+    <span class="arrow" aria-hidden="true">&#9654;</span>
+    All Claims
+    <span class="count" id="claims-count"></span>
+  </div>
+  <div class="collapsible-body" id="claims-body" role="region" aria-label="All claims details">
+    <div class="filter-bar" id="filter-bar" role="search" aria-label="Filter claims"></div>
+    <div style="max-height:500px;overflow-y:auto">
+      <table class="claims-table" id="claims-table" aria-live="polite"></table>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer role="contentinfo">
+  <span id="footer-left"></span>
+  <span id="footer-right"></span>
+</footer>
+
+</div>
+
+<script>
+const SPRINTS = __SPRINT_DATA__;
+
+// --- Computed metrics ---
+function computeMetrics(sprint) {
+  const c = sprint.c;
+  const total = c.length;
+  const active = c.filter(x => x.s === 'active').length;
+  const types = {};
+  const topics = {};
+  const evidence = {};
+  const phases = {};
+  const conflicts = c.filter(x => x.cf && x.cf.length > 0);
+
+  c.forEach(cl => {
+    types[cl.t] = (types[cl.t] || 0) + 1;
+    topics[cl.tp] = topics[cl.tp] || { types: {}, count: 0, hasConflict: false };
+    topics[cl.tp].types[cl.t] = (topics[cl.tp].types[cl.t] || 0) + 1;
+    topics[cl.tp].count++;
+    if (cl.cf && cl.cf.length) topics[cl.tp].hasConflict = true;
+    evidence[cl.e] = (evidence[cl.e] || 0) + 1;
+    phases[cl.p] = (phases[cl.p] || 0) + 1;
+  });
+
+  // Evidence strength: weighted average (stated=1, web=2, documented=3, tested=4, production=5)
+  const tierWeight = { stated: 1, web: 2, documented: 3, tested: 4, production: 5 };
+  const evidenceStrength = total > 0 ? c.reduce((s, cl) => s + (tierWeight[cl.e] || 1), 0) / total : 0;
+
+  // Verification coverage: % of claims with tested or production evidence
+  const verified = c.filter(cl => cl.e === 'tested' || cl.e === 'production').length;
+  const verificationCoverage = total > 0 ? verified / total : 0;
+
+  // Challenge rate: % of claims that have been challenged (have conflicts)
+  const challenged = c.filter(cl => cl.cf && cl.cf.length > 0).length;
+  const challengeRate = total > 0 ? challenged / total : 0;
+
+  // Eval/research ratio
+  const evalClaims = c.filter(cl => cl.p === 'evaluate').length;
+  const researchClaims = c.filter(cl => cl.p === 'research').length;
+  const evalResearchRatio = researchClaims > 0 ? evalClaims / researchClaims : 0;
+
+  // Conflict resolution rate
+  const superseded = c.filter(cl => cl.s === 'superseded').length;
+  const conflictResRate = conflicts.length + superseded > 0 ? superseded / (conflicts.length + superseded) : 1;
+
+  // Decay: sprint-relative time-based scoring (p014 fix)
+  // Evidence tier is a credibility score, NOT a decay signal (p012 fix)
+  const now = Date.now();
+  const timestamps = c.map(cl => cl.ts ? new Date(cl.ts).getTime() : 0).filter(t => t > 0);
+  const sprintSpanDays = timestamps.length >= 2
+    ? (Math.max(...timestamps) - Math.min(...timestamps)) / (1000 * 60 * 60 * 24)
+    : 30;
+  const baseSprintDays = 30;
+  const decayScale = Math.max(sprintSpanDays / baseSprintDays, 1 / 720); // floor ~2min
+  const baseHalfLives = { stated: 7, web: 14, documented: 30, tested: 60, production: 90 };
+  const credibilityScores = { stated: 0.2, web: 0.4, documented: 0.6, tested: 0.8, production: 1.0 };
+
+  const decayScores = c.filter(cl => cl.s === 'active').map(cl => {
+    const age = cl.ts ? (now - new Date(cl.ts).getTime()) / (1000 * 60 * 60 * 24) : 30;
+    const halfLife = (baseHalfLives[cl.e] || 14) * decayScale;
+    const score = Math.pow(0.5, age / halfLife); // freshness (1=fresh, 0=decayed)
+    const credibility = credibilityScores[cl.e] || 0.3;
+    return { ...cl, decay: score, credibility };
+  }).sort((a, b) => a.decay - b.decay);
+
+  // Avg decay
+  const avgDecay = decayScores.length > 0 ? decayScores.reduce((s, x) => s + x.decay, 0) / decayScores.length : 1;
+
+  // Unchallenged topic %
+  const topicKeys = Object.keys(topics);
+  const unchallengedTopics = topicKeys.filter(t => !topics[t].hasConflict).length;
+  const unchallengedPct = topicKeys.length > 0 ? unchallengedTopics / topicKeys.length : 0;
+
+  // Evidence depth: weighted by verification effort
+  // web=0.3 (research is real work), documented=0.5, tested=0.8, production=1.0
+  const evidenceDepth = total > 0 ? c.reduce((s, cl) => {
+    const w = { stated: 0, web: 0.3, documented: 0.5, tested: 0.8, production: 1.0 };
+    return s + (w[cl.e] || 0);
+  }, 0) / total : 0;
+
+  // Type diversity: how many of 6 types are represented?
+  const typeDiversity = Object.keys(types).length / 6;
+
+  // Phase-aware coverage: score relative to what the current phase expects
+  // research phase only needs research+define, prototype needs 3, evaluate needs 4+
+  const phaseCount = Object.keys(phases).length;
+  const sprintPhase = c.length > 0 ? (c[c.length - 1].p || 'research') : 'research';
+  const phaseExpected = { define: 1, research: 2, prototype: 3, evaluate: 4, feedback: 4 }[sprintPhase] || 3;
+  const phaseCoverage = Math.min(phaseCount / phaseExpected, 1);
+
+  // Process health: conflict resolution + challenge coverage (was display-only, now scored)
+  const processHealth = (conflictResRate * 0.6) + (Math.min(challengeRate / 0.1, 1) * 0.4);
+
+  // Composite health score (0-100)
+  // Evidence quality 25, evidence depth 15, freshness 15, type diversity 10, phase coverage 10, process 25
+  const rawHealth = Math.round(
+    (evidenceStrength / 5) * 25 +
+    evidenceDepth * 15 +
+    avgDecay * 15 +
+    typeDiversity * 10 +
+    phaseCoverage * 10 +
+    processHealth * 25
+  );
+
+  // Size confidence: penalize small sprints
+  const sizeConfidence = total < 10 ? 0.5 : total < 25 ? 0.75 : total < 50 ? 0.9 : 1.0;
+  const health = Math.round(rawHealth * sizeConfidence);
+  const lowSample = sizeConfidence < 1.0;
+
+  return {
+    total, active, types, topics, evidence, phases, conflicts,
+    evidenceStrength, verificationCoverage, challengeRate, evalResearchRatio,
+    conflictResRate, decayScores, avgDecay, unchallengedPct, health, rawHealth, sizeConfidence, lowSample
+  };
+}
+
+// --- Cross-sprint normalization ---
+// Compute percentile ranks so no single sprint dominates by having unusual distributions
+const allRaw = SPRINTS.map(s => computeMetrics(s));
+
+// Percentile rank helper: where does value sit among peers? Returns 0-1
+function pctRank(val, arr) {
+  if (arr.length <= 1) return 0.5;
+  const sorted = arr.slice().sort((a, b) => a - b);
+  const idx = sorted.findIndex(v => v >= val);
+  return idx < 0 ? 1 : idx / (sorted.length - 1);
+}
+
+// For each metric, compute the percentile rank across ALL sprints
+const evStrengths = allRaw.map(m => m.evidenceStrength);
+const evDepths = allRaw.map(m => {
+  const total = m.total;
+  if (total === 0) return 0;
+  const w = { stated: 0, web: 0.3, documented: 0.5, tested: 0.8, production: 1.0 };
+  let sum = 0;
+  Object.entries(m.evidence).forEach(([tier, cnt]) => { sum += (w[tier] || 0) * cnt; });
+  return sum / total;
+});
+const typeDivs = allRaw.map(m => Object.keys(m.types).length / 6);
+const freshnesses = allRaw.map(m => m.avgDecay);
+const processScores = allRaw.map(m => (m.conflictResRate * 0.6) + (Math.min(m.challengeRate / 0.1, 1) * 0.4));
+
+// Attach normalized health to each metric set
+const allMetrics = allRaw.map((m, i) => {
+  const sprint = SPRINTS[i];
+  const cat = sprint.cat || 'active';
+
+  // Percentile-based health: each dimension scored relative to peers
+  const evPct = pctRank(evStrengths[i], evStrengths);
+  const depthPct = pctRank(evDepths[i], evDepths);
+  const freshPct = pctRank(freshnesses[i], freshnesses);
+  const typePct = pctRank(typeDivs[i], typeDivs);
+  const procPct = pctRank(processScores[i], processScores);
+  const phaseCount = Object.keys(m.phases).length;
+  const phasePct = Math.min(phaseCount / 3, 1);
+
+  // Same weights as raw: evidence 25, depth 15, freshness 15, types 10, phase 10, process 25
+  const normalizedRaw = Math.round(
+    evPct * 25 +
+    depthPct * 15 +
+    freshPct * 15 +
+    typePct * 10 +
+    phasePct * 10 +
+    procPct * 25
+  );
+
+  // Size confidence penalty
+  const total = m.total;
+  const sizeConf = total < 10 ? 0.5 : total < 25 ? 0.75 : total < 50 ? 0.9 : 1.0;
+  // Category penalty: only archive gets a mild penalty (root is the active sprint, not stale)
+  const catConf = cat === 'archive' ? 0.9 : 1.0;
+  const normHealth = Math.round(normalizedRaw * sizeConf * catConf);
+  const lowSample = sizeConf < 1.0;
+  const lowLabel = cat === 'archive' ? 'archived' : sizeConf < 1.0 ? 'low sample' : '';
+
+  return { ...m, health: normHealth, rawHealth: m.health, sizeConfidence: sizeConf, lowSample, lowLabel, cat };
+});
+
+// Build merged "All sprints" synthetic entry
+const allClaims = [];
+SPRINTS.forEach(s => { s.c.forEach(cl => allClaims.push(cl)); });
+const ALL_SPRINT = { n: 'All sprints', c: allClaims, cat: 'all', p: 'all', q: '' };
+const ALL_RAW = computeMetrics(ALL_SPRINT);
+const ALL_METRIC = { ...ALL_RAW, health: ALL_RAW.health, rawHealth: ALL_RAW.rawHealth, sizeConfidence: ALL_RAW.sizeConfidence, lowSample: false, lowLabel: '', cat: 'all' };
+
+// Default to "all sprints" (idx = -1)
+let selectedIdx = -1;
+
+// Populate sprint selector
+const sprintSelector = document.getElementById('sprintSelector');
+const allOpt = document.createElement('option');
+allOpt.value = -1;
+allOpt.textContent = 'All sprints (' + allClaims.length + ' claims)';
+sprintSelector.appendChild(allOpt);
+const catLabels = { active: '', archive: '[archived] ', root: '[root] ' };
+SPRINTS.forEach((s, i) => {
+  const opt = document.createElement('option');
+  opt.value = i;
+  const cat = s.cat || 'active';
+  opt.textContent = (catLabels[cat] || '') + s.n + ' (' + s.c.length + ' claims)';
+  sprintSelector.appendChild(opt);
+});
+sprintSelector.value = selectedIdx;
+sprintSelector.addEventListener('change', function() {
+  selectedIdx = parseInt(this.value);
+  renderAll(selectedIdx);
+});
+
+// Global state for claims filtering (used by inline event handlers)
+var _currentClaims = [];
+var filterType = null;
+var filterText = '';
+
+function renderClaims() {
+  let filtered = _currentClaims;
+  if (filterType) filtered = filtered.filter(c => c.t === filterType);
+  if (filterText) {
+    const q = filterText.toLowerCase();
+    filtered = filtered.filter(c => (c.c || '').toLowerCase().includes(q) || (c.tp || '').toLowerCase().includes(q) || (c.i || '').toLowerCase().includes(q));
+  }
+
+  const humanTopic = t => (t || '').replace(/-/g, ' ');
+  const humanEvidence = e => ({ stated: 'stated', web: 'web', documented: 'docs', tested: 'tested', production: 'prod' }[e] || e);
+
+  document.getElementById('claims-table').innerHTML = `
+    <thead><tr><th>ID</th><th>Type</th><th>Topic</th><th>Content</th><th>Evidence</th><th>Status</th></tr></thead>
+    <tbody>
+      ${filtered.map(c => `
+        <tr>
+          <td style="color:var(--txt-d);font-size:10px;font-weight:600">${c.i}</td>
+          <td><span class="badge badge-${c.t}">${c.t}</span></td>
+          <td style="color:var(--txt-m);font-size:10px;max-width:120px" title="${c.tp}">${humanTopic(c.tp)}</td>
+          <td class="content-cell collapsed" onclick="this.classList.toggle('collapsed');this.classList.toggle('expanded')">${c.c || ''}</td>
+          <td style="font-size:10px"><span class="badge badge-${c.t === 'risk' ? 'risk' : c.e === 'tested' ? 'recommendation' : c.e === 'documented' ? 'factual' : 'estimate'}">${humanEvidence(c.e)}</span></td>
+          <td style="font-size:10px;color:${c.s === 'active' ? 'var(--grn)' : c.s === 'superseded' ? 'var(--txt-d)' : 'var(--ylw)'}" aria-label="Status: ${c.s}">${c.s}</td>
+        </tr>
+      `).join('')}
+    </tbody>
+  `;
+}
+
+function renderAll(idx) {
+const current = idx >= 0 ? SPRINTS[idx] : ALL_SPRINT;
+const m = idx >= 0 ? allMetrics[idx] : ALL_METRIC;
+const prev = idx > 0 ? allMetrics[idx - 1] : null;
+
+// Toolbar status
+// (toolbar status removed — sprint info shown in dropdown + hero)
+const dot = document.getElementById('statusDot');
+dot.classList.remove('ok'); dot.classList.add('ok');
+
+// Hero
+function healthColor(h) {
+  if (h >= 70) return 'var(--grn)';
+  if (h >= 40) return 'var(--ylw)';
+  return 'var(--red)';
+}
+
+function healthLabel(h) {
+  if (h >= 70) return 'good';
+  if (h >= 40) return 'warn';
+  return 'critical';
+}
+
+function statusLabelHtml(h) {
+  const label = healthLabel(h);
+  return `<span class="status-label status-label-${label}">${label}</span>`;
+}
+
+function sparkBars(values, currentIdx) {
+  return values.map((v, i) =>
+    `<div class="bar${i === currentIdx ? ' current' : ''}" style="height:${Math.max(4, v)}%;background:${healthColor(v)}"></div>`
+  ).join('');
+}
+
+const healthHistory = allMetrics.map(m => m.health);
+const lowSampleHtml = m.lowLabel ? ` <span style="color:var(--ylw);font-size:11px;font-weight:400">(${m.lowLabel})</span>` : '';
+const heroProseLines = [];
+heroProseLines.push(`Analyzing <strong>${current.n}</strong> (${m.total} claims) -- ${SPRINTS.length} sprint${SPRINTS.length > 1 ? 's' : ''} loaded`);
+if (m.evidenceStrength >= 2) heroProseLines.push(`Evidence strength <strong>${m.evidenceStrength.toFixed(2)}</strong> (${m.evidenceStrength >= 3 ? 'strong' : 'moderate'}) -- ${(m.verificationCoverage * 100).toFixed(1)}% verified`);
+else heroProseLines.push(`Evidence strength <strong>${m.evidenceStrength.toFixed(2)}</strong> (weak) -- most claims lack verification`);
+if (m.unchallengedPct > 0.8) heroProseLines.push(`<strong>${(m.unchallengedPct * 100).toFixed(0)}%</strong> of topics have no conflicting claims -- adversarial testing needed`);
+if (m.evalResearchRatio < 0.1) heroProseLines.push(`Eval/research ratio <strong>${m.evalResearchRatio.toFixed(3)}</strong> -- accumulating research without closing evaluation loops`);
+
+document.getElementById('hero').innerHTML = `
+  <div class="hero-top">
+    <div>
+      <div class="hero-label">Sprint Health</div>
+      <div class="hero-score" style="color:${healthColor(m.health)}" aria-label="Health score ${m.health}, ${healthLabel(m.health)}">${m.health}${lowSampleHtml}${statusLabelHtml(m.health)}</div>
+    </div>
+    <div class="hero-detail">
+      <div class="hero-prose">${heroProseLines.join('. ')}.</div>
+    </div>
+  </div>
+  <div class="hero-spark">${sparkBars(healthHistory, idx)}</div>
+  <div class="hero-spark-labels">
+    ${SPRINTS.map((s, i) => `<span${i === idx ? ' class="current"' : ''}>${s.n.replace(/^Sprint\s*/i, '').substring(0, 4)}</span>`).join('')}
+  </div>
+`;
+
+// KPI Groups
+function delta(cur, prev, fmt, inverse) {
+  if (prev == null) return '<span class="kpi-delta neutral">--</span>';
+  const diff = cur - prev;
+  const dir = inverse ? (diff < 0 ? 'up' : diff > 0 ? 'down' : 'neutral') : (diff > 0 ? 'up' : diff < 0 ? 'down' : 'neutral');
+  const sign = diff > 0 ? '+' : '';
+  return `<span class="kpi-delta ${dir}">${sign}${fmt(diff)} from prev</span>`;
+}
+
+function miniSpark(values, idx) {
+  const max = Math.max(...values, 0.001);
+  return `<div class="kpi-spark">${values.map((v, i) =>
+    `<div class="bar${i === idx ? ' current' : ''}" style="height:${Math.max(8, (v / max) * 100)}%"></div>`
+  ).join('')}</div>`;
+}
+
+const fmt2 = v => v.toFixed(2);
+const fmtPct = v => (v * 100).toFixed(1) + '%';
+const fmt3 = v => v.toFixed(3);
+const fmtInt = v => Math.round(v).toString();
+
+const kpiGroups = [
+  {
+    title: 'Evidence',
+    kpis: [
+      { label: 'Evidence Strength', value: m.evidenceStrength, fmt: fmt2, history: allMetrics.map(am => am.evidenceStrength), prev: prev?.evidenceStrength },
+      { label: 'Verification Coverage', value: m.verificationCoverage, fmt: fmtPct, history: allMetrics.map(am => am.verificationCoverage), prev: prev?.verificationCoverage },
+      { label: 'Challenge Rate', value: m.challengeRate, fmt: fmtPct, history: allMetrics.map(am => am.challengeRate), prev: prev?.challengeRate },
+    ]
+  },
+  {
+    title: 'Process',
+    kpis: [
+      { label: 'Eval/Research Ratio', value: m.evalResearchRatio, fmt: fmt3, history: allMetrics.map(am => am.evalResearchRatio), prev: prev?.evalResearchRatio },
+      { label: 'Conflict Resolution', value: m.conflictResRate, fmt: fmtPct, history: allMetrics.map(am => am.conflictResRate), prev: prev?.conflictResRate },
+      { label: 'Avg Freshness', value: m.avgDecay, fmt: fmtPct, history: allMetrics.map(am => am.avgDecay), prev: prev?.avgDecay },
+    ]
+  }
+];
+
+document.getElementById('kpi-groups').innerHTML = kpiGroups.map(g => `
+  <div class="kpi-group" role="group" aria-label="${g.title} metrics">
+    <div class="kpi-group-title">${g.title}</div>
+    <div class="kpi-row">
+      ${g.kpis.map((k, ki) => `
+        <div class="kpi" role="group" aria-label="${k.label}: ${k.fmt(k.value)}">
+          <div class="kpi-label">${k.label}</div>
+          <div class="kpi-value">${k.fmt(k.value)}</div>
+          ${delta(k.value, k.prev, k.fmt, false)}
+          ${miniSpark(k.history, idx)}
+        </div>
+      `).join('')}
+    </div>
+  </div>
+`).join('');
+
+// Topic Heatmap
+const claimTypes = ['factual', 'risk', 'recommendation', 'constraint', 'estimate', 'feedback'];
+const topicEntries = Object.entries(m.topics).sort((a, b) => b[1].count - a[1].count);
+document.getElementById('heatmap-count').textContent = `${topicEntries.length} topics`;
+
+function heatClass(n) {
+  if (n === 0) return 'heat-0';
+  if (n === 1) return 'heat-1';
+  if (n <= 3) return 'heat-2';
+  if (n <= 6) return 'heat-3';
+  if (n <= 12) return 'heat-4';
+  return 'heat-5';
+}
+
+document.getElementById('heatmap').innerHTML = `
+  <thead><tr>
+    <th>Topic</th>
+    ${claimTypes.map(t => `<th class="rotate">${t}</th>`).join('')}
+    <th>Total</th>
+  </tr></thead>
+  <tbody>
+    ${topicEntries.slice(0, 30).map(([topic, data]) => `
+      <tr>
+        <td class="topic-name" title="${topic}">${topic.replace(/-/g, ' ')}</td>
+        ${claimTypes.map(t => {
+          const n = data.types[t] || 0;
+          const conflict = data.hasConflict && n > 0 ? ' has-conflict' : '';
+          return `<td class="cell ${heatClass(n)}${conflict}">${n || ''}</td>`;
+        }).join('')}
+        <td style="color:var(--txt-m);text-align:center">${data.count}</td>
+      </tr>
+    `).join('')}
+  </tbody>
+`;
+
+// Small Multiples (cross-sprint comparison)
+if (SPRINTS.length > 1) {
+  document.getElementById('multiples-section').style.display = '';
+  const compareMetrics = [
+    { label: 'Claims by Type', fn: m => m.types, keys: claimTypes },
+    { label: 'Claims by Evidence', fn: m => m.evidence, keys: ['stated', 'web', 'documented', 'tested', 'production'] },
+  ];
+
+  document.getElementById('small-multiples').innerHTML = SPRINTS.map((s, si) => {
+    const sm = allMetrics[si];
+    return compareMetrics.map(cm => {
+      const data = cm.fn(sm);
+      const max = Math.max(...cm.keys.map(k => data[k] || 0), 1);
+      return `
+        <div class="mini-chart">
+          <div class="mini-chart-title">${s.n} -- ${cm.label}</div>
+          <div class="mini-bars">
+            ${cm.keys.map(k => {
+              const v = data[k] || 0;
+              const pct = (v / max) * 100;
+              const color = k === 'factual' || k === 'documented' ? 'var(--acc)' :
+                            k === 'risk' || k === 'stated' ? 'var(--red)' :
+                            k === 'recommendation' || k === 'tested' ? 'var(--grn)' :
+                            k === 'constraint' || k === 'production' ? 'var(--pur)' :
+                            k === 'estimate' ? 'var(--ylw)' : 'var(--cyn)';
+              return `<div class="mini-bar">
+                <span class="label" title="${k}">${k}</span>
+                <span class="track"><span class="fill" style="width:${pct}%;background:${color}"></span></span>
+                <span class="val">${v}</span>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }).join('');
+}
+
+// Decay
+const decaying = m.decayScores.filter(d => d.decay < 0.5);
+document.getElementById('decay-count').textContent = `${decaying.length} stale`;
+
+function decayColor(d) {
+  if (d >= 0.7) return 'var(--grn)';
+  if (d >= 0.4) return 'var(--ylw)';
+  return 'var(--red)';
+}
+
+function decayLabel(d) {
+  if (d >= 0.7) return 'fresh';
+  if (d >= 0.4) return 'aging';
+  return 'stale';
+}
+
+function credColor(c) {
+  if (c >= 0.7) return 'var(--grn)';
+  if (c >= 0.4) return 'var(--ylw)';
+  return 'var(--red)';
+}
+
+document.getElementById('decay-body').innerHTML = decaying.length === 0
+  ? '<div style="color:var(--txt-d);font-size:11px;padding:8px 0">No claims below 50% freshness.</div>'
+  : `<div style="display:flex;gap:16px;font-size:10px;color:var(--txt-d);margin-bottom:8px;padding:4px 0;border-bottom:1px solid var(--bdr)">
+      <span style="width:36px;text-align:right">ID</span>
+      <span style="width:48px;text-align:right">Fresh</span>
+      <span style="width:60px">Decay</span>
+      <span style="width:48px;text-align:center">Cred</span>
+      <span>Claim</span>
+    </div>
+    <div>${decaying.slice(0, 30).map(cl => `
+    <div class="decay-item">
+      <span class="decay-id">${cl.i}</span>
+      <span class="decay-score" style="color:${decayColor(cl.decay)}" aria-label="${(cl.decay * 100).toFixed(0)}% freshness, ${decayLabel(cl.decay)}">${(cl.decay * 100).toFixed(0)}%</span>
+      <span class="decay-bar"><span class="decay-fill" style="width:${Math.max(cl.decay * 100, 2)}%;background:${decayColor(cl.decay)}"></span></span>
+      <span style="font-size:9px;color:${credColor(cl.credibility || 0)};width:48px;text-align:center;flex-shrink:0;background:${cl.credibility >= 0.6 ? 'rgba(34,197,94,0.08)' : cl.credibility >= 0.4 ? 'rgba(234,179,8,0.06)' : 'rgba(239,68,68,0.06)'};border-radius:2px;padding:1px 4px" title="${cl.e} evidence">${cl.e}</span>
+      <span class="badge badge-${cl.t}">${cl.t}</span>
+      <span class="decay-content" title="${(cl.c || '').replace(/"/g, '&quot;')}">${cl.c || ''}</span>
+    </div>
+  `).join('')}</div>`;
+
+// --- NEXT ACTIONS (specific, prioritized, with claim IDs) ---
+const actions = [];
+
+// P1: Unresolved conflicts (blocking)
+if (m.conflicts.length > 0) {
+  const conflictTopics = {};
+  m.conflicts.forEach(cl => {
+    const tp = cl.tp || 'unknown';
+    if (!conflictTopics[tp]) conflictTopics[tp] = [];
+    conflictTopics[tp].push(cl.i);
+  });
+  Object.entries(conflictTopics).forEach(([topic, ids]) => {
+    actions.push({
+      priority: 1, level: 'crit',
+      title: `Resolve ${ids.length} conflict${ids.length > 1 ? 's' : ''} in "${topic.replace(/-/g, ' ')}"`,
+      detail: `Active claims contradict each other. Compilation clarity is blocked until these are adjudicated.`,
+      cmd: `/resolve ${ids[0]}`,
+      targets: ids
+    });
+  });
+}
+
+// P1: Stale claims in active topics
+const staleBuckets = {};
+decaying.forEach(d => {
+  const tp = d.tp || 'unknown';
+  if (!staleBuckets[tp]) staleBuckets[tp] = [];
+  staleBuckets[tp].push(d);
+});
+const topStaleTopics = Object.entries(staleBuckets)
+  .sort((a, b) => b[1].length - a[1].length)
+  .slice(0, 3);
+
+topStaleTopics.forEach(([topic, claims]) => {
+  if (claims.length >= 3) {
+    actions.push({
+      priority: 2, level: 'warn',
+      title: `Re-validate ${claims.length} stale claims in "${topic.replace(/-/g, ' ')}"`,
+      detail: `These claims have decayed below 50% freshness. Re-research or archive them.`,
+      cmd: `/research "${topic}"`,
+      targets: claims.slice(0, 5).map(c => c.i)
+    });
+  }
+});
+
+// P2: Monoculture topics (only one claim type)
+const topMonocultures = Object.entries(m.topics)
+  .filter(([, data]) => Object.keys(data.types).length === 1 && data.count >= 3)
+  .sort((a, b) => b[1].count - a[1].count)
+  .slice(0, 3);
+
+topMonocultures.forEach(([topic, data]) => {
+  const onlyType = Object.keys(data.types)[0];
+  actions.push({
+    priority: 2, level: 'warn',
+    title: `Diversify "${topic.replace(/-/g, ' ')}" (${data.count} claims, all ${onlyType})`,
+    detail: `This topic has only ${onlyType} claims. Add risks, constraints, or challenges to stress-test assumptions.`,
+    cmd: `/challenge "${topic}"`,
+    targets: []
+  });
+});
+
+// P2: Low evidence topics (high claim count, low evidence tier)
+const weakTopics = Object.entries(m.topics)
+  .map(([topic, data]) => {
+    const claimsInTopic = current.c.filter(c => c.tp === topic);
+    const avgTier = claimsInTopic.reduce((s, c) => {
+      const w = { stated: 1, web: 2, documented: 3, tested: 4, production: 5 };
+      return s + (w[c.e] || 1);
+    }, 0) / (claimsInTopic.length || 1);
+    return { topic, count: data.count, avgTier };
+  })
+  .filter(t => t.count >= 3 && t.avgTier < 2)
+  .sort((a, b) => a.avgTier - b.avgTier)
+  .slice(0, 3);
+
+weakTopics.forEach(t => {
+  actions.push({
+    priority: 2, level: 'warn',
+    title: `Strengthen evidence in "${t.topic.replace(/-/g, ' ')}" (avg tier ${t.avgTier.toFixed(1)})`,
+    detail: `${t.count} claims rely mostly on stakeholder assertions. Prototype or document to upgrade evidence.`,
+    cmd: `/prototype "${t.topic}"`,
+    targets: []
+  });
+});
+
+// P3: Unchallenged high-count topics
+if (m.unchallengedPct > 0.5) {
+  const bigUnchallenged = Object.entries(m.topics)
+    .filter(([, data]) => !data.hasConflict && data.count >= 5)
+    .sort((a, b) => b[1].count - a[1].count)
+    .slice(0, 2);
+  bigUnchallenged.forEach(([topic, data]) => {
+    actions.push({
+      priority: 3, level: 'info',
+      title: `Challenge "${topic.replace(/-/g, ' ')}" (${data.count} claims, never contested)`,
+      detail: `Large unchallenged topic. Run adversarial testing to validate assumptions.`,
+      cmd: `/challenge "${topic}"`,
+      targets: []
+    });
+  });
+}
+
+// P3: Eval gap
+if (m.evalResearchRatio < 0.1 && Object.keys(m.topics).length > 5) {
+  actions.push({
+    priority: 3, level: 'info',
+    title: `Close evaluation gap (ratio: ${m.evalResearchRatio.toFixed(3)})`,
+    detail: `Research is accumulating without evaluation. Pick the highest-risk topic and evaluate it.`,
+    cmd: `/evaluate`,
+    targets: []
+  });
+}
+
+// Sort by priority, cap at 7
+actions.sort((a, b) => a.priority - b.priority);
+const topActions = actions.slice(0, 7);
+
+if (topActions.length > 0) {
+  document.getElementById('actions-section').innerHTML = `
+    <div class="section-title">Next Actions <span class="count">${topActions.length} items, sorted by priority</span></div>
+    <div class="actions">
+      ${topActions.map(a => `
+        <div class="action a-${a.level}">
+          <span class="action-priority p${a.priority}">P${a.priority}</span>
+          <div class="action-body">
+            <div class="action-title">${a.title}</div>
+            <div class="action-detail">${a.detail}</div>
+            ${a.cmd ? `<div class="action-cmd">${a.cmd}</div>` : ''}
+            ${a.targets.length > 0 ? `<div class="action-targets">${a.targets.map(t => `<span class="action-target">${t}</span>`).join('')}</div>` : ''}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// Phase Breakdown
+const phaseOrder = ['define', 'research', 'prototype', 'evaluate', 'feedback'];
+const maxPhase = Math.max(...Object.values(m.phases), 1);
+document.getElementById('phase-count').textContent = `${Object.keys(m.phases).length} phases`;
+const phaseColors = { define: 'var(--pur)', research: 'var(--acc)', prototype: 'var(--grn)', evaluate: 'var(--ylw)', feedback: 'var(--org)' };
+
+document.getElementById('phase-body').innerHTML = `<div class="phase-bars">
+  ${phaseOrder.filter(p => m.phases[p]).map(p => {
+    const n = m.phases[p];
+    const pct = (n / maxPhase) * 100;
+    return `<div class="phase-bar">
+      <span class="label">${p}</span>
+      <span class="track"><span class="fill" style="width:${pct}%;background:${phaseColors[p] || 'var(--acc)'}">${n}</span></span>
+      <span class="count">${n}</span>
+    </div>`;
+  }).join('')}
+</div>`;
+
+// Insights
+const insights = [];
+if (m.unchallengedPct > 0.8) insights.push({ level: 'warn', text: `${(m.unchallengedPct * 100).toFixed(0)}% of topics (${Math.round(m.unchallengedPct * Object.keys(m.topics).length)}/${Object.keys(m.topics).length}) have no conflicting claims -- consider adversarial testing on key topics`, action: '/challenge' });
+if (m.verificationCoverage < 0.1) insights.push({ level: 'warn', text: `Only ${(m.verificationCoverage * 100).toFixed(1)}% claims verified -- most findings are theoretical`, action: '/prototype' });
+if (m.evalResearchRatio < 0.05) insights.push({ level: 'warn', text: `Eval/research ratio ${m.evalResearchRatio.toFixed(3)} -- research accumulating without evaluation`, action: '/evaluate' });
+if (decaying.length > 5) insights.push({ level: 'warn', text: `${decaying.length} claims below 50% freshness -- consider re-validating or archiving`, action: '/research' });
+if (m.conflicts.length > 0) insights.push({ level: 'crit', text: `${m.conflicts.length} unresolved conflict${m.conflicts.length > 1 ? 's' : ''} blocking compilation clarity`, action: '/resolve' });
+if (m.conflictResRate >= 0.8 && m.evidenceStrength >= 2) insights.push({ level: 'good', text: `Strong evidence base with ${(m.conflictResRate * 100).toFixed(0)}% conflicts resolved`, action: '' });
+// Type diversity
+const typeCount = Object.keys(m.types).length;
+if (typeCount <= 2) insights.push({ level: 'warn', text: `Only ${typeCount} claim types used -- consider adding risks, estimates, or constraints`, action: '/challenge' });
+
+document.getElementById('insights-count').textContent = `${insights.length} items`;
+document.getElementById('insights-body').innerHTML = insights.length === 0
+  ? '<div style="color:var(--txt-d);font-size:11px">No insights to surface.</div>'
+  : insights.map(ins => `
+    <div style="display:flex;gap:10px;padding:7px 12px;background:var(--bg-s);border-radius:3px;border-left:3px solid ${
+      ins.level === 'crit' ? 'var(--red)' : ins.level === 'warn' ? 'var(--ylw)' : ins.level === 'good' ? 'var(--grn)' : 'var(--acc)'
+    };font-size:11px;align-items:center;margin-bottom:4px" role="alert" aria-label="${ins.level === 'crit' ? 'Critical' : ins.level === 'warn' ? 'Warning' : 'Good'}: ${ins.text}">
+      <span class="status-label status-label-${ins.level === 'crit' ? 'critical' : ins.level === 'warn' ? 'warn' : 'good'}">${ins.level === 'crit' ? 'critical' : ins.level}</span>
+      <span style="flex:1">${ins.text}</span>
+      ${ins.action ? `<span style="color:var(--acc);font-size:10px;white-space:nowrap">${ins.action}</span>` : ''}
+    </div>
+  `).join('');
+
+// Claims Table
+_currentClaims = current.c;
+document.getElementById('claims-count').textContent = `${_currentClaims.length} claims`;
+filterType = null;
+filterText = '';
+
+document.getElementById('filter-bar').innerHTML = `
+  <input type="text" placeholder="Search claims..." aria-label="Search claims by text, topic, or ID" oninput="filterText=this.value;renderClaims()">
+  ${claimTypes.map(t => `<button class="filter-btn" onclick="filterType=filterType==='${t}'?null:'${t}';document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));if(filterType)this.classList.add('active');renderClaims()">${t}</button>`).join('')}
+`;
+
+renderClaims();
+
+// Footer
+document.getElementById('footer-left').textContent = `Harvest -- ${SPRINTS.length} sprint${SPRINTS.length > 1 ? 's' : ''}, ${_currentClaims.length} claims`;
+document.getElementById('footer-right').textContent = `Built ${new Date().toISOString().split('T')[0]}`;
+
+} // end renderAll
+
+// Initial render
+renderAll(selectedIdx);
+
+// Toggle collapsible with ARIA state
+function toggle(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+  const header = el.querySelector('.collapsible-header');
+  const isOpen = el.classList.contains('open');
+  header.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+
+// Keyboard handler for collapsible sections (Enter/Space)
+function toggleKey(event, id) {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    toggle(id);
+  }
+}
+
+// ── Grain Logo Animation ──
+(function() {
+  var LW = 0.025;
+  var TOOL = { name: 'Harvest', letter: 'H', color: '#fb923c' };
+  var _c, _ctx, _s, _cx, _textStart, _restText, _font;
+  var _state = 'drawon', _start = null, _raf;
+  var _openPts = null, _closedPts = null;
+
+  function _lerp(a,b,t){ return {x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t}; }
+  function _easeInOut(t){ return t<0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2; }
+
+  function _bracket(ctx, s, color, alpha) {
+    var lw=s*LW, cx=_cx, cy=s/2, gw=s*0.72, gh=s*0.68;
+    var topY=cy-gh/2, botY=cy+gh/2, fe=gw*0.30;
+    if(alpha!==undefined) ctx.globalAlpha=alpha;
+    ctx.strokeStyle=color; ctx.lineWidth=lw; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.beginPath(); ctx.moveTo(cx,topY); ctx.lineTo(cx-fe,topY);
+    ctx.bezierCurveTo(cx-gw*0.52,cy-gh*0.32, cx-gw*0.52,cy+gh*0.24, cx-fe,botY);
+    ctx.lineTo(cx,botY); ctx.stroke();
+    if(alpha!==undefined) ctx.globalAlpha=1;
+  }
+
+  function _drawBracket(ctx, s, color, progress) {
+    var lw=s*LW, cx=_cx, cy=s/2, gw=s*0.72, gh=s*0.68;
+    var topY=cy-gh/2, botY=cy+gh/2, fe=gw*0.30;
+    ctx.strokeStyle=color; ctx.lineWidth=lw; ctx.lineCap='round'; ctx.lineJoin='round';
+    var seg1=0.12, seg2=0.72;
+    ctx.beginPath();
+    if(progress<=seg1){ctx.moveTo(cx,topY);ctx.lineTo(cx-fe*(progress/seg1),topY);}
+    else if(progress<=seg1+seg2){ctx.moveTo(cx,topY);ctx.lineTo(cx-fe,topY);ctx.stroke();ctx.beginPath();
+      var bt=(progress-seg1)/seg2;
+      var p0={x:cx-fe,y:topY},p1={x:cx-gw*0.52,y:cy-gh*0.32},p2={x:cx-gw*0.52,y:cy+gh*0.24},p3={x:cx-fe,y:botY};
+      var q1=_lerp(p0,p1,bt),q2=_lerp(p1,p2,bt),q3=_lerp(p2,p3,bt);
+      var r1=_lerp(q1,q2,bt),r2=_lerp(q2,q3,bt),s1=_lerp(r1,r2,bt);
+      ctx.moveTo(p0.x,p0.y);ctx.bezierCurveTo(q1.x,q1.y,r1.x,r1.y,s1.x,s1.y);}
+    else{ctx.moveTo(cx,topY);ctx.lineTo(cx-fe,topY);
+      ctx.bezierCurveTo(cx-gw*0.52,cy-gh*0.32, cx-gw*0.52,cy+gh*0.24, cx-fe,botY);
+      ctx.lineTo((cx-fe)+fe*((progress-seg1-seg2)/(1-seg1-seg2)),botY);}
+    ctx.stroke();
+  }
+
+  function _drawName(ctx, s, spellP, alpha) {
+    var a = alpha !== undefined ? alpha : 1;
+    ctx.font = _font; ctx.textBaseline = 'middle';
+    var cy = s/2 + s*0.02;
+    ctx.globalAlpha = a; ctx.fillStyle = TOOL.color; ctx.textAlign = 'center';
+    ctx.fillText(TOOL.letter, _cx, cy);
+    if(_restText.length > 0 && spellP > 0) {
+      var n = _restText.length, num = Math.min(n, Math.ceil(spellP * n));
+      var rawP = spellP * n, charP = num >= n ? 1 : rawP - Math.floor(rawP);
+      var full = charP >= 1 ? num : num - 1;
+      ctx.fillStyle = '#e2e8f0'; ctx.textAlign = 'left';
+      if(full > 0) { ctx.globalAlpha = a; ctx.fillText(_restText.slice(0, full), _textStart, cy); }
+      if(full < num) {
+        var prevW = full > 0 ? ctx.measureText(_restText.slice(0, full)).width : 0;
+        ctx.globalAlpha = a * (0.3 + 0.7 * charP);
+        ctx.fillText(_restText[full], _textStart + prevW, cy);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function _getOpenPts(s) {
+    if(_openPts && _openPts._s === s) return _openPts;
+    var cx=_cx, cy=s/2, gw=s*0.72, gh=s*0.68, topY=cy-gh/2, botY=cy+gh/2, fe=gw*0.30;
+    var pts=[];
+    for(var t=0;t<=1;t+=0.05) pts.push({x:cx-fe*t,y:topY});
+    var p0={x:cx-fe,y:topY},p1={x:cx-gw*0.52,y:cy-gh*0.32},p2={x:cx-gw*0.52,y:cy+gh*0.24},p3={x:cx-fe,y:botY};
+    for(var t=0;t<=1;t+=0.02){var u=1-t;pts.push({x:u*u*u*p0.x+3*u*u*t*p1.x+3*u*t*t*p2.x+t*t*t*p3.x,y:u*u*u*p0.y+3*u*u*t*p1.y+3*u*t*t*p2.y+t*t*t*p3.y});}
+    for(var t=0;t<=1;t+=0.05) pts.push({x:(cx-fe)+fe*t,y:botY});
+    pts._s=s; _openPts=pts; return pts;
+  }
+
+  function _getClosedPts(s) {
+    if(_closedPts && _closedPts._s === s) return _closedPts;
+    var cx=_cx, cy=s/2, gw=s*0.72, gh=s*0.68, topY=cy-gh/2, botY=cy+gh/2, fe=gw*0.30;
+    var pts=[];
+    for(var t=0;t<=1;t+=0.03) pts.push({x:cx-fe*t,y:topY});
+    var lp0={x:cx-fe,y:topY},lp1={x:cx-gw*0.52,y:cy-gh*0.32},lp2={x:cx-gw*0.52,y:cy+gh*0.24},lp3={x:cx-fe,y:botY};
+    for(var t=0;t<=1;t+=0.02){var u=1-t;pts.push({x:u*u*u*lp0.x+3*u*u*t*lp1.x+3*u*t*t*lp2.x+t*t*t*lp3.x,y:u*u*u*lp0.y+3*u*u*t*lp1.y+3*u*t*t*lp2.y+t*t*t*lp3.y});}
+    for(var t=0;t<=1;t+=0.03) pts.push({x:(cx-fe)+2*fe*t,y:botY});
+    var rp0={x:cx+fe,y:botY},rp1={x:cx+gw*0.52,y:cy+gh*0.24},rp2={x:cx+gw*0.52,y:cy-gh*0.32},rp3={x:cx+fe,y:topY};
+    for(var t=0;t<=1;t+=0.02){var u=1-t;pts.push({x:u*u*u*rp0.x+3*u*u*t*rp1.x+3*u*t*t*rp2.x+t*t*t*rp3.x,y:u*u*u*rp0.y+3*u*u*t*rp1.y+3*u*t*t*rp2.y+t*t*t*rp3.y});}
+    for(var t=0;t<=1;t+=0.03) pts.push({x:(cx+fe)-fe*t,y:topY});
+    pts._s=s; _closedPts=pts; return pts;
+  }
+
+  function _frame(ts) {
+    if(!_c) return;
+    if(!_start) _start = ts;
+    var e = ts - _start, ctx = _ctx, s = _s;
+    ctx.clearRect(0, 0, _c.width, s);
+    switch(_state) {
+      case 'drawon':
+        var bp = _easeInOut(Math.min(1, e / 1400));
+        _drawBracket(ctx, s, TOOL.color, bp);
+        var la = Math.max(0, Math.min(1, (e - 900) / 400));
+        if(la > 0) {
+          ctx.font = _font; ctx.textBaseline = 'middle';
+          ctx.globalAlpha = la; ctx.fillStyle = TOOL.color; ctx.textAlign = 'center';
+          ctx.fillText(TOOL.letter, _cx, s/2 + s*0.02); ctx.globalAlpha = 1;
+        }
+        if(e > 1100 && _restText.length > 0) {
+          var sp = Math.min(1, (e - 1100) / (120 * _restText.length));
+          var n = _restText.length, num = Math.min(n, Math.ceil(sp * n));
+          if(num > 0) {
+            ctx.font = _font; ctx.textBaseline = 'middle';
+            var cy = s/2 + s*0.02, rawP = sp * n;
+            var charP = num >= n ? 1 : rawP - Math.floor(rawP);
+            var full = charP >= 1 ? num : num - 1;
+            ctx.fillStyle = '#e2e8f0'; ctx.textAlign = 'left';
+            if(full > 0) ctx.fillText(_restText.slice(0, full), _textStart, cy);
+            if(full < num) {
+              var prevW = full > 0 ? ctx.measureText(_restText.slice(0, full)).width : 0;
+              ctx.globalAlpha = 0.3 + 0.7 * charP;
+              ctx.fillText(_restText[full], _textStart + prevW, cy); ctx.globalAlpha = 1;
+            }
+          }
+        }
+        if(e > 1100 + 120 * _restText.length + 300) { _state = 'idle'; _start = ts; }
+        break;
+      case 'idle':
+        var breathe = 0.5 + 0.5 * (0.5 + 0.5 * Math.sin(e / 1200));
+        _bracket(ctx, s, TOOL.color, breathe);
+        var textBreath = 0.88 + 0.12 * (0.5 + 0.5 * Math.sin(e / 1800));
+        _drawName(ctx, s, 1, textBreath);
+        break;
+      case 'shimmer':
+        _bracket(ctx, s, TOOL.color, 0.2);
+        var spts = _getOpenPts(s), sspeed = 1800;
+        var spos = (e % sspeed) / sspeed;
+        var sidx = Math.floor(spos * (spts.length - 1));
+        var spt = spts[sidx];
+        var sgrad = ctx.createRadialGradient(spt.x, spt.y, 0, spt.x, spt.y, s * 0.10);
+        sgrad.addColorStop(0, TOOL.color + 'aa'); sgrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = sgrad; ctx.fillRect(0, 0, _c.width, s);
+        var strailFrac = 0.18;
+        var si0 = Math.max(0, Math.floor((spos - strailFrac) * (spts.length - 1)));
+        ctx.strokeStyle = TOOL.color; ctx.lineWidth = s * LW; ctx.lineCap = 'round';
+        ctx.globalAlpha = 0.85; ctx.beginPath(); ctx.moveTo(spts[si0].x, spts[si0].y);
+        for(var si = si0 + 1; si <= sidx; si++) ctx.lineTo(spts[si].x, spts[si].y);
+        ctx.stroke(); ctx.globalAlpha = 1;
+        _drawName(ctx, s, 1, undefined);
+        break;
+      case 'orbit':
+        _bracket(ctx, s, TOOL.color, 0.15);
+        _drawName(ctx, s, 1, 0.4);
+        var pts = _getOpenPts(s), speed = 1200, trailFrac = 0.28;
+        var halfCycle = (e % speed) / speed;
+        var cycle = (e % (speed * 2)) / (speed * 2);
+        var pos = cycle < 0.5 ? halfCycle : 1 - halfCycle;
+        var headIdx = Math.floor(pos * (pts.length - 1));
+        var trailLen = Math.floor(trailFrac * pts.length);
+        var dir = cycle < 0.5 ? 1 : -1;
+        ctx.lineWidth = s * LW; ctx.lineCap = 'round';
+        for(var i = 0; i < trailLen; i++) {
+          var idx = headIdx - dir * (trailLen - i);
+          if(idx < 0 || idx >= pts.length) continue;
+          var nxt = idx + dir;
+          if(nxt < 0 || nxt >= pts.length) continue;
+          ctx.globalAlpha = (i / trailLen) * 0.7; ctx.strokeStyle = TOOL.color;
+          ctx.beginPath(); ctx.moveTo(pts[idx].x, pts[idx].y); ctx.lineTo(pts[nxt].x, pts[nxt].y); ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+        break;
+      case 'dim':
+        var dim = 0.1 + 0.08 * Math.sin(e / 2000);
+        _bracket(ctx, s, TOOL.color, dim);
+        _drawName(ctx, s, 1, 0.2);
+        break;
+    }
+    // Animate idle canvases
+    var idles = document.querySelectorAll('.grain-idle');
+    for(var i = 0; i < idles.length; i++) {
+      var ic = idles[i], ictx = ic.getContext('2d'), is = ic.width;
+      ictx.clearRect(0, 0, is, is);
+      var off = i * 400, cx = is/2;
+      var b = 0.25 + 0.35 * (0.5 + 0.5 * Math.sin((ts + off) / 1500));
+      var lw=is*LW, icy=is/2, gw=is*0.72, gh=is*0.68, topY=icy-gh/2, botY=icy+gh/2, fe=gw*0.30;
+      ictx.globalAlpha=b; ictx.strokeStyle=TOOL.color; ictx.lineWidth=lw; ictx.lineCap='round'; ictx.lineJoin='round';
+      ictx.beginPath(); ictx.moveTo(cx,topY); ictx.lineTo(cx-fe,topY);
+      ictx.bezierCurveTo(cx-gw*0.52,icy-gh*0.32, cx-gw*0.52,icy+gh*0.24, cx-fe,botY);
+      ictx.lineTo(cx,botY); ictx.stroke();
+      ictx.globalAlpha = 0.3 + 0.2 * (0.5 + 0.5 * Math.sin((ts + off) / 1500));
+      ictx.fillStyle=TOOL.color; ictx.textAlign='center'; ictx.textBaseline='middle';
+      ictx.font='800 '+(is*0.38)+'px -apple-system,"SF Pro Display","Helvetica Neue",Arial,sans-serif';
+      ictx.fillText(TOOL.letter, cx, icy+is*0.02); ictx.globalAlpha=1;
+    }
+    _raf = requestAnimationFrame(_frame);
+  }
+
+  // Init: measure text, size canvas, start animation
+  _c = document.getElementById('grainLogo');
+  if(_c) {
+    _c.style.width = '0px';
+    _s = 256;
+    var fontRatio = 0.38;
+    var dh = 64;
+    _c.height = _s; _c.width = 1024;
+    _ctx = _c.getContext('2d');
+    _cx = _s / 2;
+    _restText = TOOL.name.slice(1);
+    _font = '800 ' + (_s * fontRatio) + 'px -apple-system,"SF Pro Display","Helvetica Neue",Arial,sans-serif';
+    _ctx.font = _font;
+    var letterW = _ctx.measureText(TOOL.letter).width;
+    var restW = _restText.length > 0 ? _ctx.measureText(_restText).width : 0;
+    _textStart = _cx + letterW / 2 + _s * 0.02;
+    var totalW = Math.ceil(_textStart + restW + _s * 0.12);
+    _c.width = totalW;
+    _ctx = _c.getContext('2d');
+    _c.style.height = dh + 'px';
+    _c.style.width = Math.round(totalW / _s * dh) + 'px';
+    _state = 'drawon'; _start = null;
+    _raf = requestAnimationFrame(_frame);
+  }
+
+  window._grainSetState = function(state) {
+    if(_state === state) return;
+    if(_state === 'drawon') { _pendingState = state; return; }
+    _state = state; _start = null;
+    if(!_raf) _raf = requestAnimationFrame(_frame);
+  };
+})();
+</script>
+</body>
+</html>

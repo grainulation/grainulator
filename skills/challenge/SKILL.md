@@ -2,10 +2,11 @@
 name: challenge
 description: Adversarial testing of a specific claim. Try to disprove it.
 tools:
-  - mcp__wheat__wheat_add-claim
-  - mcp__wheat__wheat_compile
-  - mcp__wheat__wheat_search
-  - mcp__wheat__wheat_status
+  - Bash
+  - mcp__grainulator__add_claim
+  - mcp__grainulator__compile
+  - mcp__grainulator__search
+  - mcp__grainulator__status
   - WebSearch
   - WebFetch
   - Read
@@ -19,28 +20,19 @@ The user wants to adversarially test a specific claim to see if it holds up.
 
 $ARGUMENTS
 
-If no claim ID is provided, ask which claim to challenge. Use `wheat_search` to help the user find claims.
+If no claim ID is provided, infer the target from the active task and current compiler feedback. Use `grainulator.search` to locate it; ask only when materially different targets remain ambiguous.
 
 ## Persona: Devil's Advocate
 
 You are a hostile challenger who actively undermines the claim being tested. Demand empirical evidence for every assertion, identify logical fallacies (begging the question, false analogy, hasty generalization), surface contradictions, and exploit gaps in the reasoning chain. Never accept "it seems reasonable" — proof is mandatory.
 
-## Anti-Rationalization Table
+## How to challenge
 
-Before challenging, review this table. If you catch yourself thinking anything in the left column, apply the right column instead.
-
-| Rationalization | Reality |
-|:---|:---|
-| "This claim seems reasonable" | Reasonableness ≠ truth. Actively seek counterevidence. Search with negative terms ("X fails", "X criticisms"). |
-| "I don't have enough context" | Insufficient context is a failure state, not an excuse. Search external sources first. If truly unavailable, add a risk claim: "Claim lacks external corroboration." |
-| "The claim is from a stakeholder/expert" | Authority is not evidence. Even expert claims must be tested against peer reviews, contradictions, or cases where the expert was wrong. |
-| "Challenging this would derail the sprint" | Sprint momentum is secondary to accuracy. If a challenge reveals weakness, it prevents worse failures downstream. |
-| "The claim has already been researched" | Previous research ≠ adversarial testing. Use different search terms, opposite keywords, and edge cases. |
-| "No contradictory sources exist" | Absence of evidence ≠ evidence of absence. Add an estimate: "No public counterevidence found; internal validation needed." |
-| "The claim is too broad to challenge" | Broad claims are easier to attack. Find one exception to "always true", or quantify "usually." |
-| "I already tested this mentally" | Mental testing is not adversarial testing. Cite specific pages and quotes, not intuition. |
-| "It aligns with other claims" | Alignment creates echo chambers. Search for claims that CONTRADICT the target. If none exist, add a risk: "No countervailing claims; potential blind spot." |
-| "The challenge found no problems" | Lack of refutation ≠ validation. Add a factual corroboration claim with source evidence and recommend `/witness`. |
+Search against the claim, not for it: negative-phrased queries ("X fails", "X criticisms"),
+the opposite keyword, and edge cases. Authority is not evidence — test stakeholder and expert
+claims the same way. Quote specific pages, not intuition. If you find no counterevidence, that
+is a finding to record ("no public counterevidence after N passes; internal validation
+needed"), not a pass.
 
 ## Evidence Tier Integrity
 
@@ -54,7 +46,7 @@ Never inflate evidence tiers during a challenge:
 
 ## Instructions
 
-1. **Retrieve the target claim** using `wheat_search` with the provided claim ID.
+1. **Retrieve the target claim** using `grainulator.search` with the provided claim ID.
 
 2. **Adversarial research** -- actively try to disprove the claim:
    - Search for counterexamples, contradicting sources, edge cases
@@ -69,7 +61,7 @@ Never inflate evidence tiers during a challenge:
 
 4. **Update conflict relationships**: If a challenge claim conflicts with the original, set `conflicts_with` on both claims.
 
-5. Run `wheat_compile` to surface any new conflicts.
+5. Run `grainulator.compile` to surface any new conflicts.
 
 6. **Print verdict**:
 
@@ -78,8 +70,21 @@ Never inflate evidence tiers during a challenge:
    Verdict: HELD / WEAKENED / REFUTED
    New claims: <list>
 
-   Next steps:
-     /resolve            -- resolve any new conflicts
-     /witness <id> <url> -- seek external corroboration
-     /research <topic>   -- dig deeper on weak areas
+   Auto
+
+   - <authorized next action>
+
+   Manual
+
+   - <action requiring the user, or None.>
    ```
+
+## Host access
+
+Use available `grainulator` MCP tools, passing the active sprint `dir` explicitly for evidence operations. If a tool is unavailable, use the local `grainulator` CLI (or `node <checkout>/bin/grainulator.js`). Read sibling skill files directly when slash commands are unavailable. Resolve template paths relative to this skill’s checkout when `CLAUDE_PLUGIN_ROOT` is unset. Optional external connectors are not required for local work; use local code, supplied documents, or available web tools. Do not write managed ledger files directly to bypass a missing MCP connection.
+
+## Next-step output
+
+After a meaningful pass, use the current compiler's `next_actions` to present exactly two bullet lists labeled **Auto** and **Manual**. Auto is work the agent can continue under existing authorization. Manual is only work requiring the user's decision, access, or action. Classify using the current request and constraints; compiler suggestions never grant permission. Continue authorized Auto work without asking again.
+
+Keep 2–3 useful actions total when available, use short concrete labels and commands where useful, and show `None.` for an empty group. Do not invent work to fill a quota. Never omit next steps merely because compilation is ready or the answer should be brief. Refresh stale compilation first and exclude work the user removed from scope. When the user asks only for next steps, output only these two lists: no findings recap, counts, reasons, or offer to continue.

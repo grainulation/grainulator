@@ -1,0 +1,220 @@
+{
+  "name": "Data Engineering",
+  "description": "ETL vs ELT patterns, data quality enforcement, schema evolution strategies, batch vs streaming tradeoffs, data lake anti-patterns, and change data capture.",
+  "version": "1.0.0",
+  "claims": [
+    {
+      "id": "data-001",
+      "type": "factual",
+      "topic": "ETL vs ELT tradeoffs",
+      "content": "ETL (Extract-Transform-Load) transforms data before loading into the target, reducing storage costs but making the pipeline brittle to schema changes. ELT (Extract-Load-Transform) loads raw data first and transforms in the warehouse, leveraging cheap columnar storage and enabling reprocessing without re-extraction. ELT is the dominant pattern for cloud data warehouses (Snowflake, BigQuery, Redshift).",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["data-engineering", "etl", "elt", "warehouse"]
+    },
+    {
+      "id": "data-002",
+      "type": "constraint",
+      "topic": "schema evolution compatibility",
+      "content": "Schema changes must be backwards-compatible for consumers: adding optional fields (safe), removing fields (breaking), renaming fields (breaking), changing types (breaking). Use schema registries (Confluent, AWS Glue) to enforce compatibility rules. Avro supports full forward/backward/full compatibility modes. Breaking changes require a new topic or table version.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["data-engineering", "schema", "evolution", "avro"]
+    },
+    {
+      "id": "data-003",
+      "type": "recommendation",
+      "topic": "data quality checks in pipelines",
+      "content": "Every data pipeline should include automated quality checks: row count expectations (within 10% of previous run), null rate thresholds per column, uniqueness constraints on key columns, freshness checks (data arrived within expected window), and referential integrity across tables. Use tools like Great Expectations, dbt tests, or Soda to define checks as code.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["data-engineering", "data-quality", "testing", "dbt"]
+    },
+    {
+      "id": "data-004",
+      "type": "risk",
+      "topic": "data lake swamp anti-pattern",
+      "content": "Data lakes degenerate into data swamps when: (a) data is dumped without schema documentation, (b) there is no catalog or discovery mechanism, (c) no access controls or data classification, (d) no retention policies, (e) no data quality monitoring. Within 12-18 months, undisciplined data lakes become untrusted and abandoned. Apply medallion architecture (bronze/silver/gold) to impose structure.",
+      "source": { "origin": "industry", "artifact": null, "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["data-engineering", "data-lake", "anti-pattern", "governance"]
+    },
+    {
+      "id": "data-005",
+      "type": "factual",
+      "topic": "batch vs streaming latency tradeoffs",
+      "content": "Batch processing (hourly/daily) is simpler, cheaper, and sufficient when business requirements tolerate T+1 or T+hour latency. Streaming (Kafka, Kinesis, Flink) delivers sub-second latency but costs 3-10x more in infrastructure and 2-3x more in engineering complexity (exactly-once semantics, out-of-order events, state management). Default to batch unless latency requirements demand streaming.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["data-engineering", "batch", "streaming", "architecture"]
+    },
+    {
+      "id": "data-006",
+      "type": "recommendation",
+      "topic": "change data capture pattern",
+      "content": "Change Data Capture (CDC) reads database transaction logs (binlog, WAL) to stream row-level changes to downstream systems. Use Debezium for open-source CDC from PostgreSQL, MySQL, MongoDB, and SQL Server. CDC avoids polling overhead, captures deletes (which polling misses), and preserves event ordering. Initial snapshot + streaming log is the standard bootstrap pattern.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["data-engineering", "cdc", "debezium", "replication"]
+    },
+    {
+      "id": "data-007",
+      "type": "risk",
+      "topic": "late-arriving data in event streams",
+      "content": "Event streams contain late-arriving data due to network delays, mobile offline sync, or batch uploads. Windowed aggregations must handle late data with watermarks (maximum allowed lateness). Flink default watermark is 0 (no late data tolerance). Set watermarks based on observed p99 lateness in your data. Late events beyond the watermark are either dropped or routed to a dead-letter topic for manual reconciliation.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["data-engineering", "streaming", "late-data", "watermarks"]
+    },
+    {
+      "id": "data-008",
+      "type": "recommendation",
+      "topic": "idempotent pipeline design",
+      "content": "Data pipelines must be idempotent: running the same pipeline twice with the same input produces the same output without duplicates. Implement with: write to a staging table, then MERGE/upsert to the target (not INSERT). Use partition overwrite for append-only tables. Idempotency enables safe retries after partial failures, which occur in approximately 5-10% of batch runs.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["data-engineering", "idempotency", "pipeline", "reliability"]
+    },
+    {
+      "id": "data-009",
+      "type": "estimate",
+      "topic": "Parquet vs CSV storage savings",
+      "content": "Columnar formats (Parquet, ORC) reduce storage by 75-90% compared to CSV/JSON for analytical workloads, and query performance improves 10-100x due to column pruning and predicate pushdown. A 100 GB CSV dataset typically compresses to 5-15 GB in Parquet with Snappy compression. Always use Parquet or ORC for data lake storage, never raw CSV.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["data-engineering", "parquet", "storage", "performance"]
+    },
+    {
+      "id": "data-010",
+      "type": "constraint",
+      "topic": "PII handling in data pipelines",
+      "content": "PII must be classified, tagged, and handled according to data governance policy at ingestion time, not after the fact. Apply column-level encryption or tokenization for sensitive fields (SSN, email, phone). Implement row-level access controls in the warehouse. Maintain a data catalog that tracks PII lineage from source to all downstream tables. GDPR right-to-erasure requires the ability to delete a user across all derived datasets.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["data-engineering", "pii", "gdpr", "governance"]
+    },
+    {
+      "id": "data-011",
+      "type": "factual",
+      "topic": "exactly-once semantics cost",
+      "content": "Exactly-once processing in streaming systems (Kafka transactions, Flink checkpointing) adds 10-30% throughput overhead compared to at-least-once. At-least-once with idempotent consumers (using unique event IDs and upsert writes) achieves the same end result with lower complexity. True exactly-once is only required when side effects cannot be made idempotent (sending emails, charging payments).",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["data-engineering", "streaming", "exactly-once", "kafka"]
+    },
+    {
+      "id": "data-012",
+      "type": "recommendation",
+      "topic": "dbt for transformation layer",
+      "content": "Use dbt (data build tool) for the transformation layer in ELT pipelines. dbt provides: version-controlled SQL transformations, automatic DAG resolution, built-in testing (not_null, unique, accepted_values, relationships), documentation generation, and incremental materialization for large tables. It has become the industry standard for analytics engineering with adoption at over 30,000 companies.",
+      "source": { "origin": "industry", "artifact": null, "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "data-engineering",
+        "dbt",
+        "transformation",
+        "analytics-engineering"
+      ]
+    }
+  ]
+}

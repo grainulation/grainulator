@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
-    paths: ['site/**']
+    paths: ['site/**', 'scripts/build-site.mjs', '.github/workflows/deploy.yml']
   workflow_dispatch:
 
 permissions:
@@ -24,13 +24,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25
+
+      - name: Build static site
+        run: node scripts/build-site.mjs
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: dist/site
 
       - name: Deploy to GitHub Pages
         id: deployment

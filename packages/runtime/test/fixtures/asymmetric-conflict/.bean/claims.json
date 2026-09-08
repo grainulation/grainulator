@@ -1,0 +1,34 @@
+[
+	{
+		"id": "c2",
+		"type": "factual",
+		"topic": "schema",
+		"content": "c2 content",
+		"source": {
+			"origin": "a",
+			"artifact": null,
+			"connector": null
+		},
+		"evidence": "tested",
+		"status": "active",
+		"conflicts_with": ["c10"],
+		"resolved_by": null,
+		"tags": []
+	},
+	{
+		"id": "c10",
+		"type": "factual",
+		"topic": "schema",
+		"content": "c10 content",
+		"source": {
+			"origin": "b",
+			"artifact": null,
+			"connector": null
+		},
+		"evidence": "tested",
+		"status": "active",
+		"conflicts_with": [],
+		"resolved_by": null,
+		"tags": []
+	}
+]

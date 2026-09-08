@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-tool="orchard">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orchard</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%230a0e1a'/><text x='32' y='34' text-anchor='middle' dominant-baseline='central' fill='%2314b8a6' font-family='-apple-system,system-ui,sans-serif' font-size='34' font-weight='800'>O</text></svg>">
+<style>
+/* ── Tokens (inline, zero deps) ── */
+:root {
+  --bg:  #0a0e1a;
+  --bg2: #111827;
+  --bg3: #1e293b;
+  --bg4: #334155;
+  --fg:  #e2e8f0;
+  --fg2: #94a3b8;
+  --fg3: #64748b;
+  --border: #1e293b;
+  --border-subtle: rgba(255,255,255,0.08);
+  --green:  #34d399;
+  --red:    #f87171;
+  --blue:   #60a5fa;
+  --orange: #fb923c;
+  --purple: #a78bfa;
+  --cyan:   #22d3ee;
+  --accent:        #14b8a6;
+  --accent-light:  #2dd4bf;
+  --accent-dim:    rgba(20,184,166,0.10);
+  --accent-border: rgba(20,184,166,0.25);
+  --radius: 8px;
+  --radius-sm: 4px;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+  --font-mono: 'SF Mono', 'Cascadia Code', 'JetBrains Mono', monospace;
+  --transition-fast: 0.1s ease;
+  --transition-base: 0.15s ease;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--fg3); }
+
+/* ── Layout ── */
+.app { max-width: 1280px; margin: 0 auto; padding: 24px; }
+
+/* ── Header ── */
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 20px; border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+.header h1 { font-size: 18px; font-weight: 600; }
+.header h1 span { color: var(--accent); }
+.header-meta { display: flex; align-items: center; gap: 12px; }
+.conn-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); display: inline-block; }
+.conn-dot.disconnected { background: var(--red); }
+.reconnect-banner { position:fixed;top:0;left:0;right:0;z-index:9999;padding:8px 16px;background:#92400e;color:#fbbf24;font-size:12px;text-align:center;transform:translateY(-100%);transition:transform .3s;font-family:system-ui,sans-serif }
+.reconnect-banner.visible { transform:translateY(0) }
+.reconnect-banner button { background:none;border:1px solid #fbbf24;color:#fbbf24;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:11px;margin-inline-start:8px }
+.header-meta .scan-btn {
+  background: var(--bg3); border: 1px solid var(--border); color: var(--fg2);
+  padding: 4px 12px; border-radius: var(--radius-sm); cursor: pointer;
+  font-size: 11px; transition: all var(--transition-fast);
+}
+.header-meta .scan-btn:hover { background: var(--bg4); color: var(--fg); }
+.last-scan { font-size: 10px; color: var(--fg3); }
+
+/* ── Stats bar ── */
+.stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px; margin-bottom: 24px;
+}
+.stat {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px;
+}
+.stat-value { font-size: 28px; font-weight: 700; font-family: var(--font-mono); }
+.stat-label { font-size: 10px; color: var(--fg3); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+.stat-accent .stat-value { color: var(--accent); }
+.stat-green .stat-value { color: var(--green); }
+.stat-red .stat-value { color: var(--red); }
+.stat-blue .stat-value { color: var(--blue); }
+
+/* ── Section titles ── */
+.section-title {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.8px; color: var(--fg3); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-title .count {
+  background: var(--accent-dim); color: var(--accent);
+  padding: 1px 6px; border-radius: 10px; font-size: 10px;
+}
+
+/* ── Sprint grid ── */
+.sprint-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px; margin-bottom: 32px;
+}
+.sprint-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+  transition: border-color var(--transition-base);
+}
+.sprint-card:hover, .sprint-card:focus-visible { border-color: var(--accent-border); outline: none; }
+.sprint-card:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
+.sprint-card.conflict { border-color: rgba(248,113,113,0.4); }
+.sprint-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.sprint-name { font-weight: 600; font-size: 14px; }
+.sprint-badge {
+  font-size: 9px; padding: 2px 8px; border-radius: 10px;
+  text-transform: uppercase; font-weight: 600; letter-spacing: 0.3px;
+}
+.badge-active { background: rgba(52,211,153,0.12); color: var(--green); }
+.badge-compiled { background: rgba(96,165,250,0.12); color: var(--blue); }
+.badge-not-started { background: rgba(148,163,184,0.12); color: var(--fg3); }
+.badge-blocked { background: rgba(248,113,113,0.12); color: var(--red); }
+.badge-done { background: var(--accent-dim); color: var(--accent); }
+.sprint-question {
+  font-size: 11px; color: var(--fg2); margin-bottom: 10px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.sprint-meta {
+  display: flex; gap: 16px; font-size: 10px; color: var(--fg3);
+}
+.sprint-meta strong { color: var(--fg2); }
+.claim-bar {
+  display: flex; gap: 2px; margin-top: 8px; height: 4px; border-radius: 2px;
+  overflow: hidden;
+}
+.claim-bar-seg { height: 100%; border-radius: 1px; min-width: 2px; }
+
+/* ── Dependencies grid ── */
+.dep-section { margin-bottom: 32px; }
+.dep-grid {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+}
+.dep-node {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 6px 12px;
+  font-size: 11px; font-weight: 500;
+}
+.dep-edge {
+  color: var(--fg3); font-size: 18px; font-family: var(--font-mono);
+}
+.dep-edge.ref { color: var(--accent); opacity: 0.5; }
+.dep-table {
+  width: 100%; border-collapse: collapse;
+}
+.dep-table th {
+  text-align: start; font-size: 10px; color: var(--fg3);
+  text-transform: uppercase; padding: 6px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.dep-table td {
+  padding: 8px 12px; border-bottom: 1px solid var(--border-subtle);
+  font-size: 12px;
+}
+.dep-type {
+  font-size: 9px; padding: 1px 6px; border-radius: 8px;
+}
+.dep-type-explicit { background: var(--accent-dim); color: var(--accent); }
+.dep-type-reference { background: rgba(148,163,184,0.12); color: var(--fg3); }
+
+/* ── Dep graph SVG ── */
+.dep-graph {
+  margin-bottom: 16px; overflow-x: auto;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); min-height: 0;
+}
+.dep-graph:empty { display: none; }
+.dep-graph svg { display: block; width: 100%; }
+.dep-graph .node rect { fill: var(--bg3); stroke: var(--border); stroke-width: 1; rx: 4; }
+.dep-graph .node text { fill: var(--fg); font-size: 11px; font-family: var(--font-sans); }
+.dep-graph .edge { stroke: var(--fg3); stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+.dep-graph .edge.explicit { stroke: var(--accent); }
+.dep-graph .edge.reference { stroke: var(--fg3); stroke-dasharray: 4 3; }
+
+/* ── Conflict cards ── */
+.conflict-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+.conflict-card {
+  background: var(--bg2); border: 1px solid rgba(248,113,113,0.3);
+  border-radius: var(--radius); padding: 14px;
+  border-inline-start: 3px solid var(--red);
+}
+.conflict-card.medium { border-inline-start-color: var(--orange); border-color: rgba(251,146,60,0.3); }
+.conflict-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 8px;
+}
+.conflict-type { font-size: 11px; font-weight: 600; color: var(--red); }
+.conflict-card.medium .conflict-type { color: var(--orange); }
+.conflict-tag {
+  font-size: 10px; background: var(--bg3); padding: 2px 8px;
+  border-radius: 8px; color: var(--fg2);
+}
+.conflict-claims { font-size: 11px; color: var(--fg2); }
+.conflict-claims .claim-ref {
+  display: flex; gap: 8px; padding: 4px 0;
+}
+.conflict-claims .claim-id { color: var(--accent); font-family: var(--font-mono); font-size: 10px; min-width: 50px; }
+
+/* ── Timeline ── */
+.timeline-section { margin-bottom: 32px; }
+.timeline-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 0; border-bottom: 1px solid var(--border-subtle);
+}
+.timeline-name {
+  min-width: 120px; font-size: 12px; font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.timeline-bar {
+  flex: 1; display: flex; gap: 2px; height: 24px;
+  background: var(--bg3); border-radius: var(--radius-sm);
+  overflow: hidden; position: relative;
+}
+.timeline-phase {
+  height: 100%; display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 500; color: var(--bg);
+  min-width: 20px; padding: 0 4px;
+  transition: flex var(--transition-base);
+}
+.phase-define    { background: var(--fg3); }
+.phase-research  { background: var(--blue); }
+.phase-prototype { background: var(--purple); }
+.phase-evaluate  { background: var(--cyan); }
+.phase-challenge { background: var(--orange); }
+.phase-witness   { background: var(--accent); }
+.phase-feedback  { background: #f472b6; }
+.phase-calibrate { background: var(--green); }
+.phase-other     { background: var(--bg4); }
+.timeline-claims {
+  min-width: 50px; text-align: end; font-size: 11px;
+  font-family: var(--font-mono); color: var(--fg3);
+}
+
+/* ── Empty state ── */
+.empty {
+  text-align: center; padding: 48px 24px; color: var(--fg3);
+}
+.empty h3 { color: var(--fg2); margin-bottom: 8px; font-size: 14px; }
+.empty p { font-size: 12px; }
+.empty code {
+  background: var(--bg3); padding: 2px 6px; border-radius: 3px;
+  font-family: var(--font-mono); font-size: 11px;
+}
+
+/* ── A11y ── */
+.skip-link{position:absolute;top:-40px;inset-inline-start:0;background:var(--accent);color:#000;padding:8px 16px;z-index:10000;font-size:14px;font-weight:600;transition:top .2s}
+.skip-link:focus{top:0}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .app { padding: 16px; }
+  .header { flex-wrap: wrap; gap: 8px; padding-bottom: 14px; margin-bottom: 16px; }
+  .header h1 { font-size: 16px; }
+  .header-meta { gap: 8px; }
+  .stats { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-bottom: 16px; }
+  .stat { padding: 10px 12px; }
+  .stat-value { font-size: 22px; }
+  .sprint-grid { grid-template-columns: 1fr; gap: 10px; margin-bottom: 24px; }
+  .sprint-card { padding: 12px; }
+  .sprint-name { font-size: 13px; }
+  .sprint-meta { flex-wrap: wrap; gap: 8px; }
+  .conflict-card { padding: 10px; }
+  .timeline-name { min-width: 80px; font-size: 11px; }
+  .timeline-bar { height: 20px; }
+  .dep-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .dep-table th, .dep-table td { white-space: nowrap; }
+}
+@media (max-width: 480px) {
+  .app { padding: 12px; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .stat-value { font-size: 20px; }
+  .sprint-meta { font-size: 9px; }
+  .timeline-row { gap: 8px; }
+  .timeline-name { min-width: 60px; font-size: 10px; }
+  .timeline-claims { font-size: 10px; min-width: 36px; }
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<div id="live-status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+<div class="reconnect-banner" id="reconnectBanner" role="status" aria-live="polite"></div>
+<div class="app">
+  <!-- Header -->
+  <header class="header" role="banner">
+    <canvas id="grainLogo" width="256" height="256" style="display:block"></canvas>
+    <div class="header-meta">
+      <span class="conn-dot" id="connDot"></span>
+      <span class="last-scan" id="lastScan">--</span>
+      <button class="scan-btn" id="scanBtn">Rescan</button>
+    </div>
+  </header>
+
+  <main id="main-content" role="main" aria-label="Orchard workspace">
+  <!-- Stats -->
+  <div class="stats" id="stats"></div>
+
+  <!-- Sprint cards -->
+  <div class="section-title">Sprints <span class="count" id="sprintCount">0</span></div>
+  <div class="sprint-grid" id="sprintGrid"></div>
+
+  <!-- Conflicts -->
+  <div class="section-title">Conflicts <span class="count" id="conflictCount">0</span></div>
+  <div class="conflict-list" id="conflictList"></div>
+
+  <!-- Dependencies -->
+  <div class="section-title dep-section">Dependencies <span class="count" id="depCount">0</span></div>
+  <div id="depGraph" class="dep-graph" role="img" aria-label="Sprint dependency graph"></div>
+  <div style="margin-bottom:32px; overflow-x:auto;">
+    <table class="dep-table" id="depTable" role="table">
+      <thead><tr><th scope="col">From</th><th scope="col">To</th><th scope="col">Type</th></tr></thead>
+      <tbody id="depBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Timeline -->
+  <div class="section-title timeline-section">Timeline</div>
+  <div id="timeline"></div>
+  </main>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ── i18n passthrough ──
+  const t = (s, v) => v ? s.replace(/\{(\w+)\}/g, (_, k) => v[k] ?? k) : s;
+  const _dtf = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+
+  const PHASE_COLORS = {
+    define: 'var(--fg3)', research: 'var(--blue)', prototype: 'var(--purple)',
+    evaluate: 'var(--cyan)', challenge: 'var(--orange)', witness: '#14b8a6',
+    feedback: '#f472b6', calibrate: 'var(--green)',
+  };
+
+  const CLAIM_TYPE_COLORS = {
+    constraint: '#f87171', factual: '#60a5fa', estimate: '#a78bfa',
+    risk: '#fb923c', recommendation: '#34d399', feedback: '#f472b6',
+  };
+
+  let state = null;
+  let sse = null;
+
+  // ── SSE connection with exponential backoff ──
+  let retryCount = 0;
+  function showBanner(count) {
+    const b = document.getElementById('reconnectBanner');
+    if (count > 5) {
+      b.innerHTML = t('Connection lost.') + ' <button onclick="retryCount=0;connect()">' + t('Retry now') + '</button>';
+    } else if (count > 1) {
+      b.textContent = t('Reconnecting (attempt {count})...', { count });
+    } else {
+      b.textContent = t('Reconnecting...');
+    }
+    b.classList.add('visible');
+  }
+  function hideBanner() { document.getElementById('reconnectBanner').classList.remove('visible'); }
+
+  function connect() {
+    sse = new EventSource('/events');
+    document.getElementById('connDot').className = 'conn-dot';
+
+    sse.onmessage = (e) => {
+      try {
+        const msg = JSON.parse(e.data);
+        if (msg.type === 'state' && msg.data) {
+          state = msg.data;
+          render();
+          const ls = document.getElementById('live-status');
+          if (ls) ls.textContent = 'Updated: ' + (state.portfolio || []).length + ' sprints loaded';
+        }
+      } catch { /* ignore */ }
+    };
+
+    sse.onopen = () => {
+      retryCount = 0;
+      document.getElementById('connDot').className = 'conn-dot';
+      if (window._grainSetState) window._grainSetState('idle');
+    };
+
+    sse.onerror = () => {
+      document.getElementById('connDot').className = 'conn-dot disconnected';
+      if (window._grainSetState) window._grainSetState('orbit');
+      sse.close();
+      const delay = Math.min(30000, 1000 * Math.pow(2, retryCount)) + Math.random() * 1000;
+      retryCount++;
+      setTimeout(connect, delay);
+    };
+  }
+
+  // ── Rescan ──
+  document.getElementById('scanBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('scanBtn');
+    btn.textContent = t('Scanning...');
+    btn.disabled = true;
+    try {
+      await fetch('/api/scan', { method: 'POST' });
+    } catch { /* ignore */ }
+    btn.textContent = t('Rescan');
+    btn.disabled = false;
+  });
+
+  // ── Render ──
+  function render() {
+    if (!state) return;
+
+    // Last scan
+    if (state.lastScan) {
+      const d = new Date(state.lastScan);
+      document.getElementById('lastScan').textContent = _dtf.format(d);
+    }
+
+    const portfolio = state.portfolio || [];
+    const conflicts = state.conflicts || [];
+    const deps = state.dependencies || { nodes: [], edges: [] };
+    const timeline = state.timeline || [];
+
+    // Stats
+    const active = portfolio.filter(s => s.status === 'active').length;
+    const compiled = portfolio.filter(s => s.status === 'compiled' || s.status === 'done').length;
+    const totalClaims = portfolio.reduce((sum, s) => sum + (s.claimCount || 0), 0);
+
+    document.getElementById('stats').innerHTML = [
+      { value: portfolio.length, label: t('Sprints'), cls: 'stat-accent' },
+      { value: active, label: t('Active'), cls: 'stat-green' },
+      { value: compiled, label: t('Compiled'), cls: 'stat-blue' },
+      { value: totalClaims, label: t('Total Claims'), cls: '' },
+      { value: conflicts.length, label: t('Conflicts'), cls: conflicts.length > 0 ? 'stat-red' : '' },
+      { value: deps.edges.length, label: t('Dep Links'), cls: '' },
+    ].map(s => `
+      <div class="stat ${s.cls}">
+        <div class="stat-value">${s.value}</div>
+        <div class="stat-label">${s.label}</div>
+      </div>
+    `).join('');
+
+    // Sprint count
+    document.getElementById('sprintCount').textContent = portfolio.length;
+
+    // Sprint cards
+    if (portfolio.length === 0) {
+      document.getElementById('sprintGrid').innerHTML = `
+        <div class="empty">
+          <h3>${t('No sprints found')}</h3>
+          <p>${t('Create a sprint directory with claims.json or add sprints to orchard.json')}</p>
+        </div>`;
+    } else {
+      document.getElementById('sprintGrid').innerHTML = portfolio.map(s => {
+        const hasConflict = conflicts.some(c =>
+          c.claimA.sprint === s.name || c.claimB.sprint === s.name
+        );
+        const badgeClass =
+          s.status === 'active' ? 'badge-active' :
+          s.status === 'compiled' || s.status === 'done' ? 'badge-compiled' :
+          s.status === 'blocked' ? 'badge-blocked' :
+          'badge-not-started';
+
+        // Claim type bar
+        const types = Object.entries(s.claimTypes || {});
+        const total = types.reduce((sum, [,v]) => sum + v, 0) || 1;
+        const barSegs = types.map(([tp, v]) => {
+          const pct = (v / total * 100).toFixed(1);
+          const color = CLAIM_TYPE_COLORS[tp] || 'var(--bg4)';
+          return `<div class="claim-bar-seg" style="flex:${v}; background:${color}" title="${tp}: ${v}"></div>`;
+        }).join('');
+
+        return `
+          <div class="sprint-card${hasConflict ? ' conflict' : ''}" tabindex="0" role="article" aria-label="${esc(s.name)} sprint">
+            <div class="sprint-card-header">
+              <span class="sprint-name">${esc(s.name)}</span>
+              <span class="sprint-badge ${badgeClass}">${esc(s.status || 'unknown')}</span>
+            </div>
+            ${s.question ? `<div class="sprint-question">${esc(s.question.substring(0, 160))}</div>` : ''}
+            <div class="sprint-meta">
+              <span><strong>${s.claimCount}</strong> claims</span>
+              <span>phase: <strong>${esc(s.phase || 'unknown')}</strong></span>
+              ${s.assignedTo ? `<span>${esc(s.assignedTo)}</span>` : ''}
+              ${s.deadline ? `<span>${esc(s.deadline)}</span>` : ''}
+            </div>
+            ${types.length > 0 ? `<div class="claim-bar">${barSegs}</div>` : ''}
+          </div>`;
+      }).join('');
+    }
+
+    // Conflicts
+    document.getElementById('conflictCount').textContent = conflicts.length;
+    if (conflicts.length === 0) {
+      document.getElementById('conflictList').innerHTML =
+        '<div class="empty"><p>' + t('No cross-sprint conflicts detected') + '</p></div>';
+    } else {
+      document.getElementById('conflictList').innerHTML = conflicts.map(c => `
+        <div class="conflict-card${c.severity === 'medium' ? ' medium' : ''}">
+          <div class="conflict-header">
+            <span class="conflict-type">${esc(c.type)}</span>
+            <span class="conflict-tag">${esc(c.tag)}</span>
+          </div>
+          <div class="conflict-claims">
+            <div class="claim-ref">
+              <span class="claim-id">${esc(c.claimA.id)}</span>
+              <span>${esc(c.claimA.sprint)}: ${esc(c.claimA.text)}</span>
+            </div>
+            <div class="claim-ref">
+              <span class="claim-id">${esc(c.claimB.id)}</span>
+              <span>${esc(c.claimB.sprint)}: ${esc(c.claimB.text)}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Dependencies
+    document.getElementById('depCount').textContent = deps.edges.length;
+    renderDepGraph(deps);
+
+    if (deps.edges.length === 0) {
+      document.getElementById('depBody').innerHTML =
+        '<tr><td colspan="3" style="color:var(--fg3); text-align:center; padding:16px;">' + t('No dependencies detected') + '</td></tr>';
+    } else {
+      document.getElementById('depBody').innerHTML = deps.edges.map(e => {
+        const fromName = e.from.split('/').pop();
+        const toName = e.to.split('/').pop();
+        const typeClass = e.type === 'explicit' ? 'dep-type-explicit' : 'dep-type-reference';
+        return `
+          <tr>
+            <td>${esc(fromName)}</td>
+            <td>${esc(toName)}</td>
+            <td><span class="dep-type ${typeClass}">${esc(e.type)}</span></td>
+          </tr>`;
+      }).join('');
+    }
+
+    // Timeline
+    if (timeline.length === 0) {
+      document.getElementById('timeline').innerHTML =
+        '<div class="empty"><p>' + t('No timeline data available') + '</p></div>';
+    } else {
+      document.getElementById('timeline').innerHTML = timeline.map(tl => {
+        const phases = (tl.phases || []);
+        const total = phases.reduce((sum, p) => sum + p.claimCount, 0);
+
+        const bars = phases.map(p => {
+          const phaseClass = 'phase-' + p.name.replace(/[^a-z]/g, '');
+          return `<div class="timeline-phase ${phaseClass}" style="flex:${p.claimCount}" title="${p.name}: ${p.claimCount} claims">${p.claimCount > 2 ? p.name.substring(0, 3) : ''}</div>`;
+        }).join('');
+
+        return `
+          <div class="timeline-row">
+            <span class="timeline-name" title="${esc(tl.name)}">${esc(tl.name)}</span>
+            <div class="timeline-bar">${bars || '<div style="flex:1"></div>'}</div>
+            <span class="timeline-claims">${total}</span>
+          </div>`;
+      }).join('');
+    }
+  }
+
+  function esc(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  // ── SVG dependency graph ──
+  function renderDepGraph(deps) {
+    const container = document.getElementById('depGraph');
+    if (!deps.nodes.length || !deps.edges.length) { container.innerHTML = ''; return; }
+
+    const nameMap = {};
+    for (const n of deps.nodes) nameMap[n.id] = n.name;
+
+    // Collect unique node names involved in edges
+    const involved = new Set();
+    for (const e of deps.edges) {
+      involved.add(e.from);
+      involved.add(e.to);
+    }
+    const nodeList = deps.nodes.filter(n => involved.has(n.id));
+    if (nodeList.length === 0) { container.innerHTML = ''; return; }
+
+    const nodeW = 120, nodeH = 32, padX = 24, padY = 20, gapX = 40, gapY = 16;
+
+    // Simple layered layout: nodes with no incoming edges go first
+    const incoming = new Map();
+    for (const n of nodeList) incoming.set(n.id, 0);
+    for (const e of deps.edges) {
+      if (incoming.has(e.to)) incoming.set(e.to, incoming.get(e.to) + 1);
+    }
+
+    // Topological layers (BFS)
+    const layers = [];
+    const placed = new Set();
+    let frontier = nodeList.filter(n => incoming.get(n.id) === 0).map(n => n.id);
+    if (frontier.length === 0) frontier = [nodeList[0].id]; // cycle fallback
+
+    while (frontier.length > 0) {
+      layers.push(frontier);
+      for (const id of frontier) placed.add(id);
+      const next = [];
+      for (const e of deps.edges) {
+        if (placed.has(e.from) && !placed.has(e.to) && !next.includes(e.to)) {
+          next.push(e.to);
+        }
+      }
+      if (next.length === 0) {
+        // Place any remaining unplaced nodes
+        const remaining = nodeList.filter(n => !placed.has(n.id)).map(n => n.id);
+        if (remaining.length > 0) { layers.push(remaining); for (const id of remaining) placed.add(id); }
+        break;
+      }
+      frontier = next;
+    }
+
+    // Compute positions
+    const pos = {};
+    const maxPerLayer = Math.max(...layers.map(l => l.length));
+    const svgW = layers.length * (nodeW + gapX) + padX * 2;
+    const svgH = maxPerLayer * (nodeH + gapY) + padY * 2;
+
+    for (let li = 0; li < layers.length; li++) {
+      const layer = layers[li];
+      const layerH = layer.length * (nodeH + gapY) - gapY;
+      const startY = (svgH - layerH) / 2;
+      for (let ni = 0; ni < layer.length; ni++) {
+        pos[layer[ni]] = {
+          x: padX + li * (nodeW + gapX),
+          y: startY + ni * (nodeH + gapY),
+        };
+      }
+    }
+
+    // Build SVG
+    let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${svgW} ${svgH}" style="min-height:${Math.min(svgH, 200)}px; max-height:240px">`;
+    svg += '<defs><marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="var(--fg3)"/></marker>';
+    svg += '<marker id="arrowhead-accent" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="var(--accent)"/></marker></defs>';
+
+    // Edges
+    for (const e of deps.edges) {
+      const from = pos[e.from];
+      const to = pos[e.to];
+      if (!from || !to) continue;
+      const x1 = from.x + nodeW;
+      const y1 = from.y + nodeH / 2;
+      const x2 = to.x;
+      const y2 = to.y + nodeH / 2;
+      const cls = e.type === 'explicit' ? 'edge explicit' : 'edge reference';
+      const marker = e.type === 'explicit' ? 'url(#arrowhead-accent)' : 'url(#arrowhead)';
+      const mx = (x1 + x2) / 2;
+      svg += `<path class="${cls}" d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}" marker-end="${marker}"/>`;
+    }
+
+    // Nodes
+    for (const n of nodeList) {
+      const p = pos[n.id];
+      if (!p) continue;
+      const statusColor =
+        n.status === 'active' ? 'var(--green)' :
+        n.status === 'compiled' || n.status === 'done' ? 'var(--blue)' :
+        n.status === 'blocked' ? 'var(--red)' : 'var(--fg3)';
+      svg += `<g class="node"><rect x="${p.x}" y="${p.y}" width="${nodeW}" height="${nodeH}" style="stroke:${statusColor}"/>`;
+      svg += `<text x="${p.x + nodeW / 2}" y="${p.y + nodeH / 2 + 1}" text-anchor="middle" dominant-baseline="central">${esc(n.name.length > 14 ? n.name.substring(0, 13) + '..' : n.name)}</text></g>`;
+    }
+
+    svg += '</svg>';
+    container.innerHTML = svg;
+  }
+
+  // ── Keyboard navigation ──
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.activeElement?.blur();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    // J/K to navigate between sprint cards
+    if ((e.key === 'j' || e.key === 'k') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      const target = e.target;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+      const cards = [...document.querySelectorAll('.sprint-card')];
+      if (cards.length === 0) return;
+      const idx = cards.indexOf(document.activeElement);
+      let next;
+      if (e.key === 'j') next = idx < 0 ? 0 : Math.min(idx + 1, cards.length - 1);
+      else next = idx < 0 ? cards.length - 1 : Math.max(idx - 1, 0);
+      cards[next].focus();
+      e.preventDefault();
+    }
+  });
+
+  connect();
+})();
+</script>
+<script>
+(function() {
+  var LW = 0.025;
+  var TOOL = { name: 'Orchard', letter: 'O', color: '#14b8a6' };
+  var _c, _ctx, _s, _cx, _textStart, _restText, _font;
+  var _state = 'drawon', _start = null, _raf, _pendingState = null;
+  var _openPts = null, _closedPts = null;
+
+  function _lerp(a,b,t){ return {x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t}; }
+  function _easeInOut(t){ return t<0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2; }
+
+  function _bracket(ctx, s, color, alpha) {
+    var lw=s*LW, cx=_cx, cy=s/2, gw=s*0.72, gh=s*0.68;
+    var topY=cy-gh/2, botY=cy+gh/2, fe=gw*0.30;
+    if(alpha!==undefined) ctx.globalAlpha=alpha;
+    ctx.strokeStyle=color; ctx.lineWidth=lw; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.beginPath(); ctx.moveTo(cx,topY); ctx.lineTo(cx-fe,topY);
+    ctx.bezierCurveTo(cx-gw*0.52,cy-gh*0.32, cx-gw*0.52,cy+gh*0.24, cx-fe,botY);
+    ctx.lineTo(cx,botY); ctx.stroke();
+    if(alpha!==undefined) ctx.globalAlpha=1;
+  }
+
+  function _drawBracket(ctx, s, color, progress) {
+    var lw=s*LW, cx=_cx, cy=s/2, gw=s*0.72, gh=s*0.68;
+    var topY=cy-gh/2, botY=cy+gh/2, fe=gw*0.30;
+    ctx.strokeStyle=color; ctx.lineWidth=lw; ctx.lineCap='round'; ctx.lineJoin='round';
+    var seg1=0.12, seg2=0.72;
+    ctx.beginPath();
+    if(progress<=seg1){ctx.moveTo(cx,topY);ctx.lineTo(cx-fe*(progress/seg1),topY);}
+    else if(progress<=seg1+seg2){ctx.moveTo(cx,topY);ctx.lineTo(cx-fe,topY);ctx.stroke();ctx.beginPath();
+      var bt=(progress-seg1)/seg2;
+      var p0={x:cx-fe,y:topY},p1={x:cx-gw*0.52,y:cy-gh*0.32},p2={x:cx-gw*0.52,y:cy+gh*0.24},p3={x:cx-fe,y:botY};
+      var q1=_lerp(p0,p1,bt),q2=_lerp(p1,p2,bt),q3=_lerp(p2,p3,bt);
+      var r1=_lerp(q1,q2,bt),r2=_lerp(q2,q3,bt),s1=_lerp(r1,r2,bt);
+      ctx.moveTo(p0.x,p0.y);ctx.bezierCurveTo(q1.x,q1.y,r1.x,r1.y,s1.x,s1.y);}
+    else{ctx.moveTo(cx,topY);ctx.lineTo(cx-fe,topY);
+      ctx.bezierCurveTo(cx-gw*0.52,cy-gh*0.32, cx-gw*0.52,cy+gh*0.24, cx-fe,botY);
+      ctx.lineTo((cx-fe)+fe*((progress-seg1-seg2)/(1-seg1-seg2)),botY);}
+    ctx.stroke();
+  }
+
+  function _drawName(ctx, s, spellP, alpha) {
+    var a = alpha !== undefined ? alpha : 1;
+    ctx.font = _font; ctx.textBaseline = 'middle';
+    var cy = s/2 + s*0.02;
+    ctx.globalAlpha = a; ctx.fillStyle = TOOL.color; ctx.textAlign = 'center';
+    ctx.fillText(TOOL.letter, _cx, cy);
+    if(_restText.length > 0 && spellP > 0) {
+      var n = _restText.length, num = Math.min(n, Math.ceil(spellP * n));
+      var rawP = spellP * n, charP = num >= n ? 1 : rawP - Math.floor(rawP);
+      var full = charP >= 1 ? num : num - 1;
+      ctx.fillStyle = '#e2e8f0'; ctx.textAlign = 'left';
+      if(full > 0) { ctx.globalAlpha = a; ctx.fillText(_restText.slice(0, full), _textStart, cy); }
+      if(full < num) {
+        var prevW = full > 0 ? ctx.measureText(_restText.slice(0, full)).width : 0;
+        ctx.globalAlpha = a * (0.3 + 0.7 * charP);
+        ctx.fillText(_restText[full], _textStart + prevW, cy);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function _getOpenPts(s) {
+    if(_openPts && _openPts._s === s) return _openPts;
+    var cx=_cx, cy=s/2, gw=s*0.72, gh=s*0.68, topY=cy-gh/2, botY=cy+gh/2, fe=gw*0.30;
+    var pts=[];
+    for(var t=0;t<=1;t+=0.05) pts.push({x:cx-fe*t,y:topY});
+    var p0={x:cx-fe,y:topY},p1={x:cx-gw*0.52,y:cy-gh*0.32},p2={x:cx-gw*0.52,y:cy+gh*0.24},p3={x:cx-fe,y:botY};
+    for(var t=0;t<=1;t+=0.02){var u=1-t;pts.push({x:u*u*u*p0.x+3*u*u*t*p1.x+3*u*t*t*p2.x+t*t*t*p3.x,y:u*u*u*p0.y+3*u*u*t*p1.y+3*u*t*t*p2.y+t*t*t*p3.y});}
+    for(var t=0;t<=1;t+=0.05) pts.push({x:(cx-fe)+fe*t,y:botY});
+    pts._s=s; _openPts=pts; return pts;
+  }
+
+  function _getClosedPts(s) {
+    if(_closedPts && _closedPts._s === s) return _closedPts;
+    var cx=_cx, cy=s/2, gw=s*0.72, gh=s*0.68, topY=cy-gh/2, botY=cy+gh/2, fe=gw*0.30;
+    var pts=[];
+    for(var t=0;t<=1;t+=0.03) pts.push({x:cx-fe*t,y:topY});
+    var lp0={x:cx-fe,y:topY},lp1={x:cx-gw*0.52,y:cy-gh*0.32},lp2={x:cx-gw*0.52,y:cy+gh*0.24},lp3={x:cx-fe,y:botY};
+    for(var t=0;t<=1;t+=0.02){var u=1-t;pts.push({x:u*u*u*lp0.x+3*u*u*t*lp1.x+3*u*t*t*lp2.x+t*t*t*lp3.x,y:u*u*u*lp0.y+3*u*u*t*lp1.y+3*u*t*t*lp2.y+t*t*t*lp3.y});}
+    for(var t=0;t<=1;t+=0.03) pts.push({x:(cx-fe)+2*fe*t,y:botY});
+    var rp0={x:cx+fe,y:botY},rp1={x:cx+gw*0.52,y:cy+gh*0.24},rp2={x:cx+gw*0.52,y:cy-gh*0.32},rp3={x:cx+fe,y:topY};
+    for(var t=0;t<=1;t+=0.02){var u=1-t;pts.push({x:u*u*u*rp0.x+3*u*u*t*rp1.x+3*u*t*t*rp2.x+t*t*t*rp3.x,y:u*u*u*rp0.y+3*u*u*t*rp1.y+3*u*t*t*rp2.y+t*t*t*rp3.y});}
+    for(var t=0;t<=1;t+=0.03) pts.push({x:(cx+fe)-fe*t,y:topY});
+    pts._s=s; _closedPts=pts; return pts;
+  }
+
+  function _frame(ts) {
+    if(!_c) return;
+    if(!_start) _start = ts;
+    var e = ts - _start, ctx = _ctx, s = _s;
+    ctx.clearRect(0, 0, _c.width, s);
+    switch(_state) {
+      case 'drawon':
+        var bp = _easeInOut(Math.min(1, e / 1400));
+        _drawBracket(ctx, s, TOOL.color, bp);
+        var la = Math.max(0, Math.min(1, (e - 900) / 400));
+        if(la > 0) {
+          ctx.font = _font; ctx.textBaseline = 'middle';
+          ctx.globalAlpha = la; ctx.fillStyle = TOOL.color; ctx.textAlign = 'center';
+          ctx.fillText(TOOL.letter, _cx, s/2 + s*0.02); ctx.globalAlpha = 1;
+        }
+        if(e > 1100 && _restText.length > 0) {
+          var sp = Math.min(1, (e - 1100) / (120 * _restText.length));
+          var n = _restText.length, num = Math.min(n, Math.ceil(sp * n));
+          if(num > 0) {
+            ctx.font = _font; ctx.textBaseline = 'middle';
+            var cy = s/2 + s*0.02, rawP = sp * n;
+            var charP = num >= n ? 1 : rawP - Math.floor(rawP);
+            var full = charP >= 1 ? num : num - 1;
+            ctx.fillStyle = '#e2e8f0'; ctx.textAlign = 'left';
+            if(full > 0) ctx.fillText(_restText.slice(0, full), _textStart, cy);
+            if(full < num) {
+              var prevW = full > 0 ? ctx.measureText(_restText.slice(0, full)).width : 0;
+              ctx.globalAlpha = 0.3 + 0.7 * charP;
+              ctx.fillText(_restText[full], _textStart + prevW, cy); ctx.globalAlpha = 1;
+            }
+          }
+        }
+        if(e > 1100 + 120 * _restText.length + 300) { _state = _pendingState || 'idle'; _pendingState = null; _start = ts; }
+        break;
+      case 'idle':
+        var breathe = 0.5 + 0.5 * (0.5 + 0.5 * Math.sin(e / 1200));
+        _bracket(ctx, s, TOOL.color, breathe);
+        var textBreath = 0.88 + 0.12 * (0.5 + 0.5 * Math.sin(e / 1800));
+        _drawName(ctx, s, 1, textBreath);
+        break;
+      case 'shimmer':
+        _bracket(ctx, s, TOOL.color, 0.2);
+        var spts = _getOpenPts(s), sspeed = 1800;
+        var spos = (e % sspeed) / sspeed;
+        var sidx = Math.floor(spos * (spts.length - 1));
+        var spt = spts[sidx];
+        var sgrad = ctx.createRadialGradient(spt.x, spt.y, 0, spt.x, spt.y, s * 0.10);
+        sgrad.addColorStop(0, TOOL.color + 'aa'); sgrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = sgrad; ctx.fillRect(0, 0, _c.width, s);
+        var strailFrac = 0.18;
+        var si0 = Math.max(0, Math.floor((spos - strailFrac) * (spts.length - 1)));
+        ctx.strokeStyle = TOOL.color; ctx.lineWidth = s * LW; ctx.lineCap = 'round';
+        ctx.globalAlpha = 0.85; ctx.beginPath(); ctx.moveTo(spts[si0].x, spts[si0].y);
+        for(var si = si0 + 1; si <= sidx; si++) ctx.lineTo(spts[si].x, spts[si].y);
+        ctx.stroke(); ctx.globalAlpha = 1;
+        _drawName(ctx, s, 1, undefined);
+        break;
+      case 'orbit':
+        _bracket(ctx, s, TOOL.color, 0.15);
+        _drawName(ctx, s, 1, 0.4);
+        var pts = _getOpenPts(s), speed = 1200, trailFrac = 0.28;
+        var halfCycle = (e % speed) / speed;
+        var cycle = (e % (speed * 2)) / (speed * 2);
+        var pos = cycle < 0.5 ? halfCycle : 1 - halfCycle;
+        var headIdx = Math.floor(pos * (pts.length - 1));
+        var trailLen = Math.floor(trailFrac * pts.length);
+        var dir = cycle < 0.5 ? 1 : -1;
+        ctx.lineWidth = s * LW; ctx.lineCap = 'round';
+        for(var i = 0; i < trailLen; i++) {
+          var idx = headIdx - dir * (trailLen - i);
+          if(idx < 0 || idx >= pts.length) continue;
+          var nxt = idx + dir;
+          if(nxt < 0 || nxt >= pts.length) continue;
+          ctx.globalAlpha = (i / trailLen) * 0.7; ctx.strokeStyle = TOOL.color;
+          ctx.beginPath(); ctx.moveTo(pts[idx].x, pts[idx].y); ctx.lineTo(pts[nxt].x, pts[nxt].y); ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+        break;
+      case 'dim':
+        var dim = 0.1 + 0.08 * Math.sin(e / 2000);
+        _bracket(ctx, s, TOOL.color, dim);
+        _drawName(ctx, s, 1, 0.2);
+        break;
+    }
+    _raf = requestAnimationFrame(_frame);
+  }
+
+  _c = document.getElementById('grainLogo');
+  if(_c) {
+    _c.style.width = '0px';
+    _s = 256;
+    var targetFontPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    var fontRatio = 0.38;
+    var dh = 64;
+    _c.height = _s; _c.width = 1024;
+    _ctx = _c.getContext('2d');
+    _cx = _s / 2;
+    _restText = TOOL.name.slice(1);
+    _font = '800 ' + (_s * fontRatio) + 'px -apple-system,"SF Pro Display","Helvetica Neue",Arial,sans-serif';
+    _ctx.font = _font;
+    var letterW = _ctx.measureText(TOOL.letter).width;
+    var restW = _restText.length > 0 ? _ctx.measureText(_restText).width : 0;
+    _textStart = _cx + letterW / 2 + _s * 0.02;
+    var totalW = Math.ceil(_textStart + restW + _s * 0.12);
+    _c.width = totalW;
+    _ctx = _c.getContext('2d');
+    _c.style.height = dh + 'px';
+    _c.style.width = Math.round(totalW / _s * dh) + 'px';
+    _state = 'drawon'; _start = null;
+    _raf = requestAnimationFrame(_frame);
+  }
+
+  window._grainSetState = function(state) {
+    if(_state === state) return;
+    if(_state === 'drawon') { _pendingState = state; return; }
+    _state = state; _start = null;
+    if(!_raf) _raf = requestAnimationFrame(_frame);
+  };
+})();
+</script>
+</body>
+</html>

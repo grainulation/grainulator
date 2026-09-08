@@ -1,0 +1,223 @@
+{
+  "name": "Application Security",
+  "description": "OWASP top 10 mitigations, auth patterns, secrets management, supply chain security, and hardening guidance for web applications.",
+  "version": "1.0.0",
+  "claims": [
+    {
+      "id": "sec-001",
+      "type": "constraint",
+      "topic": "SQL injection prevention",
+      "content": "All database queries must use parameterized statements or prepared queries. String concatenation for SQL is never acceptable, even for internal tools. ORMs provide this by default but raw queries must be audited. OWASP ranks injection as A03:2021.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["security", "owasp", "injection", "sql"]
+    },
+    {
+      "id": "sec-002",
+      "type": "constraint",
+      "topic": "secrets never in source control",
+      "content": "Secrets (API keys, database credentials, signing keys) must never appear in source control, including in commit history. Use environment variables, secret managers (Vault, AWS Secrets Manager, 1Password CLI), or encrypted .env files with .gitignore. Rotate any secret that has ever been committed.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["security", "secrets", "source-control"]
+    },
+    {
+      "id": "sec-003",
+      "type": "recommendation",
+      "topic": "JWT access token lifetime",
+      "content": "JWT access tokens should have a lifetime of 5-15 minutes. Refresh tokens should be opaque (not JWT), stored server-side, rotated on each use, and have a maximum lifetime of 7-30 days. Never store JWTs in localStorage; use httpOnly secure cookies or in-memory storage.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["security", "auth", "jwt", "tokens"]
+    },
+    {
+      "id": "sec-004",
+      "type": "risk",
+      "topic": "dependency supply chain attacks",
+      "content": "npm, PyPI, and other registries are vectors for supply chain attacks (typosquatting, maintainer account takeover, malicious postinstall scripts). Pin exact dependency versions, use lockfiles, audit with npm audit / pip-audit, and consider running install with --ignore-scripts in CI.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["security", "supply-chain", "dependencies", "npm"]
+    },
+    {
+      "id": "sec-005",
+      "type": "factual",
+      "topic": "bcrypt cost factor",
+      "content": "bcrypt with a cost factor of 10 takes approximately 100ms to hash on modern hardware. Increase to 12 (roughly 400ms) for high-security contexts. Argon2id is the current OWASP recommendation for new projects, with minimum parameters: 19 MiB memory, 2 iterations, 1 parallelism.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["security", "auth", "hashing", "passwords"]
+    },
+    {
+      "id": "sec-006",
+      "type": "constraint",
+      "topic": "CORS allowlist",
+      "content": "CORS Access-Control-Allow-Origin must never be set to * for authenticated endpoints. Maintain an explicit allowlist of permitted origins. Reflect the Origin header only if it matches the allowlist. Misconfigured CORS is OWASP A01:2021 (Broken Access Control).",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["security", "cors", "owasp", "access-control"]
+    },
+    {
+      "id": "sec-007",
+      "type": "recommendation",
+      "topic": "CSP header configuration",
+      "content": "Content-Security-Policy should start strict and loosen as needed: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'. Avoid 'unsafe-inline' and 'unsafe-eval'. Use nonces for inline scripts if unavoidable. Report violations with report-uri or report-to.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["security", "csp", "headers", "xss"]
+    },
+    {
+      "id": "sec-008",
+      "type": "risk",
+      "topic": "SSRF in internal services",
+      "content": "Server-Side Request Forgery (SSRF) allows attackers to make requests from your server to internal networks, cloud metadata endpoints (169.254.169.254), or localhost services. Validate and allowlist all URLs that originate from user input. Block requests to private IP ranges and link-local addresses.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["security", "ssrf", "owasp", "cloud"]
+    },
+    {
+      "id": "sec-009",
+      "type": "recommendation",
+      "topic": "rate limiting auth endpoints",
+      "content": "Login endpoints must be rate-limited to no more than 10 attempts per IP per minute and 5 attempts per account per minute. After 5 consecutive failures for an account, enforce exponential backoff or temporary lockout (15-30 minutes). Log all failed attempts with IP and timestamp for anomaly detection.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["security", "auth", "rate-limiting", "brute-force"]
+    },
+    {
+      "id": "sec-010",
+      "type": "factual",
+      "topic": "HTTPS and HSTS requirements",
+      "content": "All production traffic must use TLS 1.2 or higher. TLS 1.0 and 1.1 are deprecated (RFC 8996). Set Strict-Transport-Security header with max-age of at least 31536000 (1 year) and includeSubDomains. Submit to the HSTS preload list for public-facing domains.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["security", "tls", "https", "hsts"]
+    },
+    {
+      "id": "sec-011",
+      "type": "risk",
+      "topic": "insecure deserialization",
+      "content": "Never deserialize untrusted data with language-native serialization (Java ObjectInputStream, Python pickle, PHP unserialize). These allow arbitrary code execution. Use JSON or Protocol Buffers with schema validation instead. OWASP A08:2021 (Software and Data Integrity Failures).",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["security", "deserialization", "owasp", "rce"]
+    },
+    {
+      "id": "sec-012",
+      "type": "recommendation",
+      "topic": "least privilege for service accounts",
+      "content": "Service accounts and IAM roles must follow least privilege: grant only the specific actions on the specific resources needed. Audit permissions quarterly. AWS policies should never use Resource: * with Action: *. Use IAM Access Analyzer to identify unused permissions.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["security", "iam", "least-privilege", "cloud"]
+    }
+  ]
+}

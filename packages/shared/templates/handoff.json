@@ -1,0 +1,22 @@
+{
+  "title": "Handoff",
+  "description": "Knowledge transfer document for sprint succession. Covers context, decisions, open questions, claim inventory, and continuation guidance for someone with zero prior context.",
+  "tags": ["handoff", "transfer", "onboarding", "documentation"],
+  "author": "grainulation",
+  "version": "1.0.0",
+  "exportPresets": [
+    { "name": "pdf", "format": "pdf" },
+    { "name": "static-site", "format": "html" },
+    { "name": "markdown-outline", "format": "md" }
+  ],
+  "seedPacks": ["migration"],
+  "scaffoldConfig": {
+    "defaultPlaceholders": {
+      "TITLE": "Sprint Handoff",
+      "SPRINT_NAME": "Untitled Sprint",
+      "QUESTION": "",
+      "AUDIENCE": "Successor"
+    },
+    "postInit": ["load-claims", "compile-brief"]
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "claims": [
+    {
+      "id": "r001",
+      "type": "factual",
+      "text": "Node.js has built-in HTTP module",
+      "confidence": 0.95,
+      "evidence": {
+        "tier": "documented",
+        "source": "nodejs.org"
+      },
+      "status": "active",
+      "created": "2026-01-15",
+      "tags": [
+        "node",
+        "http"
+      ]
+    },
+    {
+      "id": "r002",
+      "type": "recommendation",
+      "text": "Use streams for large file processing",
+      "confidence": 0.8,
+      "evidence": {
+        "tier": "tested",
+        "source": "prototype"
+      },
+      "status": "active",
+      "created": "2026-01-16",
+      "tags": [
+        "performance"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://github.com/grainulation/bean/schemas/result.schema.json",
+	"title": "bean-check result",
+	"type": "object",
+	"required": [
+		"status",
+		"blockers",
+		"warnings",
+		"notes",
+		"coverage",
+		"round",
+		"certificate"
+	],
+	"properties": {
+		"status": {
+			"enum": [
+				"ready",
+				"blocked",
+				"budget-exceeded",
+				"converged-with-residuals"
+			]
+		},
+		"blockers": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
+		"warnings": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
+		"notes": { "type": "array", "items": { "type": "string" } },
+		"coverage": {
+			"type": "object",
+			"properties": {
+				"topics": { "type": "integer" },
+				"active": { "type": "integer" },
+				"total": { "type": "integer" }
+			}
+		},
+		"verification": {
+			"type": "object",
+			"description": "2.0 oracle-gate summary. Inactive (mode=compat, all-zero) for 1.x ledgers.",
+			"properties": {
+				"mode": { "enum": ["compat", "advisory", "strict"] },
+				"load_bearing": { "type": "integer" },
+				"verified": { "type": "integer" },
+				"residual": { "type": "integer" },
+				"unverified": { "type": "integer" },
+				"failed": { "type": "integer" },
+				"stale": { "type": "integer" }
+			}
+		},
+		"round": { "type": "integer" },
+		"max_rounds": { "type": ["integer", "null"] },
+		"new_this_round": { "type": "integer" },
+		"dry": { "type": "boolean" },
+		"certificate": { "type": "string" }
+	},
+	"$defs": {
+		"finding": {
+			"type": "object",
+			"required": ["code"],
+			"properties": { "code": { "type": "string" } },
+			"additionalProperties": true
+		}
+	}
+}

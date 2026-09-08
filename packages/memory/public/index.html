@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-tool="silo">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Silo</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%230a0e1a'/><text x='32' y='34' text-anchor='middle' dominant-baseline='central' fill='%236ee7b7' font-family='-apple-system,system-ui,sans-serif' font-size='34' font-weight='800'>S</text></svg>">
+  <!-- STYLE 1: shared tokens -->
+  <style>
+:root {
+  --bg: #0a0e1a; --bg2: #111827; --bg3: #1e293b; --bg4: #334155;
+  --fg: #e2e8f0; --fg2: #94a3b8; --fg3: #64748b;
+  --border: #1e293b; --border-subtle: rgba(255,255,255,0.08);
+  --green: #34d399; --red: #f87171; --blue: #60a5fa; --purple: #a78bfa; --orange: #fb923c; --cyan: #22d3ee;
+  --space-xs: 4px; --space-sm: 8px; --space-md: 12px; --space-lg: 16px; --space-xl: 24px; --space-2xl: 32px;
+  --radius: 8px; --radius-sm: 4px; --radius-lg: 12px;
+  --font-sans: -apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
+  --font-mono: 'SF Mono','Cascadia Code','JetBrains Mono','Fira Code',monospace;
+  --text-xs: 9px; --text-sm: 10px; --text-base: 12px; --text-md: 13px; --text-lg: 15px; --text-xl: 18px;
+  --line-height: 1.5;
+  --transition-fast: 0.1s ease; --transition-base: 0.15s ease;
+  /* silo accent */
+  --accent: #6ee7b7; --accent-light: #a7f3d0; --accent-dim: rgba(110,231,183,0.10); --accent-border: rgba(110,231,183,0.25);
+}
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: var(--font-sans); background: var(--bg); color: var(--fg);
+  background-image: radial-gradient(ellipse at 20% 50%, rgba(59,130,246,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(167,139,250,0.06) 0%, transparent 50%);
+  font-size: var(--text-md); line-height: var(--line-height);
+  -webkit-font-smoothing: antialiased;
+}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+*:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  </style>
+  <!-- STYLE 2: shared layout -->
+  <style>
+.app { display:grid; grid-template-columns:320px 1fr; grid-template-rows:auto 1fr auto; height:100vh; overflow:hidden }
+.toolbar { grid-column:1/-1; display:flex; align-items:center; padding:4px var(--space-xl); border-bottom:1px solid var(--border); background:rgba(255,255,255,0.08); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); gap:10px }
+.toolbar canvas { flex-shrink:0 }
+.toolbar-spacer { flex:1 }
+.toolbar-right { display:flex; align-items:center; gap:var(--space-sm) }
+.status-dot { width:6px; height:6px; border-radius:50%; background:var(--fg3); flex-shrink:0; transition:background 0.3s,box-shadow 0.3s }
+.status-dot.ok { background:var(--green); box-shadow:0 0 6px rgba(52,199,89,0.5) }
+.reconnect-banner { position:fixed;top:0;left:0;right:0;z-index:9999;padding:8px 16px;background:#92400e;color:#fbbf24;font-size:12px;text-align:center;transform:translateY(-100%);transition:transform .3s;font-family:system-ui,sans-serif }
+.reconnect-banner.visible { transform:translateY(0) }
+.reconnect-banner button { background:none;border:1px solid #fbbf24;color:#fbbf24;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:11px;margin-inline-start:8px }
+.sidebar { background:var(--bg2); border-inline-end:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden }
+.content { display:flex; flex-direction:column; overflow:hidden; min-height:0 }
+.footer { grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; padding:var(--space-xs) var(--space-xl); border-top:1px solid var(--border); background:var(--bg2); font-size:var(--text-xs); color:var(--fg3) }
+.footer-links { display:flex; gap:var(--space-lg) }
+.footer a { color:var(--fg3); text-decoration:none; transition:color var(--transition-fast) }
+.footer a:hover { color:var(--accent) }
+.mobile-nav { display:none; grid-column:1/-1; background:var(--bg2); border-bottom:1px solid var(--border) }
+.mobile-nav-bar { display:flex }
+.mobile-tab { flex:1; padding:12px 0; text-align:center; font-size:12px; font-weight:600; color:var(--fg3); background:none; border:none; border-bottom:2px solid transparent; cursor:pointer; font-family:var(--font-sans) }
+.mobile-tab:hover { color:var(--fg2) }
+.mobile-tab.active { color:var(--accent); border-bottom-color:var(--accent) }
+.welcome { padding:var(--space-xl); max-width:600px; margin:0 auto }
+.welcome h2 { font-size:18px; font-weight:700; color:var(--fg); margin-bottom:var(--space-sm) }
+.welcome .subtitle { font-size:13px; color:var(--fg2); line-height:1.6; margin-bottom:var(--space-xl) }
+.welcome-section { margin-bottom:var(--space-xl) }
+.welcome-section h3 { font-size:11px; text-transform:uppercase; letter-spacing:0.8px; color:var(--fg3); margin-bottom:var(--space-md) }
+.welcome-step { display:flex; gap:var(--space-md); align-items:flex-start; margin-bottom:var(--space-md) }
+.welcome-step-num { width:22px; height:22px; border-radius:50%; background:var(--accent-dim); border:1px solid var(--accent-border); color:var(--accent); font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0 }
+.welcome-step-text { font-size:12px; color:var(--fg2); line-height:1.5 }
+.welcome-step-text strong { color:var(--fg); font-weight:600 }
+.welcome-kbd { display:inline-block; padding:1px 5px; background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius-sm); font-family:var(--font-mono); font-size:10px; color:var(--fg2) }
+.spinner { width:14px; height:14px; border:2px solid var(--bg4); border-top-color:var(--accent); border-radius:50%; animation:spin 0.6s linear infinite; display:inline-block }
+@keyframes spin { to { transform:rotate(360deg) } }
+.toast-container { position:fixed; bottom:var(--space-xl); right:var(--space-xl); z-index:100; display:flex; flex-direction:column; gap:var(--space-sm) }
+.toast { padding:var(--space-sm) var(--space-lg); background:var(--bg3); border:1px solid var(--accent-border); border-radius:var(--radius); font-size:var(--text-sm); color:var(--fg); animation:slideIn 0.2s ease }
+@keyframes slideIn { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
+.skip-link { position:absolute; top:-40px; inset-inline-start:0; background:var(--accent); color:#000; padding:8px 16px; z-index:10000; font-size:14px; font-weight:600; transition:top .2s }
+.skip-link:focus { top:0 }
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0 }
+@media (max-width:768px) {
+  .app { grid-template-columns:1fr; grid-template-rows:auto auto auto 1fr auto }
+  .toolbar { grid-column:1 }
+  .mobile-nav { display:block }
+  .sidebar { border-inline-end:none; border-bottom:1px solid var(--border); display:none }
+  .sidebar.mobile-visible { display:flex; max-height:none }
+  .content.mobile-hidden { display:none }
+  .footer { grid-column:1 }
+}
+@media (prefers-reduced-motion:reduce) {
+  *,*::before,*::after { animation-duration:0.01ms !important; transition-duration:0.01ms !important; scroll-behavior:auto !important }
+}
+/* -- sidebar items -- */
+.search-box { padding:var(--space-md); border-bottom:1px solid var(--border) }
+.search-box input { width:100%; padding:var(--space-sm) var(--space-md); border-radius:var(--radius); background:var(--bg3); border:1px solid var(--border); color:var(--fg); font-size:16px; font-family:var(--font-sans); outline:none; transition:border-color var(--transition-fast) }
+.search-box input::placeholder { color:var(--fg3) }
+.search-box input:focus { border-color:var(--accent-border) }
+.search-box .search-label { display:block; font-size:var(--text-xs); font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:var(--fg3); padding:0 0 var(--space-xs) }
+.search-box .search-count { font-size:var(--text-xs); color:var(--fg3); padding-top:var(--space-xs) }
+.item-list { flex:1; overflow-y:auto; padding:var(--space-sm) }
+.item-card { padding:var(--space-md); margin-bottom:var(--space-sm); border-radius:var(--radius); background:var(--bg); border:1px solid var(--border); cursor:pointer; transition:border-color var(--transition-fast),background var(--transition-fast) }
+.item-card:hover { border-color:var(--accent-border); background:var(--accent-dim) }
+.item-card.active { border-color:var(--accent); background:var(--accent-dim) }
+.item-name { font-size:var(--text-md); font-weight:600; color:var(--fg) }
+.item-desc { font-size:11px; color:var(--fg2); line-height:1.4; margin-top:2px }
+.item-meta { display:flex; gap:var(--space-sm); flex-wrap:wrap; margin-top:var(--space-xs) }
+.item-badge { font-size:var(--text-xs); padding:1px 6px; border-radius:var(--radius-sm); background:var(--bg3); color:var(--fg3); border:1px solid var(--border) }
+.item-badge.feature { color:var(--blue); background:rgba(59,130,246,0.08); border-color:rgba(59,130,246,0.15); cursor:pointer }
+.item-badge.feature:hover { background:rgba(59,130,246,0.18); border-color:rgba(59,130,246,0.3) }
+.item-badge.feature.active-filter { background:rgba(59,130,246,0.25); border-color:var(--blue) }
+.item-no-results { padding:var(--space-xl); text-align:center; color:var(--fg3); font-size:var(--text-sm) }
+  </style>
+  <!-- STYLE 3: silo-specific -->
+  <style>
+.content { overflow-y:auto; padding:var(--space-xl) }
+
+/* main panels */
+.panel { margin-bottom: var(--space-xl); }
+.panel-title {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+  color: var(--fg3); margin-bottom: var(--space-md);
+  display: flex; align-items: center; gap: var(--space-sm);
+}
+.panel-title::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+/* pack detail */
+.pack-detail-header {
+  padding: var(--space-lg); background: var(--bg2); border-radius: var(--radius-lg);
+  border: 1px solid var(--border); margin-bottom: var(--space-xl);
+}
+.pack-detail-header h2 { font-size: 18px; font-weight: 600; }
+.pack-detail-header .desc { color: var(--fg2); margin-top: var(--space-sm); font-size: 12px; }
+.pack-detail-header .stats {
+  display: flex; gap: var(--space-xl); margin-top: var(--space-lg);
+}
+.stat { text-align: center; }
+.stat .stat-val { font-size: 22px; font-weight: 700; color: var(--accent); }
+.stat .stat-label { font-size: 10px; color: var(--fg3); text-transform: uppercase; letter-spacing: 0.3px; }
+
+/* claim table */
+.claim-table { width: 100%; border-collapse: collapse; }
+.claim-table th {
+  text-align: start; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px;
+  color: var(--fg3); padding: var(--space-sm) var(--space-md);
+  border-bottom: 1px solid var(--border);
+}
+.claim-table td {
+  padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--border-subtle);
+  font-size: 12px; vertical-align: top;
+}
+.claim-table tr:hover td { background: var(--accent-dim); }
+.type-badge {
+  display: inline-block; padding: 1px 6px; border-radius: var(--radius-sm);
+  font-size: 10px; font-weight: 500;
+}
+.type-badge.constraint { background: rgba(248,113,113,0.15); color: #f87171; }
+.type-badge.risk { background: rgba(251,146,60,0.15); color: #fb923c; }
+.type-badge.recommendation { background: rgba(96,165,250,0.15); color: #60a5fa; }
+.type-badge.factual { background: rgba(52,211,153,0.15); color: #34d399; }
+.type-badge.estimate { background: rgba(167,139,250,0.15); color: #a78bfa; }
+.type-badge.feedback { background: rgba(251,191,36,0.15); color: #fbbf24; }
+.evidence-badge {
+  display: inline-block; padding: 1px 6px; border-radius: var(--radius-sm);
+  font-size: 10px; background: var(--bg3); color: var(--fg2);
+}
+.tag { display: inline-block; padding: 1px 5px; font-size: 9px; border-radius: var(--radius-sm); background: var(--bg4); color: var(--fg3); margin-inline-end: 3px; }
+
+/* import wizard */
+.import-wizard {
+  padding: var(--space-lg); background: var(--bg2); border-radius: var(--radius-lg);
+  border: 1px solid var(--accent-border); margin-bottom: var(--space-xl);
+}
+.import-wizard h3 { font-size: 14px; margin-bottom: var(--space-md); }
+.import-wizard input {
+  width: 100%; padding: 8px 12px; border-radius: var(--radius);
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--fg); font-size: 12px; font-family: var(--font-mono);
+  outline: none; margin-bottom: var(--space-md);
+}
+.import-wizard input:focus { border-color: var(--accent-border); }
+.import-btn {
+  padding: 8px 16px; border-radius: var(--radius);
+  background: var(--accent-dim); color: var(--accent);
+  border: 1px solid var(--accent-border); cursor: pointer;
+  font-size: 12px; font-weight: 500; transition: background var(--transition-fast);
+}
+.import-btn:hover { background: var(--accent-border); }
+.import-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.import-result { margin-top: var(--space-md); font-size: 12px; color: var(--fg2); }
+.import-result.success { color: var(--green); }
+.import-result.error { color: var(--red); }
+
+/* welcome grid */
+.welcome-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--space-sm); }
+.welcome-pack { padding: var(--space-md); background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: border-color var(--transition-fast), background var(--transition-fast); }
+.welcome-pack:hover { border-color: var(--accent-border); background: var(--accent-dim); }
+.welcome-pack .wp-name { font-size: 12px; font-weight: 600; color: var(--fg); }
+.welcome-pack .wp-meta { font-size: 10px; color: var(--fg3); margin-top: 2px; }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+  <div id="live-status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+  <div class="reconnect-banner" id="reconnectBanner" role="status" aria-live="polite"></div>
+  <div class="app">
+    <header class="toolbar" role="banner">
+      <canvas id="grainLogo" width="256" height="256"></canvas>
+      <div class="toolbar-spacer"></div>
+      <div class="toolbar-right">
+        <div class="status-dot" id="sse-dot" aria-label="Connection status" role="status"></div>
+      </div>
+    </header>
+    <nav class="mobile-nav" aria-label="Mobile navigation">
+      <div class="mobile-nav-bar">
+        <button class="mobile-tab active" data-panel="content">Content</button>
+        <button class="mobile-tab" data-panel="sidebar">Packs</button>
+      </div>
+    </nav>
+    <aside class="sidebar" aria-label="Pack list">
+      <div class="search-box">
+        <input type="search" id="searchInput" placeholder="Filter packs..." aria-label="Filter packs" />
+      </div>
+      <div class="item-list" id="packList" role="listbox" aria-label="Knowledge packs"></div>
+    </aside>
+    <main class="content" id="main-content" aria-label="Silo workspace">
+      <div class="welcome"><h2>Silo</h2><div class="subtitle">Loading packs...</div></div>
+    </main>
+    <footer class="footer">
+      <span>silo v1.0.3 -- @grainulation/silo</span>
+      <div class="footer-links">
+        <a href="http://localhost:9091">wheat</a>
+        <a href="http://localhost:9093">barn</a>
+        <a href="http://localhost:9094">mill</a>
+
+        <a href="http://localhost:9096">harvest</a>
+        <span style="color:var(--border)">&middot;</span>
+        <a href="https://github.com/grainulation/silo" target="_blank" rel="noopener noreferrer">github</a>
+      </div>
+    </footer>
+  </div>
+  <div class="toast-container" id="toast-container" aria-live="polite" role="status"></div>
+
+<script>
+// -- Shared: helpers --
+var $ = function(id) { return document.getElementById(id); };
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+// -- Shared: SSE with exponential backoff --
+var sseRetryCount = 0;
+var sseSource = null;
+function showBanner(count) {
+  var b = $('reconnectBanner');
+  if (count > 5) {
+    b.textContent = '';
+    b.appendChild(document.createTextNode('Connection lost. '));
+    var btn = document.createElement('button');
+    btn.textContent = 'Retry now';
+    btn.addEventListener('click', function() { sseRetryCount = 0; connectSSE(); });
+    b.appendChild(btn);
+  } else if (count > 1) {
+    b.textContent = 'Reconnecting (attempt ' + count + ')...';
+  } else {
+    b.textContent = 'Reconnecting...';
+  }
+  b.classList.add('visible');
+}
+function hideBanner() { $('reconnectBanner').classList.remove('visible'); }
+
+function connectSSE() {
+  sseSource = new EventSource('/events');
+  sseSource.onopen = function() {
+    sseRetryCount = 0;
+    $('sse-dot').className = 'status-dot ok';
+    if (window._grainSetState) window._grainSetState('idle');
+  };
+  sseSource.onerror = function() {
+    sseSource.close();
+    $('sse-dot').className = 'status-dot';
+    if (window._grainSetState) window._grainSetState('orbit');
+    var delay = Math.min(30000, 1000 * Math.pow(2, sseRetryCount)) + Math.random() * 1000;
+    sseRetryCount++;
+    setTimeout(connectSSE, delay);
+  };
+  sseSource.onmessage = function(e) {
+    try {
+      var msg = JSON.parse(e.data);
+      onSSEMessage(msg);
+    } catch(ex) {}
+  };
+}
+
+// -- Shared: mobile panel switching --
+function switchMobilePanel(panel) {
+  var sidebar = document.querySelector('.sidebar');
+  var content = document.querySelector('.content');
+  document.querySelectorAll('.mobile-tab').forEach(function(tb) { tb.classList.toggle('active', tb.dataset.panel === panel); });
+  sidebar.classList.remove('mobile-visible');
+  content.classList.remove('mobile-hidden');
+  if (panel === 'sidebar') { sidebar.classList.add('mobile-visible'); content.classList.add('mobile-hidden'); }
+}
+document.querySelector('.mobile-nav-bar').addEventListener('click', function(e) {
+  var tab = e.target.closest('[data-panel]');
+  if (tab) switchMobilePanel(tab.dataset.panel);
+});
+
+// -- Silo: tool-specific logic --
+(function() {
+  'use strict';
+
+  var allPacks = [];
+  var activePack = null;
+  var searchTimeout = null;
+
+  // -- SSE message handler --
+  window.onSSEMessage = function(msg) {
+    if (msg.type === 'state') {
+      loadPacks();
+      var ls = $('live-status');
+      if (ls) ls.textContent = 'Updated: packs refreshed';
+    }
+  };
+
+  // -- Load packs --
+  function loadPacks() {
+    fetch('/api/packs').then(function(res) {
+      return res.json();
+    }).then(function(data) {
+      allPacks = data.packs || [];
+      renderPackList(allPacks);
+      if (!activePack) renderWelcome();
+    }).catch(function(err) {
+      console.error('Failed to load packs:', err);
+    });
+  }
+
+  // -- Render pack list --
+  function renderPackList(packs) {
+    var list = $('packList');
+    if (packs.length === 0) {
+      list.innerHTML = '<div class="item-no-results">No packs found.</div>';
+      return;
+    }
+    list.innerHTML = packs.map(function(p) {
+      return '<div class="item-card' + (activePack === p.id ? ' active' : '') + '" data-pack="' + esc(p.id) + '" role="button" tabindex="0" aria-pressed="' + (activePack === p.id) + '">' +
+        '<div class="item-name">' + esc(p.name || p.id) + '</div>' +
+        (p.description ? '<div class="item-desc">' + esc(truncate(p.description, 120)) + '</div>' : '') +
+        '<div class="item-meta">' +
+          '<span class="item-badge">' + p.claimCount + ' claims</span>' +
+          '<span class="item-badge">v' + esc(p.version || '1.0.0') + '</span>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    list.querySelectorAll('.item-card').forEach(function(card) {
+      card.addEventListener('click', function() { selectPack(card.dataset.pack); });
+      card.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectPack(card.dataset.pack); }
+      });
+    });
+  }
+
+  // -- Select a pack --
+  function selectPack(id) {
+    activePack = id;
+    renderPackList(allPacks);
+
+    var main = $('main-content');
+    main.innerHTML = '<div style="padding:40px;color:var(--fg3);">Loading...</div>';
+
+    fetch('/api/packs/' + encodeURIComponent(id)).then(function(res) {
+      return res.json();
+    }).then(function(pack) {
+      renderPackDetail(pack);
+      document.title = 'Silo - ' + (pack.name || id);
+      toast('Loaded ' + (pack.name || id));
+    }).catch(function(err) {
+      main.innerHTML = '<div style="padding:40px;color:var(--red);">Error loading pack: ' + esc(err.message) + '</div>';
+    });
+  }
+
+  // -- Render pack detail --
+  function renderPackDetail(pack) {
+    var main = $('main-content');
+    var claims = pack.claims || [];
+
+    var types = countBy(claims, 'type');
+    var evidence = countBy(claims, 'evidence');
+
+    main.innerHTML =
+      '<div class="pack-detail-header">' +
+        '<h2>' + esc(pack.name || pack.id) + '</h2>' +
+        (pack.description ? '<div class="desc">' + esc(pack.description) + '</div>' : '') +
+        '<div class="stats">' +
+          '<div class="stat"><div class="stat-val">' + claims.length + '</div><div class="stat-label">Claims</div></div>' +
+          '<div class="stat"><div class="stat-val">' + Object.keys(types).length + '</div><div class="stat-label">Types</div></div>' +
+          '<div class="stat"><div class="stat-val">' + Object.keys(evidence).length + '</div><div class="stat-label">Evidence Tiers</div></div>' +
+          '<div class="stat"><div class="stat-val">v' + esc(pack.version || '1.0.0') + '</div><div class="stat-label">Version</div></div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="panel">' +
+        '<div class="panel-title">Import into Sprint</div>' +
+        '<div class="import-wizard">' +
+          '<h3>Import "' + esc(pack.name || pack.id) + '" into a sprint</h3>' +
+          '<input type="text" id="importTarget" placeholder="/path/to/sprint-directory" />' +
+          '<button class="import-btn" id="importBtn">Import ' + claims.length + ' claims</button>' +
+          '<div class="import-result" id="importResult"></div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="panel">' +
+        '<div class="panel-title">Claims (' + claims.length + ')</div>' +
+        '<table class="claim-table">' +
+          '<thead><tr>' +
+            '<th>ID</th><th>Type</th><th>Topic</th><th>Content</th><th>Evidence</th><th>Tags</th>' +
+          '</tr></thead>' +
+          '<tbody>' +
+            claims.map(function(c) {
+              return '<tr>' +
+                '<td style="font-family:var(--font-mono);font-size:10px;white-space:nowrap;">' + esc(c.id || '-') + '</td>' +
+                '<td><span class="type-badge ' + esc(c.type || '') + '">' + esc(c.type || '-') + '</span></td>' +
+                '<td style="color:var(--fg2);font-size:11px;">' + esc(c.topic || '-') + '</td>' +
+                '<td>' + esc(truncate(c.content || c.text || '', 200)) + '</td>' +
+                '<td><span class="evidence-badge">' + esc(c.evidence || c.tier || '-') + '</span></td>' +
+                '<td>' + (c.tags || []).map(function(tg) { return '<span class="tag">' + esc(tg) + '</span>'; }).join('') + '</td>' +
+              '</tr>';
+            }).join('') +
+          '</tbody>' +
+        '</table>' +
+      '</div>';
+
+    // Import handler
+    $('importBtn').addEventListener('click', function() {
+      var target = $('importTarget').value.trim();
+      var resultEl = $('importResult');
+      if (!target) {
+        resultEl.className = 'import-result error';
+        resultEl.textContent = 'Please enter a target sprint directory.';
+        return;
+      }
+      var btn = $('importBtn');
+      btn.disabled = true;
+      btn.textContent = 'Importing...';
+      fetch('/api/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pack: pack.id, targetDir: target }),
+      }).then(function(res) {
+        return res.json();
+      }).then(function(data) {
+        if (data.success) {
+          resultEl.className = 'import-result success';
+          resultEl.textContent = 'Imported ' + data.imported + ' claims (' + data.skippedDuplicates + ' duplicates skipped, ' + data.totalClaims + ' total).';
+          toast('Import complete');
+        } else {
+          resultEl.className = 'import-result error';
+          resultEl.textContent = data.error || 'Import failed.';
+        }
+      }).catch(function(err) {
+        resultEl.className = 'import-result error';
+        resultEl.textContent = err.message;
+      }).finally(function() {
+        btn.disabled = false;
+        btn.textContent = 'Import ' + claims.length + ' claims';
+      });
+    });
+  }
+
+  // -- Search: filters sidebar pack list by name/description --
+  var searchInput = $('searchInput');
+  searchInput.addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(function() {
+      var q = searchInput.value.trim().toLowerCase();
+      if (!q) {
+        renderPackList(allPacks);
+        return;
+      }
+      var filtered = allPacks.filter(function(p) {
+        var name = (p.name || p.id || '').toLowerCase();
+        var desc = (p.description || '').toLowerCase();
+        return name.indexOf(q) !== -1 || desc.indexOf(q) !== -1;
+      });
+      renderPackList(filtered);
+    }, 150);
+  });
+
+  function showEmpty() {
+    activePack = null;
+    document.title = 'Silo';
+    renderPackList(allPacks);
+    renderWelcome();
+  }
+
+  function renderWelcome() {
+    var main = $('main-content');
+    var totalClaims = allPacks.reduce(function(n, p) { return n + (p.claimCount || 0); }, 0);
+
+    var packCards = '';
+    for (var i = 0; i < allPacks.length; i++) {
+      var p = allPacks[i];
+      packCards += '<div class="welcome-pack" data-pack="' + esc(p.id) + '" tabindex="0" role="button">' +
+        '<div class="wp-name">' + esc(p.name || p.id) + '</div>' +
+        '<div class="wp-meta">' + (p.claimCount || 0) + ' claims</div>' +
+      '</div>';
+    }
+
+    main.innerHTML =
+      '<div class="welcome">' +
+        '<h2>Silo</h2>' +
+        '<div class="subtitle">' +
+          'Pre-built knowledge packs for engineering research sprints. ' +
+          'Each pack contains typed, evidence-graded claims you can import into any wheat sprint -- ' +
+          'constraints, risks, recommendations, and factual baselines so you start with real knowledge instead of a blank page.' +
+        '</div>' +
+
+        '<div class="welcome-section">' +
+          '<h3>How it works</h3>' +
+          '<div class="welcome-step">' +
+            '<span class="welcome-step-num">1</span>' +
+            '<div class="welcome-step-text"><strong>Browse packs</strong> -- pick a topic from the sidebar or the grid below. Each pack covers a common engineering decision area with pre-researched claims.</div>' +
+          '</div>' +
+          '<div class="welcome-step">' +
+            '<span class="welcome-step-num">2</span>' +
+            '<div class="welcome-step-text"><strong>Search across packs</strong> -- type in the search bar to find specific claims across all packs. Results rank by relevance.</div>' +
+          '</div>' +
+          '<div class="welcome-step">' +
+            '<span class="welcome-step-num">3</span>' +
+            '<div class="welcome-step-text"><strong>Import into a sprint</strong> -- from any pack detail page, enter a sprint directory path and import the claims. Duplicates are automatically skipped.</div>' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="welcome-section">' +
+          '<h3>Available packs (' + allPacks.length + ' packs, ' + totalClaims + ' claims)</h3>' +
+          '<div class="welcome-grid">' + packCards + '</div>' +
+        '</div>' +
+
+        '<div class="welcome-section">' +
+          '<h3>Keyboard shortcuts</h3>' +
+          '<div class="welcome-step">' +
+            '<div class="welcome-step-text">' +
+              '<span class="welcome-kbd">[</span> <span class="welcome-kbd">]</span> Switch between sidebar and content ' +
+              '&nbsp;&nbsp;<span class="welcome-kbd">/</span> Focus search ' +
+              '&nbsp;&nbsp;<span class="welcome-kbd">Esc</span> Return to this page' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+
+      '</div>';
+
+    // Make pack cards clickable and keyboard-accessible
+    main.querySelectorAll('.welcome-pack').forEach(function(card) {
+      card.addEventListener('click', function() { selectPack(card.dataset.pack); });
+      card.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectPack(card.dataset.pack); }
+      });
+    });
+  }
+
+  // -- Helpers --
+  function truncate(s, n) { return s && s.length > n ? s.slice(0, n - 3) + '...' : s || ''; }
+  function countBy(arr, key) { var c = {}; for (var i = 0; i < arr.length; i++) { var v = arr[i][key] || 'unknown'; c[v] = (c[v] || 0) + 1; } return c; }
+  function toast(message) {
+    var container = $('toast-container');
+    var el = document.createElement('div');
+    el.className = 'toast'; el.textContent = message;
+    container.appendChild(el);
+    setTimeout(function() { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s ease'; setTimeout(function() { el.remove(); }, 300); }, 3000);
+  }
+
+  // -- Keyboard navigation --
+  var siloPanels = ['.sidebar', '.content'];
+  var siloActivePanel = 1;
+  function switchSiloPanel(dir) {
+    siloActivePanel = (siloActivePanel + dir + siloPanels.length) % siloPanels.length;
+    var el = document.querySelector(siloPanels[siloActivePanel]);
+    if (el) { el.setAttribute('tabindex', '-1'); el.focus(); }
+  }
+  document.addEventListener('keydown', function(e) {
+    if (e.key === '[' && !e.target.matches('input,textarea')) { e.preventDefault(); switchSiloPanel(-1); }
+    if (e.key === ']' && !e.target.matches('input,textarea')) { e.preventDefault(); switchSiloPanel(1); }
+    if (e.key === '/' && !e.target.matches('input,textarea,select')) { e.preventDefault(); $('searchInput').focus(); }
+    if (e.key === 'Escape') { showEmpty(); var ls = $('live-status'); if (ls) ls.textContent = 'Selection cleared'; }
+  });
+
+  // -- Init --
+  connectSSE();
+  loadPacks();
+})();
+</script>
+<script>
+// -- Grain Logo Animation --
+(function() {
+  var LW = 0.025;
+  var TOOL = { name: 'Silo', letter: 'S', color: '#6ee7b7' };
+  var _c, _ctx, _s, _cx, _textStart, _restText, _font;
+  var _state = 'drawon', _start = null, _raf;
+  var _openPts = null, _closedPts = null;
+
+  function _lerp(a,b,t){ return {x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t}; }
+  function _easeInOut(t){ return t<0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2; }
+
+  function _bracket(ctx, s, color, alpha) {
+    var lw=s*LW, cx=_cx, cy=s/2, gw=s*0.72, gh=s*0.68;
+    var topY=cy-gh/2, botY=cy+gh/2, fe=gw*0.30;
+    if(alpha!==undefined) ctx.globalAlpha=alpha;
+    ctx.strokeStyle=color; ctx.lineWidth=lw; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.beginPath(); ctx.moveTo(cx,topY); ctx.lineTo(cx-fe,topY);
+    ctx.bezierCurveTo(cx-gw*0.52,cy-gh*0.32, cx-gw*0.52,cy+gh*0.24, cx-fe,botY);
+    ctx.lineTo(cx,botY); ctx.stroke();
+    if(alpha!==undefined) ctx.globalAlpha=1;
+  }
+
+  function _drawBracket(ctx, s, color, progress) {
+    var lw=s*LW, cx=_cx, cy=s/2, gw=s*0.72, gh=s*0.68;
+    var topY=cy-gh/2, botY=cy+gh/2, fe=gw*0.30;
+    ctx.strokeStyle=color; ctx.lineWidth=lw; ctx.lineCap='round'; ctx.lineJoin='round';
+    var seg1=0.12, seg2=0.72;
+    ctx.beginPath();
+    if(progress<=seg1){ctx.moveTo(cx,topY);ctx.lineTo(cx-fe*(progress/seg1),topY);}
+    else if(progress<=seg1+seg2){ctx.moveTo(cx,topY);ctx.lineTo(cx-fe,topY);ctx.stroke();ctx.beginPath();
+      var bt=(progress-seg1)/seg2;
+      var p0={x:cx-fe,y:topY},p1={x:cx-gw*0.52,y:cy-gh*0.32},p2={x:cx-gw*0.52,y:cy+gh*0.24},p3={x:cx-fe,y:botY};
+      var q1=_lerp(p0,p1,bt),q2=_lerp(p1,p2,bt),q3=_lerp(p2,p3,bt);
+      var r1=_lerp(q1,q2,bt),r2=_lerp(q2,q3,bt),s1=_lerp(r1,r2,bt);
+      ctx.moveTo(p0.x,p0.y);ctx.bezierCurveTo(q1.x,q1.y,r1.x,r1.y,s1.x,s1.y);}
+    else{ctx.moveTo(cx,topY);ctx.lineTo(cx-fe,topY);
+      ctx.bezierCurveTo(cx-gw*0.52,cy-gh*0.32, cx-gw*0.52,cy+gh*0.24, cx-fe,botY);
+      ctx.lineTo((cx-fe)+fe*((progress-seg1-seg2)/(1-seg1-seg2)),botY);}
+    ctx.stroke();
+  }
+
+  function _drawName(ctx, s, spellP, alpha) {
+    var a = alpha !== undefined ? alpha : 1;
+    ctx.font = _font; ctx.textBaseline = 'middle';
+    var cy = s/2 + s*0.02;
+    ctx.globalAlpha = a; ctx.fillStyle = TOOL.color; ctx.textAlign = 'center';
+    ctx.fillText(TOOL.letter, _cx, cy);
+    if(_restText.length > 0 && spellP > 0) {
+      var n = _restText.length, num = Math.min(n, Math.ceil(spellP * n));
+      var rawP = spellP * n, charP = num >= n ? 1 : rawP - Math.floor(rawP);
+      var full = charP >= 1 ? num : num - 1;
+      ctx.fillStyle = '#e2e8f0'; ctx.textAlign = 'left';
+      if(full > 0) { ctx.globalAlpha = a; ctx.fillText(_restText.slice(0, full), _textStart, cy); }
+      if(full < num) {
+        var prevW = full > 0 ? ctx.measureText(_restText.slice(0, full)).width : 0;
+        ctx.globalAlpha = a * (0.3 + 0.7 * charP);
+        ctx.fillText(_restText[full], _textStart + prevW, cy);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function _getOpenPts(s) {
+    if(_openPts && _openPts._s === s) return _openPts;
+    var cx=_cx, cy=s/2, gw=s*0.72, gh=s*0.68, topY=cy-gh/2, botY=cy+gh/2, fe=gw*0.30;
+    var pts=[];
+    for(var t=0;t<=1;t+=0.05) pts.push({x:cx-fe*t,y:topY});
+    var p0={x:cx-fe,y:topY},p1={x:cx-gw*0.52,y:cy-gh*0.32},p2={x:cx-gw*0.52,y:cy+gh*0.24},p3={x:cx-fe,y:botY};
+    for(var t=0;t<=1;t+=0.02){var u=1-t;pts.push({x:u*u*u*p0.x+3*u*u*t*p1.x+3*u*t*t*p2.x+t*t*t*p3.x,y:u*u*u*p0.y+3*u*u*t*p1.y+3*u*t*t*p2.y+t*t*t*p3.y});}
+    for(var t=0;t<=1;t+=0.05) pts.push({x:(cx-fe)+fe*t,y:botY});
+    pts._s=s; _openPts=pts; return pts;
+  }
+
+  function _getClosedPts(s) {
+    if(_closedPts && _closedPts._s === s) return _closedPts;
+    var cx=_cx, cy=s/2, gw=s*0.72, gh=s*0.68, topY=cy-gh/2, botY=cy+gh/2, fe=gw*0.30;
+    var pts=[];
+    for(var t=0;t<=1;t+=0.03) pts.push({x:cx-fe*t,y:topY});
+    var lp0={x:cx-fe,y:topY},lp1={x:cx-gw*0.52,y:cy-gh*0.32},lp2={x:cx-gw*0.52,y:cy+gh*0.24},lp3={x:cx-fe,y:botY};
+    for(var t=0;t<=1;t+=0.02){var u=1-t;pts.push({x:u*u*u*lp0.x+3*u*u*t*lp1.x+3*u*t*t*lp2.x+t*t*t*lp3.x,y:u*u*u*lp0.y+3*u*u*t*lp1.y+3*u*t*t*lp2.y+t*t*t*lp3.y});}
+    for(var t=0;t<=1;t+=0.03) pts.push({x:(cx-fe)+2*fe*t,y:botY});
+    var rp0={x:cx+fe,y:botY},rp1={x:cx+gw*0.52,y:cy+gh*0.24},rp2={x:cx+gw*0.52,y:cy-gh*0.32},rp3={x:cx+fe,y:topY};
+    for(var t=0;t<=1;t+=0.02){var u=1-t;pts.push({x:u*u*u*rp0.x+3*u*u*t*rp1.x+3*u*t*t*rp2.x+t*t*t*rp3.x,y:u*u*u*rp0.y+3*u*u*t*rp1.y+3*u*t*t*rp2.y+t*t*t*rp3.y});}
+    for(var t=0;t<=1;t+=0.03) pts.push({x:(cx+fe)-fe*t,y:topY});
+    pts._s=s; _closedPts=pts; return pts;
+  }
+
+  function _frame(ts) {
+    if(!_c) return;
+    if(!_start) _start = ts;
+    var e = ts - _start, ctx = _ctx, s = _s;
+    ctx.clearRect(0, 0, _c.width, s);
+    switch(_state) {
+      case 'drawon':
+        var bp = _easeInOut(Math.min(1, e / 1400));
+        _drawBracket(ctx, s, TOOL.color, bp);
+        var la = Math.max(0, Math.min(1, (e - 900) / 400));
+        if(la > 0) {
+          ctx.font = _font; ctx.textBaseline = 'middle';
+          ctx.globalAlpha = la; ctx.fillStyle = TOOL.color; ctx.textAlign = 'center';
+          ctx.fillText(TOOL.letter, _cx, s/2 + s*0.02); ctx.globalAlpha = 1;
+        }
+        if(e > 1100 && _restText.length > 0) {
+          var sp = Math.min(1, (e - 1100) / (120 * _restText.length));
+          var n = _restText.length, num = Math.min(n, Math.ceil(sp * n));
+          if(num > 0) {
+            ctx.font = _font; ctx.textBaseline = 'middle';
+            var cy = s/2 + s*0.02, rawP = sp * n;
+            var charP = num >= n ? 1 : rawP - Math.floor(rawP);
+            var full = charP >= 1 ? num : num - 1;
+            ctx.fillStyle = '#e2e8f0'; ctx.textAlign = 'left';
+            if(full > 0) ctx.fillText(_restText.slice(0, full), _textStart, cy);
+            if(full < num) {
+              var prevW = full > 0 ? ctx.measureText(_restText.slice(0, full)).width : 0;
+              ctx.globalAlpha = 0.3 + 0.7 * charP;
+              ctx.fillText(_restText[full], _textStart + prevW, cy); ctx.globalAlpha = 1;
+            }
+          }
+        }
+        if(e > 1100 + 120 * _restText.length + 300) { _state = _pendingState || 'idle'; _pendingState = null; _start = ts; }
+        break;
+      case 'idle':
+        var breathe = 0.5 + 0.5 * (0.5 + 0.5 * Math.sin(e / 1200));
+        _bracket(ctx, s, TOOL.color, breathe);
+        var textBreath = 0.88 + 0.12 * (0.5 + 0.5 * Math.sin(e / 1800));
+        _drawName(ctx, s, 1, textBreath);
+        break;
+      case 'shimmer':
+        _bracket(ctx, s, TOOL.color, 0.2);
+        var spts = _getOpenPts(s), sspeed = 1800;
+        var spos = (e % sspeed) / sspeed;
+        var sidx = Math.floor(spos * (spts.length - 1));
+        var spt = spts[sidx];
+        var sgrad = ctx.createRadialGradient(spt.x, spt.y, 0, spt.x, spt.y, s * 0.10);
+        sgrad.addColorStop(0, TOOL.color + 'aa'); sgrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = sgrad; ctx.fillRect(0, 0, _c.width, s);
+        var strailFrac = 0.18;
+        var si0 = Math.max(0, Math.floor((spos - strailFrac) * (spts.length - 1)));
+        ctx.strokeStyle = TOOL.color; ctx.lineWidth = s * LW; ctx.lineCap = 'round';
+        ctx.globalAlpha = 0.85; ctx.beginPath(); ctx.moveTo(spts[si0].x, spts[si0].y);
+        for(var si = si0 + 1; si <= sidx; si++) ctx.lineTo(spts[si].x, spts[si].y);
+        ctx.stroke(); ctx.globalAlpha = 1;
+        _drawName(ctx, s, 1, undefined);
+        break;
+      case 'orbit':
+        _bracket(ctx, s, TOOL.color, 0.15);
+        _drawName(ctx, s, 1, 0.4);
+        var pts = _getOpenPts(s), speed = 1200, trailFrac = 0.28;
+        var halfCycle = (e % speed) / speed;
+        var cycle = (e % (speed * 2)) / (speed * 2);
+        var pos = cycle < 0.5 ? halfCycle : 1 - halfCycle;
+        var headIdx = Math.floor(pos * (pts.length - 1));
+        var trailLen = Math.floor(trailFrac * pts.length);
+        var dir = cycle < 0.5 ? 1 : -1;
+        ctx.lineWidth = s * LW; ctx.lineCap = 'round';
+        for(var i = 0; i < trailLen; i++) {
+          var idx = headIdx - dir * (trailLen - i);
+          if(idx < 0 || idx >= pts.length) continue;
+          var nxt = idx + dir;
+          if(nxt < 0 || nxt >= pts.length) continue;
+          ctx.globalAlpha = (i / trailLen) * 0.7; ctx.strokeStyle = TOOL.color;
+          ctx.beginPath(); ctx.moveTo(pts[idx].x, pts[idx].y); ctx.lineTo(pts[nxt].x, pts[nxt].y); ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+        break;
+      case 'dim':
+        var dim = 0.1 + 0.08 * Math.sin(e / 2000);
+        _bracket(ctx, s, TOOL.color, dim);
+        _drawName(ctx, s, 1, 0.2);
+        break;
+    }
+    _raf = requestAnimationFrame(_frame);
+  }
+
+  // Init: measure text, size canvas, start animation
+  _c = document.getElementById('grainLogo');
+  if(_c) {
+    _c.style.width = '0px';
+    _s = 256;
+    var targetFontPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    var fontRatio = 0.38;
+    var dh = 64;
+    _c.height = _s; _c.width = 1024;
+    _ctx = _c.getContext('2d');
+    _cx = _s / 2;
+    _restText = TOOL.name.slice(1);
+    _font = '800 ' + (_s * fontRatio) + 'px -apple-system,"SF Pro Display","Helvetica Neue",Arial,sans-serif';
+    _ctx.font = _font;
+    var letterW = _ctx.measureText(TOOL.letter).width;
+    var restW = _restText.length > 0 ? _ctx.measureText(_restText).width : 0;
+    _textStart = _cx + letterW / 2 + _s * 0.02;
+    var totalW = Math.ceil(_textStart + restW + _s * 0.12);
+    _c.width = totalW;
+    _ctx = _c.getContext('2d');
+    _c.style.height = dh + 'px';
+    _c.style.width = Math.round(totalW / _s * dh) + 'px';
+    _state = 'drawon'; _start = null;
+    _raf = requestAnimationFrame(_frame);
+  }
+
+  // Wire to SSE connection state (defer during drawon)
+  window._grainSetState = function(state) {
+    if(_state === state) return;
+    if(_state === 'drawon') { _pendingState = state; return; }
+    _state = state; _start = null;
+    if(!_raf) _raf = requestAnimationFrame(_frame);
+  };
+  var _pendingState = null;
+})();
+</script>
+</body>
+</html>

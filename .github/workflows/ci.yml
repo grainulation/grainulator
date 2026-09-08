@@ -1,55 +1,66 @@
 name: CI
-
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-
+  workflow_dispatch:
 permissions:
   contents: read
-
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npx --yes @biomejs/biome check .
-
   test:
-    name: Smoke tests
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [24, 25]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci --ignore-scripts
       - run: npm test
-
-  # E2E tests live in the ranch harness repo (private). They run from
-  # ranch's CI against grainulator's deployed site. Grainulator's CI only
-  # runs unit/smoke tests here. See ranch/harness/grainulator-e2e/README.md.
-
-  size:
-    name: Package size
+      - run: npm run build:site
+      - run: npm run check:package
+      - run: npm run test:install
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dogfood-test-results-node-${{ matrix.node }}
+          path: .dogfood/test-logs/
+          include-hidden-files: true
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      - name: Check package size
-        run: |
-          npm pack --dry-run 2>&1 | tail -1
-          SIZE=$(npm pack --dry-run 2>&1 | grep 'total files' || echo "unknown")
-          echo "Package contents: $SIZE"
-          # Fail if packed size exceeds 500KB
-          BYTES=$(npm pack 2>&1 | xargs -I {} stat -c%s {} 2>/dev/null || echo "0")
-          if [ "$BYTES" -gt 512000 ] 2>/dev/null; then
-            echo "::error::Package exceeds 500KB ($BYTES bytes)"
-            exit 1
-          fi
+          node-version: 25
+      - run: npm ci --ignore-scripts
+      - run: npm run lint
+  runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25
+      - uses: dtolnay/rust-toolchain@stable
+      - run: node test/conformance.mjs
+        working-directory: packages/runtime
+
+  site:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:static
