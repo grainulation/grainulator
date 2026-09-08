@@ -38,7 +38,7 @@ try {
   });
   check('CLI help',()=>assert.match(run(['--help']),/Grainulator/));
   check('doctor validates the required runtime and packaged components',()=>{const checks=JSON.parse(run(['doctor','--json'])).checks;assert.ok(checks.every(c=>c.available));assert.equal(checks.find(c=>c.component==='node').required,JSON.parse(fs.readFileSync(path.join(installed,'package.json'))).engines.node);});
-  if(fs.existsSync(path.join(installed,'build-info.json')))check('identified build verifies all recorded files',()=>{const build=JSON.parse(run(['doctor','--json'])).build;assert.equal(build.verified,true);assert.match(build.id,/^local-[a-f0-9]{16}$/);});
+  if(fs.existsSync(path.join(installed,'build-info.json')))check('identified build verifies all recorded files',()=>{const build=JSON.parse(run(['doctor','--json'])).build;assert.equal(build.verified,true);assert.match(build.id,/^(?:local-|release-[^-]+-)[a-f0-9]{16}$/);});
   for(const component of ['evidence','memory','export','analytics','orchestrate','legacy'])check(`${component} help`,()=>run([component,'--help']));
   const sprint=path.join(dir,'sprint');
   check('evidence init',()=>run(['init','--dir',sprint,'--question','Can the installed archive run independently?','--audience','test','--constraints','Local only','--done','Validated artifact']));

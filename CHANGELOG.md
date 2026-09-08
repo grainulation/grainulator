@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2026-09-08
+
+### Fixed
+
+- Make evidence command help read-only, including compile, initialization, and server commands.
+- Export compiled sprint content instead of silently producing empty reports; reject incomplete input with actionable errors.
+- Accept `--dir` consistently for export paths and report the actual unknown option.
+- Add `--version` / `-v` and ship a verifiable file manifest in marketplace and tagged-source installations.
+- Save the native Codex workspace once with `grainulator setup --dir /absolute/project`; explicit launch environment bindings still override the saved default.
+
+### Documentation
+
+- Add a 1.x upgrade guide covering marketplace refresh, scope pins, host restarts, retired MCP server names, memory-store selection, and reviewed cleanup of generated instructions.
+- Clarify that hidden tool aliases do not restore removed server registrations or the former remote DeepWiki connection.
+
+### Release scope
+
+- GitHub release only; no npm registry publication. Existing source-verification, research-quality, and cumulative-cost limitations remain unchanged.
+
 ## [2.0.0] - 2026-09-07
 
 ### Changed

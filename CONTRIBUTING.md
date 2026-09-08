@@ -1,6 +1,6 @@
 # Contributing to Grainulator
 
-Grainulator provides evidence, memory, exports, and portable workflows through a CLI and one MCP server. Use it with any compatible host; Claude Code and Codex also have native plugin integrations. The v2.0.0 source is distributed through GitHub. The root npm package and component workspaces are private, so a GitHub release does not publish them to npm.
+Grainulator provides evidence, memory, exports, and portable workflows through a CLI and one MCP server. Use it with any compatible host; Claude Code and Codex also have native plugin integrations. The v2.0.1 source is distributed through GitHub. The root npm package and component workspaces are private, so a GitHub release does not publish them to npm.
 
 ## Getting started
 
@@ -20,7 +20,7 @@ For a direct MCP connection, `node bin/grainulator.js connect --dir /absolute/pa
 claude --plugin-dir /absolute/path/to/grainulator
 ```
 
-For native Codex, install the intended local plugin through its marketplace mechanism and launch with `GRAINULATOR_WORKSPACE=/absolute/path/to/project codex`. Follow [plugin acceptance](docs/PLUGIN-TESTING.md) for installation, workspace binding, exact build verification, and actual host/subagent tool checks. Direct MCP success does not prove full plugin discovery.
+For native Codex, install the intended local plugin through its marketplace mechanism, run `node /path/to/installed/grainulator/bin/grainulator.js setup --dir /absolute/path/to/project`, and restart Codex. `GRAINULATOR_WORKSPACE=/absolute/path/to/project codex` overrides the saved default for one launch. Follow [plugin acceptance](docs/PLUGIN-TESTING.md) for installation, workspace binding, exact build verification, and actual host/subagent tool checks. Direct MCP success does not prove full plugin discovery.
 
 ## Filing issues
 
@@ -33,7 +33,8 @@ For native Codex, install the intended local plugin through its marketplace mech
 1. Create a focused branch from `main` and preserve existing user data and compatibility boundaries.
 2. Update the relevant instructions when commands or behavior change. Add meaningful regression coverage for changed functionality.
 3. Run `npm test` and `npm run lint`, plus the checks relevant to your change. Use `npx biome format --write <changed-files>` for files covered by the repository's Biome configuration.
-4. Describe the problem, resulting behavior, checks actually run, and remaining limits. Do not report older test results as verification of newer edits.
+4. After the final shipped-file edit, run `npm run build:identity` and include the updated `build-info.json` in the commit. Regenerate it if any packaged file changes again; CI checks that its file checksums match.
+5. Describe the problem, resulting behavior, checks actually run, and remaining limits. Do not report older test results as verification of newer edits.
 
 ## Verification and CI
 
@@ -63,7 +64,9 @@ Prepare a version change without automatically creating a Git commit or tag:
 npm version <patch|minor|major> --no-git-tag-version
 ```
 
-The version lifecycle synchronizes and stages `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`, `.codex-plugin/plugin.json`, and root `plugin.json`. Review those changes alongside `package.json` and `package-lock.json`, then commit through the normal review flow. `npm run sync-version` alone updates manifest contents without staging them. Create a release tag only after required CI passes and the release is authorized. Npm publication is a separate action; the packages remain private.
+The version lifecycle synchronizes and stages `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`, `.codex-plugin/plugin.json`, and root `plugin.json`. Review those changes alongside `package.json` and `package-lock.json`, regenerate identity after all shipped-file edits, then commit through the normal review flow. `npm run sync-version` alone updates manifest contents without staging them. Create a release tag only after required CI passes and the release is authorized. Npm publication is a separate action; the packages remain private.
+
+The committed release identity uses `release-<version>-<hash>` and travels with tagged source, marketplace installations, and `npm pack --ignore-scripts` archives. `npm run pack:local` instead stages a unique local prerelease without changing the checkout version. Doctor checks packaged file integrity in both cases; keep host security wrappers intact.
 
 ## Security and conduct
 

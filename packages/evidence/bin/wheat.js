@@ -65,7 +65,7 @@ const subArgs = args.slice(1);
 
 // ─── Help / Version ──────────────────────────────────────────────────────────
 
-if (!subcommand || subcommand === "--help" || subcommand === "-h") {
+if (!subcommand || subcommand === "help" || subcommand === "--help" || subcommand === "-h") {
 	console.log(`Grainulator evidence v${VERSION} — Evidence operations
 
 Usage:
@@ -74,17 +74,19 @@ Usage:
 
 Commands:
   init       Bootstrap a new research sprint in this repo
-  quickstart Create a sample evidence sprint
   compile    Validate and compile claims.json
   add        Add a typed claim to the sprint
   search     Search claims by topic, type, evidence, or text
   resolve    Resolve a conflict between two claims
-  serve      Preview generated evidence reports
   guard      PreToolUse guard hook (used by Claude Code)
   status     Quick sprint status check
-  stats      Local sprint statistics (no phone-home)
-  update     Copy/update slash commands to .claude/commands/
   mcp        Start MCP server
+
+Legacy component-only commands:
+  quickstart, serve, stats, update
+  Inspect usage with node packages/evidence/bin/wheat.js <command> --help.
+  The direct component init command also creates legacy project scaffolding;
+  grainulator init creates only sprint data.
 
 Global options:
   --dir <path>   Target directory (default: current directory)
@@ -103,6 +105,13 @@ Examples:
 if (subcommand === "--version" || subcommand === "-v") {
 	console.log(`Grainulator evidence v${VERSION}`);
 	process.exit(0);
+}
+
+if (subArgs.includes("--help") || subArgs.includes("-h")) {
+	const { showCommandHelp } = await import("../lib/cli-help.js");
+	if (await showCommandHelp(subcommand)) process.exit(0);
+	console.error(`Grainulator: unknown command: ${subcommand}\nRun "grainulator evidence --help" for available commands.`);
+	process.exit(1);
 }
 
 // ─── Fast MCP dispatch ──────────────────────────────────────────────────────

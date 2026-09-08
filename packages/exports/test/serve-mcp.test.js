@@ -459,3 +459,47 @@ describe("mill MCP tool handlers", () => {
     }
   });
 });
+
+
+describe("export source integrity", () => {
+  let dir;
+  before(() => { dir = makeWorkspace("grainulator-export-integrity-"); });
+  after(() => fs.rmSync(dir, { recursive: true, force: true }));
+
+  it("does not replace an explicitly missing source with another ledger", async () => {
+    const { child } = await spawnAndInitialize(dir);
+    try {
+      const { response, payload } = await callTool(child, 201, "mill/convert", { format: "markdown", source: "missing.json" });
+      assert.equal(response.result.isError, true);
+      assert.equal(payload.status, "error");
+      assert.match(payload.message, /No source file/);
+    } finally { cleanup(child); }
+  });
+
+  it("rejects content-less compilation without reading a sibling symlink", async () => {
+    const nested = path.join(dir, "nested");
+    fs.mkdirSync(nested);
+    fs.writeFileSync(path.join(nested, "compilation.json"), JSON.stringify({ resolved_claims: [{ id: "r001", type: "factual" }] }));
+    fs.symlinkSync(path.join(dir, "claims.json"), path.join(nested, "claims.json"));
+    const { child } = await spawnAndInitialize(nested);
+    try {
+      const { response, payload } = await callTool(child, 201, "mill/convert", { format: "executive-summary", output: "report.html" });
+      assert.equal(response.result.isError, true);
+      assert.match(payload.message, /grainulator compile --dir/);
+      assert.ok(!fs.existsSync(path.join(nested, "report.html")));
+    } finally { cleanup(child); }
+  });
+
+  it("rejects a symlink fallback outside the MCP workspace", async () => {
+    const nested = path.join(dir, "fallback");
+    fs.mkdirSync(nested);
+    fs.symlinkSync(path.join(dir, "claims.json"), path.join(nested, "claims.json"));
+    const { child } = await spawnAndInitialize(nested);
+    try {
+      const { response, payload } = await callTool(child, 201, "mill/convert", { format: "markdown" });
+      assert.equal(response.result.isError, true);
+      assert.equal(payload.status, "error");
+      assert.ok(!payload.output);
+    } finally { cleanup(child); }
+  });
+});

@@ -6,6 +6,9 @@ const path = require("node:path");
 const { parseArgs } = require("node:util");
 const { fork } = require("node:child_process");
 
+const { loadSource } = require("../lib/source-data.js");
+const { assertSafeOutput } = require("../lib/output-safety.js");
+
 const LIB_DIR = path.join(__dirname, "..", "lib");
 
 // --version / -v: print version and exit
@@ -59,6 +62,10 @@ Usage:
   grainulator export formats                                 List available formats
   grainulator export ci-artifacts <file> -o <dir>            Generate CI artifacts (report, summary, slides)
 
+Paths:
+  --dir <sprint> resolves relative input and output paths within that directory.
+  Absolute paths remain absolute. Compilation and claims JSON are supported.
+
 Export formats:
   pdf        HTML or Markdown to PDF (via npx md-to-pdf)
   csv        Claims JSON to CSV
@@ -72,6 +79,7 @@ Publish targets:
 Examples:
   grainulator export serve --port 9094 --source /path/to/sprint
   grainulator export export --format pdf output/brief.html
+  grainulator export export --format executive-summary compilation.json -o brief.html --dir ./sprint
   grainulator export export --format csv claims.json
   grainulator export export --format json-ld claims.json -o claims.jsonld
   grainulator export publish --target static output/
@@ -84,7 +92,7 @@ function main() {
 
   vlog("startup", `command=${args[0] || "(none)"}`, `cwd=${process.cwd()}`);
 
-  if (args.length === 0 || args[0] === "--help" || args[0] === "-h") {
+  if (args.length === 0 || args.includes("--help") || args.includes("-h")) {
     console.log(USAGE);
     process.exit(0);
   }
@@ -127,13 +135,14 @@ async function runExport(args) {
       options: {
         format: { type: "string", short: "f" },
         output: { type: "string", short: "o" },
+        dir: { type: "string" },
         json: { type: "boolean", default: false },
       },
       allowPositionals: true,
     }));
   } catch (err) {
     if (err.code === "ERR_PARSE_ARGS_UNKNOWN_OPTION") {
-      const flag = err.message.match(/option "([^"]+)"/)?.[1] || "unknown";
+      const flag = err.message.match(/option ['"]([^'"]+)['"]/i)?.[1] || err.message;
       console.error(
         `grainulator export: unknown option: ${flag}. Run "grainulator export export --help" for usage.`,
       );
@@ -156,9 +165,10 @@ async function runExport(args) {
     process.exit(1);
   }
 
-  const inputPath = path.resolve(inputFile);
+  const baseDir = path.resolve(values.dir || ".");
+  const inputPath = path.resolve(baseDir, inputFile);
   const format = values.format;
-  const outputPath = values.output ? path.resolve(values.output) : null;
+  const outputPath = values.output ? path.resolve(baseDir, values.output) : null;
 
   const formats = require("../lib/formats.js");
   const exporter = await formats.resolveFormat(format);
@@ -194,13 +204,14 @@ async function runPublish(args) {
       options: {
         target: { type: "string", short: "t" },
         output: { type: "string", short: "o" },
+        dir: { type: "string" },
         json: { type: "boolean", default: false },
       },
       allowPositionals: true,
     }));
   } catch (err) {
     if (err.code === "ERR_PARSE_ARGS_UNKNOWN_OPTION") {
-      const flag = err.message.match(/option "([^"]+)"/)?.[1] || "unknown";
+      const flag = err.message.match(/option ['"]([^'"]+)['"]/i)?.[1] || err.message;
       console.error(
         `grainulator export: unknown option: ${flag}. Run "grainulator export publish --help" for usage.`,
       );
@@ -220,9 +231,10 @@ async function runPublish(args) {
     process.exit(1);
   }
 
-  const inputPath = path.resolve(inputDir);
+  const baseDir = path.resolve(values.dir || ".");
+  const inputPath = path.resolve(baseDir, inputDir);
   const target = values.target;
-  const outputPath = values.output ? path.resolve(values.output) : null;
+  const outputPath = values.output ? path.resolve(baseDir, values.output) : null;
 
   const formats = require("../lib/formats.js");
   const publisher = formats.getPublisher(target);
@@ -259,13 +271,14 @@ async function runConvert(args) {
         from: { type: "string" },
         to: { type: "string" },
         output: { type: "string", short: "o" },
+        dir: { type: "string" },
         json: { type: "boolean", default: false },
       },
       allowPositionals: true,
     }));
   } catch (err) {
     if (err.code === "ERR_PARSE_ARGS_UNKNOWN_OPTION") {
-      const flag = err.message.match(/option "([^"]+)"/)?.[1] || "unknown";
+      const flag = err.message.match(/option ['"]([^'"]+)['"]/i)?.[1] || err.message;
       console.error(
         `grainulator export: unknown option: ${flag}. Run "grainulator export convert --help" for usage.`,
       );
@@ -285,8 +298,9 @@ async function runConvert(args) {
     process.exit(1);
   }
 
-  const inputPath = path.resolve(inputFile);
-  const outputPath = values.output ? path.resolve(values.output) : null;
+  const baseDir = path.resolve(values.dir || ".");
+  const inputPath = path.resolve(baseDir, inputFile);
+  const outputPath = values.output ? path.resolve(baseDir, values.output) : null;
 
   // Convert is sugar: detect source, export to target
   const formats = require("../lib/formats.js");
@@ -346,6 +360,7 @@ async function runCiArtifacts(args) {
       args,
       options: {
         output: { type: "string", short: "o" },
+        dir: { type: "string" },
         formats: { type: "string", short: "f" },
         summary: { type: "boolean", default: false },
         json: { type: "boolean", default: false },
@@ -354,7 +369,7 @@ async function runCiArtifacts(args) {
     }));
   } catch (err) {
     if (err.code === "ERR_PARSE_ARGS_UNKNOWN_OPTION") {
-      const flag = err.message.match(/option "([^"]+)"/)?.[1] || "unknown";
+      const flag = err.message.match(/option ['"]([^'"]+)['"]/i)?.[1] || err.message;
       console.error(
         `grainulator export: unknown option: ${flag}. Run "grainulator export ci-artifacts --help" for usage.`,
       );
@@ -371,10 +386,11 @@ async function runCiArtifacts(args) {
     process.exit(1);
   }
 
-  const inputPath = path.resolve(inputFile);
+  const baseDir = path.resolve(values.dir || ".");
+  const inputPath = path.resolve(baseDir, inputFile);
   const outputDir = values.output
-    ? path.resolve(values.output)
-    : path.resolve("artifacts");
+    ? path.resolve(baseDir, values.output)
+    : path.resolve(baseDir, "artifacts");
 
   // Default CI formats: the three HTML formats plus markdown for step summary
   const defaultFormats = ["html-report", "executive-summary", "slide-deck"];
@@ -385,18 +401,10 @@ async function runCiArtifacts(args) {
   // Read and parse input
   let data;
   try {
-    data = JSON.parse(fs.readFileSync(inputPath, "utf8"));
+    data = loadSource(inputPath);
   } catch (err) {
     console.error(`grainulator export: failed to read ${inputPath}: ${err.message}`);
     process.exit(1);
-  }
-
-  // Normalize compilation vs claims
-  if (data.resolved_claims && (!data.claims || data.claims.length === 0)) {
-    data.claims = data.resolved_claims;
-  }
-  if (data.sprint_meta && !data.meta) {
-    data.meta = data.sprint_meta;
   }
 
   // Create output dir
@@ -430,6 +438,7 @@ async function runCiArtifacts(args) {
       const output = mod.convert(data);
       const ext = mod.extension || ".txt";
       const outFile = path.join(outputDir, fmt + ext);
+      assertSafeOutput(outFile, [inputPath]);
       fs.writeFileSync(outFile, output);
       results.push({
         format: fmt,
@@ -450,11 +459,13 @@ async function runCiArtifacts(args) {
       try {
         const md = mdMod.convert(data);
         if (summaryPath) {
+          assertSafeOutput(summaryPath, [inputPath]);
           fs.appendFileSync(summaryPath, md + "\n");
           vlog("appended markdown to GITHUB_STEP_SUMMARY");
         }
         // Also write to output dir
         const mdFile = path.join(outputDir, "step-summary.md");
+        assertSafeOutput(mdFile, [inputPath]);
         fs.writeFileSync(mdFile, md);
         results.push({
           format: "markdown",

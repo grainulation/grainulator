@@ -133,6 +133,15 @@ function deriveOutputPath(inputPath, explicit) {
 async function exportMarkdown(inputPath, outputPath) {
   const html = fs.readFileSync(inputPath, "utf-8");
   const trimmed = html.trimStart();
+  if (path.extname(inputPath).toLowerCase() === ".json" || trimmed.startsWith("{") || trimmed.startsWith("[")) {
+    const { loadSource } = require("../source-data.js");
+    const { convert } = await import("../formats/markdown.mjs");
+    const md = convert(loadSource(inputPath));
+    const out = deriveOutputPath(inputPath, outputPath);
+    assertSafeOutput(out, [inputPath]);
+    fs.writeFileSync(out, md, "utf-8");
+    return { outputPath: out, message: `Markdown written to ${out}` };
+  }
   if (
     !trimmed.startsWith("<") &&
     !trimmed.startsWith("<!DOCTYPE") &&

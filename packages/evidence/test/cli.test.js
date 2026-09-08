@@ -10,6 +10,7 @@
  */
 
 import { describe, it } from "node:test";
+import "./cli-help.test.js";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
