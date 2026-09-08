@@ -44,7 +44,13 @@ try {
   }
   report.version=manifest.version;report.pluginCache=cache;report.marketplace=marketplace;
   report.checks.push('installed cache contains native manifest and bundled MCP configuration');
-  const sprint=path.join(fixture,'sprint');fs.mkdirSync(sprint,{recursive:true});env.GRAINULATOR_WORKSPACE=sprint;report.workspace=sprint;
+  const sprint=path.join(fixture,'sprint');fs.mkdirSync(sprint,{recursive:true});report.workspace=sprint;
+  if(process.argv.includes('--saved-workspace')) {
+    env.GRAINULATOR_CONFIG=path.join(fixture,'workspace.json');
+    delete env.GRAINULATOR_WORKSPACE;
+    run([process.execPath,path.join(cache,'bin/grainulator.js'),'setup','--dir',sprint]);
+    report.binding='saved configuration; no GRAINULATOR_WORKSPACE';
+  } else env.GRAINULATOR_WORKSPACE=sprint;
   const pluginKey=`grainulator@${marketName}`;
   const userConfigPath=path.join(process.env.CODEX_HOME||path.join(os.homedir(),'.codex'),'config.toml');
   const userConfig=fs.existsSync(userConfigPath)?fs.readFileSync(userConfigPath,'utf8'):'';

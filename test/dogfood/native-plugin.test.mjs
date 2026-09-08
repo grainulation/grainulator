@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { saveWorkspace } from "../../lib/workspace-config.js";
 import { mcp, toolJSON } from "../../scripts/lib/local-checks.mjs";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
@@ -14,7 +15,12 @@ function fixture(t) {
 	t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
 	return dir;
 }
-async function connect(t, dir, workspace) {
+async function connect(
+	t,
+	dir,
+	workspace,
+	config = path.join(dir, "workspace.json"),
+) {
 	const server = JSON.parse(fs.readFileSync(path.join(root, "mcp.json")))
 		.mcpServers.grainulator;
 	const pluginData = path.join(dir, "plugin-data");
@@ -29,6 +35,7 @@ async function connect(t, dir, workspace) {
 				Object.entries(server.env).map(([key, value]) => [key, expand(value)]),
 			),
 			GRAINULATOR_WORKSPACE: workspace,
+			GRAINULATOR_CONFIG: config,
 		},
 	});
 	t.after(() => client.close());
@@ -59,6 +66,7 @@ test("native Agent Plugin manifest and Codex overlay register portable component
 	assert.ok(fs.existsSync(path.join(root, overlay.skills, "status/SKILL.md")));
 	assert.deepEqual(overlay.mcpServers.grainulator.env_vars, [
 		"GRAINULATOR_WORKSPACE",
+		"GRAINULATOR_CONFIG",
 	]);
 	const server = JSON.parse(fs.readFileSync(path.join(root, "mcp.json")))
 		.mcpServers.grainulator;
@@ -130,4 +138,32 @@ test("missing or relative native workspace binding exposes tools but cannot acce
 		assert.equal(fs.existsSync(path.join(dir, "claims.json")), false);
 		assert.equal(fs.existsSync(pluginData), false);
 	}
+});
+
+test("native launcher uses a saved workspace without launch environment binding", async (t) => {
+	const dir = fixture(t),
+		workspace = path.join(dir, "project");
+	fs.mkdirSync(workspace);
+	const config = path.join(dir, "workspace.json");
+	saveWorkspace(workspace, { GRAINULATOR_CONFIG: config });
+	const { client } = await connect(t, dir, "", config);
+	const result = toolJSON(
+		await client.request("tools/call", {
+			name: "init",
+			arguments: {
+				dir: path.join(workspace, "sprint"),
+				question: "Persistent binding",
+				audience: "test",
+			},
+		}),
+	);
+	assert.equal(result.status, "ok");
+	assert.ok(fs.existsSync(path.join(workspace, "sprint/claims.json")));
+	await assert.rejects(
+		client.request("tools/call", {
+			name: "init",
+			arguments: { dir: path.join(dir, "outside"), question: "Forbidden" },
+		}),
+		/outside workspace/,
+	);
 });

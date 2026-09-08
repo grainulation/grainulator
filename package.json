@@ -1,6 +1,6 @@
 {
 	"name": "@grainulation/grainulator",
-	"version": "2.0.0",
+	"version": "2.0.1",
 	"description": "Portable evidence and execution tools for model-assisted work",
 	"type": "module",
 	"license": "MIT",
@@ -34,6 +34,7 @@
 		"lib/",
 		"bin/",
 		"docs/ADAPTERS.md",
+		"docs/UPGRADING.md",
 		"docs/DOGFOOD.md",
 		"packages/legacy-cli/package.json",
 		"packages/legacy-cli/bin",
@@ -146,6 +147,7 @@
 		"test": "node scripts/test-workspace.mjs",
 		"test:e2e": "npm run test:site",
 		"test:all": "npm test && npm run test:runtime && npm run test:site && npm run test:install",
+		"build:identity": "node scripts/build-identity.mjs",
 		"sync-version": "node scripts/sync-version.js",
 		"version": "node scripts/sync-version.js && npx --yes @biomejs/biome format --write .claude-plugin/ .codex-plugin/ plugin.json && git add .claude-plugin/plugin.json .claude-plugin/marketplace.json .codex-plugin/plugin.json plugin.json",
 		"test:plugin": "node --test test/*.test.js",

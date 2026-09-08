@@ -1,5 +1,6 @@
 "use strict";
 const { assertSafeOutput } = require("../output-safety.js");
+const { loadSource } = require("../source-data.js");
 
 const fs = require("node:fs");
 const path = require("node:path");
@@ -62,11 +63,8 @@ function deriveOutputPath(inputPath, explicit) {
 }
 
 async function exportCsv(inputPath, outputPath) {
-  const raw = fs.readFileSync(inputPath, "utf-8");
-  const data = JSON.parse(raw);
-
-  // Accept either an array or { claims: [...] }
-  const claims = Array.isArray(data) ? data : data.claims || [];
+  const data = loadSource(inputPath);
+  const claims = data.claims;
 
   if (claims.length === 0) {
     throw new Error("No claims found in input file.");

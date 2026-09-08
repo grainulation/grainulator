@@ -4,7 +4,7 @@ const assert = require("node:assert");
 const fs = require("node:fs");
 const path = require("node:path");
 const os = require("node:os");
-const { execFileSync } = require("node:child_process");
+const { execFileSync, spawnSync } = require("node:child_process");
 
 const MILL = path.join(__dirname, "..", "bin", "mill.js");
 const FIXTURES = path.join(__dirname, "fixtures");
@@ -756,6 +756,78 @@ test("ci-artifacts prints human-readable output", () => {
   ]);
   assert.ok(out.includes("generated"), "has generation message");
   assert.ok(out.includes("artifacts"), "mentions artifacts");
+});
+
+// Exercise the public CLI using actual compiler output, from outside the sprint.
+const ROOT_CLI = path.resolve(__dirname, "../../../bin/grainulator.js");
+function publicCli(args) {
+  return spawnSync(process.execPath, [ROOT_CLI, ...args], {
+    cwd: tmpDir, encoding: "utf8", timeout: 10000,
+  });
+}
+const exportSprint = path.join(tmpDir, "export sprint");
+fs.mkdirSync(exportSprint);
+fs.writeFileSync(path.join(exportSprint, "claims.json"), JSON.stringify({
+  meta: { question: "Export the complete decision", audience: ["Maintainers"] },
+  claims: [{ id: "r001", type: "recommendation", topic: "delivery", content: "Keep verified claim content in every export", status: "active", evidence: "tested", confidence: 0.95, tags: [] }],
+}));
+const compiled = publicCli(["compile", "--dir", exportSprint]);
+assert.ok(fs.existsSync(path.join(exportSprint, "compilation.json")), compiled.stderr);
+
+test("public export resolves --dir paths and preserves actual compiled evidence", () => {
+  const result = publicCli(["export", "export", "--format", "executive-summary", "compilation.json", "-o", "brief.html", "--dir", "export sprint"]);
+  assert.equal(result.status, 0, result.stderr);
+  const output = fs.readFileSync(path.join(exportSprint, "brief.html"), "utf8");
+  assert.ok(output.includes("Keep verified claim content in every export"));
+  assert.ok(output.includes("Export the complete decision"));
+  assert.ok(!fs.existsSync(path.join(tmpDir, "brief.html")));
+});
+
+test("compiled evidence survives CSV, JSON-LD, Markdown and convert routes", () => {
+  for (const [format, extension] of [["csv", "csv"], ["json-ld", "jsonld"], ["markdown", "md"]]) {
+    const output = path.join(tmpDir, `absolute-${format}.${extension}`);
+    const result = publicCli(["export", "export", "--dir", exportSprint, "--format", format, "compilation.json", "-o", output]);
+    assert.equal(result.status, 0, result.stderr);
+    assert.ok(fs.readFileSync(output, "utf8").includes("Keep verified claim content in every export"));
+  }
+  const result = publicCli(["export", "convert", "--dir", exportSprint, "--from", "json", "--to", "executive-summary", "compilation.json", "-o", "converted.html"]);
+  assert.equal(result.status, 0, result.stderr);
+  assert.ok(fs.readFileSync(path.join(exportSprint, "converted.html"), "utf8").includes("Keep verified claim content in every export"));
+});
+
+test("ci-artifacts resolves --dir and uses normalized compilation data", () => {
+  const result = publicCli(["export", "ci-artifacts", "--dir", exportSprint, "compilation.json", "-o", "artifacts", "--formats", "executive-summary"]);
+  assert.equal(result.status, 0, result.stderr);
+  assert.ok(fs.readFileSync(path.join(exportSprint, "artifacts/executive-summary.html"), "utf8").includes("Keep verified claim content in every export"));
+});
+
+test("invalid or content-less compilation fails actionably without writing an empty report", () => {
+  for (const data of [{ status: "ready" }, { resolved_claims: [{ id: "r001", type: "factual" }] }, { claims: "invalid" }]) {
+    fs.writeFileSync(path.join(exportSprint, "incomplete.json"), JSON.stringify(data));
+    const result = publicCli(["export", "export", "--dir", exportSprint, "--format", "executive-summary", "incomplete.json", "-o", "empty.html"]);
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /claims.json|recompile/);
+    assert.ok(!fs.existsSync(path.join(exportSprint, "empty.html")));
+  }
+});
+
+test("ESM exports cannot overwrite their input or the sprint ledger", () => {
+  const before = fs.readFileSync(path.join(exportSprint, "claims.json"), "utf8");
+  for (const output of ["claims.json", "compilation.json"]) {
+    const result = publicCli(["export", "export", "--dir", exportSprint, "--format", "executive-summary", "compilation.json", "-o", output]);
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /Protected output|overwrite/);
+  }
+  assert.equal(fs.readFileSync(path.join(exportSprint, "claims.json"), "utf8"), before);
+});
+
+test("export subcommand help works and unknown option names are visible", () => {
+  const help = publicCli(["export", "export", "--help"]);
+  assert.equal(help.status, 0, help.stderr);
+  assert.match(help.stdout, /--dir/);
+  const result = publicCli(["export", "export", "--not-a-real-option"]);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /unknown option: --not-a-real-option/);
 });
 
 cleanup();

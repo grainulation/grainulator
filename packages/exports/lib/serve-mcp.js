@@ -28,6 +28,7 @@ const { installCrashHandlers } = require("../../shared/lib/mcp-crash.cjs");
 const SERVER_NAME = "mill";
 const SERVER_VERSION = require("../package.json").version;
 const { assertSafeOutput } = require("./output-safety.js");
+const { loadSource } = require("./source-data.js");
 const PROTOCOL_VERSION = "2024-11-05";
 
 const FORMATS_DIR = path.join(__dirname, "formats");
@@ -104,7 +105,7 @@ async function toolConvert(dir, args) {
   let dataPath = sourceFile;
 
   if (!fs.existsSync(dataPath)) {
-    if (fs.existsSync(fallbackFile)) {
+    if (!source && isInsideDir(fallbackFile, dir) && fs.existsSync(fallbackFile)) {
       dataPath = fallbackFile;
     } else {
       return {
@@ -116,54 +117,9 @@ async function toolConvert(dir, args) {
 
   let data;
   try {
-    data = JSON.parse(fs.readFileSync(dataPath, "utf8"));
+    data = loadSource(dataPath);
   } catch (err) {
-    return {
-      status: "error",
-      message: `Failed to parse ${dataPath}: ${err.message}`,
-    };
-  }
-
-  // Normalize: compilation.json uses resolved_claims, claims.json uses claims
-  // Use resolved_claims if claims is missing or empty
-  if (data.resolved_claims && (!data.claims || data.claims.length === 0)) {
-    data.claims = data.resolved_claims;
-  }
-  if (data.sprint_meta && !data.meta) {
-    data.meta = data.sprint_meta;
-  }
-
-  // Merge claim content from claims.json when compilation.json lacks it.
-  // Older compilation.json files omitted the content field from resolved_claims.
-  const claimsNeedContent =
-    data.claims &&
-    data.claims.length > 0 &&
-    data.claims.some((c) => !c.content && !c.text);
-  if (claimsNeedContent) {
-    const claimsFile = path.join(dir, "claims.json");
-    if (fs.existsSync(claimsFile)) {
-      try {
-        const raw = JSON.parse(fs.readFileSync(claimsFile, "utf8"));
-        const fullClaims = raw.claims || [];
-        const contentMap = {};
-        for (const fc of fullClaims) {
-          if (fc.id && fc.content) contentMap[fc.id] = fc;
-        }
-        for (const claim of data.claims) {
-          if (!claim.content && !claim.text && contentMap[claim.id]) {
-            claim.content = contentMap[claim.id].content;
-            if (
-              contentMap[claim.id].confidence != null &&
-              claim.confidence == null
-            ) {
-              claim.confidence = contentMap[claim.id].confidence;
-            }
-          }
-        }
-      } catch {
-        // Best-effort merge — if claims.json is unreadable, continue without content
-      }
-    }
+    return { status: "error", message: err.message };
   }
 
   // Run conversion

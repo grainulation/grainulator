@@ -2,6 +2,9 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { pathToFileURL } = require("node:url");
+const { loadSource } = require("./source-data.js");
+const { assertSafeOutput } = require("./output-safety.js");
 
 const pdf = require("./exporters/pdf.js");
 const csv = require("./exporters/csv.js");
@@ -59,9 +62,10 @@ function getExporter(name) {
 async function resolveFormat(name) {
   const cjs = EXPORTERS[name];
   if (cjs) return cjs;
+  if (!listExportFormats().includes(name)) return null;
   const esmPath = path.join(FORMATS_DIR, `${name}.mjs`);
   if (!fs.existsSync(esmPath)) return null;
-  const mod = await import(`file://${esmPath}`);
+  const mod = await import(pathToFileURL(esmPath).href);
   if (typeof mod.convert !== "function") return null;
   const fmtName = mod.name || name;
   const ext = mod.extension || ".txt";
@@ -73,18 +77,13 @@ async function resolveFormat(name) {
     convert: mod.convert,
     // Bridge to the CJS exporter shape used by bin/mill.js export/convert.
     export: async (inputPath, outputPath) => {
-      const raw = fs.readFileSync(inputPath, "utf8");
-      let data;
-      try {
-        data = JSON.parse(raw);
-      } catch {
-        data = raw;
-      }
+      const data = loadSource(inputPath);
       const output = mod.convert(data);
       const outFile =
         outputPath ||
         inputPath.replace(/\.[^.]+$/, "") +
           (ext.startsWith(".") ? ext : "." + ext);
+      assertSafeOutput(outFile, [inputPath]);
       fs.writeFileSync(outFile, output);
       const bytes = Buffer.byteLength(output);
       return {

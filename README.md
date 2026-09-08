@@ -26,6 +26,7 @@
 <p align="center">
   <a href="#quick-start">Quick start</a> ·
   <a href="docs/INSTALLATION.md">Installation</a> ·
+  <a href="docs/UPGRADING.md">Upgrading</a> ·
   <a href="docs/TOOLS.md">Tools</a> ·
   <a href="docs/PLUGIN-TESTING.md">Agent setup</a> ·
   <a href="CHANGELOG.md">Changelog</a>
@@ -51,8 +52,10 @@ Good models still need a way to keep track of evidence, revisit assumptions, and
 
 Requires **Node.js 24+**. Node 25 is the development default.
 
+**Upgrading from 1.x?** Follow the [migration checklist](docs/UPGRADING.md) to update the correct plugin scope, reconnect the single MCP server, and review retired Farmer instructions without changing your research data.
+
 ```sh
-git clone --branch v2.0.0 https://github.com/grainulation/grainulator.git
+git clone --branch v2.0.1 https://github.com/grainulation/grainulator.git
 cd grainulator
 npm ci --ignore-scripts
 node bin/grainulator.js doctor
@@ -63,7 +66,7 @@ Open **[localhost:4517/playground/](http://127.0.0.1:4517/playground/)** to choo
 
 Want to look around first? The **[public playground](https://grainulator.app/playground/)** lets you explore the controls and export a setup. Model execution happens in your local installation.
 
-> **Distribution:** v2.0.0 is a [GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.0.0), not an npm registry release. For a separate local installation, follow the [archive installation guide](docs/INSTALLATION.md).
+> **Distribution:** v2.0.1 is a [GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.0.1), not an npm registry release. For a separate local installation, follow the [archive installation guide](docs/INSTALLATION.md).
 
 ### Connect your agent
 
@@ -75,7 +78,7 @@ node /path/to/grainulator/bin/grainulator.js connect --dir "$PWD"
 
 Register the printed MCP configuration in your host, then restart its connection. The command prints configuration; it does not change your host settings.
 
-For bundled skills, agents, and hooks, use the **[native plugin setup guide](docs/PLUGIN-TESTING.md)**. Native Codex requires an absolute `GRAINULATOR_WORKSPACE` in its process environment. CLI and direct MCP access remain available to other hosts.
+For bundled skills, agents, and hooks, use the **[native plugin setup guide](docs/PLUGIN-TESTING.md)**. Native Codex needs an explicit workspace: run `node /path/to/grainulator/bin/grainulator.js setup --dir /absolute/project` once, then restart Codex. A per-launch `GRAINULATOR_WORKSPACE` overrides that saved default. CLI and direct MCP access remain available to other hosts.
 
 ## Put it to work
 
@@ -117,6 +120,7 @@ The equivalent MCP tool is **`add_claim`** on the **`grainulator`** server. See 
 | Guide | Start here for… |
 | --- | --- |
 | [Installation](docs/INSTALLATION.md) | Tagged source, isolated archives, and verified build identity. |
+| [Upgrading from 1.x](docs/UPGRADING.md) | Host updates, renamed tools, existing data, and retired setup instructions. |
 | [Agent setup](docs/PLUGIN-TESTING.md) | Claude Code, Codex, and actual plugin acceptance checks. |
 | [Research sessions](docs/RESEARCH.md) | Models, feature controls, credentials, export, and resume. |
 | [Tools](docs/TOOLS.md) | The canonical CLI and MCP interface. |

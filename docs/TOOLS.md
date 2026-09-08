@@ -77,4 +77,6 @@ After recording evidence, call `compile`. It returns the current compilation sta
 
 Existing `wheat/*`, `silo/*`, and `mill/*` tool calls and resource URIs remain accepted as hidden aliases. They do not appear in the unified server's tool or resource lists. Original component CLI entry points remain available to read old projects. This preserves existing data and integrations without making new callers learn the former product names.
 
+These aliases apply inside the `grainulator` server. They do not recreate old MCP server IDs, host-generated prefixes, or the removed automatic remote DeepWiki connection. Update custom registrations and allowlists to the tools your host exposes. See the [1.x upgrade checklist](UPGRADING.md).
+
 Local source changes do not replace an already running installed plugin. Point a test host at this checkout or the locally packed archive to dogfood this interface; restart that host connection to load it. No global installation or publication is required.
