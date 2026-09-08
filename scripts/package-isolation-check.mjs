@@ -25,7 +25,7 @@ try {
   for(const args of [['dashboard','--help'],['evidence','connect','farmer'],['evidence','disconnect','farmer'],['analytics','connect','farmer'],['orchestrate','connect','farmer'],['legacy','farmer','start']])check(`retired command rejected: ${args.join(' ')}`,()=>assert.throws(()=>run(args)));
   check('installed binary is not a workspace symlink',()=>assert.equal(fs.lstatSync(installed).isSymbolicLink(),false));
   check('installed onboarding documents have their local link targets',()=>{
-    const guides=['README.md',...fs.readdirSync(path.join(installed,'docs')).filter(name=>name.endsWith('.md')).map(name=>`docs/${name}`),...fs.readdirSync(path.join(installed,'packages')).map(name=>`packages/${name}/README.md`).filter(name=>fs.existsSync(path.join(installed,name)))];
+    const guides=['README.md','CONTRIBUTING.md','CODE_OF_CONDUCT.md','SECURITY.md','CHANGELOG.md',...fs.readdirSync(path.join(installed,'docs')).filter(name=>name.endsWith('.md')).map(name=>`docs/${name}`),...fs.readdirSync(path.join(installed,'packages')).map(name=>`packages/${name}/README.md`).filter(name=>fs.existsSync(path.join(installed,name)))];
     for(const guide of guides){
       const text=fs.readFileSync(path.join(installed,guide),'utf8');
       for(const match of text.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)){

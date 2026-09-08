@@ -17,6 +17,10 @@
 		"evidence"
 	],
 	"files": [
+		"CONTRIBUTING.md",
+		"CODE_OF_CONDUCT.md",
+		"SECURITY.md",
+		"CHANGELOG.md",
 		".claude-plugin/",
 		".codex-plugin/",
 		"plugin.json",
