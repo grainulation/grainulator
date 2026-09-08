@@ -1,0 +1,22 @@
+{
+  "title": "One-Pager",
+  "description": "Single viewport executive summary. No scroll -- forces ruthless prioritization. Shows top findings, recommendation with confidence meter, and key risk.",
+  "tags": ["one-pager", "executive", "summary", "single-page", "mobile"],
+  "author": "grainulation",
+  "version": "1.0.0",
+  "exportPresets": [
+    { "name": "pdf", "format": "pdf" },
+    { "name": "static-site", "format": "html" }
+  ],
+  "seedPacks": [],
+  "scaffoldConfig": {
+    "defaultPlaceholders": {
+      "SPRINT_NAME": "Sprint",
+      "QUESTION": "Sprint Question",
+      "RECOMMENDATION": "",
+      "CONFIDENCE": "50",
+      "KEY_RISK": ""
+    },
+    "postInit": ["load-claims", "compile-brief"]
+  }
+}

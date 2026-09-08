@@ -1,0 +1,17 @@
+[
+	{
+		"id": "c1",
+		"type": "risk",
+		"topic": "data",
+		"content": "",
+		"source": {
+			"origin": "stakeholder"
+		},
+		"evidence": "documented",
+		"status": "active",
+		"conflicts_with": [],
+		"depends_on": [],
+		"resolved_by": null,
+		"tags": ["residual"]
+	}
+]

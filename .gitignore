@@ -12,12 +12,6 @@ output/
 test-results/
 playwright-report/
 
-# Farmer runtime files
-.farmer-token
-.farmer-state.json
-.farmer.pid
-.farmer-audit*.jsonl
-
 # Claude Code
 .claude/
 
@@ -25,3 +19,22 @@ playwright-report/
 .env
 .env.local
 .env.*.local
+
+# Local dogfood artifacts
+.dogfood/
+.grainulator/
+**/claims.json.lock/
+**/rs/target/
+
+# Generated static site artifact
+dist/
+
+.grainulator-tips.md
+.grainulator-compile.lock
+
+# Shipped test fixtures; ordinary sprint ledgers stay ignored.
+!packages/exports/test/fixtures/claims.json
+!packages/runtime/test/fixtures/**/.bean/claims.json
+
+# Local npm pack artifacts.
+*.tgz

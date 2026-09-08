@@ -1,0 +1,16 @@
+{
+  "title": "Email Digest",
+  "description": "Email-safe sprint update for async communication. Uses inline styles and table layout for Gmail and Outlook compatibility.",
+  "tags": ["email", "digest", "update", "async", "communication"],
+  "author": "grainulation",
+  "version": "1.0.0",
+  "exportPresets": [{ "name": "static-site", "format": "html" }],
+  "seedPacks": [],
+  "scaffoldConfig": {
+    "defaultPlaceholders": {
+      "SPRINT_NAME": "Untitled Sprint",
+      "AUTHOR": "grainulation"
+    },
+    "postInit": ["load-claims", "select-top-findings"]
+  }
+}

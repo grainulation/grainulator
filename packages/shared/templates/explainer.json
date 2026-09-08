@@ -1,0 +1,20 @@
+{
+  "title": "Explainer",
+  "description": "Dark scroll-snap presentation template with responsive slides. Ideal for research briefs and topic deep-dives.",
+  "tags": ["explainer", "presentation", "scroll-snap", "slides", "research"],
+  "author": "grainulation",
+  "version": "1.0.0",
+  "exportPresets": [
+    { "name": "pdf-slides", "format": "pdf" },
+    { "name": "static-site", "format": "html" },
+    { "name": "markdown-outline", "format": "md" }
+  ],
+  "seedPacks": ["research-findings", "evidence-tiers"],
+  "scaffoldConfig": {
+    "defaultPlaceholders": {
+      "TITLE": "Research Explainer",
+      "TOPIC": "Untitled Topic"
+    },
+    "postInit": ["load-claims", "compile-brief"]
+  }
+}

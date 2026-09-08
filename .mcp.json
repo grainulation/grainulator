@@ -1,26 +1,12 @@
 {
 	"mcpServers": {
-		"wheat": {
+		"grainulator": {
 			"type": "stdio",
-			"command": "npx",
-			"args": ["-y", "-p", "@grainulation/wheat", "wheat-mcp"]
-		},
-		"mill": {
-			"type": "stdio",
-			"command": "npx",
-			"args": ["-y", "@grainulation/mill", "serve-mcp"]
-		},
-		"silo": {
-			"type": "stdio",
-			"command": "npx",
-			"args": ["-y", "@grainulation/silo", "serve-mcp"],
+			"command": "node",
+			"args": ["${CLAUDE_PLUGIN_ROOT}/bin/grainulator.js", "mcp"],
 			"env": {
-				"SILO_STORE": "${CLAUDE_PLUGIN_DATA}/silo"
+				"GRAINULATOR_MEMORY_DIR": "${CLAUDE_PLUGIN_DATA}/memory"
 			}
-		},
-		"deepwiki": {
-			"type": "http",
-			"url": "https://mcp.deepwiki.com/mcp"
 		}
 	}
 }

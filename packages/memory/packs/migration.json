@@ -1,0 +1,183 @@
+{
+  "name": "Migration Research Templates",
+  "description": "Common research patterns for technology migrations -- database migrations, cloud migrations, language/framework migrations. Seed claims capture recurring risks and constraints.",
+  "version": "1.0.0",
+  "claims": [
+    {
+      "id": "mig-001",
+      "type": "constraint",
+      "topic": "migration rollback safety",
+      "content": "Production migrations must be reversible. Every schema change, data transform, or infrastructure swap needs a tested rollback procedure with a maximum rollback time SLA.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["migration", "rollback", "safety"]
+    },
+    {
+      "id": "mig-002",
+      "type": "risk",
+      "topic": "dual-write consistency risk",
+      "content": "Dual-write periods introduce data consistency risks. During cutover, writes must go to both old and new systems, and a reconciliation process must detect drift.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["migration", "dual-write", "consistency"]
+    },
+    {
+      "id": "mig-003",
+      "type": "risk",
+      "topic": "migration window overrun",
+      "content": "Data migrations that run longer than the maintenance window force a choice between extended downtime and incremental migration. Estimate data volume transfer rates early.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["migration", "downtime", "planning"]
+    },
+    {
+      "id": "mig-004",
+      "type": "constraint",
+      "topic": "minimum viable migration scope",
+      "content": "Feature parity with the legacy system is rarely achievable on day one. Define a 'minimum viable migration' scope that covers the critical path and defer edge cases.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["migration", "scope", "mvp"]
+    },
+    {
+      "id": "mig-005",
+      "type": "recommendation",
+      "topic": "strangler fig migration pattern",
+      "content": "Use the strangler fig pattern for large migrations: route traffic incrementally to the new system while the old system continues to serve unmodified paths.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["migration", "strangler-fig", "pattern"]
+    },
+    {
+      "id": "mig-006",
+      "type": "risk",
+      "topic": "character encoding corruption",
+      "content": "Character encoding mismatches (UTF-8 vs Latin-1, collation differences) are the most common silent data corruption source in database migrations. Test with production-representative data.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["migration", "database", "encoding"]
+    },
+    {
+      "id": "mig-007",
+      "type": "estimate",
+      "topic": "cloud migration timeline",
+      "content": "Cloud-to-cloud migrations typically take 2-4x longer than initial estimates due to undocumented dependencies, permission differences, and networking surprises.",
+      "source": { "origin": "industry", "artifact": null, "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["migration", "cloud", "estimation"]
+    },
+    {
+      "id": "mig-008",
+      "type": "constraint",
+      "topic": "API versioning during migration",
+      "content": "API contract changes during migration require versioned endpoints. Clients must be able to continue using the old API for a deprecation period (minimum 3 months is standard).",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["migration", "api", "versioning"]
+    },
+    {
+      "id": "mig-009",
+      "type": "recommendation",
+      "topic": "shadow traffic validation",
+      "content": "Run shadow traffic (replay production reads against the new system without serving responses) for at least 2 weeks before cutover. Compare results for correctness and latency.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["migration", "shadow-traffic", "validation"]
+    },
+    {
+      "id": "mig-010",
+      "type": "risk",
+      "topic": "legacy knowledge decay",
+      "content": "Team knowledge of the legacy system degrades over time. If migration stalls, institutional knowledge may be lost before it completes. Document as you migrate, not after.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["migration", "knowledge", "documentation"]
+    }
+  ]
+}

@@ -1,0 +1,173 @@
+{
+  "name": "Hackathon: Sprint Boost",
+  "description": "Business-aligned hackathon category pack. Teams tackle real backlog items or OKR-driven research questions. Judging weights: 40% business impact, 30% research rigor, 30% creativity. Rewards sprints that ship real value.",
+  "version": "1.0.0",
+  "judging": {
+    "weights": {
+      "impact": 0.4,
+      "rigor": 0.3,
+      "creativity": 0.3
+    },
+    "auto_score_dimensions": {
+      "impact": {
+        "constraint_satisfaction": 0.4,
+        "evidence_tier": 0.3,
+        "corroboration": 0.3
+      },
+      "rigor": {
+        "evidence_tier": 0.35,
+        "challenge_depth": 0.3,
+        "health": 0.2,
+        "corroboration": 0.15
+      },
+      "creativity": {
+        "type_diversity": 0.35,
+        "recommendation_ratio": 0.35,
+        "cross_topic_breadth": 0.3
+      }
+    },
+    "human_score_dimensions": [
+      "decision_clarity",
+      "stakeholder_awareness",
+      "actionability"
+    ],
+    "final_blend": {
+      "auto": 0.5,
+      "human": 0.5
+    }
+  },
+  "claims": [
+    {
+      "id": "hsb-001",
+      "type": "constraint",
+      "topic": "sprint boost format",
+      "content": "Sprint Boost is a business-aligned hackathon format. Each team picks a real task from their backlog or a strategic OKR key result, runs a wheat research sprint on it, and submits the compiled brief. The output is a sprint deliverable, not a side project.",
+      "source": {
+        "origin": "stakeholder",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "sprint-boost", "business-aligned", "format"]
+    },
+    {
+      "id": "hsb-002",
+      "type": "constraint",
+      "topic": "impact scoring",
+      "content": "Business impact is the dominant judging dimension at 40%. Scored across: (1) Does the research address a real business constraint? (2) Are findings backed by evidence strong enough to act on? (3) Are claims corroborated by external sources? A sprint that solves a real problem with weak evidence still outscores a polished sprint on a hypothetical problem.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "sprint-boost", "impact", "scoring"]
+    },
+    {
+      "id": "hsb-003",
+      "type": "constraint",
+      "topic": "rigor scoring",
+      "content": "Research rigor is weighted at 30%. Scored across: (1) Evidence tier distribution — higher tiers (tested, production) score exponentially better. (2) Challenge depth — did the team stress-test their own findings? (3) Health — clean compilation with few warnings. (4) Corroboration — external witnesses back up claims.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "sprint-boost", "rigor", "scoring"]
+    },
+    {
+      "id": "hsb-004",
+      "type": "constraint",
+      "topic": "creativity scoring",
+      "content": "Creativity is weighted at 30%. Scored across: (1) Type diversity — using multiple claim types shows multi-angle thinking. (2) Recommendation ratio — novel, actionable recommendations signal creative problem-solving. (3) Cross-topic breadth — drawing from diverse domains demonstrates creative synthesis.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "sprint-boost", "creativity", "scoring"]
+    },
+    {
+      "id": "hsb-005",
+      "type": "recommendation",
+      "topic": "challenge tracks",
+      "content": "Sprint Boost should offer challenge tracks tied to real OKRs: (1) 'Accelerate' — pick a backlog item and deliver research that unblocks it. (2) 'Rethink' — same task, novel approach. (3) 'Cross-pollinate' — research a problem from another team's backlog. Track 2 prevents Sprint Boost from becoming a crunch sprint.",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "sprint-boost", "tracks", "okr"]
+    },
+    {
+      "id": "hsb-006",
+      "type": "risk",
+      "topic": "crunch sprint risk",
+      "content": "Risk: If Sprint Boost only rewards shipping backlog items, it becomes unpaid overtime disguised as a hackathon. The creativity weight (30%) and the 'Rethink' track are guardrails. Human judges should penalize submissions that are pure task execution with no research insight.",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "sprint-boost", "risk", "crunch"]
+    },
+    {
+      "id": "hsb-007",
+      "type": "recommendation",
+      "topic": "human judge criteria",
+      "content": "Human judges for Sprint Boost score on: (1) Decision clarity — could a VP act on this brief? (2) Stakeholder awareness — are constraints from real decision-makers? (3) Actionability — are next steps concrete with owners and timelines? These map 1:1 to the three scoring dimensions (impact, rigor, creativity).",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "sprint-boost", "human-judging", "criteria"]
+    },
+    {
+      "id": "hsb-008",
+      "type": "factual",
+      "topic": "OKR hackathon precedent",
+      "content": "The OKR Hackathon is an established corporate format (documented by Devpost) where teams compete to complete OKR goals within a hackathon timebox. Intel ties innovation hackathons directly to strategic OKRs. This validates Sprint Boost: real work, hackathon energy, research-backed output.",
+      "source": {
+        "origin": "research",
+        "artifact": "https://info.devpost.com/blog/8-types-of-internal-hackathons",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "sprint-boost", "okr", "precedent"]
+    }
+  ]
+}

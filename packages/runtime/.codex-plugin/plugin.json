@@ -1,0 +1,37 @@
+{
+	"name": "bean",
+	"version": "2.1.0",
+	"description": "A Codex /bean skill for running large tasks as a recursive convergence loop. Full enforcement comes from the installed bean runtime: bean-check plus the native Codex Stop hook.",
+	"author": {
+		"name": "Grainulation"
+	},
+	"homepage": "https://github.com/grainulation/bean",
+	"repository": "https://github.com/grainulation/bean",
+	"license": "MIT",
+	"keywords": [
+		"codex",
+		"skill",
+		"workflow",
+		"planning",
+		"stage-map",
+		"delegation",
+		"verification",
+		"self-critique",
+		"blindspot",
+		"fable-mode"
+	],
+	"skills": "./skills/",
+	"interface": {
+		"displayName": "bean",
+		"shortDescription": "Explicit /bean recursive convergence loop for careful tasks",
+		"longDescription": "bean is a provider-neutral skill that runs a task as a recursive convergence loop: investigate the most decisive open question, record what you learn as typed evidence in a ledger, compile to score what is still weak or contradictory, revise beliefs the evidence overturns, and loop until it converges. In full 2.0 install mode, ./install.sh builds the static runtime binaries and registers the native Codex Stop hook so an active .bean ledger blocks premature completion until bean-check converges. In Codex plugin-only mode, /bean still provides the loop discipline, but enforcement is advisory until the runtime binaries and hook are installed. No network calls or telemetry are added by bean itself.",
+		"developerName": "Grainulation",
+		"category": "Developer Tools",
+		"capabilities": ["Guidance"],
+		"defaultPrompt": [
+			"Use /bean to investigate, record evidence, and loop until the answer converges.",
+			"Use /bean to revise beliefs as new evidence overturns earlier claims.",
+			"Use /bean to open a cross-model blindspot review on high-stakes work."
+		]
+	}
+}

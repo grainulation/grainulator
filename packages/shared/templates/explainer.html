@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{TITLE}}</title>
+<style>
+  /* barn/templates/explainer.html — dark scroll-snap presentation template
+     System font stack, no external dependencies, fully self-contained. */
+
+  :root {
+    --bg-dark: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263548;
+    --accent: #3b82f6;
+    --accent-light: #60a5fa;
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.12);
+    --orange: #f59e0b;
+    --orange-dim: rgba(245,158,11,0.12);
+    --red: #e11d48;
+    --red-dim: rgba(225,29,72,0.12);
+    --purple: #a78bfa;
+    --purple-dim: rgba(167,139,250,0.12);
+    --pink: #f472b6;
+    --pink-dim: rgba(244,114,182,0.12);
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+    scroll-behavior: smooth;
+  }
+
+  html {
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text);
+    font-size: 11pt;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+  }
+
+  .slide {
+    width: 100%;
+    height: 100vh;
+    padding: 60px 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    scroll-snap-align: start;
+  }
+
+  .slide::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 40%;
+    height: 100%;
+    background: radial-gradient(ellipse at top right, rgba(59,130,246,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  h1 {
+    font-size: 42pt;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  h2 {
+    font-size: 32pt;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-bottom: 24px;
+    color: #fff;
+  }
+
+  h3 {
+    font-size: 14pt;
+    font-weight: 600;
+    color: var(--accent-light);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  h4 {
+    font-size: 13pt;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  p {
+    font-size: 14pt;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 12px;
+    text-align: left;
+    font-weight: 400;
+    max-width: 85%;
+  }
+
+  .subtitle {
+    font-size: 18pt;
+    color: var(--text-muted);
+    font-weight: 300;
+    max-width: 70%;
+  }
+
+  .label {
+    display: inline-block;
+    font-size: 9pt;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent-light);
+    background: rgba(59,130,246,0.12);
+    padding: 4px 12px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+  }
+
+  .label.green { color: var(--green); background: var(--green-dim); }
+  .label.orange { color: var(--orange); background: var(--orange-dim); }
+  .label.red { color: var(--red); background: var(--red-dim); }
+  .label.purple { color: var(--purple); background: var(--purple-dim); }
+  .label.pink { color: var(--pink); background: var(--pink-dim); }
+
+  .divider {
+    width: 60px;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+    margin: 16px 0 24px 0;
+  }
+
+  .two-col {
+    display: flex;
+    gap: 60px;
+    align-items: flex-start;
+  }
+
+  .two-col > div { flex: 1; }
+
+  .three-col {
+    display: flex;
+    gap: 24px;
+    align-items: stretch;
+  }
+
+  .three-col > div { flex: 1; }
+
+  .card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 32px;
+    border: 1px solid rgba(255,255,255,0.06);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px 0 0 4px;
+  }
+
+  .card.green::after { background: var(--green); }
+  .card.orange::after { background: var(--orange); }
+  .card.red::after { background: var(--red); }
+  .card.purple::after { background: var(--purple); }
+  .card.pink::after { background: var(--pink); }
+
+  .card-label {
+    font-size: 9pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent-light);
+    margin-bottom: 8px;
+  }
+
+  .card.green .card-label { color: var(--green); }
+  .card.orange .card-label { color: var(--orange); }
+  .card.red .card-label { color: var(--red); }
+  .card.purple .card-label { color: var(--purple); }
+
+  .card-text {
+    font-size: 16pt;
+    color: var(--text);
+    line-height: 1.5;
+    font-weight: 500;
+  }
+
+  .card-detail {
+    font-size: 12pt;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-top: 12px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 11pt;
+  }
+
+  th {
+    text-align: left;
+    padding: 10px 16px;
+    background: var(--bg-card);
+    color: var(--accent-light);
+    font-weight: 600;
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-bottom: 2px solid rgba(59,130,246,0.3);
+  }
+
+  td {
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    color: var(--text-muted);
+  }
+
+  tr:hover td {
+    background: rgba(255,255,255,0.02);
+  }
+
+  .claim-ref {
+    font-size: 8pt;
+    color: var(--text-dim);
+    font-family: monospace;
+  }
+
+  .slide-nav {
+    position: fixed;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 100;
+  }
+
+  .slide-nav a {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    display: block;
+    transition: all 0.2s;
+  }
+
+  .slide-nav a:hover,
+  .slide-nav a.active {
+    background: var(--accent);
+    transform: scale(1.5);
+  }
+
+  @keyframes fadeInUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .fade-in {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  .barn-footer {
+    position: absolute;
+    bottom: 24px;
+    right: 40px;
+    font-size: 8pt;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+
+  @media (max-width: 768px) {
+    .slide { padding: 32px 20px; height: auto; min-height: 100vh; }
+    h1 { font-size: 24pt; }
+    h2 { font-size: 20pt; }
+    h3 { font-size: 12pt; }
+    p, .subtitle { font-size: 12pt; max-width: 100%; }
+    .two-col, .three-col { flex-direction: column; gap: 20px; }
+    .card { padding: 20px; }
+    .card-text { font-size: 13pt; }
+    .card-detail { font-size: 11pt; }
+    .slide-nav { display: none; }
+    .barn-footer { right: 20px; bottom: 16px; }
+    table { font-size: 9pt; }
+    th, td { padding: 6px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TEMPLATE: Replace slide content below with your content -->
+<!-- Each .slide div becomes a full-screen scroll-snap section -->
+
+<div class="slide">
+  <span class="label">Research Sprint</span>
+  <h1>{{TITLE}}</h1>
+  <p class="subtitle">{{SUBTITLE}}</p>
+  <div class="barn-footer">Built with barn</div>
+</div>
+
+<!-- Add more slides as needed -->
+<!-- Use .card, .two-col, .three-col, table, .label for layout -->
+<!-- Reference claims with <span class="claim-ref">[r001]</span> -->
+
+</body>
+</html>

@@ -1,0 +1,74 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://github.com/grainulation/bean/schemas/lessons.schema.json",
+	"title": "bean lessons-candidates report (v0)",
+	"description": "Read-only report emitted by bean-lessons to .bean/lessons.json. It ranks candidate lessons derived deterministically from the trace corpus (.bean/runs/*.json). It PROPOSES; it never applies. No mutation of claims, prompts, skills, or memory. NOT cross-task learning.",
+	"type": "object",
+	"additionalProperties": false,
+	"required": [
+		"schema_version",
+		"generated_at",
+		"source_run_count",
+		"candidates"
+	],
+	"properties": {
+		"schema_version": { "const": "bean.lessons.v0" },
+		"generated_at": {
+			"type": "integer",
+			"description": "Report generation time as an INTEGER, milliseconds since the Unix epoch (not ISO-8601). Metadata only — excluded from determinism comparisons (the candidates are deterministic for a given corpus)."
+		},
+		"source_run_count": {
+			"type": "integer",
+			"minimum": 0,
+			"description": "Number of trace/v0 runs analyzed."
+		},
+		"candidates": {
+			"type": "array",
+			"description": "Ranked lesson candidates. Sorted by count desc, then kind asc, then signal asc.",
+			"items": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["kind", "rank", "count", "signal", "evidence"],
+				"properties": {
+					"kind": {
+						"type": "string",
+						"enum": [
+							"recurring_residual",
+							"high_pivot",
+							"budget_exceeded",
+							"blocker_code_frequency",
+							"verifier_failure"
+						]
+					},
+					"rank": {
+						"type": "integer",
+						"minimum": 1,
+						"description": "1-based global rank."
+					},
+					"count": {
+						"type": "integer",
+						"minimum": 1,
+						"description": "Number of distinct runs the candidate covers."
+					},
+					"signal": {
+						"type": "string",
+						"description": "The thing observed: a residual reason, a blocker code, '<verifier> failed', etc."
+					},
+					"evidence": {
+						"type": "array",
+						"description": "The runs supporting this candidate, sorted by run_id.",
+						"items": {
+							"type": "object",
+							"additionalProperties": false,
+							"required": ["run_id", "status"],
+							"properties": {
+								"run_id": { "type": "string" },
+								"status": { "type": "string" }
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

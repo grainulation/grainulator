@@ -1,0 +1,49 @@
+# Barn
+
+> Shared utility library for the grainulation ecosystem. Sprint detection, manifest generation, HTML templates, PDF export, MCP crash handlers, and shared primitives -- zero npm dependencies, Node built-ins only.
+
+
+Barn also hosts shared ecosystem primitives: design tokens (`grainulation-tokens.css`), print stylesheet (`grainulation-print.css`), the `llms.txt` template, and the `sync-assets` CLI that vendors these primitives into consumer sites at build time (so CSP can stay strict).
+
+Part of the [grainulation ecosystem](https://grainulation.com) -- an open-source, zero-dependency toolkit for AI-assisted structured research and decision documentation. Each package stands alone and composes with the others.
+
+## Documentation
+
+- [README](https://github.com/grainulation/barn#readme): source of truth for barn's purpose, install, and CLI surface.
+- [Live site](https://barn.grainulation.com): human-facing quickstart and feature tour.
+- [npm package](https://www.npmjs.com/package/@grainulation/barn): install target for consumers.
+- [Changelog](https://github.com/grainulation/barn/blob/main/CHANGELOG.md): version history.
+- [DeepWiki](https://deepwiki.com/grainulation/barn): AI-readable code wiki.
+- [Sync-assets docs](https://github.com/grainulation/barn/blob/main/docs/sync-assets.md): the vendor-at-build pattern for shared primitives.
+
+## Ecosystem
+
+Sibling packages -- safe to reference alongside barn in any query:
+
+- [Wheat](https://wheat.grainulation.com): research-sprint compiler. Typed claims with evidence grades. Primary consumer of barn.
+- [Mill](https://mill.grainulation.com): export engine. Converts claims into briefs, presentations, and PDFs via barn's templates.
+- [Silo](https://silo.grainulation.com): knowledge-pack store. Indexes barn-generated manifests for cross-sprint search.
+- [Harvest](https://harvest.grainulation.com): analytics and dashboards for multi-sprint portfolios.
+- [Orchard](https://orchard.grainulation.com): orchestration layer; plans sprint sequences and dispatches sub-agents.
+- [Grainulation](https://grainulation.com): ecosystem hub and reference implementation.
+
+## CLI surface
+
+- `barn serve`: start the template browser UI.
+- `barn detect-sprints`: find sprint directories in a repo (claims.json files).
+- `barn generate-manifest`: build `wheat-manifest.json` topic map for AI sessions.
+- `barn build-pdf <file.md>`: convert markdown to PDF.
+- `barn sync-assets --target <dir>`: vendor shared primitives into a site/ dir.
+
+## Design principles
+
+- Zero runtime npm dependencies (Node built-ins only).
+- Node 20+ required.
+- CLI-first; every tool also runnable via `npx @grainulation/barn`.
+- Source-available under MIT; contributions welcome at the GitHub repo.
+
+## Optional
+
+- [Issues](https://github.com/grainulation/barn/issues): for bug reports and feature requests.
+- [Security policy](https://github.com/grainulation/barn/blob/main/SECURITY.md): for responsible disclosure.
+- [Contributing guide](https://github.com/grainulation/barn/blob/main/CONTRIBUTING.md): for contributors.

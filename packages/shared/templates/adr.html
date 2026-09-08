@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADR-{{ADR_NUMBER}}: {{TITLE}}</title>
+<style>
+  /* barn/templates/adr.html — Architecture Decision Record template
+     Standard ADR format. Self-contained, no external dependencies. */
+
+  :root {
+    --bg: #0a0e1a;
+    --bg2: #111827;
+    --bg3: #1e293b;
+    --accent: #3b82f6;
+    --accent-light: #60a5fa;
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.12);
+    --orange: #f59e0b;
+    --orange-dim: rgba(245,158,11,0.12);
+    --red: #e11d48;
+    --red-dim: rgba(225,29,72,0.12);
+    --purple: #a78bfa;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --border: rgba(255,255,255,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 11pt;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 48px 24px;
+  }
+
+  header { margin-bottom: 36px; }
+
+  .adr-id {
+    font-size: 10pt;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+
+  h1 { font-size: 26pt; font-weight: 700; color: #fff; margin-bottom: 16px; line-height: 1.2; }
+
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    font-size: 9pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 4px 14px;
+    border-radius: 4px;
+  }
+
+  .status-proposed { background: rgba(59,130,246,0.15); color: var(--accent-light); }
+  .status-accepted { background: var(--green-dim); color: var(--green); }
+  .status-deprecated { background: var(--orange-dim); color: var(--orange); }
+  .status-superseded { background: var(--red-dim); color: var(--red); }
+
+  .date { font-size: 10pt; color: var(--text-dim); }
+
+  h2 {
+    font-size: 16pt;
+    font-weight: 600;
+    color: #fff;
+    margin: 36px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  p { color: var(--text-muted); margin-bottom: 12px; }
+  ul, ol { color: var(--text-muted); margin: 0 0 16px 20px; }
+  li { margin-bottom: 6px; }
+
+  .section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+
+  .section h3 {
+    font-size: 12pt;
+    font-weight: 600;
+    color: var(--accent-light);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .consequence-risk {
+    border-left: 3px solid var(--orange);
+    padding-left: 12px;
+    margin-bottom: 10px;
+  }
+
+  .consequence-benefit {
+    border-left: 3px solid var(--green);
+    padding-left: 12px;
+    margin-bottom: 10px;
+  }
+
+  .alternative {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+  }
+
+  .alternative h4 {
+    font-size: 12pt;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .related-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .related-list li {
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .related-list a { color: var(--accent-light); text-decoration: none; }
+  .related-list a:hover { text-decoration: underline; }
+
+  .claim-ref { font-size: 8pt; color: var(--text-dim); font-family: monospace; }
+
+  footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 8pt;
+    color: var(--text-dim);
+  }
+
+  @media print {
+    body { background: #fff; color: #1a1a1a; max-width: 100%; }
+    h1, h2, h3, h4 { color: #111; }
+    p, li { color: #333; }
+    .section, .alternative { background: #f5f5f5; border-color: #ddd; }
+    .status-badge { border: 1px solid #ccc; }
+    .consequence-risk { border-color: #cc8800; }
+    .consequence-benefit { border-color: #228822; }
+    a { color: #0066cc; }
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 24px 16px; }
+    h1 { font-size: 20pt; }
+    h2 { font-size: 14pt; }
+    .section { padding: 14px 16px; }
+    .alternative { padding: 12px 14px; }
+    .status-bar { flex-direction: column; align-items: flex-start; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+<article aria-label="Architecture Decision Record: {{TITLE}}">
+
+  <header>
+    <div class="adr-id">ADR-{{ADR_NUMBER}}</div>
+    <h1>{{TITLE}}</h1>
+    <div class="status-bar">
+      <span class="status-badge {{STATUS}}">{{STATUS}}</span>
+      <span class="date">{{DATE}}</span>
+    </div>
+  </header>
+
+  <section aria-label="Context">
+    <h2>Context</h2>
+    {{CONTEXT}}
+  </section>
+
+  <section aria-label="Decision">
+    <h2>Decision</h2>
+    {{DECISION}}
+  </section>
+
+  <section aria-label="Consequences">
+    <h2>Consequences</h2>
+    {{CONSEQUENCES}}
+  </section>
+
+  <section aria-label="Alternatives considered">
+    <h2>Alternatives Considered</h2>
+    {{ALTERNATIVES}}
+  </section>
+
+  <section aria-label="Related decisions">
+    <h2>Related ADRs</h2>
+    {{RELATED}}
+  </section>
+
+  <footer>Built with barn -- grainulation</footer>
+
+</article>
+</body>
+</html>

@@ -1,0 +1,242 @@
+{
+  "name": "API Design",
+  "description": "REST conventions, versioning strategies, pagination, error formats, backwards compatibility, and GraphQL tradeoff analysis for HTTP APIs.",
+  "version": "1.0.0",
+  "claims": [
+    {
+      "id": "api-001",
+      "type": "constraint",
+      "topic": "HTTP method semantics",
+      "content": "GET must be safe and idempotent (no side effects). PUT must be idempotent (same result on repeat). POST is neither safe nor idempotent. DELETE should be idempotent (deleting an already-deleted resource returns 204 or 404, not an error). Violating these semantics breaks caches, retries, and client expectations.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["api", "rest", "http-methods", "idempotency"]
+    },
+    {
+      "id": "api-002",
+      "type": "recommendation",
+      "topic": "error response format",
+      "content": "Use RFC 7807 (Problem Details) for error responses: {type, title, status, detail, instance}. Include a machine-readable error code field for client-side branching. Never expose stack traces, internal paths, or database errors in production responses.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["api", "error-handling", "rfc-7807", "rest"]
+    },
+    {
+      "id": "api-003",
+      "type": "recommendation",
+      "topic": "cursor-based pagination",
+      "content": "Prefer cursor-based pagination over offset-based for datasets that change frequently. Offset pagination becomes inconsistent when rows are inserted or deleted between pages. Cursor pagination uses an opaque token (base64-encoded last-seen ID) and supports consistent forward iteration. Return {data, next_cursor, has_more} in responses.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["api", "pagination", "cursor", "rest"]
+    },
+    {
+      "id": "api-004",
+      "type": "risk",
+      "topic": "URL path versioning lock-in",
+      "content": "URL path versioning (/v1/users, /v2/users) is simple but creates permanent routing complexity. Every version doubles the endpoint surface. Prefer header-based versioning (Accept: application/vnd.api+json;version=2) or additive-only changes (no versioning needed if you never remove or rename fields).",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["api", "versioning", "rest", "backwards-compatibility"]
+    },
+    {
+      "id": "api-005",
+      "type": "constraint",
+      "topic": "backwards compatibility rules",
+      "content": "Breaking changes for public APIs: removing a field, renaming a field, changing a field type, changing a required/optional status, removing an endpoint, changing authentication. Non-breaking: adding optional fields, adding new endpoints, adding new enum values (if clients handle unknown values). Never make breaking changes without a version bump and deprecation period of at least 6 months.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "api",
+        "backwards-compatibility",
+        "deprecation",
+        "breaking-changes"
+      ]
+    },
+    {
+      "id": "api-006",
+      "type": "factual",
+      "topic": "GraphQL vs REST tradeoffs",
+      "content": "GraphQL eliminates over-fetching and under-fetching but introduces: query complexity analysis (must limit depth to 7-10 and breadth), N+1 data loader patterns, cache invalidation complexity (no HTTP caching by default), and a steeper client learning curve. REST is simpler for CRUD-heavy APIs with predictable access patterns.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["api", "graphql", "rest", "tradeoffs"]
+    },
+    {
+      "id": "api-007",
+      "type": "recommendation",
+      "topic": "rate limit headers",
+      "content": "Include rate limit headers in every response: X-RateLimit-Limit (max requests per window), X-RateLimit-Remaining (remaining in current window), X-RateLimit-Reset (Unix timestamp when window resets). Return 429 Too Many Requests with a Retry-After header when limit is exceeded. This lets well-behaved clients self-throttle.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["api", "rate-limiting", "headers", "429"]
+    },
+    {
+      "id": "api-008",
+      "type": "constraint",
+      "topic": "request payload size limits",
+      "content": "Set explicit request body size limits: 1 MB for standard JSON APIs, 10 MB for file uploads via multipart, and configurable limits for specific endpoints. Unbounded request bodies enable denial-of-service attacks. Return 413 Payload Too Large with a clear message stating the limit.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["api", "security", "payload-limits", "dos"]
+    },
+    {
+      "id": "api-009",
+      "type": "recommendation",
+      "topic": "idempotency keys for mutations",
+      "content": "POST endpoints that create resources should accept an Idempotency-Key header. Store the key with the response for 24 hours. If a duplicate key arrives, return the stored response without re-executing. This prevents duplicate charges, orders, or records from network retries. Stripe, PayPal, and AWS all use this pattern.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["api", "idempotency", "reliability", "payments"]
+    },
+    {
+      "id": "api-010",
+      "type": "risk",
+      "topic": "nested resource depth",
+      "content": "Deeply nested REST routes (/orgs/:id/teams/:id/members/:id/roles) become rigid and hard to evolve. Limit nesting to 2 levels maximum. Use flat routes with query filters for deeper relationships (/roles?member_id=X&team_id=Y). Deep nesting also makes URL construction fragile for API consumers.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["api", "rest", "url-design", "nesting"]
+    },
+    {
+      "id": "api-011",
+      "type": "factual",
+      "topic": "HTTP status code semantics",
+      "content": "Use status codes precisely: 200 (success with body), 201 (created, include Location header), 204 (success, no body), 400 (malformed request), 401 (unauthenticated), 403 (authenticated but unauthorized), 404 (not found or hidden), 409 (conflict/duplicate), 422 (valid syntax but semantic error), 429 (rate limited), 500 (server error). Avoid 200-wrapping errors.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["api", "http", "status-codes", "rest"]
+    },
+    {
+      "id": "api-012",
+      "type": "recommendation",
+      "topic": "API documentation contract testing",
+      "content": "Generate API documentation from code (OpenAPI/Swagger) rather than maintaining it manually. Use contract testing (Pact, Dredd, or OpenAPI-diff in CI) to verify that the implementation matches the spec. Manual docs drift within weeks; contract tests catch drift on every PR.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["api", "documentation", "contract-testing", "openapi"]
+    },
+    {
+      "id": "api-013",
+      "type": "estimate",
+      "topic": "API response time targets",
+      "content": "For user-facing APIs: p50 under 100ms, p95 under 500ms, p99 under 1s. For internal service-to-service APIs: p50 under 20ms, p95 under 100ms. These targets assume a CDN for static assets and regional deployment. Every 100ms of API latency reduces conversion by approximately 1% in e-commerce contexts.",
+      "source": { "origin": "industry", "artifact": null, "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["api", "performance", "latency", "sla"]
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://barn.grainulation.com/sitemap.xml

@@ -1,0 +1,196 @@
+/*
+ * grainulation-print.css  v1.0.0
+ * Shared print stylesheet for grainulation ecosystem sites.
+ * Home: barn. Vendored into each site via `barn sync-assets`.
+ *
+ * Usage (in each site's <head>, before </head>):
+ *   <link rel="stylesheet" media="print" href="/grainulation-print.css">
+ *
+ * Sites that need local overrides ship a site-specific print-local.css AFTER
+ * this one; higher specificity wins. Do NOT fork this file -- contribute
+ * upstream to barn instead.
+ *
+ * Scope: applied only at print-time (media="print"). Has no effect on
+ * on-screen rendering; safe to ship everywhere.
+ */
+
+@media print {
+  /* ── Reset: opaque white canvas, black body text, serif for print ──────── */
+  html, body {
+    background: #fff !important;
+    color: #000 !important;
+    font-family: Georgia, "Times New Roman", Times, serif !important;
+    font-size: 11pt !important;
+    line-height: 1.5 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ── Kill chrome and ambient UI ─────────────────────────────────────────── */
+  nav,
+  .bg-ambient,
+  .orb,
+  .copy-btn,
+  .nav-cta,
+  .skip-link,
+  .faq-q svg,
+  footer a[aria-label="GitHub"],
+  [role="banner"] nav,
+  .hero-actions,
+  .theme-toggle {
+    display: none !important;
+  }
+
+  /* ── Drop sticky / fixed positioning so flow is linear ──────────────────── */
+  nav,
+  header,
+  .sticky,
+  [style*="position:sticky"],
+  [style*="position: sticky"],
+  [style*="position:fixed"],
+  [style*="position: fixed"] {
+    position: static !important;
+    top: auto !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* ── Kill animations and transitions globally ───────────────────────────── */
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+
+  /* ── Reflow: let content take the page width, remove decorative constraints */
+  .container,
+  .page,
+  main,
+  section,
+  .hero,
+  .what-is,
+  .quickstart,
+  .example,
+  .features,
+  .faq,
+  .ecosystem {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 0 1.2em 0 !important;
+    background: transparent !important;
+  }
+
+  /* ── Cards / boxes: flatten, no borders, keep intact ────────────────────── */
+  .what-box,
+  .qs-step,
+  .feature-card,
+  .faq-item,
+  .eco-chip,
+  .ex-step,
+  .term-block,
+  .copy-wrap,
+  .qs-code,
+  .qs-output,
+  .ex-output {
+    background: transparent !important;
+    border: 1px solid #ccc !important;
+    border-radius: 0 !important;
+    padding: 0.6em 0.8em !important;
+    margin: 0 0 0.8em 0 !important;
+    color: #000 !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* ── Reveal all collapsed FAQ panels so readers see the answers ─────────── */
+  .faq-a {
+    max-height: none !important;
+    padding: 0.3em 0 0 0 !important;
+    overflow: visible !important;
+  }
+  .faq-item .faq-a,
+  .faq-item.open .faq-a {
+    display: block !important;
+  }
+
+  /* ── Typography: dark headings, enforce page-break discipline ───────────── */
+  h1, h2, h3, h4, h5, h6 {
+    color: #000 !important;
+    page-break-after: avoid;
+    break-after: avoid;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  h1 { font-size: 22pt !important; margin: 0 0 0.4em 0 !important; }
+  h2 { font-size: 16pt !important; margin: 1.2em 0 0.3em 0 !important; }
+  h3 { font-size: 13pt !important; margin: 1em 0 0.2em 0 !important; }
+
+  p, li { orphans: 3; widows: 3; }
+
+  /* ── Monospace code: preserve structure but darken colors ───────────────── */
+  code, pre, .qs-code, .term-block, .ex-output, .qs-output {
+    font-family: "SF Mono", Menlo, Consolas, monospace !important;
+    font-size: 9pt !important;
+    color: #000 !important;
+    background: #f5f5f5 !important;
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+  }
+
+  /* ── Links: black underlined, expand URLs in-line for external refs ─────── */
+  a,
+  a:link,
+  a:visited {
+    color: #000 !important;
+    text-decoration: underline !important;
+  }
+  a[href^="http"]:not([href*="grainulation.com"])::after {
+    content: " (" attr(href) ")";
+    font-size: 85%;
+    color: #333;
+    word-break: break-all;
+  }
+  /* Don't expand anchors, mailto, or in-page refs */
+  a[href^="#"]::after,
+  a[href^="mailto:"]::after,
+  a[href^="javascript:"]::after {
+    content: "";
+  }
+
+  /* ── Images and SVG: cap width to page, drop shadows/filters ────────────── */
+  img, svg {
+    max-width: 100% !important;
+    height: auto !important;
+    filter: none !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* ── Grid layouts flatten to block on print ─────────────────────────────── */
+  .qs-steps,
+  .features-grid,
+  .eco-grid,
+  .example-timeline {
+    display: block !important;
+    gap: 0 !important;
+  }
+
+  /* ── Show URL in footer for reference copies ────────────────────────────── */
+  footer {
+    border-top: 1px solid #ccc !important;
+    color: #000 !important;
+    margin-top: 1em !important;
+    padding-top: 0.6em !important;
+    font-size: 9pt !important;
+  }
+
+  /* ── Page margins ───────────────────────────────────────────────────────── */
+  @page {
+    margin: 2cm 1.8cm;
+  }
+}

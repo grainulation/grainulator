@@ -1,0 +1,9 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#0a0e1a"/>
+  <g transform="translate(440.25, 179.5) scale(4.5)">
+    <path d="M22,8 L16,8 C10.5,12.5 10.5,25.5 16,30 L22,30" stroke="#f43f5e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <text x="25" y="25" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800"><tspan fill="#f43f5e">B</tspan><tspan fill="#e8ecf1">arn</tspan></text>
+  </g>
+  <text x="600" y="460" text-anchor="middle" font-family="-apple-system,system-ui,sans-serif" font-weight="400" font-size="28" fill="#9ba5b7">Shared tools for the grainulation ecosystem</text>
+  <text x="600" y="570" text-anchor="middle" font-family="-apple-system,system-ui,sans-serif" font-weight="600" font-size="18" fill="#5a6478">grainulation</text>
+</svg>

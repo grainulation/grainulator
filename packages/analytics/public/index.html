@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-tool="harvest">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Harvest</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%230a0e1a'/><text x='32' y='34' text-anchor='middle' dominant-baseline='central' fill='%23fb923c' font-family='-apple-system,system-ui,sans-serif' font-size='34' font-weight='800'>H</text></svg>">
+<style>
+/* -- grainulation tokens (inline, zero deps) -- */
+:root {
+  --bg: #0a0e1a; --bg2: #111827; --bg3: #1e293b; --bg4: #334155;
+  --fg: #e2e8f0; --fg2: #94a3b8; --fg3: #64748b;
+  --border: #1e293b; --border-subtle: rgba(255,255,255,0.08);
+  --green: #34d399; --red: #f87171; --blue: #60a5fa; --purple: #a78bfa; --orange: #fb923c; --cyan: #22d3ee;
+  --font-sans: -apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
+  --font-mono: 'SF Mono','Cascadia Code','JetBrains Mono','Fira Code',monospace;
+  --radius: 8px; --radius-sm: 4px; --radius-lg: 12px;
+  --space-xs: 4px; --space-sm: 8px; --space-md: 12px; --space-lg: 16px; --space-xl: 24px; --space-2xl: 32px;
+  --transition-fast: 0.1s ease; --transition-base: 0.15s ease;
+  --accent: #fb923c; --accent-light: #fdba74; --accent-dim: rgba(251,146,60,0.10); --accent-border: rgba(251,146,60,0.25);
+}
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: var(--font-sans); background: var(--bg); color: var(--fg);
+  font-size: 13px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+
+/* -- layout -- */
+.app { display: flex; flex-direction: column; height: 100vh; }
+.topbar {
+  padding: 4px var(--space-xl);
+  background: rgba(255,255,255,0.08); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
+}
+.topbar h1 { font-size: 15px; font-weight: 600; }
+.topbar .tool-badge {
+  font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px;
+  padding: 2px 6px; border-radius: var(--radius-sm);
+  background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent-border);
+}
+.sprint-select {
+  padding: 6px 28px 6px 12px;
+  border-radius: var(--radius);
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  font-size: 12px;
+  font-family: var(--font-sans);
+  outline: none;
+  cursor: pointer;
+  max-width: 480px;
+  text-overflow: ellipsis;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+.conn-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+.conn-dot.disconnected { background: var(--red); }
+.reconnect-banner { position:fixed;top:0;left:0;right:0;z-index:9999;padding:8px 16px;background:#92400e;color:#fbbf24;font-size:12px;text-align:center;transform:translateY(-100%);transition:transform .3s;font-family:system-ui,sans-serif }
+.reconnect-banner.visible { transform:translateY(0) }
+.reconnect-banner button { background:none;border:1px solid #fbbf24;color:#fbbf24;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:11px;margin-inline-start:8px }
+
+/* -- controls -- */
+.controls { display:flex;align-items:center;gap:var(--space-sm);margin-inline-start:auto;flex-wrap:wrap }
+.controls select,.controls input[type="date"] { padding:6px 10px;border-radius:var(--radius);background:var(--bg3);border:1px solid var(--border);color:var(--fg);font-size:12px;font-family:var(--font-sans);outline:none;cursor:pointer }
+.controls select:focus,.controls input:focus { border-color:var(--accent-border) }
+.controls label { font-size:10px;color:var(--fg3);text-transform:uppercase;letter-spacing:0.3px }
+.refresh-btn { padding:6px 12px;border-radius:var(--radius);background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-border);cursor:pointer;font-size:11px;transition:background var(--transition-fast) }
+.refresh-btn:hover { background:var(--accent-border) }
+.refresh-btn:focus-visible { outline:2px solid var(--accent);outline-offset:2px }
+
+/* -- dashboard -- */
+.dashboard { flex:1;overflow-y:auto;padding:var(--space-xl) }
+.cards { display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-lg);margin-bottom:var(--space-xl) }
+.card { padding:var(--space-lg);background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg) }
+.card-title { font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--fg3);margin-bottom:var(--space-md) }
+.card-value { font-size:28px;font-weight:700;color:var(--accent) }
+.card-sub { font-size:11px;color:var(--fg2);margin-top:4px }
+.section { margin-bottom:var(--space-xl);background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-lg) }
+.section-title { font-size:13px;font-weight:600;margin-bottom:var(--space-lg);display:flex;align-items:center;gap:var(--space-sm) }
+.section-title::after { content:'';flex:1;height:1px;background:var(--border) }
+
+/* -- bar chart -- */
+.bar-chart { display:flex;flex-direction:column;gap:var(--space-sm) }
+.bar-row { display:flex;align-items:center;gap:var(--space-md) }
+.bar-label { width:100px;text-align:end;font-size:11px;color:var(--fg2);flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap }
+.bar-track { flex:1;height:20px;background:var(--bg);border-radius:var(--radius-sm);overflow:hidden }
+.bar-fill { height:100%;border-radius:var(--radius-sm);transition:width .3s ease;display:flex;align-items:center;padding-inline-start:6px;font-size:10px;color:var(--bg);font-weight:600;min-width:24px }
+.bar-count { font-size:10px;color:var(--fg3);width:36px;text-align:end;flex-shrink:0 }
+
+/* bar colors by type */
+.bar-fill.constraint { background: #f87171; }
+.bar-fill.risk { background: #fb923c; }
+.bar-fill.recommendation { background: #60a5fa; }
+.bar-fill.factual { background: #34d399; }
+.bar-fill.estimate { background: #a78bfa; }
+.bar-fill.feedback { background: #fbbf24; }
+.bar-fill.unknown { background: var(--bg4); }
+
+/* evidence bars */
+.bar-fill.stated { background: #64748b; }
+.bar-fill.web { background: #94a3b8; }
+.bar-fill.documented { background: #60a5fa; }
+.bar-fill.tested { background: #34d399; }
+.bar-fill.production { background: #22d3ee; }
+
+/* -- stacked bar -- */
+.stacked-bar { display:flex;height:28px;border-radius:var(--radius-sm);overflow:hidden;margin-bottom:var(--space-sm) }
+.stacked-segment { height:100%;transition:width .3s ease }
+.stacked-legend { display:flex;flex-wrap:wrap;gap:var(--space-md);margin-top:var(--space-sm) }
+.stacked-legend-item { display:flex;align-items:center;gap:4px;font-size:11px;color:var(--fg2) }
+.stacked-legend-swatch { width:10px;height:10px;border-radius:2px;flex-shrink:0 }
+/* -- velocity -- */
+.velocity-chart-wrap { margin-bottom:var(--space-lg) }
+.velocity-chart-wrap svg { width:100% }
+.velocity-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:var(--space-lg) }
+.velocity-item { text-align:center }
+.velocity-val { font-size:22px;font-weight:700;color:var(--accent) }
+.velocity-label { font-size:10px;color:var(--fg3);text-transform:uppercase;letter-spacing:0.3px }
+/* -- patterns -- */
+.pattern-list { display:flex;flex-direction:column;gap:var(--space-sm) }
+.pattern-item { padding:var(--space-md);background:var(--bg);border-radius:var(--radius);border-inline-start:3px solid var(--green) }
+.pattern-item.anti { border-inline-start-color:var(--red) }
+.pattern-item .pat-name { font-size:12px;font-weight:600;color:var(--fg);margin-bottom:2px }
+.pattern-item .pat-desc { font-size:11px;color:var(--fg2) }
+/* -- calibration -- */
+.cal-table { width:100%;border-collapse:collapse;font-size:12px }
+.cal-table th { text-align:start;padding:var(--space-sm) var(--space-md);font-size:10px;text-transform:uppercase;letter-spacing:0.3px;color:var(--fg3);border-bottom:1px solid var(--border) }
+.cal-table td { padding:var(--space-sm) var(--space-md);border-bottom:1px solid var(--border-subtle);color:var(--fg2) }
+.cal-table tr:last-child td { border-bottom:none }
+.cal-accurate { color:var(--green) } .cal-inaccurate { color:var(--red) } .cal-unknown { color:var(--fg3) }
+.cal-summary-row { display:flex;gap:var(--space-xl);margin-bottom:var(--space-lg);flex-wrap:wrap }
+.cal-summary-item { text-align:center }
+.cal-summary-val { font-size:20px;font-weight:700 }
+.cal-summary-label { font-size:10px;color:var(--fg3);text-transform:uppercase }
+
+/* -- decay -- */
+.decay-list { display:flex;flex-direction:column;gap:var(--space-sm) }
+.decay-alert { padding:var(--space-md);background:var(--bg);border-radius:var(--radius);border-inline-start:3px solid var(--red) }
+.decay-alert.stale { border-inline-start-color:var(--orange) }
+.decay-alert.unresolved { border-inline-start-color:var(--purple) }
+.decay-alert .da-header { display:flex;align-items:center;gap:var(--space-sm);font-size:11px;color:var(--fg2);margin-bottom:4px }
+.decay-alert .da-id { font-family:var(--font-mono);font-size:10px;color:var(--fg3) }
+.decay-alert .da-reason { font-size:11px;color:var(--fg3) }
+.type-badge { display:inline-block;padding:1px 6px;border-radius:var(--radius-sm);font-size:10px;font-weight:500 }
+.type-badge.constraint { background:rgba(248,113,113,.15);color:#f87171 }
+.type-badge.risk { background:rgba(251,146,60,.15);color:#fb923c }
+.type-badge.recommendation { background:rgba(96,165,250,.15);color:#60a5fa }
+.type-badge.factual { background:rgba(52,211,153,.15);color:#34d399 }
+.type-badge.estimate { background:rgba(167,139,250,.15);color:#a78bfa }
+.type-badge.feedback { background:rgba(251,191,36,.15);color:#fbbf24 }
+.insight-box { margin-top:var(--space-lg);font-size:12px;color:var(--fg2);padding:var(--space-md);background:var(--bg);border-radius:var(--radius);border-inline-start:2px solid var(--accent-border) }
+.empty-state { text-align:center;padding:60px var(--space-xl);color:var(--fg3) }
+.empty-state h2 { font-size:16px;color:var(--fg2);margin-bottom:var(--space-md) }
+.empty-state p { font-size:12px;max-width:400px;margin:0 auto }
+
+/* -- a11y + responsive -- */
+.skip-link{position:absolute;top:-40px;inset-inline-start:0;background:var(--accent);color:#000;padding:8px 16px;z-index:10000;font-size:14px;font-weight:600;transition:top .2s}
+.skip-link:focus{top:0}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+@media(max-width:768px){
+  .topbar{flex-wrap:wrap;padding:var(--space-md);gap:var(--space-sm)}
+  .topbar h1{font-size:13px}
+  .sprint-select{max-width:100%;font-size:11px}
+  .controls{margin-inline-start:0;width:100%;justify-content:flex-start}
+  .controls select,.controls input[type="date"]{font-size:11px;padding:5px 8px}
+  .dashboard{padding:var(--space-md)}
+  .cards{grid-template-columns:repeat(2,1fr);gap:var(--space-md)}
+  .card{padding:var(--space-md)}
+  .card-value{font-size:22px}
+  .section{padding:var(--space-md)}
+  .section-title{font-size:12px}
+  .bar-label{width:70px;font-size:10px}
+  .bar-count{width:28px;font-size:9px}
+  .velocity-grid{grid-template-columns:repeat(2,1fr)}
+  .velocity-val{font-size:18px}
+  .cal-table{font-size:11px;display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .cal-table th,.cal-table td{padding:var(--space-xs) var(--space-sm);white-space:nowrap}
+  .cal-summary-row{gap:var(--space-lg)}
+  .stacked-legend{gap:var(--space-sm)}
+}
+@media(max-width:480px){
+  .topbar{padding:var(--space-sm)}
+  .dashboard{padding:var(--space-sm)}
+  .cards{grid-template-columns:1fr;gap:var(--space-sm)}
+  .bar-label{width:56px;font-size:9px}
+  .velocity-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<div id="live-status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+<div class="reconnect-banner" id="reconnectBanner" role="status" aria-live="polite"></div>
+<div class="app">
+  <header class="topbar" role="banner">
+    <canvas id="grainLogo" width="256" height="256" style="display:block"></canvas>
+    <div style="flex:1"></div>
+    <select id="sprintSelect" class="sprint-select" aria-label="Select sprint"><option value="__all">All sprints</option></select>
+    <span class="conn-dot" id="connDot" role="status" aria-label="Connection status"></span>
+  </header>
+
+  <main class="dashboard" id="main-content" role="main" aria-label="Harvest analytics workspace">
+    <div class="empty-state" id="emptyState">
+      <h2>Harvest</h2>
+      <p>Point harvest at a directory containing sprint data (claims.json) to begin analysis. Use <code>harvest serve --root /path/to/sprints</code>.</p>
+    </div>
+  </main>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  var API = '';
+  var sprints = [];
+  var selectedSprint = '__all';
+  var dateFrom = '';
+  var dateTo = '';
+
+  // -- SSE with exponential backoff --
+  var sseRetryCount = 0;
+  var sseSource = null;
+
+  function showBanner(count) {
+    var b = document.getElementById('reconnectBanner');
+    if (count > 5) {
+      b.innerHTML = 'Connection lost. <button onclick="sseRetryCount=0;connectSSE()">Retry now</button>';
+    } else if (count > 1) {
+      b.textContent = 'Reconnecting (attempt ' + count + ')...';
+    } else {
+      b.textContent = 'Reconnecting...';
+    }
+    b.classList.add('visible');
+  }
+
+  function hideBanner() { document.getElementById('reconnectBanner').classList.remove('visible'); }
+
+  function connectSSE() {
+    var dot = document.getElementById('connDot');
+    sseSource = new EventSource(API + '/events');
+    sseSource.onopen = function() {
+      sseRetryCount = 0;
+      dot.classList.remove('disconnected');
+      dot.setAttribute('aria-label', 'Connected');
+      if (window._grainSetState) window._grainSetState('idle');
+    };
+    sseSource.onerror = function() {
+      sseSource.close();
+      dot.classList.add('disconnected');
+      dot.setAttribute('aria-label', 'Disconnected');
+      if (window._grainSetState) window._grainSetState('orbit');
+      var delay = Math.min(30000, 1000 * Math.pow(2, sseRetryCount)) + Math.random() * 1000;
+      sseRetryCount++;
+      setTimeout(connectSSE, delay);
+    };
+    sseSource.onmessage = function(e) {
+      try {
+        var msg = JSON.parse(e.data);
+        if (msg.type === 'state') {
+          loadSprints();
+          announce('Sprint data refreshed');
+        }
+      } catch(x) {}
+    };
+  }
+
+  function announce(text) {
+    var ls = document.getElementById('live-status');
+    if (ls) ls.textContent = text;
+  }
+
+  // -- Load sprints --
+  function loadSprints() {
+    fetch(API + '/api/sprints')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        sprints = data.sprints || [];
+        renderSprintSelector();
+        loadDashboard();
+      })
+      .catch(function(err) { console.error('Failed to load sprints:', err); });
+  }
+
+  function renderSprintSelector() {
+    var sel = document.getElementById('sprintSelect');
+    sel.innerHTML = '<option value="__all">All sprints (' + sprints.length + ')</option>' +
+      sprints.map(function(s) {
+        return '<option value="' + esc(s.name) + '"' + (selectedSprint === s.name ? ' selected' : '') + '>' + esc(s.name) + ' (' + s.claimCount + ' claims)</option>';
+      }).join('');
+  }
+
+  // -- Load dashboard data --
+  function loadDashboard() {
+    var db = document.getElementById('main-content');
+    if (sprints.length === 0) {
+      db.innerHTML = '<div class="empty-state"><h2>No Sprints Found</h2><p>No claims.json files found in the root directory. Start harvest with --root pointing to a sprints directory.</p></div>';
+      return;
+    }
+
+    if (selectedSprint === '__all') {
+      loadFullDashboard();
+    } else {
+      loadSprintAnalysis(selectedSprint);
+    }
+  }
+
+  function loadFullDashboard() {
+    var db = document.getElementById('main-content');
+    db.innerHTML = '<div style="padding:40px;color:var(--fg3);">Analyzing...</div>';
+
+    Promise.all([
+      fetch(API + '/api/dashboard').then(function(r) { return r.json(); }),
+      fetch(API + '/api/calibration').then(function(r) { return r.json(); }),
+    ]).then(function(results) {
+      var dash = results[0];
+      var calData = results[1];
+      renderDashboard(dash, dash.decay, calData.calibration);
+      announce('Dashboard loaded: ' + dash.totalClaims + ' claims across ' + dash.sprintCount + ' sprints');
+    }).catch(function(err) {
+      db.innerHTML = '<div style="padding:40px;color:var(--red);">Error: ' + esc(err.message) + '</div>';
+    });
+  }
+
+  function loadSprintAnalysis(name) {
+    var db = document.getElementById('main-content');
+    db.innerHTML = '<div style="padding:40px;color:var(--fg3);">Analyzing...</div>';
+
+    Promise.all([
+      fetch(API + '/api/analysis/' + encodeURIComponent(name)).then(function(r) { return r.json(); }),
+      fetch(API + '/api/decay?days=30').then(function(r) { return r.json(); }),
+      fetch(API + '/api/calibration').then(function(r) { return r.json(); }),
+    ]).then(function(results) {
+      var data = results[0];
+      var decayData = results[1];
+      var calData = results[2];
+      renderDashboard({
+        sprintCount: 1,
+        totalClaims: data.analysis.summary.totalClaims,
+        analysis: data.analysis,
+        velocity: data.velocity,
+      }, decayData.decay, calData.calibration);
+      announce('Sprint "' + name + '" loaded');
+    }).catch(function(err) {
+      db.innerHTML = '<div style="padding:40px;color:var(--red);">Error: ' + esc(err.message) + '</div>';
+    });
+  }
+
+  // -- Render dashboard --
+  function renderDashboard(dash, decay, calibration) {
+    var db = document.getElementById('main-content');
+    var analysis = dash.analysis;
+    var velocity = dash.velocity;
+
+    if (!analysis) {
+      db.innerHTML = '<div class="empty-state"><h2>No Data</h2><p>No analysis data available for the selected sprint(s).</p></div>';
+      return;
+    }
+
+    var summary = analysis.summary || {};
+    var velSummary = velocity ? velocity.summary || {} : {};
+    var decaySummary = decay ? decay.summary || {} : {};
+    var calSummary = calibration ? calibration.summary || {} : {};
+    var decayTotal = (decaySummary.staleCount || 0) + (decaySummary.decayingCount || 0) + (decaySummary.unresolvedCount || 0);
+
+    var html = '';
+
+    // -- Metric cards --
+    html += '<div class="cards" role="region" aria-label="Key metrics">';
+    html += metricCard('Total Claims', dash.totalClaims, summary.averageClaimsPerSprint ? (summary.averageClaimsPerSprint + ' avg/sprint') : (dash.sprintCount + ' sprint(s)'));
+    html += metricCard('Evidence Quality', evidenceScore(analysis.evidenceDistribution), evidenceScoreLabel(analysis.evidenceDistribution));
+    html += metricCard('Velocity', velSummary.avgClaimsPerDay || '--', velSummary.avgDurationDays ? (velSummary.avgDurationDays + 'd avg duration') : 'no timing data');
+    html += metricCard('Accuracy', calSummary.accuracyRate !== null && calSummary.accuracyRate !== undefined ? (calSummary.accuracyRate + '%') : '--', calSummary.matched ? (calSummary.matched + ' predictions scored') : 'no calibration data');
+    html += metricCard('Conflicts', (analysis.statusDistribution || {}).contested || 0, 'contested claims');
+    html += metricCard('Decay Alerts', decayTotal, decaySummary.thresholdDays ? (decaySummary.thresholdDays + 'd threshold') : 'no decay data');
+    html += '</div>';
+
+    // -- Claim type distribution (horizontal bar) --
+    html += '<div class="section" role="region" aria-label="Claim type distribution">';
+    html += '<div class="section-title">Claim Type Distribution</div>';
+    html += renderBarChart(analysis.typeDistribution || {}, dash.totalClaims);
+    html += '</div>';
+
+    // -- Evidence tier breakdown (stacked bar) --
+    html += '<div class="section" role="region" aria-label="Evidence tier breakdown">';
+    html += '<div class="section-title">Evidence Tier Breakdown</div>';
+    html += renderStackedBar(analysis.evidenceDistribution || {}, dash.totalClaims);
+    html += renderBarChart(analysis.evidenceDistribution || {}, dash.totalClaims);
+    html += '</div>';
+
+    // -- Sprint velocity over time (SVG line chart) --
+    if (velocity && velocity.sprints && velocity.sprints.length > 1) {
+      html += '<div class="section" role="region" aria-label="Sprint velocity over time">';
+      html += '<div class="section-title">Sprint Velocity Over Time</div>';
+      html += renderVelocityLineChart(velocity.sprints);
+      html += '<div class="velocity-grid">';
+      html += velocityItem(velSummary.avgDurationDays || '--', 'Avg Duration (days)');
+      html += velocityItem(velSummary.avgClaimsPerDay || '--', 'Avg Claims/Day');
+      html += velocityItem(velSummary.totalStalls || 0, 'Total Stalls');
+      html += velocityItem(velSummary.sprintsAnalyzed || 0, 'Sprints Analyzed');
+      html += '</div>';
+      if (velocity.insight) {
+        html += '<div class="insight-box">' + esc(velocity.insight) + '</div>';
+      }
+      html += '</div>';
+    } else if (velocity) {
+      html += '<div class="section" role="region" aria-label="Sprint velocity">';
+      html += '<div class="section-title">Sprint Velocity</div>';
+      html += '<div class="velocity-grid">';
+      html += velocityItem(velSummary.avgDurationDays || '--', 'Avg Duration (days)');
+      html += velocityItem(velSummary.avgClaimsPerDay || '--', 'Avg Claims/Day');
+      html += velocityItem(velSummary.totalStalls || 0, 'Total Stalls');
+      html += velocityItem(velSummary.sprintsAnalyzed || 0, 'Sprints Analyzed');
+      html += '</div>';
+      if (velocity.insight) {
+        html += '<div class="insight-box">' + esc(velocity.insight) + '</div>';
+      }
+      html += '</div>';
+    }
+
+    // -- Patterns: recurring themes from tags --
+    var tags = analysis.tagFrequency || {};
+    var tagEntries = Object.entries(tags).sort(function(a, b) { return b[1] - a[1]; });
+    if (tagEntries.length > 0) {
+      html += '<div class="section" role="region" aria-label="Detected patterns">';
+      html += '<div class="section-title">Recurring Themes (' + tagEntries.length + ')</div>';
+      html += '<div class="pattern-list">';
+      var shown = tagEntries.slice(0, 15);
+      for (var i = 0; i < shown.length; i++) {
+        var tag = shown[i];
+        html += '<div class="pattern-item">';
+        html += '<div class="pat-name">' + esc(tag[0]) + '</div>';
+        html += '<div class="pat-desc">' + tag[1] + ' claim(s) tagged with this theme</div>';
+        html += '</div>';
+      }
+      if (tagEntries.length > 15) {
+        html += '<div style="padding:var(--space-md);color:var(--fg3);font-size:11px;">...and ' + (tagEntries.length - 15) + ' more themes</div>';
+      }
+      html += '</div></div>';
+    }
+
+    // -- Monocultures (type concentration) --
+    if (analysis.monocultures && analysis.monocultures.length > 0) {
+      html += '<div class="section" role="region" aria-label="Type monocultures">';
+      html += '<div class="section-title">Type Monocultures</div>';
+      html += '<div class="pattern-list">';
+      for (var m = 0; m < analysis.monocultures.length; m++) {
+        var mono = analysis.monocultures[m];
+        html += '<div class="pattern-item anti">';
+        html += '<div class="pat-name">' + esc(mono.sprint) + '</div>';
+        html += '<div class="pat-desc">' + mono.ratio + '% of claims are "' + esc(mono.dominantType) + '" -- diversity may be lacking</div>';
+        html += '</div>';
+      }
+      html += '</div></div>';
+    }
+
+    // -- Calibration: accuracy table --
+    if (calibration) {
+      html += '<div class="section" role="region" aria-label="Calibration accuracy">';
+      html += '<div class="section-title">Prediction Calibration</div>';
+      html += renderCalibration(calibration);
+      html += '</div>';
+    }
+
+    // -- Decay alerts --
+    if (decay) {
+      var alerts = [].concat(
+        (decay.decaying || []).map(function(d) { d.severity = 'decaying'; return d; }),
+        (decay.stale || []).map(function(d) { d.severity = 'stale'; return d; }),
+        (decay.unresolved || []).map(function(d) { d.severity = 'unresolved'; return d; })
+      );
+
+      html += '<div class="section" role="region" aria-label="Decay alerts">';
+      html += '<div class="section-title">Decay Alerts (' + alerts.length + ')</div>';
+      if (alerts.length === 0) {
+        html += '<div style="padding:var(--space-lg);color:var(--fg3);font-size:12px;text-align:center;">No decay detected. Knowledge base looks fresh.</div>';
+      } else {
+        html += '<div class="decay-list">';
+        var maxAlerts = Math.min(alerts.length, 20);
+        for (var a = 0; a < maxAlerts; a++) {
+          var al = alerts[a];
+          html += '<div class="decay-alert ' + esc(al.severity) + '">';
+          html += '<div class="da-header">';
+          html += '<span class="da-id">' + esc(al.id || '-') + '</span>';
+          html += '<span class="type-badge ' + esc(al.type || '') + '">' + esc(al.type || '-') + '</span>';
+          if (al.sprint) html += '<span style="font-size:10px;color:var(--fg3);">' + esc(al.sprint) + '</span>';
+          if (al.ageDays !== undefined) html += '<span style="font-size:10px;color:var(--fg3);margin-left:auto;">' + al.ageDays + 'd old</span>';
+          html += '</div>';
+          html += '<div class="da-reason">' + esc(al.reason || '') + '</div>';
+          html += '</div>';
+        }
+        if (alerts.length > 20) {
+          html += '<div style="padding:var(--space-md);color:var(--fg3);font-size:11px;">...and ' + (alerts.length - 20) + ' more</div>';
+        }
+        html += '</div>';
+      }
+      if (decay.insight) {
+        html += '<div class="insight-box">' + esc(decay.insight) + '</div>';
+      }
+      html += '</div>';
+    }
+
+    db.innerHTML = html;
+  }
+
+  // -- Render helpers --
+  function metricCard(title, value, sub) {
+    return '<div class="card" tabindex="0"><div class="card-title">' + esc(title) + '</div><div class="card-value">' + esc(String(value)) + '</div><div class="card-sub">' + esc(sub) + '</div></div>';
+  }
+
+  function velocityItem(val, label) {
+    return '<div class="velocity-item"><div class="velocity-val">' + esc(String(val)) + '</div><div class="velocity-label">' + esc(label) + '</div></div>';
+  }
+
+  function evidenceScore(dist) {
+    if (!dist) return '--';
+    var ranks = { stated: 1, web: 2, documented: 3, tested: 4, production: 5 };
+    var total = 0, count = 0;
+    for (var k in dist) {
+      if (ranks[k]) { total += ranks[k] * dist[k]; count += dist[k]; }
+    }
+    if (count === 0) return '--';
+    return (total / count).toFixed(1) + '/5';
+  }
+
+  function evidenceScoreLabel(dist) {
+    if (!dist) return 'no data';
+    var ranks = { stated: 1, web: 2, documented: 3, tested: 4, production: 5 };
+    var total = 0, count = 0;
+    for (var k in dist) {
+      if (ranks[k]) { total += ranks[k] * dist[k]; count += dist[k]; }
+    }
+    if (count === 0) return 'no data';
+    var avg = total / count;
+    if (avg >= 4) return 'strong evidence base';
+    if (avg >= 3) return 'moderate evidence';
+    if (avg >= 2) return 'needs stronger validation';
+    return 'weak -- mostly stated/web';
+  }
+
+  function renderBarChart(distribution, total) {
+    var entries = Object.entries(distribution).sort(function(a, b) { return b[1] - a[1]; });
+    if (entries.length === 0) return '<div style="color:var(--fg3);font-size:12px;">No data</div>';
+
+    var max = Math.max.apply(null, entries.map(function(e) { return e[1]; }));
+    var html = '<div class="bar-chart" role="list" aria-label="Bar chart">';
+    for (var i = 0; i < entries.length; i++) {
+      var label = entries[i][0], count = entries[i][1];
+      var pct = max > 0 ? Math.round(count / max * 100) : 0;
+      html += '<div class="bar-row" role="listitem" aria-label="' + esc(label) + ': ' + count + '">';
+      html += '<span class="bar-label">' + esc(label) + '</span>';
+      html += '<div class="bar-track"><div class="bar-fill ' + esc(label) + '" style="width:' + pct + '%">' + count + '</div></div>';
+      html += '<span class="bar-count">' + (total > 0 ? Math.round(count / total * 100) : 0) + '%</span>';
+      html += '</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  var EVIDENCE_COLORS = {
+    stated: '#64748b', web: '#94a3b8', documented: '#60a5fa',
+    tested: '#34d399', production: '#22d3ee'
+  };
+  var EVIDENCE_ORDER = ['stated', 'web', 'documented', 'tested', 'production'];
+
+  function renderStackedBar(distribution, total) {
+    if (!distribution || total === 0) return '';
+    var html = '<div class="stacked-bar" role="img" aria-label="Evidence tier stacked bar">';
+    for (var i = 0; i < EVIDENCE_ORDER.length; i++) {
+      var tier = EVIDENCE_ORDER[i];
+      var count = distribution[tier] || 0;
+      if (count === 0) continue;
+      var pct = (count / total * 100).toFixed(1);
+      html += '<div class="stacked-segment" style="width:' + pct + '%;background:' + EVIDENCE_COLORS[tier] + ';" title="' + esc(tier) + ': ' + count + ' (' + pct + '%)"></div>';
+    }
+    html += '</div>';
+    html += '<div class="stacked-legend">';
+    for (var j = 0; j < EVIDENCE_ORDER.length; j++) {
+      var t = EVIDENCE_ORDER[j];
+      var c = distribution[t] || 0;
+      if (c === 0) continue;
+      html += '<div class="stacked-legend-item"><span class="stacked-legend-swatch" style="background:' + EVIDENCE_COLORS[t] + ';"></span>' + esc(t) + ' (' + c + ')</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  // -- SVG velocity line chart --
+  function renderVelocityLineChart(sprintData) {
+    var valid = sprintData.filter(function(s) { return s.claimsPerDay !== null; });
+    if (valid.length < 2) return '';
+
+    var W = 600, H = 160, PAD_L = 40, PAD_R = 20, PAD_T = 16, PAD_B = 40;
+    var chartW = W - PAD_L - PAD_R;
+    var chartH = H - PAD_T - PAD_B;
+    var maxVal = Math.max.apply(null, valid.map(function(s) { return s.claimsPerDay; }));
+    if (maxVal === 0) maxVal = 1;
+
+    var points = [];
+    for (var i = 0; i < valid.length; i++) {
+      var x = PAD_L + (valid.length === 1 ? chartW / 2 : (i / (valid.length - 1)) * chartW);
+      var y = PAD_T + chartH - (valid[i].claimsPerDay / maxVal) * chartH;
+      points.push({ x: x, y: y, sprint: valid[i].sprint, val: valid[i].claimsPerDay });
+    }
+
+    // Build SVG path
+    var pathD = 'M' + points.map(function(p) { return p.x + ',' + p.y; }).join(' L');
+    // Area fill
+    var areaD = pathD + ' L' + points[points.length - 1].x + ',' + (PAD_T + chartH) + ' L' + points[0].x + ',' + (PAD_T + chartH) + ' Z';
+
+    var svg = '<div class="velocity-chart-wrap">';
+    svg += '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Sprint velocity line chart" xmlns="http://www.w3.org/2000/svg">';
+
+    // Y-axis gridlines
+    var gridSteps = 4;
+    for (var g = 0; g <= gridSteps; g++) {
+      var gy = PAD_T + (g / gridSteps) * chartH;
+      var gv = ((gridSteps - g) / gridSteps * maxVal).toFixed(1);
+      svg += '<line x1="' + PAD_L + '" y1="' + gy + '" x2="' + (W - PAD_R) + '" y2="' + gy + '" stroke="#1e293b" stroke-width="0.5"/>';
+      svg += '<text x="' + (PAD_L - 6) + '" y="' + (gy + 3) + '" fill="#64748b" font-size="9" text-anchor="end" font-family="system-ui,sans-serif">' + gv + '</text>';
+    }
+
+    // Area + line
+    svg += '<path d="' + areaD + '" fill="rgba(251,146,60,0.08)" />';
+    svg += '<path d="' + pathD + '" fill="none" stroke="#fb923c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+
+    // Data points + labels
+    for (var p = 0; p < points.length; p++) {
+      svg += '<circle cx="' + points[p].x + '" cy="' + points[p].y + '" r="3.5" fill="#fb923c" stroke="#0a0e1a" stroke-width="1.5"/>';
+      // Sprint name on x-axis
+      var labelX = points[p].x;
+      var truncName = points[p].sprint.length > 12 ? points[p].sprint.slice(0, 11) + '..' : points[p].sprint;
+      svg += '<text x="' + labelX + '" y="' + (H - 8) + '" fill="#64748b" font-size="8" text-anchor="middle" font-family="system-ui,sans-serif">' + esc(truncName) + '</text>';
+    }
+
+    // Y-axis label
+    svg += '<text x="8" y="' + (PAD_T + chartH / 2) + '" fill="#64748b" font-size="8" text-anchor="middle" transform="rotate(-90,8,' + (PAD_T + chartH / 2) + ')" font-family="system-ui,sans-serif">claims/day</text>';
+
+    svg += '</svg></div>';
+    return svg;
+  }
+
+  // -- Calibration section --
+  function renderCalibration(cal) {
+    var s = cal.summary || {};
+    var html = '';
+
+    // Summary row
+    html += '<div class="cal-summary-row">';
+    html += calSummaryItem(s.totalEstimates || 0, 'Estimates');
+    html += calSummaryItem(s.matched || 0, 'Scored');
+    html += calSummaryItem(s.unmatched || 0, 'Unmatched');
+    html += calSummaryItem(s.accuracyRate !== null && s.accuracyRate !== undefined ? (s.accuracyRate + '%') : '--', 'Accuracy');
+    html += '</div>';
+
+    // Confidence calibration
+    var byConf = cal.calibrationByConfidence || {};
+    var confKeys = Object.keys(byConf);
+    if (confKeys.length > 0) {
+      html += '<div style="margin-bottom:var(--space-lg);">';
+      html += '<div style="font-size:11px;color:var(--fg3);text-transform:uppercase;letter-spacing:0.3px;margin-bottom:var(--space-sm);">Accuracy by Confidence Level</div>';
+      html += '<div class="bar-chart">';
+      for (var i = 0; i < confKeys.length; i++) {
+        var k = confKeys[i];
+        var v = byConf[k];
+        var color = v >= 70 ? 'var(--green)' : v >= 40 ? 'var(--orange)' : 'var(--red)';
+        html += '<div class="bar-row">';
+        html += '<span class="bar-label">' + esc(k) + '</span>';
+        html += '<div class="bar-track"><div style="width:' + v + '%;height:100%;border-radius:var(--radius-sm);background:' + color + ';display:flex;align-items:center;padding-inline-start:6px;font-size:10px;color:var(--bg);font-weight:600;">' + v + '%</div></div>';
+        html += '</div>';
+      }
+      html += '</div></div>';
+    }
+
+    // Scored predictions table
+    var scored = cal.scored || [];
+    if (scored.length > 0) {
+      html += '<table class="cal-table" aria-label="Scored predictions">';
+      html += '<thead><tr><th>Estimate</th><th>Calibration</th><th>Sprint</th><th>Result</th><th>Delta</th></tr></thead>';
+      html += '<tbody>';
+      var maxRows = Math.min(scored.length, 20);
+      for (var j = 0; j < maxRows; j++) {
+        var row = scored[j];
+        var resultClass = row.accurate === true ? 'cal-accurate' : row.accurate === false ? 'cal-inaccurate' : 'cal-unknown';
+        var resultText = row.accurate === true ? 'accurate' : row.accurate === false ? 'inaccurate' : '--';
+        html += '<tr>';
+        html += '<td><code>' + esc(row.estimateId) + '</code></td>';
+        html += '<td><code>' + esc(row.calibrationId) + '</code></td>';
+        html += '<td>' + esc(row.sprint) + '</td>';
+        html += '<td class="' + resultClass + '">' + resultText + '</td>';
+        html += '<td>' + (row.delta !== null && row.delta !== undefined ? row.delta : '--') + '</td>';
+        html += '</tr>';
+      }
+      if (scored.length > 20) {
+        html += '<tr><td colspan="5" style="color:var(--fg3);">...and ' + (scored.length - 20) + ' more</td></tr>';
+      }
+      html += '</tbody></table>';
+    }
+
+    // Unmatched estimates
+    var unmatched = cal.unmatchedEstimates || [];
+    if (unmatched.length > 0) {
+      html += '<div style="margin-top:var(--space-lg);">';
+      html += '<div style="font-size:11px;color:var(--fg3);text-transform:uppercase;letter-spacing:0.3px;margin-bottom:var(--space-sm);">Unmatched Estimates (' + unmatched.length + ')</div>';
+      html += '<div class="decay-list">';
+      var maxUnmatched = Math.min(unmatched.length, 10);
+      for (var u = 0; u < maxUnmatched; u++) {
+        var um = unmatched[u];
+        html += '<div class="decay-alert stale">';
+        html += '<div class="da-header"><span class="da-id">' + esc(um.id) + '</span>';
+        if (um.sprint) html += '<span style="font-size:10px;color:var(--fg3);">' + esc(um.sprint) + '</span>';
+        if (um.age !== null) html += '<span style="font-size:10px;color:var(--fg3);margin-left:auto;">' + um.age + 'd old</span>';
+        html += '</div>';
+        html += '<div class="da-reason">' + esc(um.text || 'No description') + '</div>';
+        html += '</div>';
+      }
+      html += '</div></div>';
+    }
+
+    if (cal.insight) {
+      html += '<div class="insight-box">' + esc(cal.insight) + '</div>';
+    }
+
+    return html;
+  }
+
+  function calSummaryItem(val, label) {
+    var color = 'var(--accent)';
+    if (label === 'Accuracy') {
+      var num = parseInt(val);
+      if (!isNaN(num)) color = num >= 70 ? 'var(--green)' : num >= 40 ? 'var(--orange)' : 'var(--red)';
+    }
+    return '<div class="cal-summary-item"><div class="cal-summary-val" style="color:' + color + ';">' + esc(String(val)) + '</div><div class="cal-summary-label">' + esc(label) + '</div></div>';
+  }
+
+  // -- Events --
+  document.getElementById('sprintSelect').addEventListener('change', function(e) {
+    selectedSprint = e.target.value;
+    loadDashboard();
+  });
+
+  // -- Helpers --
+  function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+  // -- Keyboard navigation --
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      selectedSprint = '__all';
+      document.getElementById('sprintSelect').value = '__all';
+      loadDashboard();
+    }
+    // R to refresh
+    if (e.key === 'r' && !e.ctrlKey && !e.metaKey && e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT') {
+      loadSprints();
+    }
+  });
+
+  // -- Init --
+  connectSSE();
+  loadSprints();
+})();
+</script>
+<script>
+(function() {
+  var LW = 0.025;
+  var TOOL = { name: 'Harvest', letter: 'H', color: '#fb923c' };
+  var _c, _ctx, _s, _cx, _textStart, _restText, _font;
+  var _state = 'drawon', _start = null, _raf, _pendingState = null;
+  var _openPts = null, _closedPts = null;
+
+  function _lerp(a,b,t){ return {x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t}; }
+  function _easeInOut(t){ return t<0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2; }
+
+  function _bracket(ctx, s, color, alpha) {
+    var lw=s*LW, cx=_cx, cy=s/2, gw=s*0.72, gh=s*0.68;
+    var topY=cy-gh/2, botY=cy+gh/2, fe=gw*0.30;
+    if(alpha!==undefined) ctx.globalAlpha=alpha;
+    ctx.strokeStyle=color; ctx.lineWidth=lw; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.beginPath(); ctx.moveTo(cx,topY); ctx.lineTo(cx-fe,topY);
+    ctx.bezierCurveTo(cx-gw*0.52,cy-gh*0.32, cx-gw*0.52,cy+gh*0.24, cx-fe,botY);
+    ctx.lineTo(cx,botY); ctx.stroke();
+    if(alpha!==undefined) ctx.globalAlpha=1;
+  }
+
+  function _drawBracket(ctx, s, color, progress) {
+    var lw=s*LW, cx=_cx, cy=s/2, gw=s*0.72, gh=s*0.68;
+    var topY=cy-gh/2, botY=cy+gh/2, fe=gw*0.30;
+    ctx.strokeStyle=color; ctx.lineWidth=lw; ctx.lineCap='round'; ctx.lineJoin='round';
+    var seg1=0.12, seg2=0.72;
+    ctx.beginPath();
+    if(progress<=seg1){ctx.moveTo(cx,topY);ctx.lineTo(cx-fe*(progress/seg1),topY);}
+    else if(progress<=seg1+seg2){ctx.moveTo(cx,topY);ctx.lineTo(cx-fe,topY);ctx.stroke();ctx.beginPath();
+      var bt=(progress-seg1)/seg2;
+      var p0={x:cx-fe,y:topY},p1={x:cx-gw*0.52,y:cy-gh*0.32},p2={x:cx-gw*0.52,y:cy+gh*0.24},p3={x:cx-fe,y:botY};
+      var q1=_lerp(p0,p1,bt),q2=_lerp(p1,p2,bt),q3=_lerp(p2,p3,bt);
+      var r1=_lerp(q1,q2,bt),r2=_lerp(q2,q3,bt),s1=_lerp(r1,r2,bt);
+      ctx.moveTo(p0.x,p0.y);ctx.bezierCurveTo(q1.x,q1.y,r1.x,r1.y,s1.x,s1.y);}
+    else{ctx.moveTo(cx,topY);ctx.lineTo(cx-fe,topY);
+      ctx.bezierCurveTo(cx-gw*0.52,cy-gh*0.32, cx-gw*0.52,cy+gh*0.24, cx-fe,botY);
+      ctx.lineTo((cx-fe)+fe*((progress-seg1-seg2)/(1-seg1-seg2)),botY);}
+    ctx.stroke();
+  }
+
+  function _drawName(ctx, s, spellP, alpha) {
+    var a = alpha !== undefined ? alpha : 1;
+    ctx.font = _font; ctx.textBaseline = 'middle';
+    var cy = s/2 + s*0.02;
+    ctx.globalAlpha = a; ctx.fillStyle = TOOL.color; ctx.textAlign = 'center';
+    ctx.fillText(TOOL.letter, _cx, cy);
+    if(_restText.length > 0 && spellP > 0) {
+      var n = _restText.length, num = Math.min(n, Math.ceil(spellP * n));
+      var rawP = spellP * n, charP = num >= n ? 1 : rawP - Math.floor(rawP);
+      var full = charP >= 1 ? num : num - 1;
+      ctx.fillStyle = '#e2e8f0'; ctx.textAlign = 'left';
+      if(full > 0) { ctx.globalAlpha = a; ctx.fillText(_restText.slice(0, full), _textStart, cy); }
+      if(full < num) {
+        var prevW = full > 0 ? ctx.measureText(_restText.slice(0, full)).width : 0;
+        ctx.globalAlpha = a * (0.3 + 0.7 * charP);
+        ctx.fillText(_restText[full], _textStart + prevW, cy);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function _getOpenPts(s) {
+    if(_openPts && _openPts._s === s) return _openPts;
+    var cx=_cx, cy=s/2, gw=s*0.72, gh=s*0.68, topY=cy-gh/2, botY=cy+gh/2, fe=gw*0.30;
+    var pts=[];
+    for(var t=0;t<=1;t+=0.05) pts.push({x:cx-fe*t,y:topY});
+    var p0={x:cx-fe,y:topY},p1={x:cx-gw*0.52,y:cy-gh*0.32},p2={x:cx-gw*0.52,y:cy+gh*0.24},p3={x:cx-fe,y:botY};
+    for(var t=0;t<=1;t+=0.02){var u=1-t;pts.push({x:u*u*u*p0.x+3*u*u*t*p1.x+3*u*t*t*p2.x+t*t*t*p3.x,y:u*u*u*p0.y+3*u*u*t*p1.y+3*u*t*t*p2.y+t*t*t*p3.y});}
+    for(var t=0;t<=1;t+=0.05) pts.push({x:(cx-fe)+fe*t,y:botY});
+    pts._s=s; _openPts=pts; return pts;
+  }
+
+  function _getClosedPts(s) {
+    if(_closedPts && _closedPts._s === s) return _closedPts;
+    var cx=_cx, cy=s/2, gw=s*0.72, gh=s*0.68, topY=cy-gh/2, botY=cy+gh/2, fe=gw*0.30;
+    var pts=[];
+    for(var t=0;t<=1;t+=0.03) pts.push({x:cx-fe*t,y:topY});
+    var lp0={x:cx-fe,y:topY},lp1={x:cx-gw*0.52,y:cy-gh*0.32},lp2={x:cx-gw*0.52,y:cy+gh*0.24},lp3={x:cx-fe,y:botY};
+    for(var t=0;t<=1;t+=0.02){var u=1-t;pts.push({x:u*u*u*lp0.x+3*u*u*t*lp1.x+3*u*t*t*lp2.x+t*t*t*lp3.x,y:u*u*u*lp0.y+3*u*u*t*lp1.y+3*u*t*t*lp2.y+t*t*t*lp3.y});}
+    for(var t=0;t<=1;t+=0.03) pts.push({x:(cx-fe)+2*fe*t,y:botY});
+    var rp0={x:cx+fe,y:botY},rp1={x:cx+gw*0.52,y:cy+gh*0.24},rp2={x:cx+gw*0.52,y:cy-gh*0.32},rp3={x:cx+fe,y:topY};
+    for(var t=0;t<=1;t+=0.02){var u=1-t;pts.push({x:u*u*u*rp0.x+3*u*u*t*rp1.x+3*u*t*t*rp2.x+t*t*t*rp3.x,y:u*u*u*rp0.y+3*u*u*t*rp1.y+3*u*t*t*rp2.y+t*t*t*rp3.y});}
+    for(var t=0;t<=1;t+=0.03) pts.push({x:(cx+fe)-fe*t,y:topY});
+    pts._s=s; _closedPts=pts; return pts;
+  }
+
+  function _frame(ts) {
+    if(!_c) return;
+    if(!_start) _start = ts;
+    var e = ts - _start, ctx = _ctx, s = _s;
+    ctx.clearRect(0, 0, _c.width, s);
+    switch(_state) {
+      case 'drawon':
+        var bp = _easeInOut(Math.min(1, e / 1400));
+        _drawBracket(ctx, s, TOOL.color, bp);
+        var la = Math.max(0, Math.min(1, (e - 900) / 400));
+        if(la > 0) {
+          ctx.font = _font; ctx.textBaseline = 'middle';
+          ctx.globalAlpha = la; ctx.fillStyle = TOOL.color; ctx.textAlign = 'center';
+          ctx.fillText(TOOL.letter, _cx, s/2 + s*0.02); ctx.globalAlpha = 1;
+        }
+        if(e > 1100 && _restText.length > 0) {
+          var sp = Math.min(1, (e - 1100) / (120 * _restText.length));
+          var n = _restText.length, num = Math.min(n, Math.ceil(sp * n));
+          if(num > 0) {
+            ctx.font = _font; ctx.textBaseline = 'middle';
+            var cy = s/2 + s*0.02, rawP = sp * n;
+            var charP = num >= n ? 1 : rawP - Math.floor(rawP);
+            var full = charP >= 1 ? num : num - 1;
+            ctx.fillStyle = '#e2e8f0'; ctx.textAlign = 'left';
+            if(full > 0) ctx.fillText(_restText.slice(0, full), _textStart, cy);
+            if(full < num) {
+              var prevW = full > 0 ? ctx.measureText(_restText.slice(0, full)).width : 0;
+              ctx.globalAlpha = 0.3 + 0.7 * charP;
+              ctx.fillText(_restText[full], _textStart + prevW, cy); ctx.globalAlpha = 1;
+            }
+          }
+        }
+        if(e > 1100 + 120 * _restText.length + 300) { _state = _pendingState || 'idle'; _pendingState = null; _start = ts; }
+        break;
+      case 'idle':
+        var breathe = 0.5 + 0.5 * (0.5 + 0.5 * Math.sin(e / 1200));
+        _bracket(ctx, s, TOOL.color, breathe);
+        var textBreath = 0.88 + 0.12 * (0.5 + 0.5 * Math.sin(e / 1800));
+        _drawName(ctx, s, 1, textBreath);
+        break;
+      case 'shimmer':
+        _bracket(ctx, s, TOOL.color, 0.2);
+        var spts = _getOpenPts(s), sspeed = 1800;
+        var spos = (e % sspeed) / sspeed;
+        var sidx = Math.floor(spos * (spts.length - 1));
+        var spt = spts[sidx];
+        var sgrad = ctx.createRadialGradient(spt.x, spt.y, 0, spt.x, spt.y, s * 0.10);
+        sgrad.addColorStop(0, TOOL.color + 'aa'); sgrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = sgrad; ctx.fillRect(0, 0, _c.width, s);
+        var strailFrac = 0.18;
+        var si0 = Math.max(0, Math.floor((spos - strailFrac) * (spts.length - 1)));
+        ctx.strokeStyle = TOOL.color; ctx.lineWidth = s * LW; ctx.lineCap = 'round';
+        ctx.globalAlpha = 0.85; ctx.beginPath(); ctx.moveTo(spts[si0].x, spts[si0].y);
+        for(var si = si0 + 1; si <= sidx; si++) ctx.lineTo(spts[si].x, spts[si].y);
+        ctx.stroke(); ctx.globalAlpha = 1;
+        _drawName(ctx, s, 1, undefined);
+        break;
+      case 'orbit':
+        _bracket(ctx, s, TOOL.color, 0.15);
+        _drawName(ctx, s, 1, 0.4);
+        var pts = _getOpenPts(s), speed = 1200, trailFrac = 0.28;
+        var halfCycle = (e % speed) / speed;
+        var cycle = (e % (speed * 2)) / (speed * 2);
+        var pos = cycle < 0.5 ? halfCycle : 1 - halfCycle;
+        var headIdx = Math.floor(pos * (pts.length - 1));
+        var trailLen = Math.floor(trailFrac * pts.length);
+        var dir = cycle < 0.5 ? 1 : -1;
+        ctx.lineWidth = s * LW; ctx.lineCap = 'round';
+        for(var i = 0; i < trailLen; i++) {
+          var idx = headIdx - dir * (trailLen - i);
+          if(idx < 0 || idx >= pts.length) continue;
+          var nxt = idx + dir;
+          if(nxt < 0 || nxt >= pts.length) continue;
+          ctx.globalAlpha = (i / trailLen) * 0.7; ctx.strokeStyle = TOOL.color;
+          ctx.beginPath(); ctx.moveTo(pts[idx].x, pts[idx].y); ctx.lineTo(pts[nxt].x, pts[nxt].y); ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+        break;
+      case 'dim':
+        var dim = 0.1 + 0.08 * Math.sin(e / 2000);
+        _bracket(ctx, s, TOOL.color, dim);
+        _drawName(ctx, s, 1, 0.2);
+        break;
+    }
+    _raf = requestAnimationFrame(_frame);
+  }
+
+  _c = document.getElementById('grainLogo');
+  if(_c) {
+    _c.style.width = '0px';
+    _s = 256;
+    var targetFontPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    var fontRatio = 0.38;
+    var dh = 64;
+    _c.height = _s; _c.width = 1024;
+    _ctx = _c.getContext('2d');
+    _cx = _s / 2;
+    _restText = TOOL.name.slice(1);
+    _font = '800 ' + (_s * fontRatio) + 'px -apple-system,"SF Pro Display","Helvetica Neue",Arial,sans-serif';
+    _ctx.font = _font;
+    var letterW = _ctx.measureText(TOOL.letter).width;
+    var restW = _restText.length > 0 ? _ctx.measureText(_restText).width : 0;
+    _textStart = _cx + letterW / 2 + _s * 0.02;
+    var totalW = Math.ceil(_textStart + restW + _s * 0.12);
+    _c.width = totalW;
+    _ctx = _c.getContext('2d');
+    _c.style.height = dh + 'px';
+    _c.style.width = Math.round(totalW / _s * dh) + 'px';
+    _state = 'drawon'; _start = null;
+    _raf = requestAnimationFrame(_frame);
+  }
+
+  window._grainSetState = function(state) {
+    if(_state === state) return;
+    if(_state === 'drawon') { _pendingState = state; return; }
+    _state = state; _start = null;
+    if(!_raf) _raf = requestAnimationFrame(_frame);
+  };
+})();
+</script>
+</body>
+</html>

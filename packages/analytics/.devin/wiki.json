@@ -1,0 +1,30 @@
+{
+  "repo_notes": [
+    {
+      "content": "Harvest is the calibration and learning-analytics layer of the grainulation ecosystem. It looks ACROSS sprints (not within one) to score past predictions against real outcomes, surface patterns in what kinds of claims turn out right or wrong, and identify stale knowledge that needs refresh. Harvest closes the feedback loop — without harvest, research sprints never learn from their own track record.",
+      "author": "grainulation-core"
+    },
+    {
+      "content": "When documenting harvest, emphasize: (1) the calibration model (Brier scores for estimates, outcome tagging for recommendations), (2) the cross-sprint query model (aggregates over many claims.json/compilation.json), (3) harvest produces dashboards for decision-makers, NOT for the agent inside a sprint, (4) harvest is read-mostly — it does not mutate sprint data.",
+      "author": "grainulation-core"
+    }
+  ],
+  "pages": [
+    {
+      "title": "Quick start",
+      "purpose": "Install via npx @grainulation/harvest, the 30-second pitch on scoring past predictions, a first calibration run on a set of closed sprints."
+    },
+    {
+      "title": "Core concepts",
+      "purpose": "Calibration model (how predictions are scored, Brier, outcome tagging), staleness detection (what signals indicate a claim needs refresh), cross-sprint aggregation, analytics dashboards, the /calibrate slash command lifecycle."
+    },
+    {
+      "title": "API reference",
+      "purpose": "CLI (bin/harvest.js), library exports, dashboard templates, calibration file formats, exit codes."
+    },
+    {
+      "title": "Ecosystem integration",
+      "purpose": "How harvest relates to wheat (harvest reads wheat claims.json and compilation.json across many sprints), barn (uses barn's sprint detection + manifest readers), silo (harvest annotates silo packs with calibration outcomes to surface which packs actually help), orchard (orchard pulls harvest's calibration scores into the portfolio dashboard)."
+    }
+  ]
+}

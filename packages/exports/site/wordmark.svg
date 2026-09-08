@@ -1,0 +1,8 @@
+<svg width="400" height="80" viewBox="0 0 400 80" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="80" rx="12" fill="#0a0e1a"/>
+  <g transform="translate(159, 10.5) scale(1.55)">
+    <path d="M22,8 L16,8 C10.5,12.5 10.5,25.5 16,30 L22,30" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <text x="23" y="19" text-anchor="middle" dominant-baseline="central" fill="#a78bfa" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">M</text>
+    <text x="29.5" y="19" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">ill</text>
+  </g>
+</svg>

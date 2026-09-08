@@ -1,0 +1,71 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://github.com/grainulation/bean/schemas/run.schema.json",
+	"title": "bean run contract (.bean/run.json)",
+	"description": "Only the fields the compiler reads. Effort/verifier policy stay doc rules, not config.",
+	"type": "object",
+	"additionalProperties": true,
+	"properties": {
+		"task_id": { "type": "string" },
+		"stakes": { "enum": ["low", "medium", "high"] },
+		"evidence_bar": {
+			"type": "object",
+			"properties": {
+				"load_bearing": {
+					"enum": ["stated", "web", "documented", "tested", "production"]
+				},
+				"recommendation": {
+					"enum": ["stated", "web", "documented", "tested", "production"]
+				}
+			}
+		},
+		"budget": {
+			"type": "object",
+			"properties": { "max_rounds": { "type": "integer", "minimum": 1 } }
+		},
+		"mutation_policy": {
+			"type": "object",
+			"properties": {
+				"reversible": { "type": "string" },
+				"destructive": { "type": "string" }
+			}
+		},
+		"verification": {
+			"type": "object",
+			"description": "2.0 oracle gate. mode=compat (default, == 1.x), advisory (warn only), strict (load-bearing claims must be verified or a named residual).",
+			"properties": {
+				"mode": { "enum": ["compat", "advisory", "strict"] }
+			}
+		},
+		"oracles": {
+			"type": "object",
+			"description": "2.0 registry of declared oracles (capability model: a claim may only gate on an oracle named here). Keep entries open-source clean — no internal identifiers in cmd/inputs.",
+			"additionalProperties": {
+				"type": "object",
+				"required": ["cmd"],
+				"properties": {
+					"cmd": {
+						"type": "array",
+						"minItems": 1,
+						"items": { "type": "string" },
+						"description": "argv array (shell:false), run by bean-verify; claim JSON is passed on stdin."
+					},
+					"oracle_digest": {
+						"type": "string",
+						"description": "Optional pin; if set, bean-check treats a verdict from a different oracle_digest as stale."
+					},
+					"inputs": {
+						"type": "array",
+						"items": { "type": "string" },
+						"description": "Explicit input file paths hashed into the verdict's inputs_hash (no glob expansion in Core)."
+					},
+					"trust": {
+						"enum": ["dev_oracle", "answer_key"],
+						"description": "Normative, not enforced: dev_oracle gates; answer_key is report-only. bean-check cannot PROVE legitimacy — see the spec."
+					},
+					"timeout_ms": { "type": "integer", "minimum": 1 }
+				}
+			}
+		}
+	}
+}

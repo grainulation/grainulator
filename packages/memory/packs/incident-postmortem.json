@@ -1,0 +1,219 @@
+{
+  "name": "Incident Postmortem",
+  "description": "Structured framework for blameless incident review sprints. Covers timeline reconstruction, root cause analysis, contributing factors, action items, and organizational learning. Aligned with SRE best practices.",
+  "version": "1.0.0",
+  "claims": [
+    {
+      "id": "inc-001",
+      "type": "constraint",
+      "topic": "blameless postmortem culture",
+      "content": "Postmortems must be blameless. Focus on systemic causes, not individual mistakes. Language matters: 'the deploy pipeline lacked rollback automation' not 'engineer X deployed without testing'. Blame drives hiding, which prevents learning.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": "Google SRE Book, Chapter 15",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["postmortem", "blameless", "culture", "sre"]
+    },
+    {
+      "id": "inc-002",
+      "type": "constraint",
+      "topic": "incident timeline",
+      "content": "Every postmortem must include a precise timeline: (1) First customer impact (not first alert). (2) Detection time. (3) Escalation and response milestones. (4) Mitigation applied. (5) Full resolution. (6) Verification of recovery. Use UTC timestamps. Each entry is a factual claim with 'documented' evidence from logs and metrics.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": "Google SRE Book, Chapter 15",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["postmortem", "timeline", "documentation", "sre"]
+    },
+    {
+      "id": "inc-003",
+      "type": "constraint",
+      "topic": "severity classification",
+      "content": "Classify incident severity: SEV1 — widespread outage, revenue-impacting, all-hands response. SEV2 — partial outage, degraded experience for subset of users. SEV3 — minor issue, workaround available, limited impact. SEV4 — cosmetic or edge case, no user impact. Postmortem required for SEV1 and SEV2. SEV3 optional.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["postmortem", "severity", "classification", "sre"]
+    },
+    {
+      "id": "inc-004",
+      "type": "constraint",
+      "topic": "root cause analysis",
+      "content": "Use the '5 Whys' technique or fault tree analysis to identify root causes. Most incidents have multiple contributing causes. Distinguish: (1) Triggering cause — the immediate action that started the incident. (2) Root cause — the systemic weakness that allowed the trigger to cause impact. (3) Contributing factors — conditions that worsened severity or delayed response.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["postmortem", "root-cause", "5-whys", "fault-tree"]
+    },
+    {
+      "id": "inc-005",
+      "type": "constraint",
+      "topic": "action items",
+      "content": "Every postmortem must produce prioritized action items: (1) Each action has an owner and deadline. (2) Actions are typed: 'mitigate' (prevent recurrence), 'detect' (catch it faster), 'respond' (improve response). (3) Track completion — unfinished action items from past postmortems are a leading indicator of future incidents.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": "Google SRE Book, Chapter 15",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["postmortem", "action-items", "tracking", "sre"]
+    },
+    {
+      "id": "inc-006",
+      "type": "risk",
+      "topic": "action item decay",
+      "content": "The most common postmortem failure: action items are written but never completed. Studies show 40-60% of postmortem action items go unfinished. Counter: link action items to sprint tickets, review completion in weekly standups, escalate overdue items, and track completion rate as a team metric.",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["postmortem", "action-items", "decay", "risk"]
+    },
+    {
+      "id": "inc-007",
+      "type": "factual",
+      "topic": "impact quantification",
+      "content": "Quantify incident impact across dimensions: (1) Duration (time to detect + time to mitigate + time to resolve). (2) User impact (affected users / total users). (3) Revenue impact (lost transactions, SLA credits owed). (4) Reputation impact (social media mentions, support tickets). (5) Engineering cost (person-hours spent responding).",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["postmortem", "impact", "metrics", "quantification"]
+    },
+    {
+      "id": "inc-008",
+      "type": "recommendation",
+      "topic": "wheat-powered postmortem workflow",
+      "content": "Map wheat sprint to postmortem: (1) Sprint question = 'What caused incident X and how do we prevent recurrence?' (2) Factual claims = timeline events backed by logs. (3) Constraint claims = SLA requirements and detection targets. (4) Risk claims = contributing factors and systemic weaknesses. (5) Recommendation claims = action items with owners. (6) The compiled brief IS the postmortem document.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["postmortem", "wheat", "workflow", "recommendation"]
+    },
+    {
+      "id": "inc-009",
+      "type": "constraint",
+      "topic": "postmortem timeline requirement",
+      "content": "Postmortem sprint must begin within 48 hours of incident resolution for SEV1, within 1 week for SEV2. Memory degrades rapidly — the timeline becomes unreliable after 72 hours. The postmortem review meeting should happen within 5 business days of the sprint.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": "Google SRE Book, Chapter 15",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["postmortem", "timeline", "sre", "process"]
+    },
+    {
+      "id": "inc-010",
+      "type": "factual",
+      "topic": "detection and response metrics",
+      "content": "Key incident metrics: MTTD (mean time to detect) — from first impact to first alert. MTTR (mean time to respond) — from alert to first responder action. MTTM (mean time to mitigate) — from response to customer impact stopped. MTTResolve — from mitigation to root cause fixed. Track trends across incidents, not just individual values.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["postmortem", "mttd", "mttr", "metrics", "sre"]
+    },
+    {
+      "id": "inc-011",
+      "type": "risk",
+      "topic": "recurrence patterns",
+      "content": "If the same category of incident recurs 3+ times, the postmortems are failing. Common reasons: (1) Action items address symptoms not root causes. (2) Systemic issues span team boundaries with no single owner. (3) Technical debt prioritized below feature work. Escalate recurring incident categories to engineering leadership.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["postmortem", "recurrence", "systemic", "risk"]
+    },
+    {
+      "id": "inc-012",
+      "type": "recommendation",
+      "topic": "learning dissemination",
+      "content": "Postmortem value is maximized when learnings spread beyond the incident team. Recommended: (1) Publish postmortem to internal wiki within 1 week. (2) Present at engineering all-hands for SEV1. (3) Add to onboarding reading list for the affected service. (4) Use wheat /witness to link related incidents across teams — the knowledge graph surfaces patterns humans miss.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["postmortem", "learning", "knowledge-sharing", "enterprise"]
+    }
+  ]
+}

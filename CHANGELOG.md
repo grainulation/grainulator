@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-09-07
+
+### Changed
+
+- Consolidate evidence, memory, exports, analytics, orchestration, and execution support into one Grainulator workspace and CLI.
+- Expose one MCP server with 19 canonical tools and seven resources; retain hidden compatibility aliases for existing integrations.
+- Require Node.js 24 or later, with Node 25 used for local development and both versions checked in CI.
+- Replace the demo with a configurable research playground supporting session import, export, stop, resume, provider selection, and credential-safe handoff.
+- Refresh the product site and installation guidance, and require grouped Auto/Manual next actions in core workflows.
+
+### Fixed
+
+- Preserve provenance and custom claim fields across mutation, search, compilation, and migration.
+- Protect concurrent ledger and memory writes, export destinations, and workspace boundaries.
+- Correct installed Node-version diagnostics, relative sprint paths, packaged documentation, and Claude subagent tool access.
+- Add Codex native plugin loading with explicit `GRAINULATOR_WORKSPACE` binding and tested session continuation.
+- Give local archives unique build identifiers and verify installed files against their manifests.
+
+### Removed
+
+- Remove the standalone dashboard, permission connectors, and notification hook. Native hosts manage permissions and remote access.
+
+### Release scope
+
+- Published as a GitHub release. Local archives can be installed from the tagged source; no npm registry publication is included in this release.
+- Live-provider acceptance, independent citation verification, general research-quality gains, cumulative spending limits, and risk-closure semantics remain separately tracked limitations; structural validation is not source verification.
+
 ## [1.7.1] - 2026-04-19
 
 ### Changed

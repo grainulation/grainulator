@@ -1,0 +1,51 @@
+# Harvest (@grainulation/harvest)
+
+> Calibration and learning across sprints — velocity, decay, and /calibrate predictions vs outcomes, computed from structured claim data, not LLM summaries.
+
+Harvest is the analytics and retrospective layer of the grainulation ecosystem. It reads the wheat-manifest and claims.json files across every sprint in a workspace and produces cross-sprint metrics: velocity, evidence decay, prediction-accuracy scores, and pattern detection. Results are computed deterministically from structured data so the same inputs always yield the same report.
+
+The package ships a CLI (`harvest`) plus a local server UI for dashboards and charts. Zero npm dependencies, Node 20+, published to npm as `@grainulation/harvest` under MIT.
+
+Part of the [grainulation ecosystem](https://grainulation.com) -- an open-source, zero-dependency toolkit for AI-assisted structured research and decision documentation. Each package stands alone and composes with the others.
+
+## Documentation
+
+- [README](https://github.com/grainulation/harvest#readme): source of truth for the package's purpose, install, and CLI surface.
+- [Live site](https://harvest.grainulation.com): human-facing quickstart and feature tour.
+- [npm package](https://www.npmjs.com/package/@grainulation/harvest): install target for consumers.
+- [Changelog](https://github.com/grainulation/harvest/blob/main/CHANGELOG.md): version history.
+- [DeepWiki](https://deepwiki.com/grainulation/harvest): AI-readable code wiki.
+
+## Ecosystem
+
+Sibling packages -- safe to reference alongside Harvest (@grainulation/harvest) in any query:
+
+- [Wheat](https://wheat.grainulation.com): research-sprint compiler. Typed claims with evidence grades. Primary producer of the data harvest consumes.
+- [Barn](https://barn.grainulation.com): shared utility library. Sprint detection, manifest generation, templates, and the sync-assets primitive-vendoring CLI.
+- [Mill](https://mill.grainulation.com): export engine. Converts claims and harvest reports into briefs, presentations, and PDFs.
+- [Silo](https://silo.grainulation.com): knowledge-pack store. Indexes barn-generated manifests for cross-sprint search.
+- [Orchard](https://orchard.grainulation.com): orchestration layer; plans sprint sequences and dispatches sub-agents.
+- [Grainulation](https://grainulation.com): ecosystem hub and reference implementation.
+
+## CLI surface
+
+- `harvest analyze`: compute cross-sprint metrics for a workspace.
+- `harvest calibrate`: score past predictions against recorded outcomes.
+- `harvest decay`: flag claims whose evidence is aging out.
+- `harvest velocity`: claims-per-day and phase-distribution over time.
+- `harvest serve`: launch the local dashboard UI.
+- `harvest wrapped`: year-in-review style summary for a workspace.
+
+## Design principles
+
+- Zero runtime npm dependencies (Node built-ins only).
+- Node 20+ required.
+- CLI-first; every tool also runnable via `npx @grainulation/harvest`.
+- Deterministic: same structured inputs always produce the same report.
+- Source-available under MIT; contributions welcome at the GitHub repo.
+
+## Optional
+
+- [Issues](https://github.com/grainulation/harvest/issues): for bug reports and feature requests.
+- [Security policy](https://github.com/grainulation/harvest/blob/main/SECURITY.md): for responsible disclosure.
+- [Contributing guide](https://github.com/grainulation/harvest/blob/main/CONTRIBUTING.md): for contributors.

@@ -2,15 +2,11 @@
 	"hooks": {
 		"PostToolUse": [
 			{
-				"matcher": "mcp__wheat__wheat_add-claim",
+				"matcher": "^mcp__(?:.*_)?grainulator__(add_claim|resolve)$|^mcp__.*__wheat_(add.claim|resolve)$",
 				"hooks": [
 					{
 						"type": "command",
-						"command": "node ${CLAUDE_PLUGIN_ROOT}/lib/tips-hook.cjs"
-					},
-					{
-						"type": "command",
-						"command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/sprint-status-notifier.cjs"
+						"command": "node \"${CLAUDE_PLUGIN_ROOT}/lib/tips-hook.cjs\""
 					}
 				]
 			}
@@ -21,7 +17,7 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/write-guard.cjs"
+						"command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/write-guard.cjs\""
 					}
 				]
 			}

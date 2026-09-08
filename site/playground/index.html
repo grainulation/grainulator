@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'">
+  <meta name="theme-color" content="#060d10"><meta name="description" content="Choose your model, tune the research workflow, and take the session with you. The Grainulator research playground.">
+  <title>Research playground — Grainulator</title>
+  <meta name="research-mode" content="local">
+  <link rel="canonical" href="https://grainulator.app/playground/">
+  <link rel="icon" href="/favicon-32.png"><link rel="stylesheet" href="/workbench.css"><link rel="stylesheet" href="/research/playground.css">
+
+  <script type="module" src="/research/playground.js"></script>
+</head>
+<body class="playground-page">
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <div class="page-shell">
+    <header class="site-header"><a class="wordmark" href="/" aria-label="Grainulator home"><img src="/glitchy-56.png" width="28" height="28" alt="">grainulator <span class="muted">/ playground</span></a><nav aria-label="Main navigation"><a href="/">Back to home <span aria-hidden="true">↗</span></a></nav></header>
+    <main id="main-content">
+      <div class="playground-heading"><div><p class="eyebrow">Research, on your terms</p><h1>Your question.<br>Your model. Your workflow.</h1><p>Try a setup here. Take the whole session into your work.</p></div><div class="file-actions"><label class="action" for="import-session">Open session<input id="import-session" type="file" accept=".json,application/json" class="file-input"></label><button type="button" id="export-session" class="action">Export session ↓</button></div></div>
+      <p id="service-status" class="notice" role="status">Checking the local research connection…</p>
+      <details id="local-setup" class="local-setup" hidden><summary>Run this setup locally</summary><p>Export your session, then use your local Grainulator installation. Your provider credentials stay on your machine.</p><p>First time here? <a href="/install.html">Set up the local build</a>. This version is unpublished; installing the current npm release will not select this build.</p><pre><code>grainulator preview</code></pre><p>Open <a href="http://127.0.0.1:4517/playground/">the local playground</a> and choose Open session, or continue in your terminal:</p><pre><code>grainulator research --session session.json --dir ./research-session</code></pre><p class="field-note">From a source checkout, use <code>node bin/grainulator.js</code> in place of <code>grainulator</code>. Configure OPENAI_API_KEY or OPENROUTER_API_KEY locally, or enter your key in the local playground.</p></details>
+      <noscript><p class="notice">Enable JavaScript to configure and export a research session. The public playground does not run models or collect provider keys.</p></noscript>
+      <div class="playground-layout">
+        <form id="research-form" class="settings">
+          <fieldset id="setup-fields">
+            <legend class="eyebrow">01 / Set up your research</legend>
+            <label for="question">Research question</label><textarea id="question" required rows="3" maxlength="6000" placeholder="What decision are you researching?"></textarea>
+            <section class="feature-settings" aria-labelledby="features-title"><h2 id="features-title">What should Grainulator add?</h2><p class="field-note">Tune the work around your model. Open ⓘ to see how each feature works.</p><div id="features"></div><p id="workflow-summary" class="field-note" role="status"></p></section>
+            <p class="eyebrow model-heading">Model connection</p>
+            <div class="field-pair provider-fields"><div><label for="provider">Provider</label><select id="provider"><option value="openai">OpenAI</option><option value="openrouter">OpenRouter</option><option value="custom">Compatible endpoint</option></select></div><div><label for="model">Model ID</label><input id="model" list="model-list" value="gpt-6-astra" required maxlength="160"><datalist id="model-list"><option value="gpt-6-astra"><option value="gpt-5.6-sol"></datalist></div></div>
+            <p id="model-hint" class="field-note">Astra is the starting model. You can choose another model ID supported by your API account.</p>
+            <div id="endpoint-field" hidden><label for="base-url">API base URL</label><input id="base-url" type="url" placeholder="http://127.0.0.1:11434/v1"><p class="field-note">A Chat Completions compatible endpoint. Requests go through your local preview server.</p></div>
+            <label for="api-key">API key <span class="muted">· optional if configured locally</span></label><input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your API key"><p class="field-note">Kept in this tab. The key field is excluded from exports.</p><p id="key-hint" class="field-note">Uses OPENAI_API_KEY from your local server when this field is empty.</p>
+            <div class="checks"><label><input id="web-search" type="checkbox" checked> Search the web <span class="muted">· OpenAI only</span></label></div>
+            <p id="search-hint" class="field-note">Search is available to the model. Citations returned by the provider appear with each pass.</p>
+            <details open><summary>Context &amp; instructions</summary><label for="context">What should the model know?</label><textarea id="context" rows="4" maxlength="30000" placeholder="Paste source excerpts or requirements."></textarea><p class="field-note">Include source text when possible. URLs alone are not fetched when web search is off.</p><label for="instructions">What should it prioritize?</label><textarea id="instructions" rows="2" maxlength="6000" placeholder="e.g. Prefer primary sources."></textarea><p class="field-note">Set priorities, comparison criteria, or what needs independent verification.</p></details>
+            <details><summary>Limits &amp; reasoning</summary><div class="field-pair"><div><label for="reasoning">Reasoning effort</label><select id="reasoning"><option value="default">Provider default</option><option value="low" selected>Low</option><option value="medium">Medium</option><option value="high">High</option></select></div><div><label for="max-tokens">Output tokens / pass</label><input id="max-tokens" type="number" min="512" max="32768" step="1" value="8192"></div><div><label for="timeout">Timeout / pass (seconds)</label><input id="timeout" type="number" min="5" max="300" value="120"></div><div><label for="retries">Retries / pass</label><select id="retries"><option value="0">None</option><option value="1">1</option><option value="2">2</option></select></div></div><p class="field-note">Provider charges apply, including web search. These limits bound each pass; they are not a dollar budget. A higher output limit leaves room for reasoning.</p></details>
+          </fieldset>
+          <div class="run-actions"><button class="action primary" id="run" type="submit">Start research →</button><button class="action" id="stop" type="button" hidden>Stop</button><button class="action" id="rerun" type="button" hidden>Run again</button><button class="action" id="restart" type="button" hidden>Start fresh</button></div>
+          <p class="field-note">Your question, context, and prior passes are sent to the provider you select. <a href="/privacy.html">How data is handled</a></p>
+        </form>
+        <section class="research-results" aria-labelledby="results-title">
+          <div class="results-heading"><div><p class="eyebrow">02 / Follow the work</p><h2 id="results-title">From question to decision.</h2></div><span id="run-status" class="decision" role="status">Ready</span></div>
+          <ol class="pass-track" aria-label="Research workflow"><li data-pass="research">Research</li><li data-pass="challenge">Challenge</li><li data-pass="blindspots">Blind spots</li><li data-pass="ledger">Claims</li><li data-pass="synthesis">Synthesize</li></ol>
+          <p id="evidence-status" class="notice" role="status" hidden></p>
+          <p id="run-error" class="notice error" role="alert" hidden></p>
+          <div id="result-content"><div class="empty-result"><h3>A workflow you can inspect.</h3><p>Watch each pass arrive. Read the findings, inspect sources, and see how the recommendation develops.</p><p>Your session keeps the model settings, context, and completed passes together. You can stop here and continue locally.</p><button type="button" class="text-button" id="sample">Open an example session</button><p class="field-note">The example shows a blocked evidence gate. It makes no API calls.</p></div></div>
+          <div class="handoff"><p class="eyebrow">03 / Take it with you</p><h3>Keep the work. Keep going.</h3><p>Export a session to reopen here or resume from the CLI. Export a brief to carry the context into your agent.</p><pre><code>node bin/grainulator.js research \
+  --session session.json --dir ./research-session</code></pre><div class="file-actions"><button type="button" class="action" id="export-brief">Export brief ↓</button><button type="button" class="action" id="export-claims" hidden>Export claims ↓</button><button type="button" class="text-button" id="copy-handoff">Copy handoff prompt</button></div><p class="field-note">Uses your local provider key. Completed passes are reused; editing the question or settings starts a new run.</p><p id="handoff-auth" class="field-note" hidden>For an authenticated compatible endpoint, set a local environment variable such as MODEL_API_KEY and add <code>--api-key-env MODEL_API_KEY</code> to the CLI command. Use the variable name, never the key itself. Exported sessions do not carry credentials.</p><p id="file-status" role="status" class="field-note"></p></div>
+        </section>
+      </div>
+    </main>
+    <footer><span>grainulator / research playground</span><div><a href="/">Home</a><a href="/privacy.html">Privacy</a></div></footer>
+  </div>
+</body>
+</html>

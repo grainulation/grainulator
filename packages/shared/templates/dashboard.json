@@ -1,0 +1,19 @@
+{
+  "title": "Dashboard",
+  "description": "Three-layer status dashboard with tables, cards, and CSS variables. Dark theme with scroll-snap sections.",
+  "tags": ["status", "dashboard", "tables", "cards", "dark-theme"],
+  "author": "grainulation",
+  "version": "1.0.0",
+  "exportPresets": [
+    { "name": "pdf-landscape", "format": "pdf" },
+    { "name": "static-site", "format": "html" }
+  ],
+  "seedPacks": ["sprint-metrics", "claim-summaries"],
+  "scaffoldConfig": {
+    "defaultPlaceholders": {
+      "TITLE": "Sprint Dashboard",
+      "SUBTITLE": "Status Overview"
+    },
+    "postInit": ["detect-sprints", "load-claims"]
+  }
+}

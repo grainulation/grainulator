@@ -1,0 +1,97 @@
+{
+  "name": "@grainulation/barn",
+  "version": "1.3.1",
+  "description": "Template browser and sprint toolkit for the grainulation ecosystem",
+  "license": "MIT",
+  "author": "grainulation contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grainulation/barn.git"
+  },
+  "homepage": "https://barn.grainulation.com",
+  "bugs": {
+    "url": "https://github.com/grainulation/barn/issues"
+  },
+  "keywords": [
+    "wheat",
+    "grainulation",
+    "templates",
+    "sprints",
+    "structured-research",
+    "developer-tools"
+  ],
+  "type": "module",
+  "main": "./lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./package.json": "./package.json",
+    "./server": "./lib/server.js",
+    "./detect-sprints": "./tools/detect-sprints.js",
+    "./generate-manifest": "./tools/generate-manifest.js",
+    "./build-pdf": "./tools/build-pdf.js",
+    "./mcp": {
+      "import": "./lib/mcp.js",
+      "require": "./lib/mcp.cjs"
+    },
+    "./mcp-crash": {
+      "import": "./lib/mcp-crash.js",
+      "require": "./lib/mcp-crash.cjs"
+    },
+    "./paths": {
+      "import": "./lib/paths.js",
+      "require": "./lib/paths.cjs"
+    },
+    "./atomic": {
+      "import": "./lib/atomic.js",
+      "require": "./lib/atomic.cjs"
+    },
+    "./cli": {
+      "import": "./lib/cli.js",
+      "require": "./lib/cli.cjs"
+    },
+    "./phases": {
+      "import": "./lib/phases.js",
+      "require": "./lib/phases.cjs"
+    },
+    "./sprints": {
+      "import": "./lib/sprints.js",
+      "require": "./lib/sprints.cjs"
+    },
+    "./tokens": "./public/grainulation-tokens.css",
+    "./status-icons": "./public/status-icons.svg",
+    "./print-css": "./public/grainulation-print.css",
+    "./llms-txt-template": "./public/llms.txt.template",
+    "./sync-assets": "./tools/sync-assets.js",
+    "./llms-txt-lint": "./tools/seo/llms-txt-lint.js",
+    "./transaction": "./lib/transaction.js"
+  },
+  "bin": {
+    "barn": "./bin/barn.js"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "public/",
+    "tools/",
+    "templates/",
+    "CHANGELOG.md",
+    "LICENSE",
+    "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md"
+  ],
+  "scripts": {
+    "start": "node bin/barn.js serve",
+    "serve": "node bin/barn.js serve",
+    "test": "node test/basic.test.js && node --test test/shared-utils.test.js test/server.test.js test/ui-smoke.test.js test/mcp-crash.test.js test/llms-txt-lint.test.js test/tarball.test.js",
+    "format": "npx prettier@3.3 --write .",
+    "format:check": "npx prettier@3.3 --check ."
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "private": true
+}

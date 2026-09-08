@@ -1,0 +1,69 @@
+{
+  "name": "@grainulation/wheat",
+  "version": "1.1.8",
+  "description": "Research-driven development framework \u2014 structured claims, compiled evidence, deterministic output",
+  "license": "MIT",
+  "author": "grainulation contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grainulation/wheat.git"
+  },
+  "homepage": "https://wheat.grainulation.com",
+  "bugs": {
+    "url": "https://github.com/grainulation/wheat/issues"
+  },
+  "keywords": [
+    "wheat-framework",
+    "research-sprint",
+    "claims-compiler",
+    "claude-code",
+    "structured-research",
+    "evidence-graded",
+    "decision-framework",
+    "research-driven-development",
+    "developer-research",
+    "technical-decision-making"
+  ],
+  "type": "module",
+  "main": "./lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./compiler": "./lib/compiler.js",
+    "./server": "./lib/server.js",
+    "./guard": "./lib/guard.js",
+    "./mcp": "./lib/serve-mcp.js",
+    "./load-claims": "./lib/load-claims.js"
+  },
+  "bin": {
+    "wheat": "bin/wheat.js",
+    "wheat-mcp": "bin/wheat-mcp.cjs"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "compiler/",
+    "public/",
+    "templates/",
+    "README.md",
+    "LICENSE",
+    "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "test": "node --test test/cli.test.js test/compiler.test.js test/guard.test.js test/init.test.js test/migration.test.js test/mcp.test.js test/claims-ops.test.js test/load-claims.test.js test/status.test.js test/hints.test.js test/tarball.test.js",
+    "format": "npx prettier@3.3 --write .",
+    "format:check": "npx prettier@3.3 --check ."
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@grainulation/barn": "^1.3.0"
+  },
+  "private": true
+}

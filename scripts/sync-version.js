@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Sync version: package.json is the source of truth.
- * Writes the same version into .claude-plugin/plugin.json and .claude-plugin/marketplace.json (plugin entry).
+ * Writes the same version into every host manifest and the marketplace entry.
  * Fails with non-zero exit if files are missing.
  */
 
@@ -14,18 +14,20 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const pkg = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8"));
 const version = pkg.version;
 
-const pluginPath = resolve(root, ".claude-plugin/plugin.json");
 const marketPath = resolve(root, ".claude-plugin/marketplace.json");
 
 function writeJSON(p, obj) {
   writeFileSync(p, JSON.stringify(obj, null, "\t") + "\n");
 }
 
-const plugin = JSON.parse(readFileSync(pluginPath, "utf8"));
-if (plugin.version !== version) {
-  plugin.version = version;
-  writeJSON(pluginPath, plugin);
-  console.log(`plugin.json: ${version}`);
+for (const name of [".claude-plugin/plugin.json", ".codex-plugin/plugin.json", "plugin.json"]) {
+  const pluginPath = resolve(root, name);
+  const plugin = JSON.parse(readFileSync(pluginPath, "utf8"));
+  if (plugin.version !== version) {
+    plugin.version = version;
+    writeJSON(pluginPath, plugin);
+    console.log(`${name}: ${version}`);
+  }
 }
 
 const market = JSON.parse(readFileSync(marketPath, "utf8"));

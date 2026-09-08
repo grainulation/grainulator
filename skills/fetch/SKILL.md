@@ -2,14 +2,15 @@
 name: fetch
 description: Size-efficient URL fetch with semantic extraction. Use for ad-hoc web research when you want content without the raw HTML overhead.
 tools:
-  - mcp__silo__silo_smart-fetch
+  - Bash
+  - mcp__grainulator__memory_smart_fetch
   - WebFetch
   - Read
 ---
 
 # /fetch -- Ad-hoc URL fetch with smart extraction
 
-Pulls a URL's main content (title, description, body paragraphs) without the HTML boilerplate. Delegates to silo's `smart-fetch` MCP tool, which strips scripts/styles/nav/footer and targets `<main>` or `<article>` regions. Typical reduction: 80-99% vs raw HTML.
+Pulls a URL's main content (title, description, body paragraphs) without the HTML boilerplate. Delegates to Grainulator’s `memory_smart_fetch` MCP tool, which strips scripts/styles/nav/footer and targets `<main>` or `<article>` regions. Typical reduction: 80-99% vs raw HTML.
 
 ## Arguments
 
@@ -35,12 +36,12 @@ Expected: `/fetch <url> [--mode auto|concise|full|meta-only] [--no-cache] [--pri
 
 - **Confluence**: use `/pull` — structured API is better than HTML scraping
 - **DeepWiki**: use `/pull deepwiki` — it already has a cleaner path
-- **Authenticated pages**: smart-fetch doesn't do auth. Use farmer for approval-gated flows.
+- **Authenticated pages**: smart-fetch doesn't do auth. Use the host's authenticated browser or connector.
 - **PDFs, images, JSON**: smart-fetch rejects non-HTML content types with `unsupported-content-type`
 
 ## Instructions
 
-1. **Call `mcp__silo__silo_smart-fetch`** with the URL and parsed flags.
+1. **Call `mcp__grainulator__memory_smart_fetch`** with the URL and parsed flags.
 
 2. **If the response `quality` is "failed"** (empty body, SPA, link list, HTTP error), tell the user:
    - What the reported quality was
@@ -70,10 +71,13 @@ Elapsed:    340ms
 --- Content ---
 [first 2KB of extracted main content]
 
-Next steps:
-  /witness r003 <url> --smart  -- corroborate a claim with this source
-  /fetch <url> --mode full     -- get the full extracted body
-  silo cache stats             -- see what's cached locally
+Auto
+
+- <authorized next action>
+
+Manual
+
+- <action requiring the user, or None.>
 ```
 
 ## Anti-rationalization
@@ -82,4 +86,14 @@ Next steps:
 |:---|:---|
 | "Smart-fetch lost content" | Check the `quality` field. If "failed", retry with `--mode full`. If "degraded", the site may be a SPA — content depends on JS execution. |
 | "I should always use full mode" | Full is fine for small pages but wasteful on long docs. `auto` handles the fallback for you. |
-| "Cached content might be stale" | Default TTL is 7 days. Use `--no-cache` for latest, or `silo cache purge <domain>` to drop specific entries. |
+| "Cached content might be stale" | Default TTL is 7 days. Use `--no-cache` for latest, or `grainulator memory cache purge <domain>` to drop specific entries. |
+
+## Host access
+
+Use available `grainulator` MCP tools, passing the active sprint `dir` explicitly for evidence operations. If a tool is unavailable, use the local `grainulator` CLI (or `node <checkout>/bin/grainulator.js`). Read sibling skill files directly when slash commands are unavailable. Resolve template paths relative to this skill’s checkout when `CLAUDE_PLUGIN_ROOT` is unset. Optional external connectors are not required for local work; use local code, supplied documents, or available web tools. Do not write managed ledger files directly to bypass a missing MCP connection.
+
+## Next-step output
+
+After a meaningful pass, use the current compiler's `next_actions` to present exactly two bullet lists labeled **Auto** and **Manual**. Auto is work the agent can continue under existing authorization. Manual is only work requiring the user's decision, access, or action. Classify using the current request and constraints; compiler suggestions never grant permission. Continue authorized Auto work without asking again.
+
+Keep 2–3 useful actions total when available, use short concrete labels and commands where useful, and show `None.` for an empty group. Do not invent work to fill a quota. Never omit next steps merely because compilation is ready or the answer should be brief. Refresh stale compilation first and exclude work the user removed from scope. When the user asks only for next steps, output only these two lists: no findings recap, counts, reasons, or offer to continue.

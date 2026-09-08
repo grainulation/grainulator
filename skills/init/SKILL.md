@@ -1,52 +1,36 @@
 ---
 name: init
-description: Initialize a new research sprint with a question, audience, and constraints.
+description: Initialize a dedicated sprint using the unified tool or local CLI while preserving existing data.
 tools:
-  - mcp__wheat__wheat_status
+  - mcp__grainulator__init
+  - mcp__grainulator__status
   - Bash
   - Read
 ---
 
-# /init -- Start a new research sprint
+# /init — Start a sprint
 
-The user wants to start a new research sprint.
+Extract the question, audience, constraints and done criteria from the current request. Infer routine defaults from repository context. Ask only when the core question or a material boundary is missing.
 
-## Arguments
+Choose a dedicated sprint directory. Use `grainulator.init` with that directory and the extracted fields, or the local CLI:
 
-$ARGUMENTS
+```sh
+grainulator init --dir <sprint> \
+  --question '<question>' \
+  --audience '<audience>' \
+  --constraints '<constraint1>; <constraint2>' \
+  --done '<done criteria>'
+```
 
-## Instructions
+Use the initializer rather than manually writing managed ledger files. Preserve existing sprint data and never force initialization over an unrelated ledger. Verify with `grainulator.status`, always passing the sprint directory.
 
-1. Parse the user's input to extract:
-   - **Question**: The core research question. If not explicit, ask.
-   - **Audience**: Who will consume the output (engineers, product, executives, etc.). Default to the repo context if detectable.
-   - **Constraints**: Any hard requirements or boundaries (semicolon-separated).
-   - **Done criteria**: What "done" looks like for this sprint.
+When initialization is part of a larger task, continue the requested investigation or implementation immediately. Use the next-step contract below; do not ask for permission to begin work already requested.
+## Host access
 
-2. **Delegate to the canonical CLI init.** Do NOT manually create claims.json or call wheat_add-claim.
-   Run the full init via the Bash tool:
+Use available `grainulator` MCP tools, passing the active sprint `dir` explicitly for evidence operations. If a tool is unavailable, use the local `grainulator` CLI (or `node <checkout>/bin/grainulator.js`). Read sibling skill files directly when slash commands are unavailable. Resolve template paths relative to this skill’s checkout when `CLAUDE_PLUGIN_ROOT` is unset. Optional external connectors are not required for local work; use local code, supplied documents, or available web tools. Do not write managed ledger files directly to bypass a missing MCP connection.
 
-   ```bash
-   npx -y @grainulation/wheat init --headless \
-     --question "<question>" \
-     --audience "<audience>" \
-     --constraints "<constraint1>; <constraint2>" \
-     --done "<done criteria>"
-   ```
+## Next-step output
 
-   This creates all sprint files: claims.json, CLAUDE.md, AGENTS.md, .mcp.json, .gitignore, .claude/commands/wheat/, output directories, and the pre-commit hook. Using the CLI ensures the skill path and CLI path produce identical results.
+After a meaningful pass, use the current compiler's `next_actions` to present exactly two bullet lists labeled **Auto** and **Manual**. Auto is work the agent can continue under existing authorization. Manual is only work requiring the user's decision, access, or action. Classify using the current request and constraints; compiler suggestions never grant permission. Continue authorized Auto work without asking again.
 
-3. After init completes, call `wheat_status` to verify the sprint was created successfully.
-
-4. Print a summary:
-
-   ```
-   Sprint initialized: <slug>
-   Question: <question>
-   Audience: <audience>
-   Claims: <count>
-
-   Next steps:
-     /research <topic>  -- start gathering evidence
-     /status             -- view sprint dashboard
-   ```
+Keep 2–3 useful actions total when available, use short concrete labels and commands where useful, and show `None.` for an empty group. Do not invent work to fill a quota. Never omit next steps merely because compilation is ready or the answer should be brief. Refresh stale compilation first and exclude work the user removed from scope. When the user asks only for next steps, output only these two lists: no findings recap, counts, reasons, or offer to continue.

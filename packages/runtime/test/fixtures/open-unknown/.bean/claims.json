@@ -1,0 +1,18 @@
+[
+	{
+		"id": "c1",
+		"type": "factual",
+		"topic": "metrics",
+		"content": "c1 content",
+		"source": {
+			"origin": "stakeholder",
+			"artifact": null,
+			"connector": null
+		},
+		"evidence": "stated",
+		"status": "active",
+		"conflicts_with": [],
+		"resolved_by": null,
+		"tags": ["load-bearing", "needs-input"]
+	}
+]

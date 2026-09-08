@@ -1,0 +1,23 @@
+[package]
+name = "bean-check"
+version = "2.1.0"
+edition = "2021"
+description = "bean's convergence compiler — Rust runtime (reconverging with the Bran core)."
+license = "MIT"
+
+[[bin]]
+name = "bean-check"
+path = "src/main.rs"
+
+# Build-time crates only; the shipped artifact is a single static binary with no install
+# dependency (this is the portability bean-check.js could not give — Node is itself a dep).
+[dependencies]
+serde_json = "1"
+sha2 = "0.10"
+
+[profile.release]
+lto = true
+strip = true
+opt-level = "z"
+codegen-units = 1
+panic = "abort"

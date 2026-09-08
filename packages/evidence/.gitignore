@@ -1,0 +1,34 @@
+node_modules/
+.DS_Store
+*.log
+
+# Wheat sprint artifacts (generated, not checked in)
+compilation.json
+wheat-manifest.json
+claims.json
+CLAUDE.md
+.claude/
+output/
+research/
+prototypes/
+evidence/
+
+# Farmer runtime files
+.farmer-token
+.farmer-state.json
+.farmer.pid
+.farmer-audit*.jsonl
+.farmer-config.json
+
+# Grainulator runtime files
+.wheat-tips.md
+.wheat-compile.lock
+
+# Environment / secrets — never commit
+.env
+.env.local
+.env.*.local
+orchard.json
+
+# This authored template is a runtime dependency.
+!/templates/claude.md

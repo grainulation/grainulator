@@ -1,0 +1,24 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      '@grainulation/barn':
+        specifier: ^1.3.0
+        version: 1.3.0
+
+packages:
+
+  '@grainulation/barn@1.3.0':
+    resolution: {integrity: sha512-ZW6rUv6OQzQodQBtHMPcNViIJ6tyjXCTAvTaQunNp1wOQ/obRudqhboDYKBcQyQediGl9GG0WAD7UjG3H9vwRw==}
+    engines: {node: '>=20'}
+    hasBin: true
+
+snapshots:
+
+  '@grainulation/barn@1.3.0': {}

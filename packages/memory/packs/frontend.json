@@ -1,0 +1,219 @@
+{
+  "name": "Frontend Engineering",
+  "description": "Performance budgets, Core Web Vitals targets, accessibility (WCAG 2.1), state management patterns, bundle optimization, and SSR vs CSR tradeoffs.",
+  "version": "1.0.0",
+  "claims": [
+    {
+      "id": "fe-001",
+      "type": "constraint",
+      "topic": "Core Web Vitals thresholds",
+      "content": "Google Core Web Vitals targets for good UX: LCP (Largest Contentful Paint) under 2.5s, INP (Interaction to Next Paint) under 200ms, CLS (Cumulative Layout Shift) under 0.1. These directly affect search ranking. Measure with field data (CrUX, RUM) not just lab data (Lighthouse), since field p75 is what Google uses.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["frontend", "performance", "core-web-vitals", "seo"]
+    },
+    {
+      "id": "fe-002",
+      "type": "recommendation",
+      "topic": "JavaScript bundle size budget",
+      "content": "Initial JavaScript bundle should be under 150 KB compressed (gzip) for mobile-first applications. Total page weight including images should be under 1.5 MB. Every 100 KB of JavaScript adds approximately 350ms parse/compile time on median mobile devices. Use bundle analyzer (webpack-bundle-analyzer, source-map-explorer) in CI to enforce budgets.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["frontend", "performance", "bundle-size", "mobile"]
+    },
+    {
+      "id": "fe-003",
+      "type": "constraint",
+      "topic": "WCAG 2.1 AA compliance",
+      "content": "WCAG 2.1 Level AA is the legal standard in the US (ADA), EU (EAA 2025), and Canada (AODA). Key requirements: color contrast ratio 4.5:1 for normal text and 3:1 for large text, all interactive elements keyboard-accessible, form inputs have visible labels, images have alt text, focus indicators visible, no content reliant solely on color.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["frontend", "accessibility", "wcag", "compliance"]
+    },
+    {
+      "id": "fe-004",
+      "type": "factual",
+      "topic": "SSR vs CSR tradeoffs",
+      "content": "Server-Side Rendering (SSR) provides faster First Contentful Paint and better SEO but increases server load and Time to Interactive (hydration cost). Client-Side Rendering (CSR) has faster subsequent navigations but a blank page until JS loads. Use SSR/SSG for content-heavy, SEO-critical pages; CSR for authenticated app-like interfaces behind login.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["frontend", "ssr", "csr", "architecture"]
+    },
+    {
+      "id": "fe-005",
+      "type": "risk",
+      "topic": "third-party script performance",
+      "content": "Third-party scripts (analytics, ads, chat widgets) are the leading cause of performance regression. A single poorly-written third-party script can add 500ms-2s to page load. Load all third-party scripts with async or defer. Set performance budgets that include third-party weight. Use a tag manager with server-side option to control loading.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["frontend", "performance", "third-party", "scripts"]
+    },
+    {
+      "id": "fe-006",
+      "type": "recommendation",
+      "topic": "image optimization pipeline",
+      "content": "Serve images in WebP or AVIF format (30-50% smaller than JPEG). Use srcset with 2-4 size variants for responsive images. Lazy-load images below the fold with loading='lazy'. Set explicit width and height attributes to prevent CLS. Automate optimization in the build pipeline or use an image CDN (Cloudinary, imgix, Cloudflare Images).",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["frontend", "images", "performance", "webp"]
+    },
+    {
+      "id": "fe-007",
+      "type": "recommendation",
+      "topic": "state management selection criteria",
+      "content": "Use local component state (useState/signals) for UI-only state. Use URL state (query params, path) for shareable/bookmarkable state. Use server state libraries (TanStack Query, SWR) for API data with caching. Use global state (Zustand, Redux, or context) only for truly cross-cutting client state (auth, theme, feature flags). Most applications over-use global state.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["frontend", "state-management", "react", "architecture"]
+    },
+    {
+      "id": "fe-008",
+      "type": "risk",
+      "topic": "layout shift from web fonts",
+      "content": "Custom web fonts cause either FOIT (Flash of Invisible Text) or FOUT (Flash of Unstyled Text), both contributing to CLS. Mitigate with font-display: swap, preload critical fonts with <link rel='preload'>, subset fonts to used character ranges (Latin subset is ~30 KB vs 200 KB for full Unicode), and use size-adjust to match fallback metrics.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["frontend", "fonts", "cls", "performance"]
+    },
+    {
+      "id": "fe-009",
+      "type": "factual",
+      "topic": "code splitting impact",
+      "content": "Route-based code splitting typically reduces initial bundle size by 40-60%. Dynamic import() splits a module into a separate chunk loaded on demand. For React, use React.lazy() with Suspense boundaries. Split at route boundaries first, then heavy component boundaries (charts, editors, maps). Avoid splitting components under 30 KB as the HTTP overhead negates the benefit.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "tested",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["frontend", "code-splitting", "bundle-size", "lazy-loading"]
+    },
+    {
+      "id": "fe-010",
+      "type": "constraint",
+      "topic": "keyboard navigation requirements",
+      "content": "Every interactive element must be reachable and operable via keyboard alone. Tab order must follow visual reading order. Focus must be visible (minimum 2px outline, 3:1 contrast ratio against adjacent colors). Custom components (dropdowns, modals, tabs) must implement ARIA roles and keyboard patterns from WAI-ARIA Authoring Practices. Test by unplugging the mouse.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["frontend", "accessibility", "keyboard", "aria"]
+    },
+    {
+      "id": "fe-011",
+      "type": "estimate",
+      "topic": "mobile performance gap",
+      "content": "Median mobile devices (Moto G Power class) process JavaScript 3-5x slower than desktop. A page that loads in 1.5s on desktop takes 4-6s on median mobile hardware over 4G. Always test on throttled connections (Slow 3G: 400 Kbps, 400ms RTT) and CPU throttled 4x in DevTools. Real user monitoring shows median mobile LCP is 2x desktop LCP.",
+      "source": { "origin": "industry", "artifact": null, "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["frontend", "mobile", "performance", "testing"]
+    },
+    {
+      "id": "fe-012",
+      "type": "recommendation",
+      "topic": "error boundaries and fallbacks",
+      "content": "Wrap major UI sections in error boundaries that catch render errors and display a fallback UI instead of a white screen. Log caught errors to your observability stack. Provide a retry mechanism in the fallback. Without error boundaries, a single failing component crashes the entire page. Test error boundaries by deliberately throwing in development.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["frontend", "error-handling", "resilience", "react"]
+    }
+  ]
+}

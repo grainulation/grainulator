@@ -1,0 +1,30 @@
+{
+  "repo_notes": [
+    {
+      "content": "Mill is the format converter for the grainulation ecosystem. It takes sprint evidence (claims, HTML artifacts, markdown output) and produces 26+ export formats: PDF, CSV, markdown, slides, JSON-LD, Jira tickets, GitHub Issues, and more. Mill is how research output leaves the sprint — each format is a different stakeholder's preferred medium (engineering -> GitHub Issues, PM -> Jira, leadership -> slides/PDF).",
+      "author": "grainulation-core"
+    },
+    {
+      "content": "When documenting mill, emphasize: (1) it consumes compilation.json or HTML artifacts — NOT claims.json directly, (2) the converter matrix is pluggable — each format is a small self-contained transform, (3) mill uses barn's template library for HTML-output formats, (4) the /sync slash command in wheat typically calls mill under the hood to produce the correct format for a given external target.",
+      "author": "grainulation-core"
+    }
+  ],
+  "pages": [
+    {
+      "title": "Quick start",
+      "purpose": "Install via npx @grainulation/mill, the 30-second pitch, convert a claims.json to PDF in one command, list all supported formats."
+    },
+    {
+      "title": "Core concepts",
+      "purpose": "The converter matrix (26+ formats and how they are selected), input shapes (compilation.json, HTML artifacts, markdown), output targets (file, stdout, structured format), preview vs convert modes, MCP tool interface (mill_convert, mill_preview, mill_formats)."
+    },
+    {
+      "title": "API reference",
+      "purpose": "CLI (bin/mill.js), MCP tools (mill_convert, mill_formats, mill_preview), library exports, format-specific options, exit codes."
+    },
+    {
+      "title": "Ecosystem integration",
+      "purpose": "How mill relates to wheat (wheat /sync dispatches to mill for target-appropriate output), barn (mill borrows barn's HTML templates for slides/dashboards), silo (mill can dump content to silo-friendly formats for storage), harvest (harvest reads mill-converted JSON-LD for cross-sprint analysis), orchard (orchard aggregates mill output from multiple sprints)."
+    }
+  ]
+}

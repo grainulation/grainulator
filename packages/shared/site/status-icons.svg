@@ -1,0 +1,40 @@
+<!--
+  status-icons.svg — SVG sprite for triple-encoded status indicators (WCAG 1.4.1)
+  Each status has a distinctive shape so meaning is independent of color perception:
+    success  = checkmark (circle with check)
+    error    = cross (circle with X)
+    warning  = triangle (with exclamation)
+    info     = circle (with "i")
+
+  Usage:
+    <svg class="status-icon"><use href="status-icons.svg#icon-success"></use></svg>
+-->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+
+  <!-- success: circle + checkmark -->
+  <symbol id="icon-success" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="8" cy="8" r="7" />
+    <path d="M5 8.5 L7 10.5 L11 5.5" />
+  </symbol>
+
+  <!-- error: circle + X -->
+  <symbol id="icon-error" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="8" cy="8" r="7" />
+    <path d="M5.5 5.5 L10.5 10.5 M10.5 5.5 L5.5 10.5" />
+  </symbol>
+
+  <!-- warning: triangle + exclamation -->
+  <symbol id="icon-warning" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 1.5 L15 14 H1 Z" />
+    <line x1="8" y1="6" x2="8" y2="9.5" />
+    <circle cx="8" cy="11.5" r="0.5" fill="currentColor" stroke="none" />
+  </symbol>
+
+  <!-- info: circle + "i" -->
+  <symbol id="icon-info" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="8" cy="8" r="7" />
+    <line x1="8" y1="7" x2="8" y2="11.5" />
+    <circle cx="8" cy="5" r="0.5" fill="currentColor" stroke="none" />
+  </symbol>
+
+</svg>

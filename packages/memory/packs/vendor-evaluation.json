@@ -1,0 +1,148 @@
+{
+  "name": "Vendor Evaluation (Enterprise)",
+  "description": "Extended enterprise vendor due diligence framework. Covers security posture, compliance, pricing, integration, operational risk, and exit planning. Use for vendor assessment sprints alongside the base vendor-eval pack.",
+  "version": "1.0.0",
+  "extends": "vendor-eval",
+  "claims": [
+    {
+      "id": "veval-001",
+      "type": "constraint",
+      "topic": "enterprise procurement checklist",
+      "content": "Enterprise vendor evaluation must cover 7 pillars: (1) Security posture (SOC 2, pen tests), (2) Compliance alignment (GDPR, HIPAA, industry-specific), (3) Integration capabilities (API, SSO, SCIM), (4) Financial viability (funding, revenue, customer base), (5) Total cost of ownership (3-year projection), (6) Exit strategy (data portability, contract termination), (7) Operational resilience (SLA, disaster recovery, incident response).",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vendor", "enterprise", "procurement", "checklist"]
+    },
+    {
+      "id": "veval-002",
+      "type": "constraint",
+      "topic": "security questionnaire",
+      "content": "Send the vendor a standardized security questionnaire (SIG Lite or CAIQ v4) before technical evaluation. Require responses within 10 business days. Red flags: vendor refuses to complete, gives evasive answers, or lacks basic controls (MFA, encryption, logging).",
+      "source": {
+        "origin": "best-practice",
+        "artifact": "Shared Assessments SIG",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vendor", "security-questionnaire", "sig", "caiq"]
+    },
+    {
+      "id": "veval-003",
+      "type": "risk",
+      "topic": "contract auto-renewal traps",
+      "content": "Many enterprise SaaS contracts auto-renew 60-90 days before expiration with price escalation clauses (3-7% annual increase typical). Mitigation: set calendar reminders 120 days before renewal, negotiate caps on annual increases, and require written opt-in for renewal rather than opt-out.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vendor", "contract", "auto-renewal", "risk", "negotiation"]
+    },
+    {
+      "id": "veval-004",
+      "type": "constraint",
+      "topic": "proof of concept evaluation",
+      "content": "Run a structured POC with top 2 vendor candidates before signing. POC must cover: (1) integration with existing stack, (2) performance under realistic load, (3) admin/user experience with real users, (4) support responsiveness during evaluation. Define pass/fail criteria before POC starts.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vendor", "poc", "evaluation", "enterprise"]
+    },
+    {
+      "id": "veval-005",
+      "type": "recommendation",
+      "topic": "reference check process",
+      "content": "Request 3 customer references at similar scale and industry. Ask references: (1) What surprised you after purchase? (2) How responsive is support for P1 issues? (3) Have you had data migration or integration issues? (4) Would you renew at current pricing? (5) What would you change about the product?",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vendor", "references", "due-diligence", "enterprise"]
+    },
+    {
+      "id": "veval-006",
+      "type": "risk",
+      "topic": "AI vendor data usage",
+      "content": "For AI/ML vendors: verify data usage policy. Key questions: (1) Is customer data used to train models? (2) Can you opt out of training data contribution? (3) Where is data processed — on-prem option available? (4) What happens to prompts/inputs after processing? (5) Is there a DPA that covers AI-specific data flows?",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vendor", "ai", "data-usage", "privacy", "risk"]
+    },
+    {
+      "id": "veval-007",
+      "type": "estimate",
+      "topic": "vendor evaluation timeline",
+      "content": "Typical enterprise vendor evaluation timeline: Week 1-2: requirements gathering and RFP. Week 3-4: vendor demos and shortlisting. Week 5-8: POC with top 2. Week 9-10: reference checks and security review. Week 11-14: contract negotiation and legal review. Total: 3-4 months for a thorough evaluation.",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vendor", "timeline", "enterprise", "planning"]
+    },
+    {
+      "id": "veval-008",
+      "type": "factual",
+      "topic": "negotiation leverage points",
+      "content": "Enterprise negotiation leverage: (1) End of quarter/year — vendors discount 20-40% to hit targets. (2) Multi-year commitment — 15-30% discount typical. (3) Case study participation — 5-10% discount for logo rights. (4) Early adopter pricing — lock in lower rates before GA. (5) Competitive bake-off — having a credible alternative is the strongest lever.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["vendor", "negotiation", "pricing", "enterprise"]
+    }
+  ]
+}

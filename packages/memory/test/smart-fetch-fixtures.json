@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "description": "Benchmark URLs with expected extraction behavior. Run in live mode pre-release to refresh snapshots; replay mode is used in normal CI.",
+  "fixtures": [
+    {
+      "id": "deepwiki-wheat",
+      "url": "https://deepwiki.com/grainulation/wheat",
+      "mode": "auto",
+      "expect": {
+        "quality": "high",
+        "min_content_chars": 500,
+        "must_contain_any": ["wheat", "claims", "compiler"],
+        "title_present": true
+      }
+    },
+    {
+      "id": "nodejs-https-docs",
+      "url": "https://nodejs.org/api/https.html",
+      "mode": "auto",
+      "expect": {
+        "quality": "high",
+        "min_content_chars": 1000,
+        "must_contain_any": ["get", "options", "callback"],
+        "title_present": true
+      }
+    },
+    {
+      "id": "wikipedia-http",
+      "url": "https://en.wikipedia.org/wiki/HyperText_Transfer_Protocol",
+      "mode": "auto",
+      "expect": {
+        "quality": "high",
+        "min_content_chars": 2000,
+        "must_contain_any": ["HTTP", "Berners-Lee"],
+        "title_present": true,
+        "notes": "Wiki pattern forces full fetch (no range)"
+      }
+    },
+    {
+      "id": "cloudflare-blog",
+      "url": "https://blog.cloudflare.com/introducing-workers-durable-objects/",
+      "mode": "auto",
+      "expect": {
+        "quality": "high",
+        "min_content_chars": 2000,
+        "must_contain_any": ["Durable", "Object"],
+        "title_present": true
+      }
+    },
+    {
+      "id": "hn-item-link-list",
+      "url": "https://news.ycombinator.com/item?id=39012345",
+      "mode": "auto",
+      "expect": {
+        "quality": "failed",
+        "max_content_chars": 200,
+        "title_present": true,
+        "notes": "Link lists have no narrative — we want 'failed' because extraction yielded nothing, not because of a network error. max_content_chars asserts extraction actually ran."
+      }
+    }
+  ]
+}

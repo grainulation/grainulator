@@ -1,0 +1,30 @@
+{
+	"repo_notes": [
+		{
+			"content": "Wheat is the research-sprint framework and pioneer package of the grainulation ecosystem. It structures research as typed claims (constraint, factual, estimate, risk, recommendation, feedback) with evidence tiers (stated, web, documented, tested, production), and uses a compiler that enforces conflict detection before any artifact (brief, presentation, dashboard) can be produced. Wheat's CLI surfaces as slash commands (/init, /research, /prototype, /challenge, /witness, /brief, /present, etc.) inside Claude Code.",
+			"author": "grainulation-core"
+		},
+		{
+			"content": "When documenting wheat, emphasize: (1) the Bran IR (the claims.json intermediate representation), (2) the compiler as enforcement layer — if compilation is blocked, no artifact is produced, (3) the sprint lifecycle (define -> research -> prototype -> evaluate -> brief/present/handoff), (4) git discipline: every slash command that modifies claims.json auto-commits, so `git log --oneline claims.json` is the sprint event log. Do NOT describe wheat as a prompt wrapper — it is a structured research framework with compile-time conflict detection.",
+			"author": "grainulation-core"
+		}
+	],
+	"pages": [
+		{
+			"title": "Quick start",
+			"purpose": "Install via npx @grainulation/wheat wheat-mcp, the 30-second pitch, the minimum example running /init + /research in Claude Code."
+		},
+		{
+			"title": "Core concepts",
+			"purpose": "Claims (types, evidence tiers, ID prefixes), the Bran IR (claims.json shape), the compiler (conflict detection, compilation certificate), slash-command lifecycle, sprint phases (define/research/prototype/evaluate/brief/handoff), git discipline for claims."
+		},
+		{
+			"title": "API reference",
+			"purpose": "Slash commands (/init, /research, /prototype, /challenge, /witness, /brief, /present, /handoff, /blind-spot, /resolve, /merge, /replay, /calibrate, /feedback, /sync, /pull, /connect, /evaluate), MCP tools (wheat_add-claim, wheat_compile, wheat_search, wheat_status, wheat_init, wheat_resolve, wheat_deepwiki, wheat_sync-log), CLI flags."
+		},
+		{
+			"title": "Ecosystem integration",
+			"purpose": "How wheat relates to barn (consumes barn's sprint detection and templates), farmer (farmer reads wheat sprint state for tool-call approval), mill (wheat hands artifacts to mill for format conversion), silo (wheat /pull pulls from silo packs), harvest (harvest scores wheat predictions over time), orchard (orchard coordinates multiple wheat sprints)."
+		}
+	]
+}

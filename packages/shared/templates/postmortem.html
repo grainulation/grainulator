@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{TITLE}} — Postmortem</title>
+<style>
+  /* barn/templates/postmortem.html — calibration and retrospective document
+     System font stack, no external dependencies, fully self-contained. */
+
+  :root {
+    --bg: #0a0e1a;
+    --bg2: #111827;
+    --bg3: #1e293b;
+    --accent: #3b82f6;
+    --accent-light: #60a5fa;
+    --green: #22c55e;
+    --orange: #f59e0b;
+    --red: #e11d48;
+    --purple: #a78bfa;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --border: rgba(255,255,255,0.06);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { height: 100%; scroll-behavior: smooth; scroll-snap-type: y mandatory; overflow-y: scroll; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 11pt;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  section {
+    min-height: 100vh;
+    padding: 60px 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    scroll-snap-align: start;
+    position: relative;
+  }
+
+  section::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 35%; height: 100%;
+    background: radial-gradient(ellipse at top right, rgba(59,130,246,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  h1 {
+    font-size: 36pt;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  h2 {
+    font-size: 24pt;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+    color: #fff;
+  }
+
+  .section-label {
+    display: inline-block;
+    font-size: 9pt;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent-light);
+    background: rgba(59,130,246,0.12);
+    padding: 4px 12px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+  }
+
+  .outcome-block {
+    background: var(--bg2);
+    border-left: 3px solid var(--accent);
+    padding: 16px 24px;
+    border-radius: 0 8px 8px 0;
+    margin-top: 20px;
+    max-width: 80%;
+    font-size: 13pt;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .sprint-label { font-size: 10pt; color: var(--text-dim); margin-top: 12px; }
+  .sprint-label strong { color: var(--text-muted); }
+
+  .comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+
+  .comparison-header {
+    padding: 12px 20px;
+    font-size: 9pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .comparison-header.prediction {
+    background: var(--bg2);
+    color: var(--accent-light);
+    border-right: 1px solid var(--border);
+    border-radius: 8px 0 0 0;
+  }
+
+  .comparison-header.outcome {
+    background: var(--bg2);
+    color: var(--green);
+    border-radius: 0 8px 0 0;
+  }
+
+  .comparison-cell {
+    padding: 14px 20px;
+    font-size: 10pt;
+    color: var(--text-muted);
+    line-height: 1.5;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .comparison-cell.prediction {
+    background: rgba(17,24,39,0.5);
+    border-right: 1px solid var(--border);
+  }
+
+  .comparison-cell.outcome { background: rgba(30,41,59,0.3); }
+  .comparison-cell .claim-id { font-family: monospace; font-size: 8pt; color: var(--text-dim); display: block; margin-top: 4px; }
+
+  .score-panel {
+    background: var(--bg2);
+    border-radius: 16px;
+    padding: 32px;
+    border: 1px solid var(--border);
+    display: flex;
+    gap: 40px;
+    align-items: center;
+    max-width: 600px;
+  }
+
+  .score-big { font-size: 48pt; font-weight: 800; line-height: 1; }
+  .score-big.good { color: var(--green); }
+  .score-big.mid { color: var(--orange); }
+  .score-big.low { color: var(--red); }
+
+  .score-details { flex: 1; }
+
+  .score-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 10pt;
+    color: var(--text-muted);
+  }
+
+  .score-row:last-child { border-bottom: none; }
+  .score-row .label { color: var(--text-dim); }
+
+  .surprise-card {
+    background: var(--bg2);
+    border-radius: 10px;
+    padding: 16px 20px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--orange);
+    margin-bottom: 12px;
+    font-size: 10pt;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .lesson-card {
+    background: var(--bg2);
+    border-radius: 10px;
+    padding: 16px 20px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--purple);
+    margin-bottom: 12px;
+    font-size: 10pt;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .barn-footer {
+    position: absolute;
+    bottom: 24px; right: 40px;
+    font-size: 8pt;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+
+  nav[aria-label="sections"] {
+    position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 8px; z-index: 100;
+  }
+
+  nav[aria-label="sections"] a {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--text-dim); display: block; transition: all 0.2s;
+  }
+
+  nav[aria-label="sections"] a:hover { background: var(--accent); transform: scale(1.5); }
+
+  @media (max-width: 768px) {
+    section { padding: 32px 20px; height: auto; }
+    h1 { font-size: 22pt; } h2 { font-size: 18pt; }
+    .outcome-block { max-width: 100%; font-size: 11pt; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .comparison-header.prediction { border-right: none; border-radius: 8px 8px 0 0; }
+    .comparison-header.outcome { border-radius: 0; }
+    .comparison-cell.prediction { border-right: none; }
+    .score-panel { flex-direction: column; gap: 16px; text-align: center; }
+    .score-big { font-size: 36pt; }
+    nav[aria-label="sections"] { display: none; }
+    .barn-footer { right: 20px; bottom: 16px; }
+  }
+
+  @media print {
+    html { scroll-snap-type: none; }
+    section { min-height: auto; height: auto; page-break-after: always; padding: 40px; }
+    body { background: #fff; color: #1a1a1a; }
+    h1 { background: none; -webkit-text-fill-color: #1a1a1a; }
+    h2 { color: #1a1a1a; }
+    .outcome-block, .surprise-card, .lesson-card, .score-panel { background: #f5f5f5; border-color: #ddd; }
+    .comparison-cell { color: #333; }
+    nav[aria-label="sections"], .barn-footer { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav aria-label="sections">
+  <a href="#header" title="Overview"></a>
+  <a href="#comparison" title="Predictions vs Outcomes"></a>
+  <a href="#score" title="Calibration Score"></a>
+  <a href="#surprises" title="Surprises"></a>
+  <a href="#lessons" title="Lessons Learned"></a>
+</nav>
+
+<section id="header" aria-label="Postmortem Overview">
+  <span class="section-label">Postmortem</span>
+  <h1>{{TITLE}}</h1>
+  <div class="sprint-label">Sprint: <strong>{{SPRINT_NAME}}</strong></div>
+  <div class="outcome-block">{{OUTCOME}}</div>
+  <div class="barn-footer">Built with barn</div>
+</section>
+
+<section id="comparison" aria-label="Predictions vs Outcomes">
+  <span class="section-label">Calibration</span>
+  <h2>Prediction vs Outcome</h2>
+  <div class="comparison-grid">
+    <div class="comparison-header prediction">What We Predicted</div>
+    <div class="comparison-header outcome">What Actually Happened</div>
+    {{PREDICTIONS_VS_OUTCOMES}}
+  </div>
+</section>
+
+<section id="score" aria-label="Calibration Score">
+  <span class="section-label">Accuracy</span>
+  <h2>Calibration Score</h2>
+  <div class="score-panel">
+    <div class="score-big" id="scoreValue">{{CALIBRATION_SCORE}}</div>
+    <div class="score-details">
+      <div class="score-row"><span class="label">Accuracy Rate</span><span>{{ACCURACY_RATE}}</span></div>
+      <div class="score-row"><span class="label">Predictions Made</span><span>{{PREDICTION_COUNT}}</span></div>
+      <div class="score-row"><span class="label">Correct</span><span>{{CORRECT_COUNT}}</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="surprises" aria-label="Surprises">
+  <span class="section-label">Unexpected</span>
+  <h2>What We Did Not Predict</h2>
+  {{SURPRISES}}
+</section>
+
+<section id="lessons" aria-label="Lessons Learned">
+  <span class="section-label">Retrospective</span>
+  <h2>Lessons Learned</h2>
+  {{LESSONS}}
+</section>
+
+</body>
+</html>

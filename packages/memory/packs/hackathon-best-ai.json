@@ -1,0 +1,179 @@
+{
+  "name": "Hackathon: Best Use of AI",
+  "description": "Scoring rubric and seed claims for the 'Best Use of AI' hackathon category. Features a unique ai_leverage sub-score rewarding quality AI-assisted research over shallow generation.",
+  "version": "1.0.0",
+  "claims": [
+    {
+      "id": "hai-001",
+      "type": "constraint",
+      "topic": "AI leverage scoring",
+      "content": "AI leverage sub-score = (claims_from_ai_assisted_research / total_claims) * quality_multiplier. Quality multiplier = average evidence tier of AI-assisted claims. Weight: 30%. Rewards using AI for deep research, not shallow claim generation.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "scoring", "ai-leverage", "best-ai"]
+    },
+    {
+      "id": "hai-002",
+      "type": "constraint",
+      "topic": "evidence tier scoring",
+      "content": "Evidence tier sub-score uses weighted sum normalized to 0-100. Weight: 20%. AI-assisted claims should produce higher evidence tiers — web and documented, not just stated.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "scoring", "evidence-tier", "best-ai"]
+    },
+    {
+      "id": "hai-003",
+      "type": "constraint",
+      "topic": "type diversity scoring",
+      "content": "Type diversity sub-score = (distinct_types / 6) * 100. Weight: 20%. Best AI use means leveraging AI for diverse research outputs — not just generating a list of facts.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "scoring", "type-diversity", "best-ai"]
+    },
+    {
+      "id": "hai-004",
+      "type": "constraint",
+      "topic": "corroboration scoring",
+      "content": "Corroboration sub-score = witnessed_claims / total_claims * 100. Weight: 15%. AI can find cross-references humans miss — high corroboration signals effective AI-human collaboration.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "scoring", "corroboration", "best-ai"]
+    },
+    {
+      "id": "hai-005",
+      "type": "constraint",
+      "topic": "challenge depth scoring",
+      "content": "Challenge depth sub-score = (challenge_claims + resolved_conflicts) / total_claims * 100. Weight: 15%. Best AI use includes AI-assisted devil's advocate — challenging claims and finding counter-evidence.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "scoring", "challenge-depth", "best-ai"]
+    },
+    {
+      "id": "hai-006",
+      "type": "recommendation",
+      "topic": "AI collaboration patterns",
+      "content": "Effective AI research patterns: (1) AI finds sources, human validates and elevates evidence tier. (2) AI generates initial claims, human challenges and refines. (3) AI identifies conflicts between sources, human resolves. (4) AI drafts recommendations, human grounds in business context.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "ai-patterns", "collaboration", "best-ai"]
+    },
+    {
+      "id": "hai-007",
+      "type": "risk",
+      "topic": "AI slop detection",
+      "content": "Risk of AI 'slop': bulk-generated low-quality claims that look comprehensive but lack depth. Signals: uniform evidence tiers, generic topics, no conflicts or challenges, repetitive phrasing across claims.",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "gaming", "ai-slop", "risk"]
+    },
+    {
+      "id": "hai-008",
+      "type": "recommendation",
+      "topic": "MCP connector usage",
+      "content": "Best AI use should leverage MCP connectors: web search for real-time data, GitHub for code context, Confluence/Jira for organizational knowledge. Connector diversity signals sophisticated AI orchestration.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "mcp-connectors", "ai-orchestration", "best-ai"]
+    },
+    {
+      "id": "hai-009",
+      "type": "recommendation",
+      "topic": "human judge criteria",
+      "content": "Human judges for 'Best Use of AI' score on: (1) human-AI synergy — did the team direct AI effectively or just let it run? (2) evidence elevation — did AI help reach higher evidence tiers? (3) creative prompting — did the team use novel approaches to extract insight?",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "human-judging", "criteria", "best-ai"]
+    },
+    {
+      "id": "hai-010",
+      "type": "factual",
+      "topic": "HackEval precedent",
+      "content": "HackEval keeps AI as assistant, not decision-maker: structured rubrics with blind scoring to reduce bias, but final decisions remain human. AI Judge (Devpost) takes the opposite approach with full automation. The wheat hackathon model should be the middle ground.",
+      "source": {
+        "origin": "research",
+        "artifact": "https://www.scribd.com/document/973181548/HackEval-Full-Pitch",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "precedent", "hackeval", "ai-judging"]
+    }
+  ]
+}

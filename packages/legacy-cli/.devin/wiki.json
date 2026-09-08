@@ -1,0 +1,30 @@
+{
+  "repo_notes": [
+    {
+      "content": "grainulation is the umbrella repository and marketing site for the grainulation ecosystem. It is NOT a standalone tool — it is the landing page (grainulation.app), the meta-package that lets users discover the individual packages (barn, wheat, farmer, mill, silo, harvest, orchard), and the place where cross-cutting docs and demos live. The actual functionality lives in the individual packages.",
+      "author": "grainulation-core"
+    },
+    {
+      "content": "When documenting grainulation, emphasize: (1) it is the ENTRY POINT — start here if you're new, (2) it hosts the interactive demo (sprint-mode demo at grainulation.app), (3) each ecosystem package has its own wiki — link out, do not duplicate, (4) grainulation's own site uses PNG favicons (favicon-16.png, favicon-32.png, apple-touch-icon.png) and is intentionally different from the SVG-favicon convention used by the other 7 packages.",
+      "author": "grainulation-core"
+    }
+  ],
+  "pages": [
+    {
+      "title": "Quick start",
+      "purpose": "The 30-second ecosystem pitch, which individual package to install first based on what the user wants (research sprint -> wheat, approvals -> farmer, export -> mill, packs -> silo, analytics -> harvest, portfolio -> orchard, utilities -> barn), and a link to grainulation.app for the interactive demo."
+    },
+    {
+      "title": "Core concepts",
+      "purpose": "The ecosystem philosophy (zero-dep, research-first, human-in-the-loop), the shape of a research sprint (claims -> compiler -> artifacts), how the packages compose, the role of each package at a glance."
+    },
+    {
+      "title": "API reference",
+      "purpose": "The meta-package CLI surface (what `npx @grainulation/grainulation` does), links to each package's API reference, site-asset conventions (favicons, sitemap, llms.txt)."
+    },
+    {
+      "title": "Ecosystem integration",
+      "purpose": "The canonical map of how barn, wheat, farmer, mill, silo, harvest, orchard fit together — dependency directions, data flow, typical user journeys from install to published brief. This is the ecosystem overview that all the individual package wikis link back to."
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+# Grainulation (umbrella)
+
+> Umbrella site for the grainulation ecosystem — research sprints, claim compilation, evidence-graded decisions.
+
+Grainulation is an open-source, zero-dependency toolkit for AI-assisted structured research and decision documentation. It turns technical questions into typed claims, grades the evidence behind each claim, and compiles the result into validated briefs, presentations, and dashboards. The ecosystem is eight small CLIs that compose — each stands alone, each runs on Node.js 20+ built-ins only, and the whole thing is MIT-licensed and published to npm.
+
+This site (grainulation.com) is the canonical entry point for the whole ecosystem: product overview, tool catalog, quickstart, and pointers to every per-package site, repo, and wiki.
+
+## Documentation
+
+- [README](https://github.com/grainulation/grainulation#readme): source of truth for the umbrella package, CLI surface, and ecosystem map.
+- [Live site](https://grainulation.com): human-facing quickstart and feature tour (this page).
+- [npm package](https://www.npmjs.com/package/@grainulation/grainulation): install target for the umbrella CLI.
+- [Changelog](https://github.com/grainulation/grainulation/blob/main/CHANGELOG.md): version history.
+- [DeepWiki](https://deepwiki.com/grainulation/grainulation): AI-readable code wiki.
+
+## Ecosystem
+
+Sibling packages — safe to reference alongside Grainulation in any query. Each has its own site, repo, npm package, and `/llms.txt`:
+
+- [Barn](https://barn.grainulation.com): shared utility library — sprint detection, manifest generation, HTML templates, PDF export, MCP crash handlers, and shared SEO/print primitives. Foundation that every other package builds on.
+- [Wheat](https://wheat.grainulation.com): research-sprint compiler. Typed claims with evidence grades, 7-pass compiler, conflict detection. The flagship tool; `npx wheat init` is the usual entry point.
+- [Mill](https://mill.grainulation.com): export engine. Converts claims into briefs, presentations, and PDFs via barn's templates.
+- [Silo](https://silo.grainulation.com): knowledge-pack store. Indexes barn-generated manifests for cross-sprint search and re-use.
+- [Harvest](https://harvest.grainulation.com): analytics and dashboards for multi-sprint portfolios — calibration, velocity, evidence-grade distribution.
+- [Orchard](https://orchard.grainulation.com): orchestration layer. Plans sprint sequences, dispatches sub-agents, manages multi-repo research.
+- [Grainulator](https://github.com/grainulation/grainulator): Claude Code plugin that bundles every ecosystem tool behind one install; adds slash commands and MCP servers.
+
+## Design principles
+
+- Zero runtime npm dependencies (Node built-ins only).
+- Node 20+ required.
+- CLI-first; every tool also runnable via `npx @grainulation/<name>`.
+- Source-available under MIT; contributions welcome at the GitHub repo.
+
+## Optional
+
+- [Issues](https://github.com/grainulation/grainulation/issues): for bug reports and feature requests.
+- [Security policy](https://github.com/grainulation/grainulation/blob/main/SECURITY.md): for responsible disclosure.
+- [Contributing guide](https://github.com/grainulation/grainulation/blob/main/CONTRIBUTING.md): for contributors.

@@ -1,0 +1,22 @@
+.farmer-token
+.farmer-state.json
+.farmer.pid
+.farmer-audit*.jsonl
+.farmer-config.json
+node_modules/
+coverage/
+
+# Claude Code
+.claude/
+
+# Grainulator runtime files
+.wheat-tips.md
+.wheat-compile.lock
+
+# Environment / secrets — never commit
+.env
+.env.local
+.env.*.local
+
+# IDE / editor
+.idea/

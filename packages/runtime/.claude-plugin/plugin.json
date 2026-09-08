@@ -1,0 +1,10 @@
+{
+	"name": "bean",
+	"version": "2.1.0",
+	"description": "Run a task as a recursive convergence loop: investigate the most decisive open question, record evidence in a claim ledger, let a compiler score what is still weak or contradictory, revise beliefs, and loop until it converges. Runs on grainulator/wheat (or a built-in ledger). Verbose by default.",
+	"author": {
+		"name": "Grainulation"
+	},
+	"homepage": "https://github.com/grainulation/bean",
+	"skills": "./skills/"
+}

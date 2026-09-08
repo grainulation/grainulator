@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="index, follow">
+<title>Grainulation — Evidence-Based Technical Decision Tools</title>
+<meta name="description" content="Eight zero-dependency CLI tools that turn technical questions into typed, evidence-graded claims. Research, challenge, compile, ship.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Grainulation">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Grainulation — Structured research for decisions that matter">
+<meta property="og:description" content="Eight zero-dependency tools that turn questions into evidence and evidence into decisions. Research, challenge, compile, ship.">
+<meta property="og:image" content="https://grainulation.com/og-image.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://grainulation.com/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Grainulation — Structured research for decisions that matter">
+<meta name="twitter:description" content="Eight zero-dependency tools that turn questions into evidence and evidence into decisions.">
+<meta name="twitter:image" content="https://grainulation.com/og-image.png">
+<link rel="canonical" href="https://grainulation.com/">
+<link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="/favicon-16.png" type="image/png" sizes="16x16">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+<style>
+:root {
+  --bg: #0a0e1a;
+  --bg-2: #111827;
+  --surface: rgba(255,255,255,0.03);
+  --surface-hover: rgba(255,255,255,0.06);
+  --border: rgba(255,255,255,0.07);
+  --border-light: rgba(255,255,255,0.12);
+  --accent: #9ca3af;
+  --accent-dim: rgba(156,163,175,0.12);
+  --accent-glow: rgba(156,163,175,0.06);
+  --green: #34d399;
+  --green-dim: rgba(52,211,153,0.1);
+  --red: #f87171;
+  --silver: #9ca3af;
+  --blue: #60a5fa;
+  --blue-dim: rgba(96,165,250,0.1);
+  --orange: #f59e0b;
+  --pink: #ec4899;
+  --text: #e8ecf1;
+  --text-2: #9ba5b7;
+  --text-3: #8b95a5;
+  --mono: 'SF Mono','Fira Code','Cascadia Code','Consolas',monospace;
+  --sans: -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  --max-w: 1080px;
+  --ease: cubic-bezier(.22,1,.36,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;line-height:1.6;overflow-x:hidden}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+code,pre{font-family:var(--mono)}
+
+.bg-ambient{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;contain:paint}
+.bg-ambient .orb{position:absolute;border-radius:50%;filter:blur(140px);opacity:.035;animation:drift 30s ease-in-out infinite alternate}
+.bg-ambient .orb:nth-child(1){width:700px;height:700px;background:var(--accent);top:-15%;left:15%}
+.bg-ambient .orb:nth-child(2){width:500px;height:500px;background:var(--blue);top:40%;right:-10%;animation-delay:-10s}
+.bg-ambient .orb:nth-child(3){width:400px;height:400px;background:var(--orange);bottom:5%;left:-5%;animation-delay:-20s}
+@keyframes drift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(25px,-20px) scale(1.04)}100%{transform:translate(-15px,12px) scale(.96)}}
+
+.page{position:relative;z-index:2}
+.container{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+
+.rv{opacity:0;transform:translateY(24px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
+.rv.vis{opacity:1;transform:none}
+.rv-d1{transition-delay:.08s}.rv-d2{transition-delay:.16s}.rv-d3{transition-delay:.24s}.rv-d4{transition-delay:.32s}.rv-d5{transition-delay:.4s}
+.hf{opacity:0;transform:translateY(16px);animation:hIn .65s var(--ease) forwards}
+.hf1{animation-delay:.05s}.hf2{animation-delay:.15s}.hf3{animation-delay:.25s}.hf4{animation-delay:.4s}
+@keyframes hIn{to{opacity:1;transform:none}}
+
+nav{position:sticky;top:0;z-index:100;background:rgba(10,14,26,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:14px 0}
+nav .container{display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-weight:700;font-size:2rem;letter-spacing:-.02em;color:var(--text);text-decoration:none}
+.nav-logo span{color:var(--accent)}
+.nav-links{display:flex;gap:24px;font-size:.875rem;color:var(--text-2);align-items:center}
+.nav-links a{color:var(--text-2);transition:color .2s}
+.nav-links a:hover{color:var(--text);text-decoration:none}
+.nav-cta{background:transparent;border:none;color:var(--text-2);padding:6px;display:flex;align-items:center;transition:color .2s}.nav-cta:hover{color:var(--text);text-decoration:none}
+
+.hero{padding:80px 0 60px;text-align:center;position:relative}
+
+.hero-badge{display:inline-block;padding:5px 14px;border:1px solid var(--border-light);border-radius:100px;font-size:.75rem;color:var(--text-2);margin-bottom:28px;letter-spacing:.04em;text-transform:uppercase}
+.hero h1{font-size:clamp(2rem,4.5vw,3rem);font-weight:800;letter-spacing:-.03em;line-height:1.15;margin-bottom:24px;max-width:720px;margin-left:auto;margin-right:auto}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero p.hero-sub{font-size:clamp(1.05rem,2vw,1.25rem);color:var(--text-2);max-width:580px;margin:0 auto 44px;line-height:1.55}
+.hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:10px;font-weight:600;font-size:.9375rem;transition:all .2s}
+.btn svg { transition: transform 0.2s ease; }
+.btn:hover svg { transform: translateX(3px); }
+.btn-primary{background:var(--accent);color:#000}.btn-primary:hover{opacity:.88;text-decoration:none;transform:translateY(-1px);box-shadow:0 0 32px var(--accent-glow)}
+.btn-ghost{border:1px solid var(--border-light);color:var(--text)}.btn-ghost:hover{background:var(--surface-hover);text-decoration:none;transform:translateY(-1px)}
+
+.section-label{font-size:1.5rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:12px;font-weight:600}
+.section-title{font-size:clamp(1.6rem,3.5vw,2.2rem);font-weight:800;letter-spacing:-.03em;margin-bottom:16px;line-height:1.15}
+.section-sub{color:var(--text-2);font-size:1.05rem;max-width:620px;margin-bottom:48px;line-height:1.55}
+
+/* What is this */
+.what-is{padding:80px 0 60px}
+.what-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;max-width:700px;margin:0 auto}
+.what-box p{color:var(--text-2);font-size:1.05rem;line-height:1.7;margin-bottom:12px}
+.what-box p:last-child{margin-bottom:0}
+.what-box strong{color:var(--text);font-weight:600}
+
+/* Quick start */
+.quickstart{padding:80px 0 60px}
+.qs-steps{display:grid;grid-template-columns:1fr;gap:24px;max-width:680px;margin:0 auto}
+.qs-step{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:32px 28px;overflow:hidden;min-width:0}
+.qs-num{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--accent-dim);color:var(--accent);font-weight:700;font-size:.875rem;margin-bottom:16px}
+.qs-step h3{font-size:1.05rem;font-weight:700;margin-bottom:8px}
+.qs-step p{color:var(--text-2);font-size:.875rem;line-height:1.55;margin-bottom:16px}
+.qs-code{background:var(--bg);border:none;border-radius:0;padding:16px 20px;font-size:.8125rem;overflow-x:auto;white-space:pre;position:relative;line-height:1.6;color:#34d399;max-width:100%}
+.qs-code .dim{color:var(--text-3)}
+.qs-out{background:var(--bg);border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;padding:10px 16px;font-size:.75rem;color:var(--text-3);font-family:var(--mono);line-height:1.6;white-space:pre;overflow-x:auto;max-width:100%}
+.qs-code+.qs-out{margin-top:-1px}
+/* Ecosystem flow diagram */
+.flow{padding:80px 0}
+.flow-diagram{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;padding:40px 20px}
+.flow-node{display:flex;flex-direction:column;align-items:center;gap:8px;position:relative}
+.flow-circle{display:flex;align-items:center;justify-content:center;transition:transform .2s;padding-right:12px}
+.flow-circle:hover{transform:scale(1.08)}
+.flow-label{font-size:.75rem;color:var(--text-2);font-weight:600;text-align:center;max-width:90px}
+.flow-arrow{width:48px;display:flex;align-items:center;justify-content:center;color:var(--text-3)}
+.flow-arrow svg{width:24px;height:24px}
+.flow-branch{display:flex;flex-direction:column;align-items:center;gap:16px}
+.flow-branch-arrow{color:var(--text-3)}
+.flow-branch-arrow svg{width:20px;height:20px}
+/* Terminal chrome */
+.copy-wrap{position:relative;border-radius:8px;overflow:hidden;background:var(--bg);border:1px solid var(--border)}
+.copy-wrap::before{content:'';display:block;height:32px;background:rgba(255,255,255,0.03);border-bottom:1px solid var(--border);position:relative;background-image:radial-gradient(circle at 16px 50%,#e11d48 4px,transparent 4px),radial-gradient(circle at 32px 50%,#f59e0b 4px,transparent 4px),radial-gradient(circle at 48px 50%,#22c55e 4px,transparent 4px)}
+.copy-btn{position:absolute;top:4px;right:8px;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text-3);border-radius:6px;padding:4px 12px;font-size:.7rem;cursor:pointer;font-family:var(--sans);transition:all .15s;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:2;line-height:1}
+.copy-btn:hover{color:var(--text);border-color:var(--border-light);background:rgba(255,255,255,0.10)}
+.copy-btn.copied{color:var(--green);border-color:var(--green)}
+
+@media(max-width:600px){.flow-diagram{flex-direction:column;gap:8px}.flow-arrow{transform:rotate(90deg);width:auto;height:32px}}
+
+/* Example */
+.example{padding:80px 0}
+.term-block{background:var(--bg-2);border:1px solid var(--border);border-radius:12px;padding:24px;font-family:var(--mono);font-size:.8125rem;line-height:1.8;overflow-x:auto}
+.term-block .prompt{color:var(--text-3)}
+.term-block .cmd{color:var(--accent)}
+.term-block .output{color:var(--text-2)}
+.term-block .hl{color:var(--accent)}
+.term-block .success{color:#34d399}
+
+/* Terminal simulation */
+.term-sim-wrap .term-block{opacity:0;transform:translateY(8px);transition:opacity .4s var(--ease),transform .4s var(--ease)}
+.term-sim-wrap .term-block.t-active{opacity:1;transform:none}
+.term-sim-wrap .typing-cursor::after{content:'|';animation:term-blink 1s step-end infinite;color:var(--accent);font-weight:400}
+@keyframes term-blink{0%,100%{opacity:1}50%{opacity:0}}
+.term-sim-wrap .t-output-wrap{opacity:0;transform:translateY(4px);transition:opacity .3s var(--ease),transform .3s var(--ease)}
+.term-sim-wrap .t-output-wrap.t-visible{opacity:1;transform:none}
+.term-sim-wrap.t-done .term-block{opacity:1;transform:none;transition:none}
+.term-sim-wrap.t-done .t-output-wrap{opacity:1;transform:none;transition:none}
+.term-sim-wrap.t-done .typing-cursor::after{display:none}
+
+/* Tools grid */
+.tools{padding:80px 0}
+.tools-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:stretch}
+.tool-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;transition:border-color .2s,transform .15s;display:flex;flex-direction:column;align-items:center;text-align:center}
+.tool-card:hover{border-color:rgba(255,255,255,.15);transform:translateY(-2px);text-decoration:none}
+.tool-card-head{display:flex;align-items:center;gap:12px;margin-bottom:12px;justify-content:center}
+.tool-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;flex-shrink:0;border:1px solid var(--border)}
+.tool-name{font-family:var(--mono);font-weight:700;font-size:1rem}
+.tool-role{font-size:.75rem;font-weight:600}
+.tool-desc{font-size:.8125rem;color:var(--text-2);line-height:1.55;margin-bottom:14px;flex-grow:1}
+.tool-install{font-family:var(--mono);font-size:.75rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 12px;color:var(--text-3);display:inline-block;user-select:all}
+.tool-card.highlight{border-color:rgba(156,163,175,.3);position:relative}
+.tool-card.highlight::before{content:'START HERE';position:absolute;top:-10px;right:16px;background:var(--accent);color:#0a0e1a;font-family:var(--mono);font-size:.625rem;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:.05em}
+
+/* Features/philosophy */
+.features{padding:80px 0}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.feature-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px 24px;transition:border-color .2s}
+.feature-card:hover{border-color:rgba(156,163,175,.25)}
+.feature-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;font-size:18px;background:var(--accent-dim);color:var(--accent)}
+.feature-card h3{font-size:.9375rem;font-weight:700;margin-bottom:6px}
+.feature-card p{font-size:.8125rem;color:var(--text-2);line-height:1.6}
+
+/* FAQ */
+.faq{padding:80px 0}
+.faq-list{max-width:700px;margin:0 auto}
+.faq-item{border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden}
+.faq-q{padding:20px 24px;font-weight:700;font-size:.9375rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:16px;background:var(--surface);transition:background .2s;user-select:none}
+.faq-q:hover{background:var(--surface-hover)}
+.faq-q svg{flex-shrink:0;transition:transform .25s var(--ease);color:var(--text-3)}
+.faq-item.open .faq-q svg{transform:rotate(180deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .35s var(--ease),padding .35s var(--ease)}
+.faq-item.open .faq-a{max-height:300px;padding:12px 24px 20px}
+.faq-a p{color:var(--text-2);font-size:.875rem;line-height:1.65}
+
+.sep{border:none;border-top:1px solid var(--border);margin:0}
+footer{border-top:1px solid var(--border);padding:40px 0;text-align:center;font-size:.8125rem;color:var(--text-3)}
+footer a{color:var(--text-2)}
+footer .ft-eco{color:var(--text-3);margin-bottom:8px}
+
+@media(max-width:720px){nav{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(10,14,26,.98)}.copy-btn{backdrop-filter:none;-webkit-backdrop-filter:none}.bg-ambient{display:none}.rv{opacity:1;transform:none;transition:none}.rv.vis{opacity:1;transform:none}.hf{opacity:1;transform:none;animation:none}
+  .qs-steps,.features-grid,.tools-grid{grid-template-columns:1fr}
+  .hero{padding:56px 0 40px}
+  .hero h1{font-size:2rem}
+  .term-block,.qs-code,.qs-out,pre,code{font-size:12px;overflow-x:auto;max-width:100%;white-space:pre-wrap}
+  .container{padding:0 16px}
+  section,.what-is,.quickstart,.features,.faq,.tools,.flow,.example{padding:40px 0}
+  .term-block{max-width:100%;overflow-x:auto}
+  .what-box{padding:28px 20px}
+  .flow-diagram{padding:20px 10px}
+  .flow-circle svg{height:36px !important;width:auto !important}
+  .qs-step{padding:20px 16px}
+  .copy-btn{display:none !important}
+}
+@media(max-width:480px){
+  .nav-logo{font-size:1.5rem}
+  .hero h1{font-size:1.6rem}
+  .hero-sub,.section-sub{font-size:0.95rem}
+  .nav-links a:not(.nav-cta){display:none}
+  .hero-actions{flex-direction:column}
+  .btn{width:100%;justify-content:center;min-height:44px}
+  .tool-card.highlight::before{top:-10px;right:8px;font-size:.5625rem}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:0.01ms !important;transition-duration:0.01ms !important}
+}
+*:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+.skip-link{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:1000}
+.skip-link:focus{position:fixed;top:8px;left:8px;width:auto;height:auto;padding:12px 24px;background:var(--accent);color:#000;font-weight:700;font-size:.875rem;border-radius:8px;text-decoration:none;z-index:10000}
+.copy-btn{min-width:44px;min-height:24px;display:inline-flex;align-items:center;justify-content:center}
+.nav-links a{min-height:44px;display:inline-flex;align-items:center}
+</style>
+<meta name="theme-color" content="#9ca3af">
+<script type="application/ld+json">
+[{"@context":"https://schema.org","@type":"WebSite","name":"Grainulation","url":"https://grainulation.com","description":"Eight zero-dependency tools that turn questions into evidence and evidence into decisions."},{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Grainulation","description":"Eight zero-dependency tools that turn questions into evidence-graded decisions. The unified CLI for the grainulation research ecosystem.","applicationCategory":"DeveloperApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Organization","name":"Grainulation","url":"https://grainulation.com"},"license":"https://opensource.org/licenses/MIT"}]
+</script>
+<link rel="stylesheet" media="print" href="/grainulation-print.css">
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+
+<div class="bg-ambient" aria-hidden="true"><div class="orb"></div><div class="orb"></div><div class="orb"></div></div>
+
+<div class="page">
+
+<nav aria-label="Main navigation">
+  <div class="container">
+    <a href="#" class="nav-logo"><svg width="177" height="48" viewBox="0 0 140 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-left:4px"><path d="M22,8 L16,8 C10.5,12.5 10.5,25.5 16,30 L22,30" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="23" y="19" text-anchor="middle" dominant-baseline="central" fill="#9ca3af" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">G</text><text x="29.5" y="19" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">rainulation</text></svg></a>
+    <div class="nav-links">
+      <a href="#what">About</a>
+      <a href="#tools">Tools</a>
+      <a href="#example">Example</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://github.com/grainulation/grainulation" class="nav-cta" aria-label="GitHub"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+
+<!-- Hero: problem-first -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge hf hf1">8 tools. Zero npm dependencies. One ecosystem.</div>
+    <h1 class="hf hf2">Your team makes technical decisions on gut feel. <em>It does not have to be that way.</em></h1>
+    <p class="hero-sub hf hf3">ChatGPT gives you a paragraph. <strong style="color:#fff;font-weight:700"><span style="color:#9ca3af">g</span>rainulation</strong> gives you typed claims with conflicts highlighted. Research, challenge, compile — then ship a decision brief your team can audit. Research that compiles.</p>
+    <div class="hero-actions hf hf4">
+      <a href="#quickstart" class="btn btn-primary">
+        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        Get started
+      </a>
+      <a href="https://grainulator.app" class="btn btn-ghost">
+        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Try the demo
+      </a>
+      <a href="#tools" class="btn btn-ghost">
+        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
+        Explore the tools
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- What is this -->
+<section class="what-is" id="what">
+  <div class="container">
+    <div class="what-box rv">
+      <p>Everything in <strong style="color:#fff;font-weight:700"><span style="color:#9ca3af">g</span>rainulation</strong> starts with a <strong style="color:#fff">claim</strong> — a single typed statement with an evidence grade. Claims have types (factual, risk, estimate, constraint, recommendation) and tiers (from "someone said it" to "measured in production"). The compiler validates them. The tools help you collect them.</p>
+      <p><strong style="color:#fff;font-weight:700"><span style="color:#9ca3af">g</span>rainulation</strong> is an ecosystem of CLI tools for structured technical research. Start with <strong style="color:#fff;font-size:110%"><span style="color:#fbbf24">w</span>heat</strong> — you will discover the others as you need them. Ask a question ("Should we migrate from microservices back to a modular monolith?"), research from multiple angles, challenge your findings, and compile into a decision brief.</p>
+      <p>The compiler is JavaScript code, not an LLM call. Same claims in, same result out, every time. It catches contradictions, flags weak evidence, and blocks output until issues are resolved. Your decision brief has a git audit trail showing how every claim was collected and challenged.</p>
+      <p>You need <strong><a href="https://docs.anthropic.com/en/docs/claude-code" style="color:var(--text)">Claude Code</a></strong>, <strong>Node.js 20+</strong>, and <strong>npx</strong>. No accounts, no cloud services, no API keys for the core tools. Zero npm dependencies across the entire ecosystem — built on Node.js built-ins only. Everything runs locally, everything is plain JSON and HTML.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Before/after contrast -->
+<section style="padding:60px 0 48px">
+  <div class="container" style="max-width:700px;margin:0 auto">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" class="rv">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:32px">
+        <div style="font-weight:700;font-size:.8125rem;color:var(--red);margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em">Ask ChatGPT</div>
+        <p style="color:var(--text-2);font-size:.875rem;line-height:1.6">"We should probably break up the monolith because microservices scale better." One paragraph, no sources, no way to challenge it.</p>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--green);border-radius:14px;padding:32px">
+        <div style="font-weight:700;font-size:.8125rem;color:var(--green);margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em">Ask Grainulation</div>
+        <p style="color:var(--text-2);font-size:.875rem;line-height:1.6">14 typed claims across 4 topics. 3 risks flagged. 1 contradiction caught. Recommendation with evidence grade. Full git audit trail.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="sep">
+
+<!-- Ecosystem flow diagram -->
+<section class="flow" id="flow">
+  <div class="container">
+    <div class="section-label rv" style="text-align:center">How the tools connect</div>
+    <h2 class="section-title rv rv-d1" style="text-align:center">From question to shipped decision</h2>
+    <p class="section-sub rv rv-d2" style="text-align:center;margin-left:auto;margin-right:auto">Start with <strong style="color:#fff;font-weight:700"><span style="color:#fbbf24">w</span>heat</strong>. Add tools only when you need them. Most sprints need just the core engine.</p>
+
+    <div class="flow-diagram rv rv-d3">
+      <!-- <strong style="color:#fff;font-size:110%"><span style="color:#fbbf24">w</span>heat</strong> -->
+      <div class="flow-node">
+        <div class="flow-circle"><svg width="92" height="48" viewBox="0 0 73 38" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22,8 L16,8 C10.5,12.5 10.5,25.5 16,30 L22,30" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="24" y="19" text-anchor="middle" dominant-baseline="central" fill="#fbbf24" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">W</text><text x="32.5" y="19" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">heat</text></svg></div>
+        <div class="flow-label">Research</div>
+      </div>
+
+      <div class="flow-arrow">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+
+      <!-- <strong style="color:#fff;font-size:110%"><span style="color:#3b82f6">f</span>armer</strong> -->
+      <div class="flow-node">
+        <div class="flow-circle"><svg width="106" height="48" viewBox="0 0 84 38" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22,8 L16,8 C10.5,12.5 10.5,25.5 16,30 L22,30" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="22" y="19" text-anchor="middle" dominant-baseline="central" fill="#3b82f6" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">F</text><text x="27" y="19" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">armer</text></svg></div>
+        <div class="flow-label">Permissions</div>
+      </div>
+
+      <div class="flow-arrow">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+
+      <!-- <strong style="color:#fff;font-size:110%"><span style="color:#a78bfa">m</span>ill</strong> -->
+      <div class="flow-node">
+        <div class="flow-circle"><svg width="63" height="48" viewBox="0 0 50 38" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22,8 L16,8 C10.5,12.5 10.5,25.5 16,30 L22,30" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="24" y="19" text-anchor="middle" dominant-baseline="central" fill="#a78bfa" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">M</text><text x="32.5" y="19" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">ill</text></svg></div>
+        <div class="flow-label">Export</div>
+      </div>
+
+      <div class="flow-arrow">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+
+      <!-- <strong style="color:#fff;font-size:110%"><span style="color:#fb923c">h</span>arvest</strong> -->
+      <div class="flow-node">
+        <div class="flow-circle"><svg width="111" height="48" viewBox="0 0 88 38" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22,8 L16,8 C10.5,12.5 10.5,25.5 16,30 L22,30" stroke="#fb923c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="23" y="19" text-anchor="middle" dominant-baseline="central" fill="#fb923c" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">H</text><text x="29.5" y="19" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">arvest</text></svg></div>
+        <div class="flow-label">Analytics</div>
+      </div>
+    </div>
+
+    <!-- Supporting tools row -->
+    <div style="text-align:center;margin-top:24px">
+      <div style="display:inline-flex;gap:24px;flex-wrap:wrap;justify-content:center;align-items:start" class="rv rv-d4">
+        <div class="flow-node">
+          <div class="flow-circle"><svg width="78" height="48" viewBox="0 0 62 38" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22,8 L16,8 C10.5,12.5 10.5,25.5 16,30 L22,30" stroke="#f43f5e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="22.5" y="19" text-anchor="middle" dominant-baseline="central" fill="#f43f5e" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">B</text><text x="28.5" y="19" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">arn</text></svg></div>
+          <div class="flow-label">Shared utilities</div>
+        </div>
+        <div class="flow-node">
+          <div class="flow-circle"><svg width="68" height="48" viewBox="0 0 54 38" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22,8 L16,8 C10.5,12.5 10.5,25.5 16,30 L22,30" stroke="#6ee7b7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="22" y="19" text-anchor="middle" dominant-baseline="central" fill="#6ee7b7" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">S</text><text x="27.5" y="19" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">ilo</text></svg></div>
+          <div class="flow-label">Knowledge packs</div>
+        </div>
+        <div class="flow-node">
+          <div class="flow-circle"><svg width="114" height="48" viewBox="0 0 90 38" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22,8 L16,8 C10.5,12.5 10.5,25.5 16,30 L22,30" stroke="#d4a574" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="23" y="19" text-anchor="middle" dominant-baseline="central" fill="#d4a574" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">O</text><text x="29.5" y="19" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">rchard</text></svg></div>
+          <div class="flow-label">Orchestration</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="sep">
+
+<!-- Quick start -->
+<section class="quickstart" id="quickstart">
+  <div class="container">
+    <div class="section-label rv" style="text-align:center">Get started in 60 seconds</div>
+    <h2 class="section-title rv rv-d1" style="text-align:center">Three commands. One decision.</h2>
+    <p class="section-sub rv rv-d2" style="text-align:center;margin-left:auto;margin-right:auto">No install. No signup. Just npx and a question.</p>
+
+    <div class="qs-steps">
+      <div class="qs-step rv rv-d1">
+        <div class="qs-num">1</div>
+        <h3>Initialize a sprint</h3>
+        <p>Start with the question you need answered. <strong style="color:#fff;font-weight:700"><span style="color:#fbbf24">w</span>heat</strong> creates a claims file and config.</p>
+        <div class="copy-wrap">
+          <pre class="qs-code"><code><span class="dim">$</span> npx @grainulation/wheat init</code></pre>
+          <button class="copy-btn" onclick="copyText(this,'npx @grainulation/wheat init')">Copy</button>
+        </div>
+        <div class="qs-out">Sprint initialized.
+claims.json created (0 claims)
+wheat.config.json ready</div>
+      </div>
+      <div class="qs-step rv rv-d2">
+        <div class="qs-num">2</div>
+        <h3>Research and challenge</h3>
+        <p>Gather evidence, then stress-test it. Every finding becomes a typed, graded claim.</p>
+        <pre class="qs-code"><code><span class="dim">wheat&gt;</span> /research "topic"
+<span class="dim">wheat&gt;</span> /challenge r001</code></pre>
+        <div class="qs-out">r001 [factual|documented] ...
+x001 [risk|documented] ...</div>
+      </div>
+      <div class="qs-step rv rv-d3">
+        <div class="qs-num">3</div>
+        <h3>Compile and ship</h3>
+        <p>The compiler resolves conflicts, checks evidence, and produces a decision brief.</p>
+        <pre class="qs-code"><code><span class="dim">wheat&gt;</span> /brief</code></pre>
+        <div class="qs-out">Compiled 12 claims (2 conflicts resolved)
+Written: output/brief.html</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="sep">
+
+<!-- Real example -->
+<section class="example" id="example">
+  <div class="container">
+    <div class="section-label rv">Real example</div>
+    <h2 class="section-title rv rv-d1">Question to decision in 10 minutes</h2>
+    <p class="section-sub rv rv-d2">A team needs to decide whether to consolidate a service back into their monolith. Here is the full sprint, start to finish.</p>
+
+    <div style="display:flex;flex-direction:column;gap:16px" id="term-sim-container">
+      <div class="term-block">
+<span class="prompt">$</span> <span class="cmd">npx @grainulation/wheat init</span>
+
+<span class="output">  Question: Should we consolidate the auth service back into our monolith?
+  Audience: Platform team + auth leads
+  Constraints: Must maintain session continuity across consolidation</span>
+
+<span class="success">  Sprint created. claims.json + wheat.config.json ready.</span></div>
+
+      <div class="term-block">
+<span class="prompt">wheat&gt;</span> <span class="cmd">/research "consolidation cost, latency impact, data-coupling risk"</span>
+
+<span class="output">  r001 [factual|documented]  Co-locating services cuts p99 latency dramatically
+  r002 [risk|documented]     Shared-database coupling complicates consolidation
+  r003 [estimate|web]        Consolidation effort: 3-5 weeks per service
+  r004 [factual|documented]  Cross-service chattiness adds 2-5ms per hop</span></div>
+
+      <div class="term-block">
+<span class="prompt">wheat&gt;</span> <span class="cmd">/challenge r001</span>
+
+<span class="output">  x001 [risk|documented]  Latency wins vary by call pattern
+                          — chatty workflows benefit more than batch</span></div>
+
+      <div class="term-block">
+<span class="prompt">wheat&gt;</span> <span class="cmd">/prototype</span>
+
+<span class="output">  p001 [factual|tested]  Measured p99 drop on /auth/session when consolidated
+  p002 [risk|tested]     Dual-write race during cut-over window</span></div>
+
+      <div class="term-block">
+<span class="prompt">wheat&gt;</span> <span class="cmd">/brief</span>
+
+<span class="success">  Compiled 8 claims (1 conflict resolved)
+  Written: output/brief.html</span>
+
+<span class="output">  Recommendation: Consolidate the auth service back into the monolith.
+  Leave other services extracted; revisit after 6 months.</span></div>
+    </div>
+  </div>
+</section>
+
+<hr class="sep">
+
+<!-- Tools grid -->
+<section class="tools" id="tools">
+  <div class="container">
+    <div class="section-label rv" style="text-align:center">The ecosystem</div>
+    <h2 class="section-title rv rv-d1" style="text-align:center">Eight tools. Each does one thing well.</h2>
+    <p class="section-sub rv rv-d2" style="text-align:center;margin-left:auto;margin-right:auto">Start with <strong style="color:#fff;font-weight:700"><span style="color:#fbbf24">w</span>heat</strong>. Everything else is optional. Add tools as your research practice grows.</p>
+
+    <div class="tools-grid">
+      <a href="https://wheat.grainulation.com/" class="tool-card highlight rv rv-d1" style="text-decoration:none;color:inherit">
+        <div class="tool-card-head">
+          <svg width="61" height="32" viewBox="0 0 73 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;position:relative;top:-4px"><path d="M22,8 L16,8 C10.5,12.5 10.5,25.5 16,30 L22,30" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="24" y="19" text-anchor="middle" dominant-baseline="central" fill="#fbbf24" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">W</text><text x="32.5" y="19" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">heat</text></svg>
+          <div>
+            <div class="tool-role" style="color:#fbbf24">Evidence compiler</div>
+          </div>
+        </div>
+        <div class="tool-desc">The core engine. Ask a question, collect typed claims from multiple angles, compile a validated decision brief. 7-pass compiler, zero npm dependencies. Everything starts here.</div>
+        <div class="tool-install">npx @<strong style="color:#fff;font-size:110%"><span style="color:#9ca3af">gr</span>ainulation</strong>/<strong style="color:#fff;font-size:110%"><span style="color:#fbbf24">w</span>heat</strong> init</div>
+      </a>
+
+
+
+      <a href="https://barn.grainulation.com/" class="tool-card rv rv-d3" style="text-decoration:none;color:inherit">
+        <div class="tool-card-head">
+          <svg width="52" height="32" viewBox="0 0 62 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;position:relative;top:-4px"><path d="M22,8 L16,8 C10.5,12.5 10.5,25.5 16,30 L22,30" stroke="#f43f5e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="22.5" y="19" text-anchor="middle" dominant-baseline="central" fill="#f43f5e" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">B</text><text x="28.5" y="19" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">arn</text></svg>
+          <div>
+            <div class="tool-role" style="color:#f43f5e">Shared utilities</div>
+          </div>
+        </div>
+        <div class="tool-desc">Sprint detection, manifest generation, HTML templates. The shared foundation the ecosystem builds on.</div>
+        <div class="tool-install">npx @<strong style="color:#fff;font-size:110%"><span style="color:#9ca3af">gr</span>ainulation</strong>/<strong style="color:#fff;font-size:110%"><span style="color:#f43f5e">b</span>arn</strong> detect-sprints</div>
+      </a>
+
+      <a href="https://mill.grainulation.com/" class="tool-card rv rv-d4" style="text-decoration:none;color:inherit">
+        <div class="tool-card-head">
+          <svg width="42" height="32" viewBox="0 0 50 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;position:relative;top:-4px"><path d="M22,8 L16,8 C10.5,12.5 10.5,25.5 16,30 L22,30" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="24" y="19" text-anchor="middle" dominant-baseline="central" fill="#a78bfa" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">M</text><text x="32.5" y="19" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">ill</text></svg>
+          <div>
+            <div class="tool-role" style="color:#a78bfa">Export and publish</div>
+          </div>
+        </div>
+        <div class="tool-desc">Turn compiled research into PDFs, CSVs, and static sites. Every format you need to share decisions.</div>
+        <div class="tool-install">npx @<strong style="color:#fff;font-size:110%"><span style="color:#9ca3af">gr</span>ainulation</strong>/<strong style="color:#fff;font-size:110%"><span style="color:#a78bfa">m</span>ill</strong> export --format pdf</div>
+      </a>
+
+      <a href="https://silo.grainulation.com/" class="tool-card rv rv-d1" style="text-decoration:none;color:inherit">
+        <div class="tool-card-head">
+          <svg width="45" height="32" viewBox="0 0 54 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;position:relative;top:-4px"><path d="M22,8 L16,8 C10.5,12.5 10.5,25.5 16,30 L22,30" stroke="#6ee7b7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="22" y="19" text-anchor="middle" dominant-baseline="central" fill="#6ee7b7" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">S</text><text x="27.5" y="19" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">ilo</text></svg>
+          <div>
+            <div class="tool-role" style="color:#6ee7b7">Knowledge packs</div>
+          </div>
+        </div>
+        <div class="tool-desc">Reusable claim libraries. HIPAA constraints, migration risks, architecture patterns. Pull established knowledge, skip the re-research.</div>
+        <div class="tool-install">npx @<strong style="color:#fff;font-size:110%"><span style="color:#9ca3af">gr</span>ainulation</strong>/<strong style="color:#fff;font-size:110%"><span style="color:#6ee7b7">s</span>ilo</strong> pull compliance</div>
+      </a>
+
+      <a href="https://harvest.grainulation.com/" class="tool-card rv rv-d2" style="text-decoration:none;color:inherit">
+        <div class="tool-card-head">
+          <svg width="74" height="32" viewBox="0 0 88 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;position:relative;top:-4px"><path d="M22,8 L16,8 C10.5,12.5 10.5,25.5 16,30 L22,30" stroke="#fb923c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="23" y="19" text-anchor="middle" dominant-baseline="central" fill="#fb923c" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">H</text><text x="29.5" y="19" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">arvest</text></svg>
+          <div>
+            <div class="tool-role" style="color:#fb923c">Analytics</div>
+          </div>
+        </div>
+        <div class="tool-desc">Cross-sprint learning. Track prediction accuracy, find systemic blind spots, detect stale claims across all your research.</div>
+        <div class="tool-install">npx @<strong style="color:#fff;font-size:110%"><span style="color:#9ca3af">gr</span>ainulation</strong>/<strong style="color:#fff;font-size:110%"><span style="color:#fb923c">h</span>arvest</strong> analyze ./sprints/</div>
+      </a>
+
+      <a href="https://orchard.grainulation.com/" class="tool-card rv rv-d3" style="text-decoration:none;color:inherit">
+        <div class="tool-card-head">
+          <svg width="76" height="32" viewBox="0 0 90 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;position:relative;top:-4px"><path d="M22,8 L16,8 C10.5,12.5 10.5,25.5 16,30 L22,30" stroke="#d4a574" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="23" y="19" text-anchor="middle" dominant-baseline="central" fill="#d4a574" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">O</text><text x="29.5" y="19" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">rchard</text></svg>
+          <div>
+            <div class="tool-role" style="color:#d4a574">Multi-sprint orchestration</div>
+          </div>
+        </div>
+        <div class="tool-desc">Multi-sprint coordination. Dependencies, conflict detection, team assignment. The org-wide view of all active research.</div>
+        <div class="tool-install">npx @<strong style="color:#fff;font-size:110%"><span style="color:#9ca3af">gr</span>ainulation</strong>/<strong style="color:#fff;font-size:110%"><span style="color:#d4a574">o</span>rchard</strong> status</div>
+      </a>
+
+      <a href="https://github.com/grainulation/grainulation" class="tool-card rv rv-d4" style="text-decoration:none;color:inherit">
+        <div class="tool-card-head">
+          <svg width="118" height="32" viewBox="0 0 140 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;position:relative;top:-4px"><path d="M22,8 L16,8 C10.5,12.5 10.5,25.5 16,30 L22,30" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="23" y="19" text-anchor="middle" dominant-baseline="central" fill="#9ca3af" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">G</text><text x="29.5" y="19" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">rainulation</text></svg>
+          <div>
+            <div class="tool-role" style="color:#9ca3af">Unified CLI</div>
+          </div>
+        </div>
+        <div class="tool-desc">The meta-tool. Routes to the right tool, checks ecosystem health, manages configuration across all eight packages.</div>
+        <div class="tool-install">npx <strong style="color:#fff;font-size:110%"><span style="color:#9ca3af">gr</span>ainulation</strong></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<hr class="sep">
+
+<!-- Philosophy -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="section-label rv" style="text-align:center">Philosophy</div>
+    <h2 class="section-title rv rv-d1" style="text-align:center">Built on four principles</h2>
+    <p class="section-sub rv rv-d2" style="text-align:center;margin-left:auto;margin-right:auto">The decisions behind the tools.</p>
+
+    <div class="features-grid">
+      <div class="feature-card rv rv-d1">
+        <div class="feature-icon">
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <h3>Satisficing over maximizing</h3>
+        <p>You will never have perfect information. The goal is enough evidence to make a defensible decision, not a perfect one.</p>
+      </div>
+      <div class="feature-card rv rv-d2">
+        <div class="feature-icon">
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <h3>Claims over opinions</h3>
+        <p>Every finding is a typed claim with an evidence tier and provenance. "I think" becomes a traceable claim ID with a grade.</p>
+      </div>
+      <div class="feature-card rv rv-d3">
+        <div class="feature-icon">
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <h3>Adversarial pressure</h3>
+        <p>Comfortable agreement is the enemy of good decisions. The system forces you to challenge, witness, and stress-test every claim.</p>
+      </div>
+      <div class="feature-card rv rv-d4">
+        <div class="feature-icon">
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+        <h3>Zero dependencies</h3>
+        <p>Node.js built-ins only. Zero npm dependencies across all eight packages. No supply chain anxiety. No left-pad. No API keys for the compiler. Every tool ships what it needs and nothing more.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="sep">
+
+<!-- FAQ -->
+<section class="faq" id="faq">
+  <div class="container">
+    <div class="section-label rv" style="text-align:center">FAQ</div>
+    <h2 class="section-title rv rv-d1" style="text-align:center">Common questions</h2>
+    <div style="height:32px"></div>
+
+    <div class="faq-list">
+      <div class="faq-item rv rv-d1">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+          Do I need Node.js?
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-a">
+          <p>Yes. Node.js 20+ is required. That is the only system dependency. Everything runs via <code>npx</code> with zero npm install required — packages are fetched and cached automatically.</p>
+        </div>
+      </div>
+
+      <div class="faq-item rv rv-d2">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+          Does this work with my programming language / framework?
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-a">
+          <p><strong style="color:#fff;font-weight:700"><span style="color:#9ca3af">g</span>rainulation</strong> is language-agnostic. It researches decisions about any technology — databases, APIs, infrastructure, architecture. The tools run locally, but the research can be about anything.</p>
+        </div>
+      </div>
+
+      <div class="faq-item rv rv-d3">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+          How does this compare to writing an RFC or ADR?
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-a">
+          <p>RFCs and ADRs document a decision after it is made. <strong style="color:#fff;font-weight:700"><span style="color:#9ca3af">g</span>rainulation</strong> captures the research process — evidence gathering, adversarial testing, and conflict resolution — and validates it through a compiler. The output brief can serve as your ADR, with a full git audit trail showing how every claim was collected, challenged, and resolved.</p>
+        </div>
+      </div>
+
+      <div class="faq-item rv rv-d4">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+          Do I need all eight tools?
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-a">
+          <p>No. Start with <strong style="color:#fff;font-weight:700"><span style="color:#fbbf24">w</span>heat</strong> alone — it handles the full research-to-decision workflow. Add other tools only when you need specific capabilities: <strong style="color:#fff;font-weight:700"><span style="color:#3b82f6">f</span>armer</strong> for AI permissions, <strong style="color:#fff;font-weight:700"><span style="color:#a78bfa">m</span>ill</strong> for export, <strong style="color:#fff;font-weight:700"><span style="color:#6ee7b7">s</span>ilo</strong> for reusable knowledge, and so on.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- Footer -->
+<footer><div class="container"><div style="display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap"><a href="https://github.com/grainulation/grainulation">GitHub</a><a href="https://grainulation.com/" style="text-decoration:none;display:inline-flex;align-items:center"><svg width="120" height="40" viewBox="0 0 140 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;"><path d="M22,8 L16,8 C10.5,12.5 10.5,25.5 16,30 L22,30" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="23" y="19" text-anchor="middle" dominant-baseline="central" fill="#9ca3af" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">G</text><text x="29.5" y="19" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">rainulation</text></svg></a><a href="https://deepwiki.com/grainulation/grainulation">Docs</a></div></div></footer>
+
+</div>
+
+<script>
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('vis'); obs.unobserve(e.target); }});
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.rv').forEach(el => obs.observe(el));
+
+function copyText(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    var w = window.innerWidth; btn.textContent = w <= 720 ? '\u2713' : 'Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1200);
+  });
+}
+
+/* Terminal simulation for example blocks */
+(function() {
+  var TYPING_SPEED = 35;
+  var LINE_PAUSE = 150;
+  var BLOCK_PAUSE = 400;
+  var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches || window.innerWidth <= 720;
+
+  var container = document.getElementById('term-sim-container');
+  if (!container) return;
+
+  var blocks = container.querySelectorAll('.term-block');
+  if (!blocks.length) return;
+
+  var blockData = [];
+  blocks.forEach(function(block) {
+    var cmdEl = block.querySelector('.cmd');
+    var cmdText = cmdEl ? cmdEl.textContent : '';
+
+    var outputNodes = [];
+    var children = block.childNodes;
+    for (var i = 0; i < children.length; i++) {
+      var n = children[i];
+      if (n.classList && (n.classList.contains('output') || n.classList.contains('success'))) {
+        outputNodes.push(n);
+      }
+    }
+
+    if (outputNodes.length > 0) {
+      var wrap = document.createElement('span');
+      wrap.className = 't-output-wrap';
+      outputNodes[0].parentNode.insertBefore(wrap, outputNodes[0]);
+      outputNodes.forEach(function(n) { wrap.appendChild(n); });
+      blockData.push({ block: block, cmd: cmdEl, cmdText: cmdText, output: wrap });
+    } else {
+      blockData.push({ block: block, cmd: cmdEl, cmdText: cmdText, output: null });
+    }
+
+    if (cmdEl) cmdEl.textContent = '';
+    block.style.opacity = '0';
+  });
+
+  container.classList.add('term-sim-wrap');
+  var animated = false;
+
+  function showFinalState() {
+    container.classList.add('t-done');
+    blockData.forEach(function(d) {
+      d.block.classList.add('t-active');
+      d.block.style.opacity = '';
+      d.block.style.transform = '';
+      if (d.cmd) { d.cmd.textContent = d.cmdText; d.cmd.classList.remove('typing-cursor'); }
+      if (d.output) d.output.classList.add('t-visible');
+    });
+  }
+
+  function typeText(el, text, cb) {
+    var idx = 0;
+    el.classList.add('typing-cursor');
+    function tick() {
+      if (idx < text.length) {
+        el.textContent += text[idx];
+        idx++;
+        setTimeout(tick, TYPING_SPEED);
+      } else {
+        el.classList.remove('typing-cursor');
+        cb();
+      }
+    }
+    tick();
+  }
+
+  function animateBlock(i, cb) {
+    if (i >= blockData.length) { cb(); return; }
+    var d = blockData[i];
+    d.block.classList.add('t-active');
+    d.block.style.opacity = '';
+    d.block.style.transform = '';
+    setTimeout(function() {
+      if (d.cmd && d.cmdText) {
+        typeText(d.cmd, d.cmdText, function() {
+          setTimeout(function() {
+            if (d.output) d.output.classList.add('t-visible');
+            setTimeout(function() { animateBlock(i + 1, cb); }, BLOCK_PAUSE);
+          }, LINE_PAUSE);
+        });
+      } else {
+        setTimeout(function() { animateBlock(i + 1, cb); }, BLOCK_PAUSE);
+      }
+    }, 100);
+  }
+
+  if (reducedMotion) {
+    showFinalState();
+    return;
+  }
+
+  var termObs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting && !animated) {
+        animated = true;
+        termObs.unobserve(container);
+        animateBlock(0, function() { container.classList.add('t-done'); });
+      }
+    });
+  }, { threshold: 0.1 });
+
+  var scrollTimer;
+  function onScroll() {
+    if (animated) { window.removeEventListener('scroll', onScroll); return; }
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(function() {
+      if (!animated) {
+        var rect = container.getBoundingClientRect();
+        if (rect.bottom < 0) {
+          animated = true;
+          termObs.unobserve(container);
+          showFinalState();
+          window.removeEventListener('scroll', onScroll);
+        }
+      }
+    }, 100);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  termObs.observe(container);
+  /* Fallback: if IntersectionObserver doesn't fire (e.g. in iframes), show after 2s */
+  setTimeout(function() { if (!animated) { animated = true; termObs.unobserve(container); showFinalState(); window.removeEventListener('scroll', onScroll); } }, 2000);
+})();
+</script>
+</body>
+</html>

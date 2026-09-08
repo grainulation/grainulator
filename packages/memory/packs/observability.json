@@ -1,0 +1,220 @@
+{
+  "name": "Observability and Incident Response",
+  "description": "Structured logging, metrics, distributed tracing, SLO definitions, alerting hygiene, and incident response patterns for production systems.",
+  "version": "1.0.0",
+  "claims": [
+    {
+      "id": "obs-001",
+      "type": "constraint",
+      "topic": "structured logging format",
+      "content": "All application logs must be structured JSON with mandatory fields: timestamp (ISO 8601), level (debug/info/warn/error/fatal), message, service, and trace_id. Unstructured string logs break log aggregation queries and make correlation impossible at scale.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["observability", "logging", "structured-logging"]
+    },
+    {
+      "id": "obs-002",
+      "type": "recommendation",
+      "topic": "RED method for services",
+      "content": "Every service should expose the RED metrics: Rate (requests per second), Errors (failed requests per second), and Duration (latency histogram). These three metrics cover 80% of service-level debugging. Use histograms with buckets at 5ms, 10ms, 25ms, 50ms, 100ms, 250ms, 500ms, 1s, 2.5s, 5s, 10s.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["observability", "metrics", "red-method", "monitoring"]
+    },
+    {
+      "id": "obs-003",
+      "type": "factual",
+      "topic": "SLO error budget calculation",
+      "content": "An SLO of 99.9% availability allows 43.2 minutes of downtime per 30-day window (0.1% error budget). An SLO of 99.95% allows 21.6 minutes. Error budget = total time * (1 - SLO target). When budget is exhausted, freeze feature work and focus on reliability.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["observability", "slo", "error-budget", "reliability"]
+    },
+    {
+      "id": "obs-004",
+      "type": "risk",
+      "topic": "alert fatigue",
+      "content": "Alert fatigue occurs when on-call engineers receive more than 2-3 actionable alerts per shift. Non-actionable alerts must be demoted to dashboards or deleted. Every alert should have a runbook link, a clear threshold, and an expected action. Pages without runbooks erode trust in the alerting system.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["observability", "alerting", "on-call", "alert-fatigue"]
+    },
+    {
+      "id": "obs-005",
+      "type": "recommendation",
+      "topic": "distributed trace propagation",
+      "content": "Propagate W3C Trace Context headers (traceparent, tracestate) across all service boundaries including HTTP, gRPC, and message queues. Without trace propagation, latency debugging in distributed systems requires manual log correlation which takes 10-50x longer.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": [
+        "observability",
+        "tracing",
+        "distributed-systems",
+        "opentelemetry"
+      ]
+    },
+    {
+      "id": "obs-006",
+      "type": "constraint",
+      "topic": "no PII in logs",
+      "content": "Logs must never contain PII (emails, names, IP addresses, session tokens, passwords). Use hashed or tokenized identifiers for correlation. Accidental PII in logs creates GDPR/CCPA compliance risk and makes log retention policies complex. Enforce with automated log scrubbing or allowlist-based field serialization.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["observability", "logging", "pii", "compliance"]
+    },
+    {
+      "id": "obs-007",
+      "type": "recommendation",
+      "topic": "USE method for infrastructure",
+      "content": "For infrastructure resources (CPU, memory, disk, network), track the USE metrics: Utilization (% of capacity used), Saturation (queue depth or wait time), and Errors (error count). Alert when utilization exceeds 80% sustained over 5 minutes or saturation is non-zero.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["observability", "metrics", "use-method", "infrastructure"]
+    },
+    {
+      "id": "obs-008",
+      "type": "factual",
+      "topic": "log retention cost model",
+      "content": "Log storage costs scale linearly with volume and retention. At 100 GB/day ingestion, 30-day retention costs roughly $3,000-6,000/month on major cloud log platforms (Datadog, Splunk, CloudWatch). Reduce costs by sampling debug logs (keep 10%), archiving to cold storage after 7 days, and dropping health check logs.",
+      "source": { "origin": "industry", "artifact": null, "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["observability", "logging", "cost", "retention"]
+    },
+    {
+      "id": "obs-009",
+      "type": "recommendation",
+      "topic": "incident severity definitions",
+      "content": "Define incident severity levels with quantitative criteria: SEV1 (total service outage or data loss, all hands, 15-min response), SEV2 (degraded for >50% of users, team response, 30-min), SEV3 (degraded for <50% or non-critical feature down, next business day), SEV4 (cosmetic or minor, backlog). Ambiguous severity wastes escalation time.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["observability", "incident-response", "severity", "on-call"]
+    },
+    {
+      "id": "obs-010",
+      "type": "risk",
+      "topic": "cardinality explosion in metrics",
+      "content": "High-cardinality labels (user IDs, request IDs, full URLs) on metrics cause cardinality explosion, which degrades query performance and inflates storage costs exponentially. Prometheus recommends keeping total time series under 10 million. Use logs or traces for high-cardinality data, not metrics.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "production",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["observability", "metrics", "cardinality", "prometheus"]
+    },
+    {
+      "id": "obs-011",
+      "type": "recommendation",
+      "topic": "postmortem blamelessness",
+      "content": "Postmortems must be blameless and focus on systemic causes, not individual actions. Required sections: timeline, impact (users affected, duration, revenue impact), root cause, contributing factors, action items with owners and due dates. Publish postmortems within 48 hours of incident resolution.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["observability", "incident-response", "postmortem", "culture"]
+    },
+    {
+      "id": "obs-012",
+      "type": "estimate",
+      "topic": "OpenTelemetry migration effort",
+      "content": "Migrating from vendor-specific instrumentation (Datadog agent, New Relic APM) to OpenTelemetry SDK typically takes 2-4 weeks per service for auto-instrumentation, plus 1-2 additional weeks for custom spans and metrics migration. The payoff is vendor portability and 30-50% reduction in long-term instrumentation costs.",
+      "source": { "origin": "industry", "artifact": null, "connector": null },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["observability", "opentelemetry", "migration", "cost"]
+    }
+  ]
+}

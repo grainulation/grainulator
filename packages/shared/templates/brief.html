@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{TITLE}} — Decision Brief</title>
+<style>
+  /* barn/templates/brief.html — one-page decision document
+     System font stack, no external dependencies, fully self-contained. */
+
+  :root {
+    --bg: #0a0e1a;
+    --bg2: #111827;
+    --bg3: #1e293b;
+    --accent: #3b82f6;
+    --accent-light: #60a5fa;
+    --green: #22c55e;
+    --orange: #f59e0b;
+    --red: #e11d48;
+    --purple: #a78bfa;
+    --pink: #f472b6;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --border: rgba(255,255,255,0.06);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { height: 100%; scroll-behavior: smooth; scroll-snap-type: y mandatory; overflow-y: scroll; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 11pt;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  section {
+    min-height: 100vh;
+    padding: 60px 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    scroll-snap-align: start;
+    position: relative;
+  }
+
+  section::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 40%; height: 100%;
+    background: radial-gradient(ellipse at top right, rgba(59,130,246,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  h1 {
+    font-size: 36pt;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  h2 {
+    font-size: 24pt;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+    color: #fff;
+  }
+
+  .section-label {
+    display: inline-block;
+    font-size: 9pt;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent-light);
+    background: rgba(59,130,246,0.12);
+    padding: 4px 12px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+  }
+
+  .subtitle { font-size: 16pt; color: var(--text-muted); font-weight: 300; max-width: 70%; margin-bottom: 24px; }
+  .sprint-meta { display: flex; gap: 24px; color: var(--text-dim); font-size: 10pt; margin-top: 12px; }
+  .sprint-meta strong { color: var(--text-muted); }
+
+  .question-block {
+    background: var(--bg2);
+    border-left: 3px solid var(--accent);
+    padding: 16px 24px;
+    border-radius: 0 8px 8px 0;
+    margin-top: 20px;
+    max-width: 80%;
+    font-size: 13pt;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .claims-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .claim-group {
+    background: var(--bg2);
+    border-radius: 12px;
+    padding: 20px 24px;
+    border: 1px solid var(--border);
+  }
+
+  .claim-group-header {
+    font-size: 9pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .claim-group.constraint .claim-group-header { color: var(--purple); }
+  .claim-group.factual .claim-group-header { color: var(--accent-light); }
+  .claim-group.estimate .claim-group-header { color: var(--orange); }
+  .claim-group.risk .claim-group-header { color: var(--red); }
+  .claim-group.recommendation .claim-group-header { color: var(--green); }
+  .claim-group.feedback .claim-group-header { color: var(--pink); }
+
+  .claim-item {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 10pt;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+
+  .claim-item:last-child { border-bottom: none; }
+  .claim-item code { font-size: 8pt; color: var(--text-dim); margin-right: 6px; }
+
+  .evidence-track {
+    display: flex;
+    height: 32px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  .evidence-segment {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.9);
+    min-width: 40px;
+  }
+
+  .evidence-segment.production { background: linear-gradient(90deg, #22c55e, #16a34a); }
+  .evidence-segment.tested { background: linear-gradient(90deg, #3b82f6, #2563eb); }
+  .evidence-segment.documented { background: linear-gradient(90deg, #a78bfa, #7c3aed); }
+  .evidence-segment.web { background: linear-gradient(90deg, #f59e0b, #d97706); }
+  .evidence-segment.stated { background: linear-gradient(90deg, #64748b, #475569); }
+
+  .legend { display: flex; gap: 20px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 9pt; color: var(--text-dim); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+  .recommendation-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 80%;
+  }
+
+  .recommendation-card p { font-size: 13pt; color: var(--text-muted); line-height: 1.6; margin-bottom: 0; }
+
+  .confidence-bar { display: flex; align-items: center; gap: 12px; margin-top: 20px; }
+  .confidence-track { flex: 1; height: 8px; background: var(--bg3); border-radius: 4px; overflow: hidden; max-width: 300px; }
+  .confidence-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--green)); }
+  .confidence-label { font-size: 10pt; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  .brief-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-top: 1px solid var(--border);
+    margin-top: auto;
+    font-size: 9pt;
+    color: var(--text-dim);
+  }
+
+  .brief-footer .hash { font-family: monospace; font-size: 8pt; }
+
+  nav[aria-label="sections"] {
+    position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 8px; z-index: 100;
+  }
+
+  nav[aria-label="sections"] a {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--text-dim); display: block; transition: all 0.2s;
+  }
+
+  nav[aria-label="sections"] a:hover { background: var(--accent); transform: scale(1.5); }
+
+  @media (max-width: 768px) {
+    section { padding: 32px 20px; height: auto; }
+    h1 { font-size: 22pt; } h2 { font-size: 18pt; }
+    .subtitle { font-size: 13pt; max-width: 100%; }
+    .question-block { max-width: 100%; font-size: 11pt; }
+    .claims-grid { grid-template-columns: 1fr; }
+    .recommendation-card { max-width: 100%; padding: 20px; }
+    .sprint-meta { flex-wrap: wrap; gap: 8px 16px; }
+    nav[aria-label="sections"] { display: none; }
+    .brief-footer { flex-direction: column; gap: 8px; text-align: center; }
+  }
+
+  @media print {
+    html { scroll-snap-type: none; }
+    section { min-height: auto; height: auto; page-break-after: always; padding: 40px; }
+    body { background: #fff; color: #1a1a1a; }
+    h1 { background: none; -webkit-text-fill-color: #1a1a1a; }
+    h2 { color: #1a1a1a; }
+    .subtitle, .claim-item, .question-block { color: #333; }
+    .claim-group, .recommendation-card { background: #f5f5f5; border-color: #ddd; }
+    nav[aria-label="sections"] { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav aria-label="sections">
+  <a href="#executive" title="Executive Summary"></a>
+  <a href="#findings" title="Key Findings"></a>
+  <a href="#evidence" title="Evidence Coverage"></a>
+  <a href="#recommendation" title="Recommendation"></a>
+</nav>
+
+<section id="executive" aria-label="Executive Summary">
+  <span class="section-label">Decision Brief</span>
+  <h1>{{TITLE}}</h1>
+  <p class="subtitle">{{SUBTITLE}}</p>
+  <div class="sprint-meta">
+    <span>Sprint: <strong>{{SPRINT_NAME}}</strong></span>
+  </div>
+  <div class="question-block">{{QUESTION}}</div>
+</section>
+
+<section id="findings" aria-label="Key Findings">
+  <span class="section-label">Key Findings</span>
+  <h2>Claims by Type</h2>
+  <div class="claims-grid">
+    {{CLAIMS_BY_TYPE}}
+  </div>
+</section>
+
+<section id="evidence" aria-label="Evidence Coverage">
+  <span class="section-label">Evidence Coverage</span>
+  <h2>Tier Distribution</h2>
+  <div class="evidence-track">
+    {{EVIDENCE_SUMMARY}}
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div> Production</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div> Tested</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div> Documented</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div> Web</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#64748b"></div> Stated</div>
+  </div>
+</section>
+
+<section id="recommendation" aria-label="Recommendation">
+  <span class="section-label">Recommendation</span>
+  <h2>What We Recommend</h2>
+  <div class="recommendation-card">
+    <p>{{RECOMMENDATION}}</p>
+    <div class="confidence-bar">
+      <span class="confidence-label">Confidence: {{CONFIDENCE}}</span>
+      <div class="confidence-track"><div class="confidence-fill" style="width:{{CONFIDENCE_PERCENT}}%"></div></div>
+    </div>
+  </div>
+  <div class="brief-footer">
+    <div>Compiled: {{COMPILED_AT}} | Claims: {{CLAIM_COUNT}}</div>
+    <div class="hash">{{HASH}}</div>
+  </div>
+</section>
+
+</body>
+</html>

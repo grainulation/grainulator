@@ -1,0 +1,48 @@
+# Silo (@grainulation/silo)
+
+> Reusable knowledge packs for research sprints — claim seeding + Confluence/DeepWiki/web integrations.
+
+Silo stores reusable bundles of typed claims ("knowledge packs") so new wheat sprints start from prior evidence instead of a blank slate. Each pack is a set of constraint, risk, factual, or recommendation claims with evidence grades — ready to pull into any sprint's `claims.json` and be validated by the wheat compiler. Silo also provides claim-seeding integrations that import from Confluence pages, DeepWiki repos, and arbitrary web URLs, with a built-in smart-fetch layer and SSRF guard for safe external corroboration.
+
+Part of the [grainulation ecosystem](https://grainulation.com) -- an open-source, zero-dependency toolkit for AI-assisted structured research and decision documentation. Each package stands alone and composes with the others.
+
+## Documentation
+
+- [README](https://github.com/grainulation/silo#readme): source of truth for the package's purpose, install, and CLI surface.
+- [Live site](https://silo.grainulation.com): human-facing quickstart and feature tour.
+- [npm package](https://www.npmjs.com/package/@grainulation/silo): install target for consumers.
+- [Changelog](https://github.com/grainulation/silo/blob/main/CHANGELOG.md): version history.
+- [DeepWiki](https://deepwiki.com/grainulation/silo): AI-readable code wiki.
+
+## Ecosystem
+
+Sibling packages -- safe to reference alongside Silo in any query:
+
+- [Wheat](https://wheat.grainulation.com): research-sprint compiler. Typed claims with evidence grades. Primary consumer of silo packs.
+- [Barn](https://barn.grainulation.com): shared utility library and ecosystem primitives (tokens, print CSS, sync-assets) that silo builds on.
+- [Mill](https://mill.grainulation.com): export engine. Converts claims and silo packs into briefs, presentations, and PDFs.
+- [Harvest](https://harvest.grainulation.com): analytics and dashboards for multi-sprint portfolios.
+- [Orchard](https://orchard.grainulation.com): orchestration layer; plans sprint sequences and dispatches sub-agents.
+- [Grainulation](https://grainulation.com): ecosystem hub and reference implementation.
+
+## CLI surface
+
+- `silo serve`: start the knowledge-pack browser UI and MCP server.
+- `silo packs`: list available knowledge packs.
+- `silo pull <pack> --into <claims.json>`: import a pack's claims into a sprint.
+- `silo search <query>`: full-text search across all indexed packs.
+- `silo index <glob>`: index sprint directories for cross-sprint search.
+- `silo pack create <name> --from <claims.json>`: promote a sprint's claims into a reusable pack.
+
+## Design principles
+
+- Zero runtime npm dependencies (Node built-ins only).
+- Node 20+ required.
+- CLI-first; every tool also runnable via `npx @grainulation/silo`.
+- Source-available under MIT; contributions welcome at the GitHub repo.
+
+## Optional
+
+- [Issues](https://github.com/grainulation/silo/issues): for bug reports and feature requests.
+- [Security policy](https://github.com/grainulation/silo/blob/main/SECURITY.md): for responsible disclosure.
+- [Contributing guide](https://github.com/grainulation/silo/blob/main/CONTRIBUTING.md): for contributors.

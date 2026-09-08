@@ -1,0 +1,40 @@
+{
+	"name": "bean-marketplace",
+	"owner": {
+		"name": "Grainulation",
+		"email": "info@grainulator.app"
+	},
+	"metadata": {
+		"description": "bean — a recursive convergence loop for large tasks: investigate, record evidence, compile, revise beliefs, repeat until converged. Runs on the grainulator runtime. Modeled on how the Fable model actually worked.",
+		"version": "2.1.0"
+	},
+	"plugins": [
+		{
+			"name": "bean",
+			"source": {
+				"source": "url",
+				"url": "https://github.com/grainulation/bean.git"
+			},
+			"description": "Execution-discipline skill for Claude Code and Codex",
+			"version": "2.1.0",
+			"author": {
+				"name": "Grainulation"
+			},
+			"homepage": "https://github.com/grainulation/bean",
+			"repository": "https://github.com/grainulation/bean",
+			"license": "MIT",
+			"keywords": [
+				"execution-discipline",
+				"stage-plan",
+				"delegation",
+				"verification",
+				"self-critique",
+				"codex",
+				"blindspot",
+				"fable-mode"
+			],
+			"category": "workflow",
+			"tags": ["planning", "verification", "multi-agent", "code-review"]
+		}
+	]
+}

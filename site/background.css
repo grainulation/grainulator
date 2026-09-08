@@ -1,0 +1,17 @@
+canvas{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;opacity:0;transition:opacity 1.5s ease;pointer-events:none}
+canvas.active{opacity:1}
+/* === WebGL fallback — CSS-only lava lamp (r1800-r1807) === */
+@property --blob1-x{syntax:'<percentage>';inherits:false;initial-value:30%}
+@property --blob1-y{syntax:'<percentage>';inherits:false;initial-value:70%}
+@property --blob2-x{syntax:'<percentage>';inherits:false;initial-value:70%}
+@property --blob2-y{syntax:'<percentage>';inherits:false;initial-value:30%}
+@property --blob3-x{syntax:'<percentage>';inherits:false;initial-value:50%}
+@property --blob3-y{syntax:'<percentage>';inherits:false;initial-value:50%}
+.webgl-fallback canvas{display:none!important}
+.webgl-fallback{background:radial-gradient(ellipse 50% 60% at var(--blob1-x) var(--blob1-y),rgba(30,80,90,0.35) 0%,transparent 70%),radial-gradient(ellipse 45% 55% at var(--blob2-x) var(--blob2-y),rgba(20,60,70,0.30) 0%,transparent 65%),radial-gradient(ellipse 60% 40% at var(--blob3-x) var(--blob3-y),rgba(15,50,60,0.25) 0%,transparent 60%),linear-gradient(to top,rgba(15,40,50,0.15) 0%,rgba(8,12,15,1) 50%,rgba(0,0,0,1) 100%)!important;animation:lava-drift 25s ease-in-out infinite}
+.webgl-fallback::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(circle 120px at var(--blob2-x) var(--blob1-y),rgba(141,246,255,0.08) 0%,transparent 70%),radial-gradient(circle 80px at var(--blob1-x) var(--blob2-y),rgba(141,246,255,0.06) 0%,transparent 60%),radial-gradient(ellipse 200px 300px at 50% 85%,rgba(80,50,20,0.12) 0%,transparent 70%);animation:lava-drift-2 30s ease-in-out infinite;filter:blur(50px)}
+@keyframes lava-drift{0%{--blob1-x:30%;--blob1-y:70%;--blob2-x:70%;--blob2-y:30%;--blob3-x:50%;--blob3-y:50%}25%{--blob1-x:45%;--blob1-y:55%;--blob2-x:55%;--blob2-y:60%;--blob3-x:35%;--blob3-y:40%}50%{--blob1-x:60%;--blob1-y:40%;--blob2-x:40%;--blob2-y:70%;--blob3-x:65%;--blob3-y:60%}75%{--blob1-x:35%;--blob1-y:65%;--blob2-x:65%;--blob2-y:45%;--blob3-x:45%;--blob3-y:35%}100%{--blob1-x:30%;--blob1-y:70%;--blob2-x:70%;--blob2-y:30%;--blob3-x:50%;--blob3-y:50%}}
+@keyframes lava-drift-2{0%{--blob2-x:70%;--blob1-y:70%}50%{--blob2-x:40%;--blob1-y:40%}100%{--blob2-x:70%;--blob1-y:70%}}
+@media(prefers-reduced-motion:reduce){.webgl-fallback,.webgl-fallback::before{animation:none!important}}
+
+body.background-paused,body.background-paused::before{animation-play-state:paused}

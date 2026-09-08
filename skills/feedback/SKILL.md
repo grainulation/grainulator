@@ -2,10 +2,11 @@
 name: feedback
 description: Record stakeholder input — new constraints, corrections, or direction changes.
 tools:
-  - mcp__wheat__wheat_add-claim
-  - mcp__wheat__wheat_compile
-  - mcp__wheat__wheat_search
-  - mcp__wheat__wheat_status
+  - Bash
+  - mcp__grainulator__add_claim
+  - mcp__grainulator__compile
+  - mcp__grainulator__search
+  - mcp__grainulator__status
 ---
 
 # /feedback -- Record stakeholder input
@@ -31,7 +32,7 @@ $ARGUMENTS
 
 3. **Check for conflicts**: Does this feedback contradict existing claims? If a stakeholder says "budget is $10K max" but research shows a solution at $15K, that's a conflict. Set `conflicts_with` on both claims.
 
-4. Run `wheat_compile` to surface any new conflicts.
+4. Run `grainulator.compile` to surface any new conflicts.
 
 5. **Print result**:
 
@@ -42,8 +43,21 @@ $ARGUMENTS
 
    Conflicts introduced: <N>
 
-   Next steps:
-     /resolve            -- resolve any new conflicts
-     /research <topic>   -- investigate new questions from feedback
-     /challenge <id>     -- test if feedback contradicts existing evidence
+   Auto
+
+   - <authorized next action>
+
+   Manual
+
+   - <action requiring the user, or None.>
    ```
+
+## Host access
+
+Use available `grainulator` MCP tools, passing the active sprint `dir` explicitly for evidence operations. If a tool is unavailable, use the local `grainulator` CLI (or `node <checkout>/bin/grainulator.js`). Read sibling skill files directly when slash commands are unavailable. Resolve template paths relative to this skill’s checkout when `CLAUDE_PLUGIN_ROOT` is unset. Optional external connectors are not required for local work; use local code, supplied documents, or available web tools. Do not write managed ledger files directly to bypass a missing MCP connection.
+
+## Next-step output
+
+After a meaningful pass, use the current compiler's `next_actions` to present exactly two bullet lists labeled **Auto** and **Manual**. Auto is work the agent can continue under existing authorization. Manual is only work requiring the user's decision, access, or action. Classify using the current request and constraints; compiler suggestions never grant permission. Continue authorized Auto work without asking again.
+
+Keep 2–3 useful actions total when available, use short concrete labels and commands where useful, and show `None.` for an empty group. Do not invent work to fill a quota. Never omit next steps merely because compilation is ready or the answer should be brief. Refresh stale compilation first and exclude work the user removed from scope. When the user asks only for next steps, output only these two lists: no findings recap, counts, reasons, or offer to continue.

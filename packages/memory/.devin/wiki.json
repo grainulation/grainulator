@@ -1,0 +1,30 @@
+{
+  "repo_notes": [
+    {
+      "content": "Silo is the knowledge-retrieval and starter-pack layer of the grainulation ecosystem. Instead of every sprint starting from scratch, silo provides reusable packs — battle-tested constraint sets, risk patterns, and decision templates — pulled via `npx @grainulation/silo pull <pack> --into ./claims.json`. Silo also indexes sprint manifests across your history for cross-sprint search, and backs a cache layer used by wheat's /pull and /witness flows.",
+      "author": "grainulation-core"
+    },
+    {
+      "content": "When documenting silo, emphasize: (1) packs are the retail-facing product (compliance, security, migration packs etc.) and are cheap to compose, (2) silo also provides a backend cache (local file store) that other packages use, (3) MCP tools (silo_search, silo_pull, silo_store, silo_graph, silo_packs, silo_list, silo_confluence) — the CLI and MCP are symmetric. Do NOT confuse silo with barn — barn is utilities; silo is KNOWLEDGE (prior-art + cache).",
+      "author": "grainulation-core"
+    }
+  ],
+  "pages": [
+    {
+      "title": "Quick start",
+      "purpose": "Install via npx @grainulation/silo, the 30-second pitch on reusable knowledge packs, a first `silo pull` example that seeds a fresh sprint with constraints."
+    },
+    {
+      "title": "Core concepts",
+      "purpose": "Packs (shape, authoring, composition), the local cache (silo-backed, persists across sprints), knowledge graph (silo_graph), search (silo_search, relevance ranking), confluence import (silo_confluence), pack lifecycle (author, publish, consume)."
+    },
+    {
+      "title": "API reference",
+      "purpose": "CLI (bin/silo.js and subcommands pull/search/store/list/packs), MCP tools (silo_search, silo_pull, silo_store, silo_graph, silo_packs, silo_list, silo_confluence), pack schema, cache format."
+    },
+    {
+      "title": "Ecosystem integration",
+      "purpose": "How silo relates to wheat (wheat's /pull surfaces silo packs into the current sprint, /witness uses silo cache), barn (silo indexes barn-produced manifests for cross-sprint search), harvest (harvest reads silo's pack usage data to score which packs actually help), orchard (orchard queries silo for shared knowledge across concurrent sprints)."
+    }
+  ]
+}

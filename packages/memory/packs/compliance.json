@@ -1,0 +1,259 @@
+{
+  "name": "Compliance Constraints",
+  "description": "Regulatory constraint sets for HIPAA, SOC 2, and GDPR research sprints. Use as a starting point when evaluating compliance-sensitive architecture or vendor decisions.",
+  "version": "1.0.0",
+  "claims": [
+    {
+      "id": "hipaa-001",
+      "type": "constraint",
+      "topic": "HIPAA encryption at rest",
+      "content": "Protected Health Information (PHI) must be encrypted at rest using AES-256 or equivalent, per HIPAA Security Rule 45 CFR 164.312(a)(2)(iv).",
+      "source": {
+        "origin": "regulation",
+        "artifact": "45 CFR 164.312",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hipaa", "encryption", "phi"]
+    },
+    {
+      "id": "hipaa-002",
+      "type": "constraint",
+      "topic": "HIPAA encryption in transit",
+      "content": "PHI in transit must be encrypted via TLS 1.2 or higher. Unencrypted transmission channels (HTTP, FTP) are prohibited for PHI.",
+      "source": {
+        "origin": "regulation",
+        "artifact": "45 CFR 164.312(e)(1)",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hipaa", "encryption", "transit"]
+    },
+    {
+      "id": "hipaa-003",
+      "type": "constraint",
+      "topic": "HIPAA business associate agreements",
+      "content": "A Business Associate Agreement (BAA) must be signed with every third-party vendor that processes, stores, or transmits PHI, including cloud providers.",
+      "source": {
+        "origin": "regulation",
+        "artifact": "45 CFR 164.502(e)",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hipaa", "baa", "vendor"]
+    },
+    {
+      "id": "hipaa-004",
+      "type": "constraint",
+      "topic": "HIPAA minimum necessary access",
+      "content": "Access to PHI must follow minimum necessary standard — users see only the data required for their role. Role-based access control (RBAC) is the typical implementation.",
+      "source": {
+        "origin": "regulation",
+        "artifact": "45 CFR 164.502(b)",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hipaa", "access-control", "rbac"]
+    },
+    {
+      "id": "hipaa-005",
+      "type": "constraint",
+      "topic": "HIPAA audit log retention",
+      "content": "Audit logs of all PHI access events must be retained for a minimum of 6 years. Logs must include user identity, timestamp, and action performed.",
+      "source": {
+        "origin": "regulation",
+        "artifact": "45 CFR 164.312(b)",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hipaa", "audit", "logging"]
+    },
+    {
+      "id": "soc2-001",
+      "type": "constraint",
+      "topic": "SOC 2 Type II observation period",
+      "content": "SOC 2 Type II requires demonstrating that security controls operated effectively over a minimum observation period of 6 months (typically 12 months).",
+      "source": {
+        "origin": "standard",
+        "artifact": "AICPA Trust Services Criteria",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["soc2", "audit", "controls"]
+    },
+    {
+      "id": "soc2-002",
+      "type": "constraint",
+      "topic": "SOC 2 change management",
+      "content": "Change management controls must track all production changes with approval records, rollback plans, and post-deployment verification.",
+      "source": {
+        "origin": "standard",
+        "artifact": "AICPA CC8.1",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["soc2", "change-management", "controls"]
+    },
+    {
+      "id": "soc2-003",
+      "type": "constraint",
+      "topic": "SOC 2 incident response",
+      "content": "Incident response plan must define severity levels, escalation paths, communication templates, and post-incident review process. Annual tabletop exercises required.",
+      "source": {
+        "origin": "standard",
+        "artifact": "AICPA CC7.3-CC7.5",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["soc2", "incident-response", "controls"]
+    },
+    {
+      "id": "soc2-004",
+      "type": "constraint",
+      "topic": "SOC 2 access reviews",
+      "content": "Logical access reviews must be performed quarterly. Terminated employee access must be revoked within 24 hours of separation.",
+      "source": {
+        "origin": "standard",
+        "artifact": "AICPA CC6.1-CC6.3",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["soc2", "access-control", "offboarding"]
+    },
+    {
+      "id": "gdpr-001",
+      "type": "constraint",
+      "topic": "GDPR cross-border data transfer",
+      "content": "Personal data of EU residents cannot be transferred outside the EEA without an adequacy decision, Standard Contractual Clauses (SCCs), or Binding Corporate Rules.",
+      "source": {
+        "origin": "regulation",
+        "artifact": "GDPR Articles 44-49",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["gdpr", "data-transfer", "international"]
+    },
+    {
+      "id": "gdpr-002",
+      "type": "constraint",
+      "topic": "GDPR right to erasure",
+      "content": "Data subjects have the right to erasure ('right to be forgotten'). Systems must support complete deletion of a user's personal data within 30 days of request.",
+      "source": {
+        "origin": "regulation",
+        "artifact": "GDPR Article 17",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["gdpr", "erasure", "data-subject-rights"]
+    },
+    {
+      "id": "gdpr-003",
+      "type": "constraint",
+      "topic": "GDPR breach notification",
+      "content": "Data breaches affecting personal data must be reported to the supervisory authority within 72 hours of discovery. Affected individuals must be notified without undue delay if risk is high.",
+      "source": {
+        "origin": "regulation",
+        "artifact": "GDPR Articles 33-34",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["gdpr", "breach-notification", "incident-response"]
+    },
+    {
+      "id": "gdpr-004",
+      "type": "constraint",
+      "topic": "GDPR lawful basis for processing",
+      "content": "Processing personal data requires a lawful basis (consent, contract, legal obligation, vital interest, public task, or legitimate interest). Consent must be freely given, specific, and withdrawable.",
+      "source": {
+        "origin": "regulation",
+        "artifact": "GDPR Article 6",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["gdpr", "lawful-basis", "consent"]
+    },
+    {
+      "id": "gdpr-005",
+      "type": "constraint",
+      "topic": "GDPR data protection impact assessment",
+      "content": "A Data Protection Impact Assessment (DPIA) is mandatory before processing that is likely to result in high risk to individuals, including large-scale profiling or systematic monitoring.",
+      "source": {
+        "origin": "regulation",
+        "artifact": "GDPR Article 35",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2025-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["gdpr", "dpia", "risk-assessment"]
+    }
+  ]
+}

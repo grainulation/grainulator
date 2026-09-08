@@ -1,0 +1,19 @@
+{
+  "title": "Evidence Matrix",
+  "description": "Gap analysis heatmap showing claim types against evidence tiers. Color intensity indicates claim density, empty cells are flagged as coverage gaps.",
+  "tags": ["evidence", "matrix", "heatmap", "gap-analysis", "audit"],
+  "author": "grainulation",
+  "version": "1.0.0",
+  "exportPresets": [
+    { "name": "pdf", "format": "pdf" },
+    { "name": "static-site", "format": "html" }
+  ],
+  "seedPacks": ["compliance"],
+  "scaffoldConfig": {
+    "defaultPlaceholders": {
+      "TITLE": "Evidence Matrix",
+      "SPRINT_NAME": "Untitled Sprint"
+    },
+    "postInit": ["load-claims", "compute-matrix"]
+  }
+}

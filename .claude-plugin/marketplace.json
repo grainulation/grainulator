@@ -5,7 +5,7 @@
 		"email": "info@grainulator.app"
 	},
 	"metadata": {
-		"description": "Research sprint tools for Claude Code — structured research with claims, evidence tiers, and compiled output",
+		"description": "Evidence and verification tools for model-assisted work",
 		"version": "1.0.0"
 	},
 	"plugins": [
@@ -15,15 +15,15 @@
 				"source": "url",
 				"url": "https://github.com/grainulation/grainulator.git"
 			},
-			"description": "Research sprint orchestrator for Claude Code",
-			"version": "1.7.1",
+			"description": "Evidence and verification for model-assisted work",
+			"version": "2.0.0",
 			"author": {
 				"name": "Grainulation"
 			},
 			"homepage": "https://grainulator.app",
 			"repository": "https://github.com/grainulation/grainulator",
 			"license": "MIT",
-			"keywords": ["research", "wheat", "claims", "evidence", "briefs"],
+			"keywords": ["research", "grainulator", "claims", "evidence", "briefs"],
 			"category": "research",
 			"tags": [
 				"research-sprints",

@@ -1,0 +1,179 @@
+{
+  "name": "Hackathon: Most Rigorous Research",
+  "description": "Scoring rubric and seed claims for the 'Most Rigorous Research' hackathon category. Weights evidence tiers heavily, rewards challenge depth and corroboration over volume.",
+  "version": "1.0.0",
+  "claims": [
+    {
+      "id": "hrig-001",
+      "type": "constraint",
+      "topic": "evidence tier scoring",
+      "content": "Evidence tier sub-score uses weighted sum: production=5, tested=4, documented=3, web=2, stated=1, normalized to 0-100. This is the dominant factor (35% weight) in the Most Rigorous category.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "scoring", "evidence-tier", "most-rigorous"]
+    },
+    {
+      "id": "hrig-002",
+      "type": "constraint",
+      "topic": "challenge depth scoring",
+      "content": "Challenge depth sub-score = (challenge_claims + resolved_conflicts) / total_claims * 100. Weight: 25%. Rewards sprints that actively question and resolve competing claims rather than building one-sided arguments.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "scoring", "challenge-depth", "most-rigorous"]
+    },
+    {
+      "id": "hrig-003",
+      "type": "constraint",
+      "topic": "corroboration scoring",
+      "content": "Corroboration sub-score = witnessed_claims / total_claims * 100. Weight: 20%. Claims backed by external sources (web evidence, documented references) score higher than unsupported assertions.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "scoring", "corroboration", "most-rigorous"]
+    },
+    {
+      "id": "hrig-004",
+      "type": "constraint",
+      "topic": "health scoring",
+      "content": "Health sub-score = max(0, (1 - warnings/total_claims) * 100). Weight: 10%. Penalizes sprints with compiler warnings — low-evidence claims, missing fields, unresolved conflicts.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "scoring", "health", "most-rigorous"]
+    },
+    {
+      "id": "hrig-005",
+      "type": "constraint",
+      "topic": "type diversity scoring",
+      "content": "Type diversity sub-score = (distinct_types / 6) * 100. Weight: 10%. Ensures sprints use the full taxonomy (constraint, factual, estimate, risk, recommendation, feedback) rather than only one type.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "scoring", "type-diversity", "most-rigorous"]
+    },
+    {
+      "id": "hrig-006",
+      "type": "recommendation",
+      "topic": "anti-gaming logarithmic scaling",
+      "content": "Apply logarithmic scaling to claim counts: score = log(claim_count) not linear. This prevents gaming through claim spam — 100 weak claims score only marginally better than 10 strong ones.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "anti-gaming", "logarithmic", "most-rigorous"]
+    },
+    {
+      "id": "hrig-007",
+      "type": "risk",
+      "topic": "Goodhart's Law gaming",
+      "content": "If teams know the exact scoring weights, they optimize for metrics over substance (Goodhart's Law). Keep exact weights secret; publish only the dimensions. Rotate weights per hackathon event.",
+      "source": {
+        "origin": "research",
+        "artifact": "https://en.wikipedia.org/wiki/Goodhart's_law",
+        "connector": null
+      },
+      "evidence": "web",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "gaming", "goodhart", "risk"]
+    },
+    {
+      "id": "hrig-008",
+      "type": "factual",
+      "topic": "benchmark thresholds",
+      "content": "A well-designed rigorous sprint should achieve: evidence_tier_score >= 60, type_diversity >= 83 (5/6 types), challenge_depth >= 15%, corroboration >= 20%, health >= 80. These serve as calibration benchmarks.",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "benchmarks", "calibration", "most-rigorous"]
+    },
+    {
+      "id": "hrig-009",
+      "type": "recommendation",
+      "topic": "hybrid judging model",
+      "content": "Two-stage judging: auto-score (compiler metrics) acts as qualifier — top N advance. Final round = 50% auto-score + 50% human panel scoring insight quality, narrative clarity, and practical applicability.",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "hybrid-judging", "qualifier", "most-rigorous"]
+    },
+    {
+      "id": "hrig-010",
+      "type": "constraint",
+      "topic": "evidence tier floor",
+      "content": "Claims below 'web' evidence tier count at 50% weight. This prevents gaming by adding many low-effort 'stated' claims. Encourages teams to back assertions with real sources.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["hackathon", "anti-gaming", "evidence-floor", "most-rigorous"]
+    }
+  ]
+}

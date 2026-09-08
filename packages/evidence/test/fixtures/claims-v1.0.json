@@ -1,0 +1,48 @@
+{
+	"schema_version": "1.0",
+	"meta": {
+		"question": "Golden-file test fixture for schema v1.0",
+		"initiated": "2026-01-01",
+		"audience": ["ci"],
+		"phase": "define",
+		"connectors": []
+	},
+	"claims": [
+		{
+			"id": "d001",
+			"type": "constraint",
+			"topic": "test-topic",
+			"content": "This is a v1.0 fixture claim for migration testing.",
+			"source": {
+				"origin": "stakeholder",
+				"artifact": null,
+				"connector": null
+			},
+			"evidence": "stated",
+			"status": "active",
+			"phase_added": "define",
+			"timestamp": "2026-01-01T00:00:00Z",
+			"conflicts_with": [],
+			"resolved_by": null,
+			"tags": ["fixture"]
+		},
+		{
+			"id": "r001",
+			"type": "factual",
+			"topic": "test-topic",
+			"content": "A second claim to ensure multi-claim migration works.",
+			"source": {
+				"origin": "web",
+				"artifact": "https://example.com",
+				"connector": null
+			},
+			"evidence": "web",
+			"status": "active",
+			"phase_added": "research",
+			"timestamp": "2026-01-02T00:00:00Z",
+			"conflicts_with": [],
+			"resolved_by": null,
+			"tags": ["fixture", "multi-claim"]
+		}
+	]
+}

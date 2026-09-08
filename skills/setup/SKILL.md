@@ -1,131 +1,38 @@
 ---
 name: setup
-description: Guide the user through verifying Grainulator's MCP servers are running, explain what each server does, handle optional dependencies, and initialize a first sprint if none exists. Use when the plugin is first installed, when MCP servers fail to connect, or when the user asks for help setting up Grainulator.
+description: Set up the local Grainulator MCP connection, check capabilities, and initialize the requested sprint.
 tools:
-  - mcp__wheat__wheat_status
-  - mcp__wheat__wheat_add-claim
-  - mcp__wheat__wheat_compile
-  - mcp__silo__silo_list
-  - mcp__mill__mill_formats
+  - mcp__grainulator__status
+  - mcp__grainulator__init
+  - mcp__grainulator__memory_list
+  - mcp__grainulator__exports_formats
   - Bash
   - Read
-  - Write
 ---
 
-# /setup -- Configure and verify Grainulator
+# /setup — Configure Grainulator
 
-The user wants to set up Grainulator or verify that all MCP servers and dependencies are working correctly.
+Locate the installed checkout and run `node <checkout>/bin/grainulator.js doctor`. Node.js 24 or later is required; Node 25 is the local default. This checks local components without changing global host settings.
 
-## Arguments
+Grainulator uses one local MCP server named `grainulator`. Check `grainulator.status` with the intended sprint directory, `grainulator.memory_list`, and `grainulator.exports_formats`. A missing sprint is not a broken connection. Report which capability failed and its actual error; continue independent local work through the CLI.
 
-$ARGUMENTS
+For a host that has not loaded the plugin, `grainulator connect --dir <sprint>` prints the connection configuration. Apply it only in the host scope the user authorized. In Claude Code the plugin registers its server automatically; inspect existing configuration before adding another entry. A host restart or plugin reload may be needed after changing registration. Do not remove existing entries or alter global settings as a routine troubleshooting step.
 
-## Instructions
+For the native Codex plugin, bind the workspace explicitly before starting a fresh host process: `GRAINULATOR_WORKSPACE=/absolute/path/to/project codex` (or `codex exec ...` with the same environment). Use an existing absolute project directory that contains the intended sprint. Codex starts plugin servers in the package cache, so its current plugin directory is not your workspace. Without the binding, discovery can succeed but tool calls return a configuration-required error and do not write. For Codex Desktop, the variable must reach the actual app process; do not assume a terminal export reaches an already running app.
 
-### Phase 1: Verify core MCP servers
+Alternatively, run `node <checkout>/bin/grainulator.js connect --dir /absolute/path/to/project` and register that direct MCP connection in the authorized host scope. It binds the workspace through `--dir` and does not require the native plugin environment variable. Direct MCP access does not install or verify bundled skills, agents, or hooks. After either setup, require a real status call on the intended sprint before reporting success.
 
-Grainulator bundles three core MCP servers that run locally via `npx`. Check each one in order:
+External connectors such as DeepWiki and Confluence are optional. Their absence does not block local evidence operations, memory or document exports. Check for their tools only when the task needs them; use local sources or available web tools otherwise.
 
-1. **Wheat** (research claims engine)
-   - Purpose: Manages typed claims (`claims.json`), compiles sprint state, resolves conflicts, and searches across claims. This is the backbone of every research sprint.
-   - Verify: Call `wheat_status`. If it returns sprint data or a "no sprint found" message, the server is healthy.
-   - If it fails: The `@grainulation/wheat` npm package may not be accessible. Ask the user to run `npx -y @grainulation/wheat` manually to check for npm/network issues.
-   - Sprint data (`claims.json`, `compilation.json`) lives in the project root.
+Use the active sprint supplied in the request or repository instructions. If none exists and the request provides a question, run the init workflow in a dedicated directory. Infer routine audience and completion criteria from the task; ask only for essential missing information. Never repurpose an unrelated ledger.
 
-2. **Mill** (format conversion engine)
-   - Purpose: Converts between document formats (Markdown, HTML, PDF). Used by `/brief` and `/present` to produce output artifacts.
-   - Verify: Call `mill_formats`. If it returns a list of supported formats, the server is healthy.
-   - If it fails: The `@grainulation/mill` npm package may not be accessible. Same troubleshooting as Wheat.
+Summarize connection results briefly. Continue the user’s requested work when setup succeeds. If setup was the whole request, provide the Auto and Manual next actions below.
+## Host access
 
-3. **Silo** (knowledge storage)
-   - Purpose: Stores and retrieves knowledge packs, manages a graph of connected concepts, and integrates with Confluence. Used by `/research` and `/pull` for knowledge reuse across sprints.
-   - Verify: Call `silo_list`. If it returns a list (even empty), the server is healthy.
-   - If it fails: The `@grainulation/silo` npm package may not be accessible. Note that Silo uses `${CLAUDE_PLUGIN_DATA}/silo` for persistent storage.
+Use available `grainulator` MCP tools, passing the active sprint `dir` explicitly for evidence operations. If a tool is unavailable, use the local `grainulator` CLI (or `node <checkout>/bin/grainulator.js`). Read sibling skill files directly when slash commands are unavailable. Resolve template paths relative to this skill’s checkout when `CLAUDE_PLUGIN_ROOT` is unset. Optional external connectors are not required for local work; use local code, supplied documents, or available web tools. Do not write managed ledger files directly to bypass a missing MCP connection.
 
-Report the status of each server:
+## Next-step output
 
-```
-MCP Server Status:
-  wheat  ✓ running  (claims engine)
-  mill   ✓ running  (format conversion)
-  silo   ✓ running  (knowledge storage)
-```
+After a meaningful pass, use the current compiler's `next_actions` to present exactly two bullet lists labeled **Auto** and **Manual**. Auto is work the agent can continue under existing authorization. Manual is only work requiring the user's decision, access, or action. Classify using the current request and constraints; compiler suggestions never grant permission. Continue authorized Auto work without asking again.
 
-If any server fails, show the error and suggest a fix. Do NOT proceed to Phase 2 until all three core servers are confirmed running.
-
-### Phase 2: Check optional dependencies
-
-4. **DeepWiki** (external, optional)
-   - Purpose: Provides read access to public GitHub repository documentation via MCP. Used by `/research` when investigating open-source projects. This is an HTTP MCP server hosted at `https://mcp.deepwiki.com/mcp` -- Grainulator does not control it.
-   - Verify: Check if `mcp__deepwiki__ask_question` appears in the available tools list. If the tool is listed, the server connected successfully.
-   - If unavailable: This is **expected and non-blocking**. DeepWiki is a convenience for researching public repos. All core Grainulator functionality works without it. Tell the user:
-     > DeepWiki is optional. If it's unavailable, `/research` will use WebSearch and direct code reading instead. No action needed.
-   - Do NOT treat DeepWiki failure as a setup failure.
-
-Report:
-
-```
-Optional Dependencies:
-  deepwiki  ✓ connected  (GitHub repo docs -- optional)
-```
-
-or:
-
-```
-Optional Dependencies:
-  deepwiki  ✗ unavailable  (GitHub repo docs -- optional, not required)
-```
-
-### Phase 3: Check for existing sprints
-
-5. Look for an existing sprint by checking for `claims.json` in the project root. If a sprint exists, show its question and phase:
-
-```
-Existing sprints:
-  marketplace-submission  (phase: research, 22 claims)
-  gamification-playbook   (phase: define, 3 claims)
-```
-
-6. If **no sprints exist**, offer to initialize one:
-
-> No sprints found. Would you like me to start one? Tell me your research question and I'll run `/init` to set it up.
-
-If the user provides a question (either as $ARGUMENTS or in conversation), proceed to run the `/init` workflow to create the first sprint.
-
-### Phase 4: Summary
-
-Print the final setup report:
-
-```
-Grainulator setup complete.
-
-Core servers:    3/3 running
-Optional deps:   1/1 connected (or: 0/1 -- deepwiki unavailable, non-blocking)
-Active sprints:  <count>
-
-You're ready to go. Try:
-  /research <topic>  -- start investigating
-  /status            -- view sprint dashboard
-  /init <question>   -- start a new sprint
-```
-
-## Important: Do NOT manually register MCP servers
-
-Do **NOT** run `claude mcp add wheat`, `claude mcp add mill`, or `claude mcp add silo`. The Grainulator plugin already registers all three MCP servers automatically via `plugin.json`. Adding them manually creates duplicate server entries, which causes tool name collisions and nondeterministic behavior.
-
-If MCP servers are not connecting, use `/reload-plugins` to refresh the plugin's server registrations instead of manually adding them.
-
-If you suspect a duplicate exists (e.g., you previously ran `claude mcp add wheat`), remove the manual entry:
-
-```bash
-claude mcp remove wheat
-```
-
-Then restart Claude Code to pick up only the plugin-provided servers.
-
-## Troubleshooting notes
-
-- **All three core servers use `npx -y`**, so they download on first run. First-run latency of 5-15 seconds is normal.
-- **Node.js is required.** If `npx` is not found, the user needs to install Node.js (v18+ recommended).
-- **Network required for first run** since packages are fetched from npm. After the first run, npx caches them locally.
-- **Silo persistence**: Silo stores data in `${CLAUDE_PLUGIN_DATA}/silo`. This survives plugin updates but is deleted on uninstall (unless `--keep-data` is used).
+Keep 2–3 useful actions total when available, use short concrete labels and commands where useful, and show `None.` for an empty group. Do not invent work to fill a quota. Never omit next steps merely because compilation is ready or the answer should be brief. Refresh stale compilation first and exclude work the user removed from scope. When the user asks only for next steps, output only these two lists: no findings recap, counts, reasons, or offer to continue.

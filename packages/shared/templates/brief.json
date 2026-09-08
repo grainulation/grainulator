@@ -1,0 +1,23 @@
+{
+  "title": "Brief",
+  "description": "One-page decision document for stakeholder review. Executive summary, claim cards by type, evidence coverage, and recommendation with confidence indicator.",
+  "tags": ["brief", "decision", "stakeholder", "executive"],
+  "author": "grainulation",
+  "version": "1.0.0",
+  "exportPresets": [
+    { "name": "pdf", "format": "pdf" },
+    { "name": "static-site", "format": "html" },
+    { "name": "markdown-outline", "format": "md" }
+  ],
+  "seedPacks": ["architecture", "compliance"],
+  "scaffoldConfig": {
+    "defaultPlaceholders": {
+      "TITLE": "Decision Brief",
+      "SUBTITLE": "Sprint Summary",
+      "SPRINT_NAME": "Untitled Sprint",
+      "QUESTION": "",
+      "CONFIDENCE": "medium"
+    },
+    "postInit": ["load-claims", "compile-brief"]
+  }
+}

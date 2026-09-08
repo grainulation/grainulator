@@ -178,12 +178,7 @@ describe(".mcp.json", () => {
 // ── WCAG template files ─────────────────────────────────────────────────────
 
 describe("WCAG scroll-snap-deck template", () => {
-	const tplPath = path.join(
-		ROOT,
-		"skills",
-		"_templates",
-		"scroll-snap-deck.html",
-	);
+	const tplPath = path.join(ROOT, "templates", "scroll-snap-deck.html");
 	let html;
 
 	it("exists", () => {
@@ -273,7 +268,7 @@ describe("WCAG scroll-snap-deck template", () => {
 });
 
 describe("WCAG sidebar-brief template", () => {
-	const tplPath = path.join(ROOT, "skills", "_templates", "sidebar-brief.html");
+	const tplPath = path.join(ROOT, "templates", "sidebar-brief.html");
 	let html;
 
 	it("exists", () => {

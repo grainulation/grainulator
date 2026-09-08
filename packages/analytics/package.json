@@ -1,0 +1,69 @@
+{
+  "name": "@grainulation/harvest",
+  "version": "1.1.5",
+  "description": "Analytics and retrospective layer for research sprints -- learn from every decision you've made",
+  "type": "module",
+  "main": "lib/analyzer.js",
+  "exports": {
+    ".": "./lib/analyzer.js",
+    "./server": "./lib/server.js",
+    "./calibration": "./lib/calibration.js",
+    "./decay": "./lib/decay.js",
+    "./patterns": "./lib/patterns.js",
+    "./velocity": "./lib/velocity.js",
+    "./tokens": "./lib/tokens.js",
+    "./token-tracker": "./lib/token-tracker.js",
+    "./wrapped": "./lib/wrapped.js",
+    "./harvest-card": "./lib/harvest-card.js",
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "harvest": "bin/harvest.js"
+  },
+  "scripts": {
+    "test": "node --test test/basic.test.js test/report.test.js test/server.test.js test/token-tracker.test.js test/wrapped.test.js test/tarball.test.js",
+    "start": "node bin/harvest.js",
+    "format": "npx prettier@3.3 --write .",
+    "format:check": "npx prettier@3.3 --check ."
+  },
+  "keywords": [
+    "analytics",
+    "retrospective",
+    "research",
+    "sprints",
+    "calibration",
+    "decisions"
+  ],
+  "author": "grainulation contributors",
+  "license": "MIT",
+  "files": [
+    "bin/",
+    "lib/",
+    "public/",
+    "templates/",
+    "README.md",
+    "LICENSE",
+    "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grainulation/harvest.git"
+  },
+  "bugs": {
+    "url": "https://github.com/grainulation/harvest/issues"
+  },
+  "homepage": "https://harvest.grainulation.com",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@grainulation/barn": "^1.3.0"
+  },
+  "private": true
+}

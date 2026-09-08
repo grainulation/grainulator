@@ -1,0 +1,19 @@
+{
+  "title": "Conflict Map",
+  "description": "Visual layout of conflicting claims for dispute resolution. Card pairs with connectors show opposing positions and resolution status.",
+  "tags": ["conflict", "resolve", "disputes", "claims", "visual"],
+  "author": "grainulation",
+  "version": "1.0.0",
+  "exportPresets": [
+    { "name": "pdf", "format": "pdf" },
+    { "name": "static-site", "format": "html" }
+  ],
+  "seedPacks": [],
+  "scaffoldConfig": {
+    "defaultPlaceholders": {
+      "TITLE": "Conflict Map",
+      "SPRINT_NAME": "Untitled Sprint"
+    },
+    "postInit": ["load-claims", "detect-conflicts"]
+  }
+}

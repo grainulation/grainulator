@@ -1,0 +1,23 @@
+{
+  "title": "Wiki Page",
+  "description": "Clean HTML optimized for wiki and docs paste targets including Confluence, Notion, and GitHub Wiki. Features auto-generated table of contents, collapsible claim sections, and minimal styling that survives paste.",
+  "tags": ["wiki", "documentation", "confluence", "notion", "github-wiki"],
+  "author": "grainulation",
+  "version": "1.0.0",
+  "exportPresets": [
+    { "name": "static-site", "format": "html" },
+    { "name": "markdown-outline", "format": "md" }
+  ],
+  "seedPacks": [],
+  "scaffoldConfig": {
+    "defaultPlaceholders": {
+      "TITLE": "Untitled Wiki Page",
+      "SPRINT_NAME": "Sprint",
+      "QUESTION": "",
+      "AUDIENCE": "Team",
+      "TOC": "",
+      "CLAIM_SECTIONS": ""
+    },
+    "postInit": ["load-claims", "compile-brief"]
+  }
+}

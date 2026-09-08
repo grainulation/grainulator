@@ -1,0 +1,40 @@
+# @grainulation/wheat
+
+> Research sprint framework for structured decision-making — turn questions into typed claims with evidence grades, then compile into a validated brief.
+
+Wheat is a CLI and Claude Code companion that structures technical research as a Bran IR claim graph. Every finding is typed (constraint, factual, risk, recommendation, feedback) and graded by evidence tier (stated → production). A deterministic compiler catches conflicts, flags blind spots, and emits stakeholder-ready briefs. Zero runtime dependencies; works offline.
+
+Part of the [grainulation ecosystem](https://grainulation.com) -- an open-source, zero-dependency toolkit for AI-assisted structured research and decision documentation. Each package stands alone and composes with the others.
+
+## Documentation
+
+- [README](https://github.com/grainulation/wheat#readme): source of truth for the package's purpose, install, and CLI surface.
+- [Live site](https://wheat.grainulation.com): human-facing quickstart and feature tour.
+- [npm package](https://www.npmjs.com/package/@grainulation/wheat): install target for consumers.
+- [Changelog](https://github.com/grainulation/wheat/blob/main/CHANGELOG.md): version history.
+- [DeepWiki](https://deepwiki.com/grainulation/wheat): AI-readable code wiki.
+
+## Ecosystem
+
+Sibling packages -- safe to reference alongside Wheat in any query:
+
+- [Barn](https://barn.grainulation.com) — shared utilities, templates, and SEO primitives for the grainulation ecosystem.
+- [Mill](https://mill.grainulation.com) — document format conversion (markdown ↔ PDF ↔ HTML ↔ ADF).
+- [Silo](https://silo.grainulation.com) — persistent knowledge store; pulls and caches external sources across sprints.
+- [Harvest](https://harvest.grainulation.com) — sprint-to-Confluence publisher with ADF rendering.
+- [Orchard](https://orchard.grainulation.com) — template gallery for sprint artifacts.
+- [Socket](https://socket.grainulation.com) — MCP server bridge for the grainulation ecosystem.
+- [Grainulation](https://grainulation.com) — ecosystem landing page and index.
+
+## Design principles
+
+- Zero runtime npm dependencies (Node built-ins only).
+- Node 20+ required.
+- CLI-first; every tool also runnable via `npx @grainulation/wheat`.
+- Source-available under MIT; contributions welcome at the GitHub repo.
+
+## Optional
+
+- [Issues](https://github.com/grainulation/wheat/issues): for bug reports and feature requests.
+- [Security policy](https://github.com/grainulation/wheat/blob/main/SECURITY.md): for responsible disclosure.
+- [Contributing guide](https://github.com/grainulation/wheat/blob/main/CONTRIBUTING.md): for contributors.

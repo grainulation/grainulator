@@ -1,0 +1,152 @@
+{
+  "name": "Architecture Decision (Enterprise)",
+  "description": "Extended enterprise ADR framework with governance, stakeholder alignment, and compliance integration. Builds on the base adr pack with enterprise-specific constraints for regulated environments.",
+  "version": "1.0.0",
+  "extends": "adr",
+  "claims": [
+    {
+      "id": "adec-001",
+      "type": "constraint",
+      "topic": "enterprise ADR governance",
+      "content": "Enterprise ADRs require approval chain: (1) Technical lead proposes and researches. (2) Architecture review board (ARB) reviews evidence quality. (3) Security and compliance sign off on regulated decisions. (4) VP/Director approves budget implications. Each approval is a claim in the sprint with 'documented' evidence tier.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["adr", "enterprise", "governance", "approval-chain"]
+    },
+    {
+      "id": "adec-002",
+      "type": "constraint",
+      "topic": "compliance impact assessment",
+      "content": "Architecture decisions that affect data flow, storage, or access patterns must include a compliance impact assessment. For each option: (1) Does it change data residency? (2) Does it affect audit logging? (3) Does it require new BAAs or DPAs? (4) Does it change the attack surface?",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["adr", "compliance", "impact-assessment", "enterprise"]
+    },
+    {
+      "id": "adec-003",
+      "type": "constraint",
+      "topic": "cost analysis requirement",
+      "content": "Enterprise ADRs must include a cost analysis with estimate claims: (1) Implementation cost (engineering hours * loaded rate). (2) Operational cost (infrastructure, licensing, support). (3) Migration cost if changing from current state. (4) Opportunity cost of alternatives not chosen. All estimates must specify confidence range.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["adr", "cost-analysis", "estimates", "enterprise"]
+    },
+    {
+      "id": "adec-004",
+      "type": "recommendation",
+      "topic": "stakeholder communication",
+      "content": "ADR output should have two formats: (1) Technical brief — full evidence, conflict resolution, detailed trade-offs for engineering. (2) Executive summary — decision, cost impact, timeline, and top 3 risks for leadership. The wheat /brief command should produce both from the same claims.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["adr", "communication", "stakeholder", "enterprise"]
+    },
+    {
+      "id": "adec-005",
+      "type": "risk",
+      "topic": "decision fatigue",
+      "content": "Enterprise teams often over-ADR, creating decision records for trivial choices (which testing library, tab vs spaces). This wastes research time and creates ADR fatigue. Guideline: only create ADRs for decisions that are (1) hard to reverse, (2) affect multiple teams, or (3) have significant cost/risk implications.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["adr", "decision-fatigue", "risk", "governance"]
+    },
+    {
+      "id": "adec-006",
+      "type": "factual",
+      "topic": "cross-team dependency mapping",
+      "content": "Architecture decisions in enterprise contexts frequently affect multiple teams. Before finalizing, map upstream and downstream dependencies: which teams consume or produce data/APIs affected by this decision? Each affected team should contribute at least one constraint or risk claim to the sprint.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["adr", "dependencies", "cross-team", "enterprise"]
+    },
+    {
+      "id": "adec-007",
+      "type": "recommendation",
+      "topic": "ADR review cadence",
+      "content": "Schedule quarterly ADR reviews: (1) Are accepted ADRs still valid? (2) Have any assumptions changed? (3) Are deprecated ADRs properly linked to replacements? (4) Do new team members know where to find ADRs? Use the wheat graph to find ADRs with stale evidence or unresolved conflicts.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["adr", "review-cadence", "maintenance", "enterprise"]
+    },
+    {
+      "id": "adec-008",
+      "type": "constraint",
+      "topic": "technology radar alignment",
+      "content": "Enterprise ADRs for technology choices should reference the organization's technology radar (adopt/trial/assess/hold). Proposing a 'hold' technology requires exceptional evidence. Moving a technology from 'assess' to 'adopt' should be backed by a prototype phase with 'tested' evidence tier.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": "https://www.thoughtworks.com/radar",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-03-21T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["adr", "technology-radar", "enterprise", "governance"]
+    }
+  ]
+}

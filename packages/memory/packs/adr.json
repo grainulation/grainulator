@@ -1,0 +1,219 @@
+{
+  "name": "Architecture Decision Records",
+  "description": "Enterprise ADR framework with evidence tiers. Structured constraints and risk claims for common architecture decisions — use as seed claims when evaluating build-vs-buy, migration, scaling, or technology choices.",
+  "version": "1.0.0",
+  "claims": [
+    {
+      "id": "adr-001",
+      "type": "constraint",
+      "topic": "ADR decision structure",
+      "content": "Every ADR must state: (1) Decision context — what problem are we solving? (2) Decision drivers — what constraints and goals matter most? (3) Options considered — at least 2 alternatives with evidence. (4) Decision outcome — which option and why. (5) Consequences — accepted trade-offs.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": "https://adr.github.io",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["adr", "structure", "decision-record", "enterprise"]
+    },
+    {
+      "id": "adr-002",
+      "type": "constraint",
+      "topic": "evidence-backed decisions",
+      "content": "Architecture decisions must be backed by evidence, not opinions. Each option should have claims at 'documented' tier or higher. 'We chose X because the team prefers it' is not an ADR — 'We chose X because benchmarks show 3x throughput under our load profile' is.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["adr", "evidence", "decision-quality", "enterprise"]
+    },
+    {
+      "id": "adr-003",
+      "type": "constraint",
+      "topic": "reversibility assessment",
+      "content": "Every architecture decision must classify its reversibility: Type 1 (irreversible — database engine, programming language, cloud provider) requires heavyweight evidence. Type 2 (reversible — framework, library, API design) can proceed with lighter evidence.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["adr", "reversibility", "type-1-type-2", "risk"]
+    },
+    {
+      "id": "adr-004",
+      "type": "risk",
+      "topic": "ADR decay",
+      "content": "ADRs that are not linked to code become stale and misleading. Risk: team makes decisions contradicting existing ADRs because they can't find them. Mitigation: store ADRs alongside code (docs/adr/), reference in relevant source files, review annually.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["adr", "decay", "maintenance", "risk"]
+    },
+    {
+      "id": "adr-005",
+      "type": "recommendation",
+      "topic": "wheat-powered ADR workflow",
+      "content": "Use wheat sprint as ADR research phase: (1) Define decision question as sprint question. (2) Add constraints from stakeholders. (3) Research options — each generates factual claims with evidence tiers. (4) Challenge phase creates conflict claims between options. (5) Compile — the brief IS the ADR.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["adr", "wheat", "workflow", "recommendation"]
+    },
+    {
+      "id": "adr-006",
+      "type": "factual",
+      "topic": "build vs buy framework",
+      "content": "Build-vs-buy evaluation dimensions: (1) Total cost of ownership over 3 years (build: salaries + infra; buy: license + integration). (2) Time to value (build: months; buy: weeks). (3) Customization requirements. (4) Strategic differentiation — is this your core competency? (5) Maintenance burden.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["adr", "build-vs-buy", "framework", "tco"]
+    },
+    {
+      "id": "adr-007",
+      "type": "factual",
+      "topic": "migration decision framework",
+      "content": "Migration decision framework: (1) Is the current system at a hard limit (scale, compliance, EOL)? (2) What's the migration risk (data loss, downtime, rollback complexity)? (3) Can you migrate incrementally (strangler fig) or must it be big-bang? (4) What's the team's experience with the target?",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["adr", "migration", "framework", "risk-assessment"]
+    },
+    {
+      "id": "adr-008",
+      "type": "risk",
+      "topic": "consensus-driven decisions",
+      "content": "Risk: architecture by committee produces mediocre compromises. ADRs should identify a single decision owner (usually the tech lead or architect) who makes the call after reviewing evidence. The ADR documents the rationale for future teams.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["adr", "decision-owner", "governance", "risk"]
+    },
+    {
+      "id": "adr-009",
+      "type": "constraint",
+      "topic": "ADR status lifecycle",
+      "content": "ADR statuses: Proposed (under research), Accepted (decision made), Deprecated (superseded by newer ADR), Superseded (link to replacement). Never delete ADRs — they document why past decisions were made, even if reversed.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": "https://adr.github.io",
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["adr", "lifecycle", "status", "governance"]
+    },
+    {
+      "id": "adr-010",
+      "type": "recommendation",
+      "topic": "ADR audit trail",
+      "content": "For enterprise compliance: ADRs created via wheat produce an immutable audit trail. The claims.json is version-controlled, the compilation certificate references a content hash, and git log shows who contributed what. This satisfies SOC 2 change management evidence requirements.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["adr", "audit-trail", "compliance", "soc2", "enterprise"]
+    },
+    {
+      "id": "adr-011",
+      "type": "estimate",
+      "topic": "ADR time savings",
+      "content": "Traditional ADR process: 1-2 weeks of stakeholder meetings, document drafting, and review cycles. Wheat-powered ADR: 10-15 minute research sprint produces a compiled brief with evidence tiers, conflict resolution, and structured recommendations — then a 30-minute review meeting to accept.",
+      "source": { "origin": "research", "artifact": null, "connector": null },
+      "evidence": "stated",
+      "status": "active",
+      "phase_added": "research",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["adr", "time-savings", "roi", "enterprise"]
+    },
+    {
+      "id": "adr-012",
+      "type": "factual",
+      "topic": "scaling decision patterns",
+      "content": "Common scaling decision points: (1) Vertical before horizontal — scale up is simpler until hardware limits. (2) Read replicas before sharding — reduces complexity for read-heavy workloads. (3) Caching before rewriting — often 10x improvement for fraction of effort. (4) CDN before app optimization for static assets.",
+      "source": {
+        "origin": "best-practice",
+        "artifact": null,
+        "connector": null
+      },
+      "evidence": "documented",
+      "status": "active",
+      "phase_added": "define",
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "conflicts_with": [],
+      "resolved_by": null,
+      "tags": ["adr", "scaling", "patterns", "architecture"]
+    }
+  ]
+}

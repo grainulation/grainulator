@@ -1,0 +1,18 @@
+[
+	{
+		"id": "c1",
+		"type": "factual",
+		"topic": "schema",
+		"content": "c1 content",
+		"source": {
+			"origin": "stakeholder",
+			"artifact": null,
+			"connector": null
+		},
+		"evidence": "web",
+		"status": "active",
+		"conflicts_with": [],
+		"resolved_by": null,
+		"tags": ["load-bearing"]
+	}
+]

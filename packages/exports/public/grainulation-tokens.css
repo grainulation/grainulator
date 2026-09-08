@@ -1,0 +1,310 @@
+/*
+ * grainulation-tokens.css  v1.0.0
+ * Shared design tokens for the grainulation ecosystem.
+ * Home: barn (the design-system tool)
+ *
+ * Usage:
+ *   <link rel="stylesheet" href="grainulation-tokens.css">
+ *   <html data-tool="wheat">  <!-- activates wheat accent scale -->
+ *
+ * Token architecture (three layers):
+ *   1. Base layer     -- backgrounds, foregrounds, borders, spacing, type, radii
+ *   2. Semantic layer -- accent (maps to tool), status colors, feedback colors
+ *   3. Tool scales    -- per-tool 5-weight accent ramp (50/200/400/600/800)
+ *
+ * Reset layer:
+ *   Box model, scrollbar, font smoothing, shared components
+ *
+ * Accent activation:
+ *   Set data-tool="<name>" on <html> to load that tool's accent scale.
+ *   Default accent (no data-tool) = barn rose-red.
+ *
+ * Extracted from working UIs:
+ *   - barn/public/index.html    (accent: #f43f5e rose — lightened from #e11d48 for WCAG AA)
+ *   - wheat/public/index.html   (accent: #fbbf24 amber)
+ *   - legacy UI/public/index.html  (accent: #22c55e emerald)
+ *   - grainulation/public/index.html (accent: #9ca3af neutral)
+ */
+
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   LAYER 1 — BASE TOKENS
+   Shared across every tool. Extracted from wheat + barn + legacy UI + grainulation.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Backgrounds (dark tier) ──
+     #0a0e1a is universal across all four UIs.
+     bg2/bg3/bg4 from wheat + grainulation (Tailwind Slate scale). */
+  --bg:  #0a0e1a;
+  --bg2: #111827;
+  --bg3: #1e293b;
+  --bg4: #334155;
+
+  /* ── Foregrounds ──
+     fg/fg2/fg3 from wheat + grainulation.
+     Barn used --text:#e8ecf1 (close to fg); standardized to #e2e8f0. */
+  --fg:  #e2e8f0;
+  --fg2: #94a3b8;
+  --fg3: #64748b;
+
+  /* ── Backward-compat aliases ──
+     Barn-originated names still used in barn + legacy UI inline styles. */
+  --text:  var(--fg);
+  --muted: var(--fg2);
+  --dim:   var(--fg3);
+
+  /* ── Borders ──
+     Wheat/grainulation use solid #1e293b; barn/legacy UI use rgba.
+     Provide both — --border is the structural one, --border-subtle for overlays. */
+  --border:        #1e293b;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+
+  /* ── Glass (legacy UI-originated, useful for overlays) ── */
+  --glass:        rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.12);
+
+  /* ── Radii ── (from wheat + barn + grainulation, converged) */
+  --radius:      8px;
+  --radius-sm:   4px;
+  --radius-lg:   12px;
+  --radius-full: 9999px;
+
+  /* ── Typography ──
+     Sans from barn/legacy UI; mono from wheat. Both used across UIs. */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+  --font-mono: 'SF Mono', 'Cascadia Code', 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  --text-xs:   9px;
+  --text-sm:   10px;
+  --text-base: 12px;
+  --text-md:   13px;
+  --text-lg:   15px;
+  --text-xl:   18px;
+  --line-height: 1.5;
+
+  /* ── Spacing ── */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  12px;
+  --space-lg:  16px;
+  --space-xl:  24px;
+  --space-2xl: 32px;
+
+  /* ── Transitions ── */
+  --transition-fast: 0.1s ease;
+  --transition-base: 0.15s ease;
+  --transition-slow: 0.3s ease;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   LAYER 2 — SEMANTIC TOKENS
+   Status, feedback, and accent. Accent defaults to barn rose-red.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Status colors ──
+     Converged values: green from barn/legacy UI (#22c55e) vs wheat (#34d399).
+     Using the brighter #22c55e for success (used for connection dots);
+     keeping #34d399 as --success-light for softer contexts. */
+  --success:       #22c55e;
+  --success-light: #34d399;
+  --warning:       #f59e0b;
+  --error:         #f87171;
+  --info:          #60a5fa;
+
+  /* ── Semantic palette (named colors, used across UIs) ── */
+  --green:  #22c55e;
+  --red:    #f87171;
+  --blue:   #60a5fa;
+  --purple: #a78bfa;
+  --orange: #fb923c;
+  --cyan:   #22d3ee;
+
+  /* ── Accent (default: barn rose) ──
+     Overridden per-tool via [data-tool] selectors below.
+     --accent-bg is the very faint tint for hover/active states.
+     Lightened from #e11d48 to #f43f5e for WCAG AA (5.24:1 vs #0a0e1a). */
+  --accent:        #f43f5e;
+  --accent-light:  #fb7185;
+  --accent-dim:    rgba(244, 63, 94, 0.12);
+  --accent-bg:     rgba(244, 63, 94, 0.06);
+  --accent-border: rgba(244, 63, 94, 0.25);
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   LAYER 3 — TOOL-SPECIFIC ACCENT SCALES
+   Each tool gets a 5-weight ramp (50/200/400/600/800) plus the four
+   semantic accent tokens. Activated via data-tool="<name>" on <html>.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── wheat: amber (#fbbf24) ── */
+[data-tool="wheat"] {
+  --accent-50:  #fffbeb;
+  --accent-200: #fde68a;
+  --accent-400: #fbbf24;
+  --accent-600: #d97706;
+  --accent-800: #92400e;
+  --accent:        #fbbf24;
+  --accent-light:  #fcd34d;
+  --accent-dim:    rgba(251, 191, 36, 0.08);
+  --accent-bg:     rgba(251, 191, 36, 0.06);
+  --accent-border: rgba(251, 191, 36, 0.25);
+}
+
+/* ── barn: rose (#f43f5e) — default, repeated for explicitness ──
+   Lightened from #e11d48 for WCAG AA compliance (5.24:1 vs #0a0e1a). */
+[data-tool="barn"] {
+  --accent-50:  #fff1f2;
+  --accent-200: #fecdd3;
+  --accent-400: #fb7185;
+  --accent-600: #f43f5e;
+  --accent-800: #be123c;
+  --accent:        #f43f5e;
+  --accent-light:  #fb7185;
+  --accent-dim:    rgba(244, 63, 94, 0.12);
+  --accent-bg:     rgba(244, 63, 94, 0.06);
+  --accent-border: rgba(244, 63, 94, 0.25);
+}
+
+/* ── legacy UI: emerald (#22c55e) ── */
+
+
+/* ── mill: blue (#3b82f6) ── */
+[data-tool="mill"] {
+  --accent-50:  #eff6ff;
+  --accent-200: #bfdbfe;
+  --accent-400: #60a5fa;
+  --accent-600: #2563eb;
+  --accent-800: #1e40af;
+  --accent:        #3b82f6;
+  --accent-light:  #60a5fa;
+  --accent-dim:    rgba(59, 130, 246, 0.10);
+  --accent-bg:     rgba(59, 130, 246, 0.06);
+  --accent-border: rgba(59, 130, 246, 0.25);
+}
+
+/* ── silo: purple (#a78bfa) ── */
+[data-tool="silo"] {
+  --accent-50:  #f5f3ff;
+  --accent-200: #ddd6fe;
+  --accent-400: #a78bfa;
+  --accent-600: #7c3aed;
+  --accent-800: #5b21b6;
+  --accent:        #a78bfa;
+  --accent-light:  #c4b5fd;
+  --accent-dim:    rgba(167, 139, 250, 0.10);
+  --accent-bg:     rgba(167, 139, 250, 0.06);
+  --accent-border: rgba(167, 139, 250, 0.25);
+}
+
+/* ── harvest: orange (#fb923c) ── */
+[data-tool="harvest"] {
+  --accent-50:  #fff7ed;
+  --accent-200: #fed7aa;
+  --accent-400: #fb923c;
+  --accent-600: #ea580c;
+  --accent-800: #9a3412;
+  --accent:        #fb923c;
+  --accent-light:  #fdba74;
+  --accent-dim:    rgba(251, 146, 60, 0.10);
+  --accent-bg:     rgba(251, 146, 60, 0.06);
+  --accent-border: rgba(251, 146, 60, 0.25);
+}
+
+/* ── orchard: cyan (#22d3ee) ── */
+[data-tool="orchard"] {
+  --accent-50:  #ecfeff;
+  --accent-200: #a5f3fc;
+  --accent-400: #22d3ee;
+  --accent-600: #0891b2;
+  --accent-800: #155e75;
+  --accent:        #22d3ee;
+  --accent-light:  #67e8f9;
+  --accent-dim:    rgba(34, 211, 238, 0.10);
+  --accent-bg:     rgba(34, 211, 238, 0.06);
+  --accent-border: rgba(34, 211, 238, 0.25);
+}
+
+/* ── grainulation: neutral/white (#9ca3af) ── */
+[data-tool="grainulation"],
+[data-tool="grainulation"] {
+  --accent-50:  #f9fafb;
+  --accent-200: #e5e7eb;
+  --accent-400: #9ca3af;
+  --accent-600: #6b7280;
+  --accent-800: #374151;
+  --accent:        #9ca3af;
+  --accent-light:  #d1d5db;
+  --accent-dim:    rgba(156, 163, 175, 0.10);
+  --accent-bg:     rgba(156, 163, 175, 0.06);
+  --accent-border: rgba(156, 163, 175, 0.25);
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   RESET + BASE STYLES — shared across all tool UIs
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--fg);
+  font-size: var(--text-md);
+  line-height: var(--line-height);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+/* ── Scrollbar (webkit) ── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg4);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--fg3);
+}
+
+
+/* ── Shared components ── */
+
+.conn-dot,
+.connection-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.conn-dot.disconnected,
+.connection-dot.disconnected {
+  background: var(--red);
+}

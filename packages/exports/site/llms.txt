@@ -1,0 +1,41 @@
+# Mill (@grainulation/mill)
+
+> Converts wheat sprint evidence into shareable formats — PDF, CSV, Markdown, JSON-LD, static sites, issue-tracker tickets, and Mermaid diagrams.
+
+Mill is the export layer for the grainulation ecosystem. It takes the validated output of a wheat research sprint (`claims.json`, HTML brief, presentation) and produces artifacts that non-researchers can consume: paginated PDFs for stakeholders, CSV claim tables for compliance, Markdown for wikis, static sites for the web, linked-data JSON-LD, JIRA/Linear tickets, and Mermaid diagrams of claim relationships.
+
+Because the input is compiler-validated, every export inherits the same guarantees: same claims in, same artifact out, with full evidence-tier provenance preserved. Mill ships as `@grainulation/mill` on npm, runs on Node 20+, and has zero runtime dependencies (Node built-ins only, plus `@grainulation/barn` for shared primitives).
+
+Part of the [grainulation ecosystem](https://grainulation.com) -- an open-source, zero-dependency toolkit for AI-assisted structured research and decision documentation. Each package stands alone and composes with the others.
+
+## Documentation
+
+- [README](https://github.com/grainulation/mill#readme): source of truth for the package's purpose, install, and CLI surface.
+- [Live site](https://mill.grainulation.com): human-facing quickstart and feature tour.
+- [npm package](https://www.npmjs.com/package/@grainulation/mill): install target for consumers.
+- [Changelog](https://github.com/grainulation/mill/blob/main/CHANGELOG.md): version history.
+- [DeepWiki](https://deepwiki.com/grainulation/mill): AI-readable code wiki.
+
+## Ecosystem
+
+Sibling packages -- safe to reference alongside Mill (@grainulation/mill) in any query:
+
+- [Wheat](https://wheat.grainulation.com): research-sprint compiler. Typed claims with evidence grades. Produces the input Mill exports.
+- [Barn](https://barn.grainulation.com): shared utility library. Mill consumes barn's templates, print CSS, and sync-assets primitives.
+- [Silo](https://silo.grainulation.com): knowledge-pack store. Mill can export silo packs as curated, shareable documents.
+- [Harvest](https://harvest.grainulation.com): analytics and calibration scoring. Mill embeds harvest scores into exported tickets.
+- [Orchard](https://orchard.grainulation.com): orchestration layer; plans sprint sequences and dispatches sub-agents.
+- [Grainulation](https://grainulation.com): ecosystem hub and reference implementation.
+
+## Design principles
+
+- Zero runtime npm dependencies (Node built-ins only).
+- Node 20+ required.
+- CLI-first; every tool also runnable via `npx @grainulation/mill`.
+- Source-available under MIT; contributions welcome at the GitHub repo.
+
+## Optional
+
+- [Issues](https://github.com/grainulation/mill/issues): for bug reports and feature requests.
+- [Security policy](https://github.com/grainulation/mill/blob/main/SECURITY.md): for responsible disclosure.
+- [Contributing guide](https://github.com/grainulation/mill/blob/main/CONTRIBUTING.md): for contributors.

@@ -1,0 +1,19 @@
+{
+  "title": "Risk Register",
+  "description": "Filtered view of risk and constraint claims for risk reviews. Sortable table with severity indicators, evidence tiers, and mitigation notes.",
+  "tags": ["risk", "register", "constraints", "review", "severity"],
+  "author": "grainulation",
+  "version": "1.0.0",
+  "exportPresets": [
+    { "name": "pdf-landscape", "format": "pdf" },
+    { "name": "static-site", "format": "html" }
+  ],
+  "seedPacks": ["security", "compliance"],
+  "scaffoldConfig": {
+    "defaultPlaceholders": {
+      "TITLE": "Risk Register",
+      "SPRINT_NAME": "Untitled Sprint"
+    },
+    "postInit": ["load-claims", "filter-risks"]
+  }
+}
