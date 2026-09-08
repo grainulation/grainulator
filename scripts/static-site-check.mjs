@@ -97,13 +97,13 @@ try {
   await page.getByRole('link', { name: 'Set up the local build' }).click();
   assert.equal(new URL(page.url()).pathname, '/install.html');
   assert.match(await page.locator('main').textContent(), /Node.js 24 or later/);
-  assert.match(await page.locator('main').textContent(), /has not been pushed or published/);
+  assert.match(await page.locator('main').textContent(), /not tagged or published to npm/);
   assert.match(await page.locator('main').textContent(), /npm install --offline --ignore-scripts/);
   for (const width of [375, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 960 });
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), false, `install guide overflows at ${width}`);
   }
-  report.checks.push('first-time local setup link, unpublished build distinction, Node prerequisites and responsive install instructions');
+  report.checks.push('first-time local setup link, unpublished candidate distinction, Node prerequisites and responsive install instructions');
 
   assert.deepEqual(errors, []);
   assert.deepEqual(failed, []);
