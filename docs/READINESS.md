@@ -1,6 +1,6 @@
-# Grainulator 2.0.0 release-candidate readiness
+# Grainulator 2.0.0 verification record
 
-The 2.0.0 candidate is prepared on `release/2.0.0` for review and CI. It is not tagged or published. Required CI checks must pass on the release commit before tagging. Real-provider playground acceptance still needs an OpenAI or OpenRouter API key; maintainer dogfood acceptance remains required before publication.
+The source release is [v2.0.0 on GitHub](https://github.com/grainulation/grainulator/releases/tag/v2.0.0); no npm package is published. The checkpoint notes below preserve the tests and remaining limits recorded during preparation. Release authorization does not turn unperformed provider or customer-task checks into passes.
 
 The verification notes below retain the September 7–8, 2026 local checkpoints. They establish their stated artifact and test scope, not a remote CI result for the release branch.
 
@@ -32,7 +32,7 @@ The later packaged-product review found gaps that the earlier checkpoint did not
 
 Local archives now have a unique prerelease version and a file manifest checked by `doctor`. Verify the same build at the npm installation, marketplace copy, and host cache, then test a fresh host session. The installed Node 22 rejection and Claude's nested plugin tool call have passed. Codex 0.153.4 native plugin calls and exact-session retrieval have also passed with an explicit workspace binding; this does not establish automatic project discovery or desktop-process configuration. Direct MCP success is a separate result. See [plugin acceptance](PLUGIN-TESTING.md) for the required host setup and evidence, and the consumer's current-status report for the exact artifact tested.
 
-## Manual acceptance
+## Manual acceptance recorded at the checkpoint
 
 A subsequent [blind-spot review](BLIND-SPOTS.md) found and fixed memory concurrency, CLI/MCP store consistency, provenance, presentation accessibility, and newcomer documentation gaps. That review also records remaining claim-lifecycle and organization-source cleanup gaps; the earlier matrix is a checkpoint, not evidence for every later edit.
 

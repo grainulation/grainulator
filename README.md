@@ -4,14 +4,14 @@ Evidence and verification for the model you already use.
 
 Grainulator gives model-assisted work a local evidence ledger, checks for contradictions and weak support, and turns the remaining gaps into concrete next actions. Use it for research, engineering, or a managed command loop with a verifier that measures your task.
 
-**2.0.0 release candidate — not tagged or published.** Review and test the `release/2.0.0` branch using the [dogfood guide](docs/DOGFOOD.md). Existing repository history and stars are preserved. Release tagging waits for required CI checks to pass.
+**Grainulator 2.0.0** is distributed through the [v2.0.0 GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.0.0). This GitHub release is not published to npm. Use the tagged source and [dogfood guide](docs/DOGFOOD.md) to run it locally; existing repository history and stars are preserved.
 
 ## Start locally
 
 Requires Node.js 24 or later; Node 25 is the local default:
 
 ```sh
-git clone --branch release/2.0.0 https://github.com/grainulation/grainulator.git
+git clone --branch v2.0.0 https://github.com/grainulation/grainulator.git
 cd grainulator
 npm ci --ignore-scripts
 node bin/grainulator.js doctor
@@ -111,7 +111,7 @@ npm run test:install
 npm run lint
 ```
 
-See the [dogfood guide](docs/DOGFOOD.md) for browser and runtime checks, and [readiness](docs/READINESS.md) for release acceptance. The 2.0.0 candidate is not tagged or published.
+See the [dogfood guide](docs/DOGFOOD.md) for browser and runtime checks, and [readiness](docs/READINESS.md) for release acceptance. The GitHub release and locally packed archives do not publish an npm package.
 
 ## License
 

@@ -1,5 +1,7 @@
 # Test the installed plugin
 
+Start from the `v2.0.0` tag of the [GitHub repository](https://github.com/grainulation/grainulator/tree/v2.0.0), or the identified archive you intend to test. The GitHub release does not publish an npm package.
+
 CLI installation, direct MCP connection, full plugin loading, and subagent tool access are separate checks. A passing `grainulator connect` test does not establish that a host discovered the plugin's skills or hooks.
 
 ## Identify the build

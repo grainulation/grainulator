@@ -1,6 +1,6 @@
 # Grainulator workspace
 
-This checkout prepares the 2.0.0 release candidate. Follow the user’s active scope for local edits, branch pushes, deployment, publication, and repository archival. Do not create a release tag or publish a release before the required CI checks pass; those actions must also be covered by the user’s release authorization. Component workspace packages remain private.
+This is the Grainulator 2.0.0 source checkout. Follow the user’s active scope for local edits, branch pushes, deployment, publication, and repository archival. Do not create a release tag or publish a release before the required CI checks pass; those actions must also be covered by the user’s release authorization. The root npm package and component workspaces remain private; a GitHub release does not authorize npm publication.
 
 Use the active sprint directory identified by the current task or project instructions. If none exists, create a dedicated sprint for the requested work; never repurpose an unrelated ledger. Pass `--dir` or the MCP `dir` argument explicitly. Use `skills/grainulator/SKILL.md` for the portable workflow.
 

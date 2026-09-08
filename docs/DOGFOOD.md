@@ -1,6 +1,6 @@
-# Grainulator 2.0.0 candidate dogfood
+# Grainulator 2.0.0 dogfood
 
-This guide exercises the 2.0.0 release candidate, which is not tagged or published. Retained component identifiers support compatibility; component workspaces remain private. The review branch preserves existing repository history and stars. Candidate setup does not alter global agent configuration.
+This guide exercises the v2.0.0 GitHub release. The root npm package is private and is not published to npm. Retained component identifiers support compatibility; component workspaces remain private. The repository preserves existing history and stars. Local setup does not alter global agent configuration.
 
 ## Start here
 
@@ -71,6 +71,6 @@ The ledger remains JSON during this compatibility stage. Transaction locks coord
 
 SQLite/event-log migration and additional host contracts remain future work. The completed synthetic model evaluations and their limits are documented in [EVALUATION.md](EVALUATION.md); broader customer-task evaluations remain open. No model-quality improvement is claimed from the deterministic demo or package tests. Imported legacy installers are retained for compatibility but are not run by dogfood setup.
 
-The source inventory records original commit IDs, imported file hashes, and included local edits in `source-imports.json`. Original histories remain in their existing repositories. The source version is prepared as 2.0.0. Tagging and publication require passing CI and the user’s release authorization; repository archival remains a separate decision.
+The source inventory records original commit IDs, imported file hashes, and included local edits in `source-imports.json`. Original histories remain in their existing repositories. The GitHub source release is v2.0.0. Future releases require passing CI and the user’s release authorization; npm publication and repository archival remain separate decisions.
 
 Report issues with the command, expected behavior, observed behavior, and a redacted run trace. Traces can contain task content and model output; inspect them before sharing.

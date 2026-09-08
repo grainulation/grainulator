@@ -2,14 +2,14 @@
 
 The root `@grainulation/grainulator` archive is the distribution boundary. Component workspaces are private implementation modules; retained package names and CLI commands are compatibility aliases. Install the root archive, not individual component tarballs.
 
-## Obtain the 2.0.0 release candidate
+## Obtain the v2.0.0 GitHub release
 
-Use Node.js 24 or later; Node 25 is the dogfood default. The 2.0.0 release candidate is available for review on `release/2.0.0`; it is not tagged or published to npm. Installing the currently released npm package does not select this candidate. The playground's [local setup page](../site/install.html) provides the same source and archive instructions.
+Use Node.js 24 or later; Node 25 is the dogfood default. Get the tagged source from the [v2.0.0 GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.0.0). This GitHub release is not published to npm; installing the currently released npm package does not select this version. The playground's [local setup page](../site/install.html) provides the same source and archive instructions.
 
-Clone the review branch and install its source dependencies:
+Clone the release tag and install its source dependencies:
 
 ```sh
-git clone --branch release/2.0.0 https://github.com/grainulation/grainulator.git
+git clone --branch v2.0.0 https://github.com/grainulation/grainulator.git
 cd grainulator
 npm ci --ignore-scripts
 node bin/grainulator.js doctor
@@ -50,7 +50,7 @@ The source checkout, an npm consumer installation, and a host's plugin cache are
 
 For an existing local CLI installation, stop its preview or CLI process, install the newly printed archive path from that consumer directory, verify its build ID with doctor, and restart it. For a plugin, reinstall the intended local artifact through the host's local plugin mechanism, reload the plugin, and start a fresh test session. Verify the actual loaded cache, including skills, agents, and hooks; a direct MCP test does not exercise the full plugin.
 
-The bundled Claude marketplace entry does not pin your local candidate artifact. Use the intended `release/2.0.0` checkout or identified archive for candidate testing, and verify the loaded build. Follow the [fresh full-plugin acceptance guide](PLUGIN-TESTING.md) for the local installation and cache checks. Existing user sessions and global configuration are not automatically changed by packing or installing a CLI archive.
+The bundled Claude marketplace entry does not pin your local artifact. Use the `v2.0.0` tagged checkout or an identified archive for release testing, and verify the loaded build. Follow the [fresh full-plugin acceptance guide](PLUGIN-TESTING.md) for the local installation and cache checks. Existing user sessions and global configuration are not automatically changed by packing or installing a CLI archive.
 
 For an authenticated compatible endpoint, configure a local environment variable such as `MODEL_API_KEY` and append `--api-key-env MODEL_API_KEY` to the research command. Pass the variable name, never the secret itself. Custom endpoints do not inherit OpenAI or OpenRouter environment keys, and credential fields are excluded from exports. The playground shows this handoff note when Compatible endpoint is selected.
 
@@ -78,4 +78,4 @@ Internal runtime imports use relative paths inside the archive. The root has no 
 
 From this checkout, run `npm ci --ignore-scripts` and `npm run test:install`. Acceptance packs current files and installs into a temporary consumer, offline, with an empty npm cache and install scripts disabled. It exercises help, doctor, every component entry point, evidence init/add/compile, research preparation, and actual initialize/list/call exchanges with the unified Grainulator MCP server and retained legacy entry points. It also rejects retired commands and checks that retired application assets and hooks are absent.
 
-Evidence is `.dogfood/package-isolation-audit.json`, including exact checks and artifact paths. Nothing is installed globally or published. Official Node 24.20.0 and Node 25.9.0 pass the same local checks. The release branch runs CI for both; confirm required checks pass for the current commit before tagging. Node 25 is the dogfood default and Node 24 is the minimum. Rust availability remains a separate doctor/conformance check. See [host evidence](HOSTS.md) and [release gates](READINESS.md).
+Evidence is `.dogfood/package-isolation-audit.json`, including exact checks and artifact paths. Nothing is installed globally or published. Official Node 24.20.0 and Node 25.9.0 pass the same local checks. CI checks both supported Node versions; verify the result for the exact revision when testing further changes. Node 25 is the dogfood default and Node 24 is the minimum. Rust availability remains a separate doctor/conformance check. See [host evidence](HOSTS.md) and [release gates](READINESS.md).
