@@ -5,6 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { createHandler, RESOURCES, TOOLS } from "../../lib/grainulator-mcp.js";
+import outputSafety from "../../packages/exports/lib/output-safety.js";
 import sharedPathsCjs from "../../packages/shared/lib/paths.cjs";
 import * as sharedPaths from "../../packages/shared/lib/paths.js";
 import { command, mcp, toolJSON } from "../../scripts/lib/local-checks.mjs";
@@ -504,6 +505,172 @@ test("exports preserve ledgers, host settings, sources, and symlink aliases", as
 			).result,
 		).status,
 		"ok",
+	);
+});
+
+test("exports protect native manifests and new host configuration through directory aliases", async (t) => {
+	const { workspace, memoryDir } = fixture(t);
+	seed(workspace);
+	const handle = createHandler({ dir: workspace, memoryDir });
+	for (const name of [
+		"mcp.json",
+		"plugin.json",
+		"build-info.json",
+		".claude-plugin/plugin.json",
+		".codex-plugin/plugin.json",
+	]) {
+		fs.mkdirSync(path.dirname(path.join(workspace, name)), { recursive: true });
+		fs.writeFileSync(path.join(workspace, name), "Original host configuration");
+		for (const tool of ["exports_convert", "mill/convert"]) {
+			const result = await rpc(handle, "tools/call", {
+				name: tool,
+				arguments: { format: "markdown", output: name },
+			});
+			assert.equal(result.result.isError, true, `${tool}: ${name}`);
+			assert.match(result.result.content[0].text, /Protected output/);
+			assert.equal(
+				fs.readFileSync(path.join(workspace, name), "utf8"),
+				"Original host configuration",
+			);
+		}
+	}
+	fs.mkdirSync(path.join(workspace, ".claude"));
+	fs.symlinkSync(
+		path.join(workspace, ".claude"),
+		path.join(workspace, "settings-alias"),
+		"dir",
+	);
+	fs.symlinkSync(
+		path.join(workspace, ".codex-plugin", "new-subdir"),
+		path.join(workspace, "dangling-alias"),
+		"dir",
+	);
+	for (const output of [
+		"settings-alias/settings.json",
+		"dangling-alias/custom.json",
+	]) {
+		const result = await rpc(handle, "tools/call", {
+			name: "exports_convert",
+			arguments: { format: "markdown", output },
+		});
+		assert.equal(result.result.isError, true, output);
+		assert.match(result.result.content[0].text, /Protected output/);
+		assert.equal(fs.existsSync(path.join(workspace, output)), false);
+	}
+	assert.throws(
+		() =>
+			command([
+				process.execPath,
+				path.join(root, "bin/grainulator.js"),
+				"export",
+				"export",
+				"--format",
+				"markdown",
+				path.join(workspace, "claims.json"),
+				"-o",
+				path.join(workspace, "settings-alias", "settings.json"),
+			]),
+		/Protected output/,
+	);
+	assert.equal(
+		fs.existsSync(path.join(workspace, ".claude/settings.json")),
+		false,
+	);
+});
+
+test("sync-log tools and resource reads reject an outside file symlink", async (t) => {
+	const { dir, workspace, memoryDir } = fixture(t);
+	seed(workspace);
+	fs.mkdirSync(path.join(workspace, "output"));
+	const external = path.join(dir, "outside.json");
+	fs.writeFileSync(
+		external,
+		JSON.stringify([{ secret: "outside-private-fixture" }]),
+	);
+	fs.symlinkSync(external, path.join(workspace, "output", "sync-log.json"));
+	const handle = createHandler({ dir: workspace, memoryDir });
+	for (const name of ["sync_log", "wheat/sync-log"]) {
+		const response = await rpc(handle, "tools/call", { name });
+		assert.equal(response.result.isError, true);
+		assert.match(response.result.content[0].text, /outside workspace/);
+		assert.doesNotMatch(JSON.stringify(response), /outside-private-fixture/);
+	}
+	for (const uri of ["grainulator://sync-log", "wheat://sync-log"])
+		assert.equal(
+			(await rpc(handle, "resources/read", { uri })).error.code,
+			-32602,
+		);
+	assert.deepEqual(JSON.parse(fs.readFileSync(external)), [
+		{ secret: "outside-private-fixture" },
+	]);
+});
+
+test("exports protect only known native workspace configuration paths and their aliases", async (t) => {
+	const { workspace, memoryDir } = fixture(t);
+	seed(workspace);
+	const originalHome = os.homedir;
+	const originalConfig = process.env.GRAINULATOR_CONFIG;
+	os.homedir = () => workspace;
+	const custom = path.join(workspace, "custom-binding.json");
+	process.env.GRAINULATOR_CONFIG = custom;
+	t.after(() => {
+		os.homedir = originalHome;
+		if (originalConfig === undefined) delete process.env.GRAINULATOR_CONFIG;
+		else process.env.GRAINULATOR_CONFIG = originalConfig;
+	});
+	const config = path.join(
+		workspace,
+		".config",
+		"grainulator",
+		"workspace.json",
+	);
+	for (const target of [config, custom]) {
+		assert.throws(
+			() => outputSafety.assertSafeOutput(target),
+			/Protected output/,
+		);
+		fs.mkdirSync(path.dirname(target), { recursive: true });
+		fs.writeFileSync(target, "Original workspace binding");
+	}
+	fs.symlinkSync(custom, path.join(workspace, "binding-alias.json"));
+	fs.linkSync(custom, path.join(workspace, "binding-hardlink.json"));
+	const handle = createHandler({ dir: workspace, memoryDir });
+	for (const target of [
+		config,
+		custom,
+		path.join(workspace, "binding-alias.json"),
+		path.join(workspace, "binding-hardlink.json"),
+	]) {
+		const result = await rpc(handle, "tools/call", {
+			name: "exports_convert",
+			arguments: { format: "markdown", output: target },
+		});
+		assert.equal(result.result.isError, true, target);
+		assert.match(result.result.content[0].text, /Protected output/);
+		assert.equal(fs.readFileSync(target, "utf8"), "Original workspace binding");
+	}
+	assert.throws(
+		() =>
+			command([
+				process.execPath,
+				path.join(root, "bin/grainulator.js"),
+				"export",
+				"export",
+				"--format",
+				"markdown",
+				path.join(workspace, "claims.json"),
+				"-o",
+				custom,
+			]),
+		/Protected output/,
+	);
+	assert.doesNotThrow(() =>
+		outputSafety.assertSafeOutput(path.join(workspace, "workspace.json")),
+	);
+	assert.doesNotThrow(() =>
+		outputSafety.assertSafeOutput(
+			path.join(workspace, ".config", "unrelated", "workspace.json"),
+		),
 	);
 });
 

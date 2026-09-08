@@ -1,6 +1,6 @@
 {
 	"name": "@grainulation/grainulator",
-	"version": "2.0.1",
+	"version": "2.0.2",
 	"description": "Portable evidence and execution tools for model-assisted work",
 	"type": "module",
 	"license": "MIT",
@@ -35,6 +35,7 @@
 		"bin/",
 		"docs/ADAPTERS.md",
 		"docs/UPGRADING.md",
+		"docs/SECURITY-REVIEW.md",
 		"docs/DOGFOOD.md",
 		"packages/legacy-cli/package.json",
 		"packages/legacy-cli/bin",
