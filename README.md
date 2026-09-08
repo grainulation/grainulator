@@ -1,109 +1,138 @@
-# Grainulator
+<p align="center">
+  <a href="https://grainulator.app"><img src="site/glitchy.png" alt="Glitchy — the Grainulator mascot" width="200"></a>
+</p>
 
-Evidence and verification for the model you already use.
+<h1 align="center">Grainulator</h1>
 
-Grainulator gives model-assisted work a local evidence ledger, checks for contradictions and weak support, and turns the remaining gaps into concrete next actions. Use it for research, engineering, or a managed command loop with a verifier that measures your task.
+<p align="center"><strong>Evidence and verification for the model you already use.</strong></p>
 
-**Grainulator 2.0.0** is distributed through the [v2.0.0 GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.0.0). This GitHub release is not published to npm. Use the tagged source and [dogfood guide](docs/DOGFOOD.md) to run it locally; existing repository history and stars are preserved.
+<p align="center">
+  Keep the evidence. Challenge the answer. Know what to do next.<br>
+  A shared workflow for research, engineering, and model-assisted work.
+</p>
 
-## Start locally
+<p align="center">
+  <a href="https://grainulator.app/playground/"><img src="https://img.shields.io/badge/explore_the_playground-grainulator.app-98f3ef?style=for-the-badge" alt="Explore the Grainulator playground"></a>
+</p>
 
-Requires Node.js 24 or later; Node 25 is the local default:
+<p align="center">
+  <a href="https://github.com/grainulation/grainulator/releases"><img src="https://img.shields.io/github/v/release/grainulation/grainulator?label=release" alt="Latest GitHub release"></a>
+  <a href="https://github.com/grainulation/grainulator/actions/workflows/ci.yml"><img src="https://github.com/grainulation/grainulator/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI on main"></a>
+  <a href="docs/INSTALLATION.md"><img src="https://img.shields.io/badge/node-%E2%89%A524-339933?logo=nodedotjs&logoColor=white" alt="Node.js 24 or later"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license"></a>
+  <a href="https://deepwiki.com/grainulation/grainulator"><img src="https://deepwiki.com/badge.svg" alt="Docs on DeepWiki"></a>
+</p>
+
+<p align="center">
+  <a href="#quick-start">Quick start</a> ·
+  <a href="docs/INSTALLATION.md">Installation</a> ·
+  <a href="docs/TOOLS.md">Tools</a> ·
+  <a href="docs/PLUGIN-TESTING.md">Agent setup</a> ·
+  <a href="CHANGELOG.md">Changelog</a>
+</p>
+
+---
+
+## What it adds
+
+Good models still need a way to keep track of evidence, revisit assumptions, and verify their work. Grainulator gives them that process, with a local ledger that stays with the task as it moves between models and sessions.
+
+| Capability | What it gives you |
+| --- | --- |
+| **Evidence that stays with the work** | Typed claims, sources, evidence tiers, and provenance that survive edits and exports. |
+| **A check on the answer** | Conflict detection, weak-support signals, and explicit gaps to investigate. |
+| **Clear next actions** | Two lists: what the agent can continue automatically, and what needs your input. |
+| **Sessions you can carry forward** | Configurable research, stop/resume, reusable context, and credential-free exports. |
+| **Verification for your task** | A managed command loop that can use a verifier you provide. |
+
+**One package, one MCP server.** Use the CLI, connect an MCP-compatible agent, or load the bundled Claude Code or Codex plugin. The consolidated components are included; separate ecosystem installations are not required.
+
+## Quick start
+
+Requires **Node.js 24+**. Node 25 is the development default.
 
 ```sh
 git clone --branch v2.0.0 https://github.com/grainulation/grainulator.git
 cd grainulator
 npm ci --ignore-scripts
 node bin/grainulator.js doctor
-node bin/grainulator.js init --dir ./sprints/example \
-  --question 'Can this change meet our requirements?' \
+node bin/grainulator.js preview
+```
+
+Open **[localhost:4517/playground/](http://127.0.0.1:4517/playground/)** to choose your model, configure the workflow, and run research with your provider key.
+
+Want to look around first? The **[public playground](https://grainulator.app/playground/)** lets you explore the controls and export a setup. Model execution happens in your local installation.
+
+> **Distribution:** v2.0.0 is a [GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.0.0), not an npm registry release. For a separate local installation, follow the [archive installation guide](docs/INSTALLATION.md).
+
+### Connect your agent
+
+From the project you want Grainulator to access:
+
+```sh
+node /path/to/grainulator/bin/grainulator.js connect --dir "$PWD"
+```
+
+Register the printed MCP configuration in your host, then restart its connection. The command prints configuration; it does not change your host settings.
+
+For bundled skills, agents, and hooks, use the **[native plugin setup guide](docs/PLUGIN-TESTING.md)**. Native Codex requires an absolute `GRAINULATOR_WORKSPACE` in its process environment. CLI and direct MCP access remain available to other hosts.
+
+## Put it to work
+
+With Grainulator connected, give your agent the outcome you need:
+
+> Use Grainulator to investigate whether we should migrate this service. Record the evidence, challenge the assumptions, implement the agreed changes, and verify them. Keep the remaining next steps split into Auto and Manual.
+
+The work follows a simple cycle:
+
+1. **Record** findings with their sources and evidence tiers.
+2. **Check** for conflicts, weak support, and missing perspectives.
+3. **Act** on the gaps that matter, then verify the requested result.
+4. **Continue** from the saved ledger or export the session to another workflow.
+
+There are no fixed claim-count or research-pass quotas. **Auto** lists work the agent can continue within your authorization. **Manual** lists decisions, access, or actions that need you. When you ask only for next steps, those two lists are the entire response.
+
+<details>
+<summary><strong>Example: record a claim from the terminal</strong></summary>
+
+```sh
+node bin/grainulator.js init --dir ./sprints/migration \
+  --question 'Should we migrate this service?' \
   --audience engineers --constraints 'Preserve existing user data' \
-  --done 'Implemented and verified, with remaining limits documented'
-node bin/grainulator.js connect --dir ./sprints/example
+  --done 'A verified plan with remaining risks documented'
+
+node bin/grainulator.js add --dir ./sprints/migration \
+  --id r001 --type constraint --topic migration \
+  --content 'Existing user data must remain readable.' --evidence stated
+
+node bin/grainulator.js compile --dir ./sprints/migration
 ```
 
-`connect` prints configuration for one **grainulator** MCP server. It changes no host settings. Load that configuration in your host, or keep using the CLI. The portable [Grainulator workflow](skills/grainulator/SKILL.md) can be read by any agent; Claude Code also supports the bundled skills and hooks.
+The equivalent MCP tool is **`add_claim`** on the **`grainulator`** server. See the [tool reference](docs/TOOLS.md) for evidence, memory, export, analytics, and orchestration operations.
 
-## Call tools
+</details>
 
-The public server is `grainulator`. Tool names describe the operation:
+## Explore the docs
 
-```js
-// MCP server: grainulator, tool: add_claim
-{
-  "dir": ".",
-  "id": "r001",
-  "type": "constraint",
-  "topic": "delivery",
-  "content": "Do not tag the release before required CI checks pass.",
-  "evidence": "stated"
-}
-```
-
-In host interfaces that combine server and tool names, this appears as `grainulator.add_claim` or `mcp__grainulator__add_claim`.
-
-| Capability | Tools |
+| Guide | Start here for… |
 | --- | --- |
-| Evidence | `init`, `add_claim`, `compile`, `search`, `status`, `resolve` |
-| Memory | `memory_search`, `memory_store`, `memory_list`, `memory_pull` |
-| Exports | `exports_convert`, `exports_formats`, `exports_preview` |
+| [Installation](docs/INSTALLATION.md) | Tagged source, isolated archives, and verified build identity. |
+| [Agent setup](docs/PLUGIN-TESTING.md) | Claude Code, Codex, and actual plugin acceptance checks. |
+| [Research sessions](docs/RESEARCH.md) | Models, feature controls, credentials, export, and resume. |
+| [Tools](docs/TOOLS.md) | The canonical CLI and MCP interface. |
+| [Execution adapters](docs/ADAPTERS.md) | Attaching a model command and a task-specific verifier. |
+| [Architecture](docs/STRUCTURE.md) | The workspace layout and internal modules. |
+| [Evaluation](docs/EVALUATION.md) | What has been measured and what remains unproven. |
+| [Contributing](CONTRIBUTING.md) | Development setup, tests, and changes to the project. |
 
-The CLI equivalent is `grainulator add --dir <sprint> ...`. See [host setup](docs/HOSTS.md) and the [adapter contract](docs/ADAPTERS.md). External connectors are optional; local evidence operations do not require them.
+## Verification and limits
 
-## How work progresses
+CI checks Node 24 and 25, isolated package installation, plugin contracts, Rust runtime conformance, lint, and the static playground in a browser. Native host and live-provider acceptance have separate [verification guides](docs/READINESS.md).
 
-1. Investigate the question that matters to the requested outcome. Record supported findings with their sources and evidence tiers.
-2. Compile the ledger to surface material conflicts, weak evidence and missing perspectives. Resolve what can be resolved, and preserve honest limitations.
-3. Implement and verify the requested artifact. Run another investigation only when it can change a decision or close a relevant gap.
+The compiler checks the structure and support recorded in the ledger; it does not establish that a source is true. Evaluations do not establish a general accuracy or efficiency gain, and per-pass limits are not a whole-session spending cap. Keep those distinctions when interpreting results.
 
-There are no fixed research-pass or claim-count quotas. A compiler result is evidence about the ledger, not proof that every claim is true or that the whole task is complete. Independent tests establish only what they actually check.
-
-Next actions appear as two concise lists:
-
-**Auto**
-
-- Work the agent can continue under existing authorization.
-
-**Manual**
-
-- Decisions, access or actions that require you; `None.` when there are none.
-
-The agent continues authorized Auto work. Compiler suggestions never grant permission or override the task’s scope. When you ask for next steps only, those two lists are the entire response.
-
-## Playground and managed sessions
-
-Run `npm run dev` and open the printed local URL. The research playground supports model and provider configuration, evidence controls, and portable session export/resume. See [research sessions](docs/RESEARCH.md) for configuration and continuation.
-
-`node bin/grainulator.js demo` exercises a deterministic adapter and verifier offline. It demonstrates the execution protocol; it is not evidence that a model produces better answers. See [evaluation results](docs/EVALUATION.md) for measured model behavior and limits.
-
-## Repository
-
-```text
-bin/                  Public CLI
-lib/                  Research, providers and execution loop
-packages/
-  evidence/           Claims and compilation
-  memory/             Source context and retrieval
-  exports/            Documents and presentations
-  analytics/          Sprint metrics and reports
-  orchestration/      Sprint dependencies
-  runtime/            Managed execution and verification
-  shared/             Common utilities
-  legacy-cli/         Compatibility commands
-skills/               Portable workflows
-agents/               Agent instructions
-hooks/                Host evidence reminders and write guard
-site/                 Product site and playground
-scripts/              Previews and acceptance checks
-test/                 Plugin and integration regressions
-evals/                Model evaluations
-```
-
-The permission dashboard has been removed. Native hosts own permissions and remote access. Grainulation’s organization site lives in its separate checkout. Retained internal package identifiers and accepted legacy tool aliases support existing integrations; they are not separate products. [Source provenance](docs/source-imports.json) records the imports.
-
-The single Grainulator package includes the consolidated components; separate ecosystem installations are not required.
-
-## Verify from a source checkout
+<details>
+<summary><strong>Run the development checks</strong></summary>
 
 ```sh
 npm test
@@ -111,10 +140,14 @@ npm run test:install
 npm run lint
 ```
 
-See the [dogfood guide](docs/DOGFOOD.md) for browser and runtime checks, and [readiness](docs/READINESS.md) for release acceptance. The GitHub release and locally packed archives do not publish an npm package.
+Browser and runtime prerequisites are in [CONTRIBUTING.md](CONTRIBUTING.md). The offline `node bin/grainulator.js demo` exercises the adapter/verifier protocol without a provider account.
 
-## License
+</details>
 
-MIT. See [LICENSE](LICENSE).
+---
 
-Local dogfood uses Node 25 (`.nvmrc` / `.node-version`); Node 24 is the minimum supported runtime.
+<p align="center">
+  Built by <a href="https://grainulation.com">Grainulation</a> ·
+  <a href="LICENSE">MIT licensed</a> ·
+  <a href="https://github.com/grainulation/grainulator/issues">Issues & ideas</a>
+</p>

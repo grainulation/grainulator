@@ -1,8 +1,7 @@
 # Auto
 
-- None from the identified local engineering scope after the final acceptance checks pass.
+- Derive current implementation and verification actions from the active sprint and the user's authorized task; this file is not a fixed release checklist.
 
 # Manual
 
-- Make a provider API key available locally for the live playground acceptance check.
-- Dogfood the installed workflow before considering publication or repository archival.
+- Provide a local provider API key when requesting live playground acceptance, and dogfood the installed workflow on a real task. GitHub release authorization does not verify these usage checks or authorize npm publication or repository archival.

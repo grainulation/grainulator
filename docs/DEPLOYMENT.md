@@ -10,7 +10,11 @@ Run the command from each checkout. The paired preview server injects an explici
 
 The Grainulation builder copies its new site directly; it does not run the retired shared-asset generator or package publisher. Historical CLI source remains in that checkout until an explicitly authorized cleanup.
 
-The prepared Pages workflows upload `dist/site/`. They have not been run or deployed. The custom domains in each site's existing `CNAME` are retained. These artifacts target those domain roots; hosting under a repository URL subpath would require a separate base-path configuration.
+The Pages workflows build and upload `dist/site/`, then deploy that artifact through GitHub Pages. The product workflow runs on relevant `main` changes or manual dispatch. The custom domains in each site's existing `CNAME` are retained. These artifacts target those domain roots; hosting under a repository URL subpath would require a separate base-path configuration.
+
+## Recorded deployment evidence
+
+Both recorded deployments completed successfully: [Grainulator Pages run 34183217426](https://github.com/grainulation/grainulator/actions/runs/34183217426) for `1933344`, and [Grainulation Pages run 34182960813](https://github.com/grainulation/grainulation/actions/runs/34182960813) for `ccef901`. These records apply to their own commits and artifacts; check a later deployment's run separately. Product and organization deployments are distinct from the GitHub source release and do not publish an npm package.
 
 ## Routes
 
@@ -41,4 +45,4 @@ node scripts/static-site-check.mjs --organization-port 4518
 
 Requires Python 3 and Playwright Chromium (or `PLAYWRIGHT_CHROMIUM_EXECUTABLE`). The check builds the product artifact and, when available, the sibling organization artifact. It uses Python's unmodified `SimpleHTTPRequestHandler`, with no SPA fallbacks or API routes, and checks navigation, old links, imported questions, session exports, the static execution boundary, local continuation instructions, missing assets, browser errors, and four viewport widths. The report is `.dogfood/static-site-results.json`.
 
-`npm run test:site` also tests the local preview and its browser workflows. Tests of paid provider execution and model quality are separate from static artifact acceptance. Publishing, custom-domain verification, and CDN propagation remain deployment-time actions and have not been performed by the local build.
+`npm run test:site` also tests the local preview and its browser workflows. Tests of paid provider execution and model quality are separate from static artifact acceptance. A local build does not establish deployment success, custom-domain routing, or CDN propagation. Verify those against the actual Pages run and live site for the revision being shipped.
