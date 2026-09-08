@@ -1,5 +1,7 @@
 # Dogfood review
 
+> Historical development log from September 7, 2026. Entries below preserve successive local checkpoints and can supersede earlier entries; they are not the current installation or release status. The canonical playground is `/playground/`, and both sites have later deployment records. Use [installation](INSTALLATION.md), [deployment](DEPLOYMENT.md), and [verification records](READINESS.md) for current guidance.
+
 This review separates local package behavior from host enforcement and measured model quality. All nine imported package suites and the plugin suite passed in an execution environment that permits local test ports and npm cache access. The Rust runtime passed 34 conformance checks. New integrity and runner regressions are in `test/dogfood/`.
 
 The command runner has JSON and text transports, bounded commands, verifier feedback, and persisted traces. Its offline arithmetic fixture proves protocol behavior only. Real model comparisons, automatic host installation, a transactional database migration, and publication are outside this dogfood increment.

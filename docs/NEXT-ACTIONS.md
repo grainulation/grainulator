@@ -8,7 +8,9 @@ The shared policy in `packages/evidence/lib/next-actions.cjs` produces `next_act
 
 The tips hook recompiles after each mutation under its lock. It no longer treats a compilation less than five seconds old as current or truncates actions into a 180-character summary. `off` disables background work; `quiet` surfaces only compiler blockers. MCP status checks the input certificate and requests recompilation when the snapshot is stale, without rewriting the ledger.
 
-## Verification
+## Historical verification snapshot
+
+The results below describe the initial September 7, 2026 output-contract check, not the full v2.0.0 suite or its current installed caches. Preserve their original counts and scope; see [plugin acceptance](PLUGIN-TESTING.md) and [verification records](READINESS.md) for later checks. The output contract above remains current.
 
 - Eight focused regressions cover presentation, policy, CLI/MCP parity, stale status, legacy schema hashes, consecutive edits and hook preferences.
 - All 40 core checks and the plugin/eight-component suite pass. The lint check passes with existing informational/style diagnostics.

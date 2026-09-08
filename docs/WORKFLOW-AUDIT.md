@@ -1,5 +1,7 @@
 # Grainulator workflow audit — September 7, 2026
 
+> Historical checkpoint, superseded for release scope. This September 7 audit predates the maintainer’s decision to remove the permission dashboard. Its paused/undecided instructions and test counts describe that earlier state; they are not current work requests. The dashboard is removed in v2.0.0. Use [README](../README.md), [structure](STRUCTURE.md), and [verification records](READINESS.md) for current guidance.
+
 The workflow was used earlier but was not maintained consistently through the dashboard work. This is an implementation and decision-quality failure, not a missing dashboard feature to patch over.
 
 ## Evidence and correction

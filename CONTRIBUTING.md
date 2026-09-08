@@ -1,77 +1,70 @@
 # Contributing to Grainulator
 
-Thanks for your interest in contributing to the Grainulator plugin.
-
-## What Grainulator is
-
-Grainulator is a Claude Code plugin that packages skills, agents, and
-hook wiring for research-sprint workflows. It's distributed via the
-grainulation marketplace, not npm.
+Grainulator provides evidence, memory, exports, and portable workflows through a CLI and one MCP server. Use it with any compatible host; Claude Code and Codex also have native plugin integrations. The v2.0.0 source is distributed through GitHub. The root npm package and component workspaces are private, so a GitHub release does not publish them to npm.
 
 ## Getting started
 
-```bash
+Use Node.js 24 or later; Node 25 is the development default in `.nvmrc` and `.node-version`.
+
+```sh
 git clone https://github.com/grainulation/grainulator.git
 cd grainulator
-npm install
+npm ci --ignore-scripts
+node bin/grainulator.js doctor
 npm test
 ```
 
-The plugin expects to run inside Claude Code. For local smoke-testing,
-install it as a development plugin:
+For a direct MCP connection, `node bin/grainulator.js connect --dir /absolute/path/to/project` prints configuration without changing host settings. For a local Claude plugin check, use the tested invocation:
 
-```bash
-# From inside Claude Code
-/plugin install /path/to/local/grainulator
+```sh
+claude --plugin-dir /absolute/path/to/grainulator
 ```
+
+For native Codex, install the intended local plugin through its marketplace mechanism and launch with `GRAINULATOR_WORKSPACE=/absolute/path/to/project codex`. Follow [plugin acceptance](docs/PLUGIN-TESTING.md) for installation, workspace binding, exact build verification, and actual host/subagent tool checks. Direct MCP success does not prove full plugin discovery.
 
 ## Filing issues
 
-- Search existing issues before opening a new one.
-- For bugs, include reproduction steps, your Claude Code version, and
-  relevant MCP server logs (from `~/.claude/logs/`).
-- For feature requests, describe the use case and what existing skill
-  or command would have been relevant.
+- Include reproduction steps, expected and observed behavior, Node and host versions, and the source revision or installed build ID.
+- Include relevant redacted tool errors or traces. Remove credentials and private task content before sharing.
+- For feature requests, describe the user task and the limitation of the current workflow.
 
 ## Pull requests
 
-1. Fork the repo and create a branch from `main`.
-2. If you're adding or changing a skill, update the skill's `SKILL.md`
-   and any relevant test.
-3. Run `npm test`; add tests if you're adding functionality.
-4. Keep PRs focused — one change per PR.
-5. Use Biome for formatting: `npx biome format --write .` before
-   committing (CI enforces this).
+1. Create a focused branch from `main` and preserve existing user data and compatibility boundaries.
+2. Update the relevant instructions when commands or behavior change. Add meaningful regression coverage for changed functionality.
+3. Run `npm test` and `npm run lint`, plus the checks relevant to your change. Use `npx biome format --write <changed-files>` for files covered by the repository's Biome configuration.
+4. Describe the problem, resulting behavior, checks actually run, and remaining limits. Do not report older test results as verification of newer edits.
 
-## End-to-end tests
+## Verification and CI
 
-`npm test` runs the unit suite and is what CI gates on. Playwright
-e2e runs locally only — not in CI — out of the maintainer's ranch
-harness. Keeping it local keeps browser tooling out of this repo's
-dep tree and keeps CI fast.
+CI runs `npm test`, `npm run build:site`, `npm run check:package`, and `npm run test:install` on Node 24 and 25. Separate jobs run lint, Rust runtime conformance, and the Playwright static-site check on Node 25. Browser tooling is a development dependency in this repository.
 
-## Skills
+```sh
+npm run lint
+npm run test:install
+npm run test:runtime
+npx playwright install chromium
+npm run test:static
+```
 
-Skills live in `skills/<name>/SKILL.md`. Each skill is one markdown
-file with YAML frontmatter (`name`, `description`, `tools`) and a
-prompt body. Keep tools lists minimal — only what the skill actually
-needs.
+Rust/Cargo is required for runtime conformance; Python 3 and Playwright Chromium are required for the static-site test. `npm run test:site` additionally exercises the local preview, playground, demo, scrolling, and organization site. Start `npm run dev` for the preview-dependent checks; see [deployment and browser checks](docs/DEPLOYMENT.md). Paid-provider and native-host tests require the relevant credentials and are separate from CI's static and synthetic checks.
 
-Shared snippets live under `templates/` (files prefixed `_`
-are not loaded as skills). Reference them from a SKILL.md with the
-`${CLAUDE_PLUGIN_ROOT}/templates/<file>` path.
+## Skills and shared templates
 
-## Version bumps
+Skills live in `skills/<name>/SKILL.md`, with YAML metadata and a portable Markdown workflow. Every directory under `skills/` must contain a real skill. Declare only needed tools; distinguish direct and host-prefixed MCP names where the host requires an allowlist.
 
-Grainulator uses `npm version <patch|minor|major>` which runs the
-`version` script automatically — it syncs the new version into
-`.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`
-and stages them so the bump commit is complete.
+Shared artifact templates live in root `templates/`, outside skill discovery. Claude can resolve `${CLAUDE_PLUGIN_ROOT}/templates/<file>`; other hosts resolve templates relative to the installed plugin or checkout. Preserve the documented accessibility shell when customizing artifacts.
 
-## Security
+## Version preparation
 
-See `SECURITY.md` for private-disclosure channels.
+Prepare a version change without automatically creating a Git commit or tag:
 
-## Code of conduct
+```sh
+npm version <patch|minor|major> --no-git-tag-version
+```
 
-See `CODE_OF_CONDUCT.md`.
+The version lifecycle synchronizes and stages `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`, `.codex-plugin/plugin.json`, and root `plugin.json`. Review those changes alongside `package.json` and `package-lock.json`, then commit through the normal review flow. `npm run sync-version` alone updates manifest contents without staging them. Create a release tag only after required CI passes and the release is authorized. Npm publication is a separate action; the packages remain private.
+
+## Security and conduct
+
+See [SECURITY.md](SECURITY.md) for private disclosure and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community expectations.
