@@ -101,6 +101,8 @@ evals/                Model evaluations
 
 The permission dashboard has been removed. Native hosts own permissions and remote access. Grainulation’s organization site lives in its separate checkout. Retained internal package identifiers and accepted legacy tool aliases support existing integrations; they are not separate products. [Source provenance](docs/source-imports.json) records the imports.
 
+The single Grainulator package includes the consolidated components; separate ecosystem installations are not required.
+
 ## Verify from a source checkout
 
 ```sh
