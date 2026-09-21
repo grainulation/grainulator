@@ -11,7 +11,7 @@ grainulator/
 ├── .github/             CI and repository workflows
 ├── agents/              Host agent instructions
 ├── bin/                 Grainulator CLI entry point
-├── docs/                Architecture, migration and dogfood guides
+├── docs/                Architecture, migration and local test guides
 ├── evals/               Evaluation cases and fixtures
 ├── hooks/               Evidence hooks and write guard
 ├── lib/                 Research, providers and execution loop
@@ -28,9 +28,9 @@ grainulator/
 ├── site/                Product site and research playground
 ├── skills/              Portable and host workflow instructions
 ├── templates/           Shared accessible artifact templates
-├── test/                Plugin and dogfood regression tests
+├── test/                Plugin and regression tests
 ├── package.json
 └── package-lock.json
 ```
 
-The permission dashboard app, its connectors, hooks, and runtime dependency have been removed. Generated evidence and analytics reports remain supported. Local build outputs, caches and `.dogfood/` audit artifacts are omitted above; original repositories remain untouched.
+The former permission dashboard is no longer part of Grainulator. Local build files, caches, and test reports are omitted from this map.

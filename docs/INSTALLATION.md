@@ -1,12 +1,12 @@
-# Installation contract
+# Install Grainulator
 
-The root `@grainulation/grainulator` archive is the distribution boundary. Component workspaces are private implementation modules; retained package names and CLI commands are compatibility aliases. Install the root archive, not individual component tarballs.
+For Claude Code or Codex, start with [agent setup](AGENT-SETUP.md). The steps below cover the source release and local archive. You do not need to install Grainulator's components one by one.
 
 Already using 1.x? Start with the [upgrade checklist](UPGRADING.md). Updating source or a marketplace catalog does not update an installed plugin, its host scope, or a running conversation.
 
 ## Obtain the v2.0.2 GitHub release
 
-Use Node.js 24 or later; Node 25 is the dogfood default. Get the tagged source from the [v2.0.2 GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.0.2). This GitHub release is not published to npm; installing the currently released npm package does not select this version. The playground's [local setup page](../site/install.html) provides the same source and archive instructions.
+Use Node.js 24 or later. Get the tagged source from the [v2.0.2 GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.0.2). This version is not published to npm, so an npm registry install will not give you this release. The [local setup page](../site/install.html) shows the same source and archive steps.
 
 Tagged releases and marketplace builds include `build-info.json`, an integrity manifest with an ID such as `release-2.0.2-<hash>`. Doctor checks its shipped-file checksums. A standard `npm pack --ignore-scripts` archive preserves that identity; `pack:local` below creates a distinct development build.
 
@@ -30,7 +30,7 @@ From the full source checkout, create an archive with a build identity:
 npm run pack:local
 ```
 
-This stages a version such as `2.0.2-local.<16-character-hash>` without changing the checkout's public version or publishing anything. The command prints `archive`, `id`, `version`, `source_sha256`, and `archive_sha256`; the same report is saved to `.dogfood/builds/latest.json`. Copy the full `archive` path from that report. Do not substitute an older same-version tarball.
+This creates a local version such as `2.0.2-local.<16-character-hash>` without publishing it. The command prints the archive path and build details. Copy the exact archive path it prints.
 
 In a new, empty consumer directory, replace `<archive>` below with that exact printed path:
 
@@ -84,10 +84,6 @@ node /absolute/path/to/grainulator/bin/grainulator.js connect --dir /absolute/pa
 
 Register the printed command and arguments in the host's MCP configuration for the authorized scope. This command only prints configuration; it does not install it. The explicit `--dir` binds direct MCP access without `GRAINULATOR_WORKSPACE`. Direct MCP access does not load or verify the plugin's bundled skills, agents, or hooks. Confirm a real status call against your intended sprint after setup. Claude's plugin registration remains automatic and does not require this Codex-specific workspace variable. See [full-plugin checks](PLUGIN-TESTING.md) for installation and verification details.
 
-## Distribution acceptance
+## Check a local installation
 
-Internal runtime imports use relative paths inside the archive. The root has no external runtime dependencies and does not depend on workspace symlinks or a sibling source checkout.
-
-From this checkout, run `npm ci --ignore-scripts` and `npm run test:install`. Acceptance packs current files and installs into a temporary consumer, offline, with an empty npm cache and install scripts disabled. It exercises help, doctor, every component entry point, evidence init/add/compile, research preparation, and actual initialize/list/call exchanges with the unified Grainulator MCP server and retained legacy entry points. It also rejects retired commands and checks that retired application assets and hooks are absent.
-
-Evidence is `.dogfood/package-isolation-audit.json`, including exact checks and artifact paths. Nothing is installed globally or published. Official Node 24.20.0 and Node 25.9.0 pass the same local checks. CI checks both supported Node versions; verify the result for the exact revision when testing further changes. Node 25 is the dogfood default and Node 24 is the minimum. Rust availability remains a separate doctor/conformance check. See [host evidence](HOSTS.md) and [release gates](READINESS.md).
+Run `node bin/grainulator.js doctor` from the release folder. If you built a local archive, run `doctor` from the installed copy so you check the files you will actually use. Maintainers can run `npm run test:install` for the full package test. See [release checks](READINESS.md) for test results and limits.

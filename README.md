@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <a href="https://grainulator.app/playground/"><img src="https://img.shields.io/badge/explore_the_playground-grainulator.app-98f3ef?style=for-the-badge" alt="Explore the Grainulator playground"></a>
+  <a href="https://grainulator.app/"><img src="https://img.shields.io/badge/see_the_example-grainulator.app-98f3ef?style=for-the-badge" alt="See the Grainulator example"></a>
 </p>
 
 <p align="center">
@@ -28,7 +28,7 @@
   <a href="docs/INSTALLATION.md">Installation</a> ·
   <a href="docs/UPGRADING.md">Upgrading</a> ·
   <a href="docs/TOOLS.md">Tools</a> ·
-  <a href="docs/PLUGIN-TESTING.md">Agent setup</a> ·
+  <a href="docs/AGENT-SETUP.md">Agent setup</a> ·
   <a href="CHANGELOG.md">Changelog</a>
 </p>
 
@@ -46,29 +46,28 @@ Good models still need a way to keep track of evidence, revisit assumptions, and
 | **Sessions you can carry forward** | Configurable research, stop/resume, reusable context, and credential-free exports. |
 | **Verification for your task** | A managed command loop that can use a verifier you provide. |
 
-**One package, one MCP server.** Use the CLI, connect an MCP-compatible agent, or load the bundled Claude Code or Codex plugin. The consolidated components are included; separate ecosystem installations are not required.
+Grainulator works with Claude Code and Codex through plugins. It also provides a command-line tool and an MCP connection for other agents. You do not need to install its components separately.
 
 ## Quick start
 
 Requires **Node.js 24+**. Node 25 is the development default.
 
-**Upgrading from 1.x?** Follow the [migration checklist](docs/UPGRADING.md) to update the correct plugin scope, reconnect the single MCP server, and review retired Farmer instructions without changing your research data.
+**Upgrading from 1.x?** Follow the [migration checklist](docs/UPGRADING.md) to update the plugin and keep your existing research data.
 
 ```sh
 git clone --branch v2.0.2 https://github.com/grainulation/grainulator.git
 cd grainulator
 npm ci --ignore-scripts
 node bin/grainulator.js doctor
-node bin/grainulator.js preview
 ```
 
-Open **[localhost:4517/playground/](http://127.0.0.1:4517/playground/)** to choose your model, configure the workflow, and run research with your provider key.
+To use Grainulator inside your agent, follow the **[Claude Code or Codex setup guide](docs/AGENT-SETUP.md)**. The [website](https://grainulator.app/) shows a saved example of an evidence check. It does not send your question to a model.
 
-Want to look around first? The **[public playground](https://grainulator.app/playground/)** lets you explore the controls and export a setup. Model execution happens in your local installation.
+The local research playground remains available through `node bin/grainulator.js preview`. It runs models using a provider account you configure locally.
 
 > **Distribution:** v2.0.2 is a [GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.0.2), not an npm registry release. For a separate local installation, follow the [archive installation guide](docs/INSTALLATION.md).
 
-### Connect your agent
+### Other agents: connect through MCP
 
 From the project you want Grainulator to access:
 
@@ -76,9 +75,9 @@ From the project you want Grainulator to access:
 node /path/to/grainulator/bin/grainulator.js connect --dir "$PWD"
 ```
 
-Register the printed MCP configuration in your host, then restart its connection. The command prints configuration; it does not change your host settings.
+Add the printed MCP configuration to your agent, then restart the connection. This command only prints the settings; it does not install the plugin.
 
-For bundled skills, agents, and hooks, use the **[native plugin setup guide](docs/PLUGIN-TESTING.md)**. Native Codex needs an explicit workspace: run `node /path/to/grainulator/bin/grainulator.js setup --dir /absolute/project` once, then restart Codex. A per-launch `GRAINULATOR_WORKSPACE` overrides that saved default. CLI and direct MCP access remain available to other hosts.
+For the full Claude Code or Codex plugin, use the **[agent setup guide](docs/AGENT-SETUP.md)**. Codex needs a project folder; the guide shows how to set it. CLI and direct MCP access remain available to other hosts.
 
 ## Put it to work
 
@@ -121,7 +120,7 @@ The equivalent MCP tool is **`add_claim`** on the **`grainulator`** server. See 
 | --- | --- |
 | [Installation](docs/INSTALLATION.md) | Tagged source, isolated archives, and verified build identity. |
 | [Upgrading from 1.x](docs/UPGRADING.md) | Host updates, renamed tools, existing data, and retired setup instructions. |
-| [Agent setup](docs/PLUGIN-TESTING.md) | Claude Code, Codex, and actual plugin acceptance checks. |
+| [Agent setup](docs/AGENT-SETUP.md) | Use Grainulator with Claude Code, Codex, or another agent. |
 | [Research sessions](docs/RESEARCH.md) | Models, feature controls, credentials, export, and resume. |
 | [Tools](docs/TOOLS.md) | The canonical CLI and MCP interface. |
 | [Execution adapters](docs/ADAPTERS.md) | Attaching a model command and a task-specific verifier. |

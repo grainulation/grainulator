@@ -1,6 +1,6 @@
 # Adapter contract v1
 
-The dogfood runtime has a command adapter. It can wrap a model API client, a local model executable, or an existing agent. It executes an argv array directly, without a shell. Credentials stay in the command's normal environment; the runtime does not manage provider accounts.
+The local runtime has a command adapter. It can run a model API client, a local model, or an existing agent. It runs the command directly, without a shell. Credentials stay in that command's environment; Grainulator does not manage provider accounts.
 
 Each invocation receives one JSON document on stdin:
 

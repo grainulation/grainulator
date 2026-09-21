@@ -19,4 +19,4 @@ The results below describe the initial September 7, 2026 output-contract check, 
 
 Audit artifacts are `.dogfood/test-results.json`, `.dogfood/package-isolation-audit.json`, `.dogfood/initial-next-actions-host-audit.json`, and `.dogfood/next-actions-host-audit.json`. Reproduce the live test with `node scripts/next-actions-host-check.mjs` after `npm run test:install`; it uses existing host sign-ins and synthetic fixture data.
 
-Host output compliance remains model behavior, not hard enforcement. These results cover one synthetic case per host. This checkpoint covered the local dogfood checkout and its packed test artifact. It did not verify installed plugin caches; see [plugin acceptance](PLUGIN-TESTING.md) for the separate installed-build and cache checks.
+Host output compliance remains model behavior, not hard enforcement. These results cover one synthetic case per host. This check covered the local source checkout and its packaged test build. It did not verify installed plugin caches; see [plugin acceptance](PLUGIN-TESTING.md) for the separate installed-build and cache checks.

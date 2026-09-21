@@ -4,4 +4,4 @@
 
 # Manual
 
-- Provide a local provider API key when requesting live playground acceptance, and dogfood the installed workflow on a real task. GitHub release authorization does not verify these usage checks or authorize npm publication or repository archival.
+- Provide a local provider API key when testing the live playground, and try the installed workflow on a real task. Publishing a GitHub release does not verify these usage checks or authorize npm publication or repository archival.

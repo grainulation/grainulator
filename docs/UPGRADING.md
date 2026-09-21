@@ -34,18 +34,9 @@ For Codex, refresh and update through its plugin manager, verify the selected ma
 
 Host-managed security wrappers and approved MCP launch commands belong to the host. Preserve them; do not replace them with a bare Node command to make a configuration or build check pass.
 
-## 3. Reconnect the single server
+## 3. Reconnect Grainulator
 
-The 1.x plugin registered four servers. Version 2 registers one:
-
-| Previous registration | Current interface on `grainulator` |
-| --- | --- |
-| `wheat` | Evidence tools such as `status`, `add_claim`, and `compile` |
-| `silo` | `memory_*` tools |
-| `mill` | `exports_*` tools |
-| Remote `deepwiki` | No automatic remote registration; the built-in `deepwiki` tool fetches public repository documentation |
-
-Hidden aliases accept old `wheat/*`, `silo/*`, and `mill/*` **tool names sent to the new server**, plus their supported resource URIs. They do not restore old server IDs or host-generated names such as `mcp__wheat__…`. Update custom tool allowlists, agent instructions, and direct MCP registrations to the names actually exposed by your host. Native plugins may add their own plugin prefix. The remote DeepWiki MCP server and its separate tool contract are not compatibility aliases; add that connector separately only if you need it.
+Version 2 uses one server named `grainulator`. If you added a manual connection in 1.x, check it and update it to the new server. The plugin handles its own connection; only change custom tool lists or instructions that refer to old names. Keep unrelated connections as they are.
 
 Claude's plugin registers `grainulator` automatically. For a direct MCP installation, `node /path/to/grainulator/bin/grainulator.js connect --dir /absolute/project` prints the replacement configuration for review. Remove a retired manual registration only after confirming it belongs to this installation and the new connection works. Keep unrelated connectors intact.
 
@@ -69,7 +60,7 @@ Keep existing `claims.json`, `compilation.json`, session exports, and sprint dir
 
 Check the memory store separately. The old Claude plugin selected `${CLAUDE_PLUGIN_DATA}/silo`; the new plugin selects `${CLAUDE_PLUGIN_DATA}/memory`. Changing the server registration does not copy that store. If `memory_list` appears empty, locate and back up the original store before selecting it through an authorized `GRAINULATOR_MEMORY_DIR` configuration or moving data. The resolver still accepts `SILO_STORE`, but an explicit `GRAINULATOR_MEMORY_DIR` takes precedence. Its `~/.silo` fallback does not migrate an old plugin-data directory. Do not merge stores or overwrite their indexes without reviewing both.
 
-Review applicable `CLAUDE.md`, `AGENTS.md`, and custom agent/tool instructions for generated 1.x setup blocks. Farmer, the dashboard, its hooks, and its permission/remote proxy were removed. Instructions to start Farmer, use its ports, or connect through its proxy should be retired after reviewing the exact block. Keep user-written rules, active sprint paths, permission policies, and unrelated integrations. The host now owns permissions and remote access; an upgrade never grants permission to change them.
+Review applicable `CLAUDE.md`, `AGENTS.md`, and custom agent instructions for setup steps from 1.x. Remove instructions for features that are no longer installed. Keep your own rules, active research folders, permission settings, and unrelated connections. Your agent still controls permissions and remote access.
 
 Existing source/data files can retain historical names for compatibility. Do not perform a repository-wide rename of words or JSON fields merely to remove old branding.
 

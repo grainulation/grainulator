@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'">
   <meta name="theme-color" content="#060d10">
-  <meta name="description" content="Bring evidence, independent checks, and useful corrections into your AI workflow. Choose your model in the research playground and take the session into real work.">
+  <meta name="description" content="Keep the evidence behind your AI work, check the result, and catch changes before you share it.">
   <title>Grainulator — Keep your model. Raise the standard.</title>
   <meta property="og:title" content="Grainulator — Keep your model. Raise the standard.">
-  <meta property="og:description" content="Your model, backed by evidence and checks you can inspect. Build your research workflow in the playground, then take it with you.">
+  <meta property="og:description" content="Keep the evidence behind your AI work, check the result, and catch changes before you share it.">
   <meta property="og:image" content="https://grainulator.app/og-image.png?v=2">
   <link rel="icon" type="image/png" href="/favicon-32.png">
   <link rel="stylesheet" href="/background.css">
@@ -23,49 +23,53 @@
   <div class="page-shell">
     <header class="site-header">
       <a class="wordmark" href="/" aria-label="Grainulator home"><img src="/glitchy-56.png" width="28" height="28" alt="">grainulator</a>
-      <nav aria-label="Main navigation"><a href="/playground/">Playground</a><a href="https://github.com/grainulation/grainulator">GitHub <span aria-hidden="true">↗</span></a></nav>
+      <nav aria-label="Main navigation"><a href="https://deepwiki.com/grainulation/grainulator">Docs <span aria-hidden="true">↗</span></a><a href="https://github.com/grainulation/grainulator">GitHub <span aria-hidden="true">↗</span></a></nav>
     </header>
     <main id="main-content">
       <section class="intro" aria-labelledby="page-title">
         <p class="eyebrow">Research and verification for AI work</p>
         <h1 id="page-title">Keep your model.<br><em>Raise the standard.</em></h1>
-        <div class="intro-bottom"><p>Bring evidence, independent checks, and useful corrections into the work your model already does. Keep the reasoning behind the result, so you can pick it up, question it, and move it forward.</p><a class="primary-link" href="/playground/">Open the playground <span aria-hidden="true">→</span></a></div>
+        <div class="intro-bottom"><p>Use the AI tool you already know. Grainulator keeps the facts behind its work, checks what has changed, and shows what still needs review.</p><a class="primary-link" href="#workbench">See how the check works <span aria-hidden="true">↓</span></a></div>
       </section>
       <section class="workbench" id="workbench" aria-labelledby="case-title">
         <div class="workbench-header"><div><p class="eyebrow">See what a check catches</p><h2 id="case-title">Good yesterday.<br>Still good today?</h2></div><span class="trace-label">Recorded check</span></div>
-        <p class="case-intro">A check passes. The work moves on. Then the evidence changes—and the old approval no longer holds. Explore a real bug we fixed in Grainulator: catching that mismatch before a stale brief goes out.</p>
+        <p class="case-intro">A report is checked and ready. Later, a supporting test fails. Grainulator spots the change and stops the old report from being shared.</p>
         <div class="case-layout">
           <div class="case-control">
             <p class="eyebrow">Follow the evidence</p>
             <div class="stage-buttons" role="group" aria-label="Recorded trace stages">
-              <button type="button" data-stage="0" aria-pressed="false" disabled><span>01</span> Check the evidence <span aria-hidden="true">→</span></button>
-              <button type="button" data-stage="1" aria-pressed="true" disabled><span>02</span> Change it afterward <span aria-hidden="true">→</span></button>
+              <button type="button" data-stage="0" aria-pressed="false" disabled><span>01</span> Check the report <span aria-hidden="true">→</span></button>
+              <button type="button" data-stage="1" aria-pressed="true" disabled><span>02</span> A test fails later <span aria-hidden="true">→</span></button>
               <button type="button" data-stage="2" aria-pressed="false" disabled><span>03</span> Check again <span aria-hidden="true">→</span></button>
             </div>
-            <p class="case-caption">Real compiler and guard results, using example release evidence. Switch between the steps to see what changed.</p>
+            <p class="case-caption">A real Grainulator check using sample data. Choose a step to see what changed.</p>
           </div>
           <div class="trace-panel" aria-live="polite" aria-atomic="true" aria-busy="true" id="trace-panel">
-            <div class="trace-top"><span class="eyebrow">output/release-brief.md</span><span id="decision" class="decision">Loading trace</span></div>
-            <h3 id="stage-title">Inspecting the recorded check…</h3>
-            <p id="stage-explanation">The trace is a small local file. There are no model requests or timed animations.</p>
-            <div class="evidence"><span class="eyebrow">Current evidence</span><p id="claim">—</p></div>
-            <dl class="hashes"><div><dt>Checked content</dt><dd id="compiled-hash">—</dd></div><div><dt>Current content</dt><dd id="input-hash">—</dd></div></dl>
+            <div class="trace-top"><span class="eyebrow">Example release report</span><span id="decision" class="decision">Loading example</span></div>
+            <h3 id="stage-title">Checking the report…</h3>
+            <p id="stage-explanation">This example uses a saved result. It makes no new AI request.</p>
+            <div class="evidence"><span class="eyebrow">Latest test result</span><p id="claim">—</p></div>
+            <details class="fingerprints"><summary>See the exact evidence record</summary><dl class="hashes"><div><dt>Checked version</dt><dd id="compiled-hash">—</dd></div><div><dt>Current version</dt><dd id="input-hash">—</dd></div></dl></details>
             <p id="guard-reason" class="guard-reason"></p>
           </div>
         </div>
-        <div class="trace-footer"><p>This check catches outdated evidence. Approving a release still requires the tests and decisions your team defines.</p><a href="/handoff-trace.json" download>Download the trace <span aria-hidden="true">↓</span></a></div>
+        <div class="trace-footer"><p>This check catches changed evidence. Your team still decides whether the release is ready.</p><a href="/handoff-trace.json" download>Download the full record <span aria-hidden="true">↓</span></a></div>
       </section>
       <section class="workflow" aria-labelledby="workflow-title">
-        <div><p class="eyebrow">Where Grainulator fits</p><h2 id="workflow-title">A stronger process.<br>With your existing tools.</h2><p>Your model brings the intelligence. Grainulator brings a record of the evidence, checks you define, and a way to turn failures into the next useful step.</p></div>
-        <ol class="workflow-steps"><li><span>01</span><div><h3>Start with the work</h3><p>Bring your question, task, and constraints. Keep the model and workspace you already use.</p></div></li><li><span>02</span><div><h3>Make “done” testable</h3><p>Choose an independent test or verifier. See what passed, what failed, and what remains uncertain.</p></div></li><li><span>03</span><div><h3>Give the next attempt a reason</h3><p>Feed failed checks back to the model. Set limits on retries and keep the record of each attempt.</p></div></li></ol>
+        <div><p class="eyebrow">Where Grainulator fits</p><h2 id="workflow-title">A clearer way to check AI work.</h2><p>Grainulator saves the reasons behind a result, checks what you ask it to check, and helps your agent address any problems it finds.</p></div>
+        <ol class="workflow-steps"><li><span>01</span><div><h3>Start with your task</h3><p>Give your agent the question, background, and goal.</p></div></li><li><span>02</span><div><h3>Check what matters</h3><p>Choose a test or review step. See what passed and what needs work.</p></div></li><li><span>03</span><div><h3>Try again with feedback</h3><p>Send a failed check back to the agent, with a limit on retries.</p></div></li></ol>
       </section>
       <section class="connect" id="connect" aria-labelledby="connect-title">
-        <div><p class="eyebrow">From playground to real work</p><h2 id="connect-title">Find your setup.<br>Take it with you.</h2><p>Choose your model and research settings in the playground. Export the session, then continue from your local checkout with the context and completed passes intact.</p></div>
-        <div class="command-panel"><div class="command-heading"><label for="connection-mode">Choose a connection</label><span class="connection-select"><select id="connection-mode"><option value="session">Resume research</option><option value="mcp">Evidence tools via MCP</option><option value="runner">Wrap an agent command</option></select></span></div><pre><code id="connect-command">node bin/grainulator.js research --session session.json --dir ./research-session</code></pre><button id="copy-command" type="button">Copy command</button><p id="connect-description">Download session.json from the playground, then run this from your local checkout. Uses your provider key and continues the remaining passes.</p><p id="copy-status" role="status"></p></div>
+        <div><p class="eyebrow">From example to real work</p><h2 id="connect-title">Use Grainulator with your agent.</h2><p>Choose your agent to see how to set up Grainulator in your project.</p></div>
+        <div class="agent-options" aria-label="Agent setup options">
+          <a class="agent-option" href="https://github.com/grainulation/grainulator/blob/main/docs/AGENT-SETUP.md#claude-code"><span class="eyebrow">Claude Code</span><strong>See setup steps</strong><span>Add Grainulator’s research and checking tools to Claude Code.</span><span class="option-arrow" aria-hidden="true">↗</span></a>
+          <a class="agent-option" href="https://github.com/grainulation/grainulator/blob/main/docs/AGENT-SETUP.md#codex"><span class="eyebrow">Codex</span><strong>See setup steps</strong><span>Add Grainulator’s research and checking tools to Codex.</span><span class="option-arrow" aria-hidden="true">↗</span></a>
+          <p class="other-agents">Using another agent? <a href="https://github.com/grainulation/grainulator/blob/main/docs/AGENT-SETUP.md#other-agents">See other connection options ↗</a></p>
+        </div>
       </section>
-      <details class="scope"><summary>What you can verify today</summary><p>The trace reproduces an evidence freshness bug and verifies that the updated guard blocks stale output. The command runner can send failed checks back to an adapter for another attempt. Support for a particular model depends on that adapter or host.</p><p>Local comparisons on Astra and Fable measured answer correctness, formatting, elapsed time, and model usage. Some runs improved formatting; the results do not establish a general accuracy or speed advantage. The verifier rejected candidates that failed its checks.</p><p>Reproduce the trace with <code>node scripts/record-handoff.mjs</code>. The adapter contract is in <code>docs/ADAPTERS.md</code> in the dogfood checkout.</p></details>
+      <details class="scope"><summary>What this example proves</summary><p>The saved record shows Grainulator catching a change after a report was checked. It stops the old check from being used. It does not decide whether the release is safe.</p><p>Small local model comparisons do not show a general improvement in accuracy or speed.</p><p>To repeat the example from the source code, run <code>node scripts/record-handoff.mjs</code>. The technical contract is in <code>docs/ADAPTERS.md</code>.</p></details>
     </main>
-    <footer><span>grainulator <span class="footer-divider">/</span> by grainulation</span><div><a href="/playground/">Research playground</a><a href="/privacy.html">Privacy</a><button id="motion-toggle" type="button" aria-pressed="false">Pause background</button></div></footer>
+    <footer><span>grainulator <span class="footer-divider">/</span> by grainulation</span><div><a href="https://deepwiki.com/grainulation/grainulator">Docs</a><a href="/privacy.html">Privacy</a><button id="motion-toggle" type="button" aria-pressed="false">Pause background</button></div></footer>
   </div>
 </body>
 </html>

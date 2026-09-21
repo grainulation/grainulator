@@ -127,6 +127,7 @@
 		"scripts/record-handoff.mjs",
 		"docs/RESEARCH.md",
 		"docs/INSTALLATION.md",
+		"docs/AGENT-SETUP.md",
 		"docs/HOSTS.md",
 		"docs/EVALUATION.md",
 		"docs/TOOLS.md",

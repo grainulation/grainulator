@@ -21,16 +21,16 @@ try {
     assert.equal(await page.locator('#motion-toggle').getAttribute('aria-pressed'), 'true');
     await page.locator('[data-stage="0"]').focus();
     await page.keyboard.press('Enter');
-    assert.equal(await page.locator('#decision').textContent(), 'Brief allowed');
+    assert.equal(await page.locator('#decision').textContent(), 'Report ready');
     assert.equal(await page.locator('#compiled-hash').textContent(), await page.locator('#input-hash').textContent());
     await page.locator('[data-stage="1"]').click();
     assert.notEqual(await page.locator('#compiled-hash').textContent(), await page.locator('#input-hash').textContent());
     await page.locator('[data-stage="2"]').click();
-    assert.equal(await page.locator('#decision').textContent(), 'Brief allowed');
+    assert.equal(await page.locator('#decision').textContent(), 'Report can be updated');
     assert.match(await page.locator('#claim').textContent(), /failed/);
-    await page.locator('#connection-mode').selectOption('runner');
-    assert.match(await page.locator('#connect-command').textContent(), /--verify/);
-    assert.doesNotMatch(await page.locator('#connect-command').textContent(), /\n\+/);
+    assert.equal(await page.locator('.agent-option').count(), 2);
+    assert.match(await page.locator('.agent-option').first().getAttribute('href'), /AGENT-SETUP\.md#claude-code$/);
+    assert.match(await page.locator('.agent-option').last().getAttribute('href'), /AGENT-SETUP\.md#codex$/);
     await page.locator('[data-stage="1"]').click();
     await page.evaluate(() => scrollTo(0, 0));
     fs.mkdirSync('.dogfood/screenshots', { recursive: true });
@@ -44,7 +44,7 @@ try {
   await page.goto('http://127.0.0.1:4517/');
   await page.route('**/handoff-trace.json', route => route.fulfill({ status: 503, body: 'Unavailable' }));
   await page.reload();
-  await page.getByText('The recorded check could not load.').waitFor();
+  await page.getByText('The saved example could not load.').waitFor();
   assert.equal(await page.locator('[data-stage="0"]').isDisabled(), true);
 } finally { await browser.close(); }
 fs.writeFileSync('.dogfood/workbench-results.json', JSON.stringify(results, null, 2) + '\n');

@@ -79,4 +79,4 @@ Existing `wheat/*`, `silo/*`, and `mill/*` tool calls and resource URIs remain a
 
 These aliases apply inside the `grainulator` server. They do not recreate old MCP server IDs, host-generated prefixes, or the removed automatic remote DeepWiki connection. Update custom registrations and allowlists to the tools your host exposes. See the [1.x upgrade checklist](UPGRADING.md).
 
-Local source changes do not replace an already running installed plugin. Point a test host at this checkout or the locally packed archive to dogfood this interface; restart that host connection to load it. No global installation or publication is required.
+Changing source code does not update a plugin that is already running. To test these tools, point your agent at this checkout or a local archive, then restart its connection. You do not need to install or publish anything globally.

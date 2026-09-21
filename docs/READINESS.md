@@ -12,7 +12,7 @@ The verification notes below retain the September 7–8, 2026 local checkpoints.
 - Exports cannot overwrite ledgers, compilation, host settings or their own source; CSV retains canonical claim fields. Memory metadata cannot corrupt collection identity or integrity. Path checks cover nonexistent descendants and symlink escapes.
 - Static product and organization artifacts use native clean playground routes. The public artifact supports configuration/import/export with explicit local execution instructions; it never probes a nonexistent API or asks for a key. Local previews retain model execution.
 - Dashboard app, connectors and notification hook removed. Native hosts own permissions and remote access. Original repositories remain untouched.
-- Node 25 is the local dogfood default; Node 24 is the public minimum. `.nvmrc`, `.node-version`, package engines and prepared CI agree. Global runtimes were not changed.
+- Node 24 is the public minimum; local tests use Node 25 by default. `.nvmrc`, `.node-version`, package engines and prepared CI agree. Global runtimes were not changed.
 
 ## Verification
 
@@ -37,7 +37,7 @@ Local archives now have a unique prerelease version and a file manifest checked 
 A subsequent [blind-spot review](BLIND-SPOTS.md) found and fixed memory concurrency, CLI/MCP store consistency, provenance, presentation accessibility, and newcomer documentation gaps. That review also records remaining claim-lifecycle and organization-source cleanup gaps; the earlier matrix is a checkpoint, not evidence for every later edit.
 
 - Configure `OPENAI_API_KEY` or `OPENROUTER_API_KEY` locally and run the corresponding `scripts/provider-live-check.mjs` command. Current reports correctly say blocked and record zero calls.
-- Dogfood a real installed session, including evidence, verification and export/resume. Only afterward decide whether to authorize publication or archival.
+- Test a real installed session, including evidence, verification and export/resume. Only afterward decide whether to authorize publication or archival.
 
 Known scope limits remain explicit: native-host behavior is tested on the available versions, local locks coordinate cooperating writers, checkpoints cannot preserve incomplete output, and the managed runner is not a sandbox. Compiler readiness validates ledger structure; it does not certify source truth or universal product readiness.
 
