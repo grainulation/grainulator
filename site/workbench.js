@@ -9,9 +9,28 @@ if (
 const byId = (id) => document.getElementById(id);
 const stageButtons = [...document.querySelectorAll("[data-stage]")];
 const stageCopy = [
-	{ title: "The report is ready", explanation: "The report matches the test result that was checked.", claim: "The test passed.", decision: "Report ready" },
-	{ title: "The test result changes", explanation: "A later test fails. The report still shows the old result, so Grainulator stops it.", claim: "The test failed after the latest change.", decision: "Update needed", reason: "The report uses an older test result. Check the evidence again before sharing it." },
-	{ title: "The report can be updated", explanation: "The report can now include the failed test. This does not mean the release is approved.", claim: "The test failed after the latest change.", decision: "Report can be updated" },
+	{
+		title: "The report is ready",
+		explanation: "The report matches the test result that was checked.",
+		claim: "The test passed.",
+		decision: "Report ready",
+	},
+	{
+		title: "The test result changes",
+		explanation:
+			"A later test fails. The report still shows the old result, so Grainulator stops it.",
+		claim: "The test failed after the latest change.",
+		decision: "Update needed",
+		reason:
+			"The report uses an older test result. Check the evidence again before sharing it.",
+	},
+	{
+		title: "The report can be updated",
+		explanation:
+			"The report can now include the failed test. This does not mean the release is approved.",
+		claim: "The test failed after the latest change.",
+		decision: "Report can be updated",
+	},
 ];
 async function loadTrace() {
 	try {
@@ -54,8 +73,7 @@ async function loadTrace() {
 	} catch {
 		byId("decision").textContent = "Example unavailable";
 		byId("stage-title").textContent = "The saved example could not load.";
-		byId("stage-explanation").textContent =
-			"Reload the page to try again.";
+		byId("stage-explanation").textContent = "Reload the page to try again.";
 		byId("trace-panel").setAttribute("aria-busy", "false");
 	}
 }
