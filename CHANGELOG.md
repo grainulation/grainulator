@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.3] - 2026-09-22
+
+### Fixed
+
+- Replace predictable temporary writes with exclusive, randomly named files and owned-file cleanup. Use descriptor-based regular-file reads, exclusive new-file creation, and resolved-root containment for static serving.
+- Fail cache updates on lock timeout and stop taking tips-hook locks based only on age.
+- Preserve hostile metadata as quoted YAML scalars, escape BibTeX in one pass, and convert HTML to Markdown without activating encoded HTML or executable link schemes.
+- Decode HTML entities once, match parsed documentation hostnames, and replace expensive delimiter regular expressions with direct scanning.
+- Wait for session import completion in the static browser regression check.
+
+### Changed
+
+- New files and atomic replacements use owner-only permissions. Session and clipboard reads reject final symbolic links and non-regular files; static serving permits internal links whose resolved targets remain within the serving root.
+- A crashed tips-hook lock requires inspecting its owner and removing the abandoned lock before retrying. Filesystem parent directories and custom endpoints remain trusted configuration.
+- Update development dependencies and pinned GitHub Actions. Add CodeQL, dependency auditing, automated dependency updates, and required CI verification before release publication.
+- Simplify installation and agent setup guidance.
+
+### Verification scope
+
+- Full security-remediation branch scan: 83 baseline findings removed and seven source-reviewed false positives dismissed. No CodeQL rules or source directories were excluded.
+- Component/dogfood regressions, runtime conformance, product browser checks, and isolated package installation passed for the security fixes. See [security review](docs/SECURITY-REVIEW.md) for behavior changes and limits.
+- GitHub release only; no npm publication. The integrity manifest remains unsigned. Restart existing host sessions after updating the installed plugin.
+
 ## [2.0.2] - 2026-09-08
 
 ### Fixed

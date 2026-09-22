@@ -1,6 +1,6 @@
 # Test the installed plugin
 
-Start from the `v2.0.2` tag of the [GitHub repository](https://github.com/grainulation/grainulator/tree/v2.0.2), or the identified archive you intend to test. The GitHub release does not publish an npm package.
+Start from the `v2.0.3` tag of the [GitHub repository](https://github.com/grainulation/grainulator/tree/v2.0.3), or the identified archive you intend to test. The GitHub release does not publish an npm package.
 
 CLI installation, direct MCP connection, full plugin loading, and subagent tool access are separate checks. A passing `grainulator connect` test does not establish that a host discovered the plugin's skills or hooks.
 
@@ -8,9 +8,9 @@ For an existing 1.x installation, follow the [upgrade checklist](UPGRADING.md) f
 
 ## Identify the build
 
-From the full source checkout with Node 24 or later, run `npm run pack:local`. It stages the npm distribution, creates a unique `2.0.2-local.<hash>` version, and prints the archive path. The source version stays unchanged and nothing is published. The report at `.dogfood/builds/latest.json` records the archive SHA-256 and source fingerprint.
+From the full source checkout with Node 24 or later, run `npm run pack:local`. It stages the npm distribution, creates a unique `2.0.3-local.<hash>` version, and prints the archive path. The source version stays unchanged and nothing is published. The report at `.dogfood/builds/latest.json` records the archive SHA-256 and source fingerprint.
 
-Install that exact archive into the separate consumer directory. `grainulator doctor --json` reports `build.id`, `build.version`, and `build.verified`. It checks the recorded packaged files, reporting changed or missing files. Tagged releases and marketplace builds include a committed `build-info.json` with an ID such as `release-2.0.2-<hash>`. Doctor verifies the shipped file checksums. A development checkout without a manifest is reported as a source checkout with its version; that alone is not an unhealthy installation. A recognized host security wrapper is reported under `host_adaptations` only when its original server configuration still matches; arbitrary command or configuration changes fail verification. Local packaging preserves the live host configuration and stages its portable server definition.
+Install that exact archive into the separate consumer directory. `grainulator doctor --json` reports `build.id`, `build.version`, and `build.verified`. It checks the recorded packaged files, reporting changed or missing files. Tagged releases and marketplace builds include a committed `build-info.json` with an ID such as `release-2.0.3-<hash>`. Doctor verifies the shipped file checksums. A development checkout without a manifest is reported as a source checkout with its version; that alone is not an unhealthy installation. A recognized host security wrapper is reported under `host_adaptations` only when its original server configuration still matches; arbitrary command or configuration changes fail verification. Local packaging preserves the live host configuration and stages its portable server definition.
 
 Repacking source does not update an installed package. Reinstalling a package does not update a copied marketplace plugin or an already running host. Verify the build ID and files at each layer, then start a fresh host session. Preserve the previous archive and session data for rollback.
 

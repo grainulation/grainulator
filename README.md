@@ -55,7 +55,7 @@ Requires **Node.js 24+**. Node 25 is the development default.
 **Upgrading from 1.x?** Follow the [migration checklist](docs/UPGRADING.md) to update the plugin and keep your existing research data.
 
 ```sh
-git clone --branch v2.0.2 https://github.com/grainulation/grainulator.git
+git clone --branch v2.0.3 https://github.com/grainulation/grainulator.git
 cd grainulator
 npm ci --ignore-scripts
 node bin/grainulator.js doctor
@@ -65,7 +65,7 @@ To use Grainulator inside your agent, follow the **[Claude Code or Codex setup g
 
 The local research playground remains available through `node bin/grainulator.js preview`. It runs models using a provider account you configure locally.
 
-> **Distribution:** v2.0.2 is a [GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.0.2), not an npm registry release. For a separate local installation, follow the [archive installation guide](docs/INSTALLATION.md).
+> **Distribution:** v2.0.3 is a [GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.0.3), not an npm registry release. For a separate local installation, follow the [archive installation guide](docs/INSTALLATION.md).
 
 ### Other agents: connect through MCP
 

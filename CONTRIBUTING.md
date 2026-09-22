@@ -1,6 +1,6 @@
 # Contributing to Grainulator
 
-Grainulator provides evidence, memory, exports, and portable workflows through a CLI and one MCP server. Use it with any compatible host; Claude Code and Codex also have native plugin integrations. The v2.0.2 source is distributed through GitHub. The root npm package and component workspaces are private, so a GitHub release does not publish them to npm.
+Grainulator provides evidence, memory, exports, and portable workflows through a CLI and one MCP server. Use it with any compatible host; Claude Code and Codex also have native plugin integrations. The v2.0.3 source is distributed through GitHub. The root npm package and component workspaces are private, so a GitHub release does not publish them to npm.
 
 ## Getting started
 
