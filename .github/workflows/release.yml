@@ -8,13 +8,22 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: read
+
 jobs:
+  verify:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+      security-events: write
   release:
+    needs: verify
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 1
           ref: ${{ github.ref }}
