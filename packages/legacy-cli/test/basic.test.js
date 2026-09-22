@@ -1,9 +1,10 @@
 const assert = require('node:assert/strict');
-const { execSync } = require('node:child_process');
+const { execFileSync } = require('node:child_process');
 const path = require('node:path');
 
 const BIN = path.join(__dirname, '..', 'bin', 'grainulation.js');
-const run = (args = '', { timeout = 10_000 } = {}) => execSync(`node ${BIN} ${args}`, { encoding: 'utf-8', timeout });
+const run = (args = '', { timeout = 10_000 } = {}) =>
+  execFileSync(process.execPath, [BIN, ...args.split(/\s+/).filter(Boolean)], { encoding: 'utf-8', timeout });
 
 let passed = 0;
 let failed = 0;

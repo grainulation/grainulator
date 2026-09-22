@@ -1,4 +1,5 @@
 "use strict";
+const { readRegularFile } = require("../../../shared/lib/fs-safe.cjs");
 
 const fs = require("node:fs");
 const path = require("node:path");
@@ -50,11 +51,11 @@ async function publishClipboard(inputPath) {
     content = files
       .map((f) => {
         const full = path.join(inputPath, f);
-        return fs.readFileSync(full, "utf-8");
+        return readRegularFile(full, "utf-8");
       })
       .join("\n\n---\n\n");
   } else {
-    content = fs.readFileSync(inputPath, "utf-8");
+    content = readRegularFile(inputPath, "utf-8");
   }
 
   await copyToClipboard(content);

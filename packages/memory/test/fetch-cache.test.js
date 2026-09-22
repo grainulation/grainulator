@@ -12,7 +12,9 @@ import os from "node:os";
 
 import { FetchCache } from "../lib/fetch-cache.js";
 
-const TEST_DIR = path.join(os.tmpdir(), `silo-cache-test-${Date.now()}`);
+const TEST_ROOT = fs.mkdtempSync(path.join(os.tmpdir(), "silo-cache-test-"));
+const TEST_DIR = path.join(TEST_ROOT, "fixtures");
+process.on("exit", () => fs.rmSync(TEST_ROOT, { recursive: true, force: true }));
 
 function cleanup() {
   if (fs.existsSync(TEST_DIR)) {

@@ -1,3 +1,4 @@
+import { atomicWrite } from "../packages/shared/lib/atomic.js";
 import fs from 'node:fs';import os from 'node:os';import path from 'node:path';import {randomUUID} from 'node:crypto';import assert from 'node:assert/strict';
 import {callHost} from './lib/host-call.mjs';import {command} from './lib/local-checks.mjs';
 const artifact=JSON.parse(fs.readFileSync('.dogfood/package-isolation-audit.json'));assert.ok(artifact.passed,'Run test:install first');
@@ -20,6 +21,6 @@ for(const [host,model] of [['codex','gpt-6-astra'],['claude','fable']]) {
     report.results.push({host,model,passed:true,first,continuation:second});
     console.log(`${host}: MCP mutation, compilation, and session continuation passed`);
   } catch(error){report.results.push({host,model,passed:false,error:error.message});console.log(`${host}: failed; details saved`);}
-  fs.writeFileSync('.dogfood/host-integration-audit.json',JSON.stringify(report,null,2));
+  atomicWrite('.dogfood/host-integration-audit.json',JSON.stringify(report,null,2));
 }
-report.passed=report.results.every(r=>r.passed);fs.writeFileSync('.dogfood/host-integration-audit.json',JSON.stringify(report,null,2));if(!report.passed)process.exitCode=1;
+report.passed=report.results.every(r=>r.passed);atomicWrite('.dogfood/host-integration-audit.json',JSON.stringify(report,null,2));if(!report.passed)process.exitCode=1;

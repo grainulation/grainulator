@@ -1,3 +1,4 @@
+import { writeNewFile, appendRegularFile, readRegularFile } from "../../shared/lib/fs-safe.cjs";
 /**
  * grainulator init — Bootstrap a research sprint in the target repo
  *
@@ -20,7 +21,7 @@ import fs from "fs";
 import path from "path";
 import readline from "readline";
 import { fileURLToPath } from "url";
-import { atomicWriteJSON } from "../../shared/lib/atomic.js";
+import { atomicWrite, atomicWriteJSON } from "../../shared/lib/atomic.js";
 import { DEFAULTS, env, outputMode } from "./defaults.js";
 import { maybeHint } from "./hints.js";
 
@@ -313,16 +314,16 @@ fi
 
 	try {
 		if (fs.existsSync(hookPath)) {
-			const existing = fs.readFileSync(hookPath, "utf8");
+			const existing = readRegularFile(hookPath, "utf8");
 			if (existing.includes(GRAINULATOR_MARKER)) {
 				console.log("  \x1b[34m-\x1b[0m pre-commit hook (already installed)");
 				return;
 			}
 			// Append to existing hook
-			fs.appendFileSync(hookPath, hookSnippet);
+			appendRegularFile(hookPath, hookSnippet);
 		} else {
 			// Create new hook
-			fs.writeFileSync(hookPath, "#!/bin/sh\n" + hookSnippet);
+			writeNewFile(hookPath, "#!/bin/sh\n" + hookSnippet);
 			// chmod is a no-op on Windows but needed for Unix
 			try {
 				fs.chmodSync(hookPath, 0o755);
@@ -357,7 +358,7 @@ function writeMcpJson(dir) {
 	let config = { mcpServers: {} };
 	if (fs.existsSync(mcpPath)) {
 		try {
-			config = JSON.parse(fs.readFileSync(mcpPath, "utf8"));
+			config = JSON.parse(readRegularFile(mcpPath, "utf8"));
 			if (!Object.hasOwn(config, "mcpServers")) config.mcpServers = {};
 		} catch {
 			console.error("  Existing .mcp.json is invalid; left unchanged. Use grainulator connect to inspect the intended configuration.");
@@ -374,7 +375,7 @@ function writeMcpJson(dir) {
 		return;
 	}
 	config.mcpServers.grainulator = grainulatorEntry;
-	fs.writeFileSync(mcpPath, JSON.stringify(config, null, 2) + "\n");
+	atomicWrite(mcpPath, JSON.stringify(config, null, 2) + "\n");
 	console.log(
 		"  \x1b[32m+\x1b[0m .mcp.json              (Claude Code MCP auto-discovery)",
 	);
@@ -417,7 +418,7 @@ After a meaningful pass, present fresh compiler next_actions as **Auto** and **M
 `;
 
 	if (fs.existsSync(agentsPath)) {
-		const existing = fs.readFileSync(agentsPath, "utf8");
+		const existing = readRegularFile(agentsPath, "utf8");
 		if (existing.includes("# Grainulator Research Sprint")) {
 			console.log(
 				"  \x1b[34m-\x1b[0m AGENTS.md              (grainulator section already present)",
@@ -425,12 +426,12 @@ After a meaningful pass, present fresh compiler next_actions as **Auto** and **M
 			return;
 		}
 		// Append grainulator section
-		fs.appendFileSync(agentsPath, "\n" + section);
+		appendRegularFile(agentsPath, "\n" + section);
 		console.log(
 			"  \x1b[32m+\x1b[0m AGENTS.md              (appended grainulator section)",
 		);
 	} else {
-		fs.writeFileSync(agentsPath, section);
+		writeNewFile(agentsPath, section);
 		console.log(
 			"  \x1b[32m+\x1b[0m AGENTS.md              (universal AI instructions)",
 		);
@@ -452,7 +453,7 @@ function writeGitignore(dir) {
 	}
 
 	if (fs.existsSync(gitignorePath)) {
-		const existing = fs.readFileSync(gitignorePath, "utf8");
+		const existing = readRegularFile(gitignorePath, "utf8");
 		if (existing.includes("# Grainulator")) {
 			console.log(
 				"  \x1b[34m-\x1b[0m .gitignore             (grainulator section already present)",
@@ -460,12 +461,12 @@ function writeGitignore(dir) {
 			return;
 		}
 		// Append grainulator section to existing .gitignore
-		fs.appendFileSync(gitignorePath, "\n" + grainulatorSection);
+		appendRegularFile(gitignorePath, "\n" + grainulatorSection);
 		console.log(
 			"  \x1b[32m+\x1b[0m .gitignore             (appended grainulator section)",
 		);
 	} else {
-		fs.writeFileSync(gitignorePath, grainulatorSection);
+		writeNewFile(gitignorePath, grainulatorSection);
 		console.log(
 			"  \x1b[32m+\x1b[0m .gitignore             (machine-local files excluded)",
 		);
@@ -661,19 +662,18 @@ export async function run(dir, args) {
 	const claudeExists = fs.existsSync(claudePath);
 	if (claudeExists && flags.force) {
 		// --force with existing file: back up before overwriting
-		fs.copyFileSync(claudePath, claudePath + ".bak");
-		fs.writeFileSync(claudePath, claudeMd);
+		atomicWrite(claudePath + ".bak", readRegularFile(claudePath));
+		atomicWrite(claudePath, claudeMd);
 		console.log(
 			"  \x1b[32m+\x1b[0m CLAUDE.md (backed up existing to CLAUDE.md.bak)",
 		);
 	} else if (claudeExists) {
 		// Existing file, no --force: append grainulator section with separator
-		const existing = fs.readFileSync(claudePath, "utf8");
-		fs.writeFileSync(claudePath, existing + "\n\n---\n\n" + claudeMd);
+		appendRegularFile(claudePath, "\n\n---\n\n" + claudeMd);
 		console.log("  \x1b[32m+\x1b[0m CLAUDE.md (appended grainulator sprint section)");
 	} else {
 		// No existing file: write normally
-		fs.writeFileSync(claudePath, claudeMd);
+		writeNewFile(claudePath, claudeMd);
 		console.log("  \x1b[32m+\x1b[0m CLAUDE.md");
 	}
 

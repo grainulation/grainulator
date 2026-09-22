@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { writeNewFile } from "../../shared/lib/fs-safe.cjs";
 
 import path from "node:path";
 import fs from "node:fs";
@@ -157,7 +158,7 @@ async function main() {
       sprints: [],
       settings: { sync_interval: "manual" },
     };
-    fs.writeFileSync(
+    writeNewFile(
       configPath,
       JSON.stringify(defaultConfig, null, 2) + "\n",
       "utf8",

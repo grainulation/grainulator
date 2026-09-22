@@ -1,3 +1,4 @@
+import { readStaticFile } from "../packages/shared/lib/fs-safe.cjs";
 import http from 'node:http';
 import { handleResearch } from '../lib/research-http.js';
 import fs from 'node:fs';
@@ -29,11 +30,11 @@ for (const [label, directory, port] of sites) {
       if (!resolved.startsWith(realRoot + path.sep) || !fs.statSync(resolved).isFile()) { res.writeHead(403); res.end('Forbidden'); return; }
       res.setHeader('Content-Type', types[path.extname(resolved)] || 'application/octet-stream');
       if (label === 'Grainulation' && resolved === path.join(realRoot, 'index.html')) {
-        const html = await fs.promises.readFile(resolved, 'utf8');
+        const html = readStaticFile(realRoot, resolved).toString("utf8");
         const marker = `<meta name="grainulator-product-port" content="${sites[0][2]}">`;
         res.writeHead(200); res.end(req.method === 'HEAD' ? undefined : html.replace('</head>', `${marker}</head>`)); return;
       }
-      res.writeHead(200); if (req.method === 'HEAD') res.end(); else fs.createReadStream(resolved).pipe(res);
+      res.writeHead(200); if (req.method === 'HEAD') res.end(); else res.end(readStaticFile(realRoot, resolved));
     } catch { res.writeHead(404); res.end('Page not found'); }
   });
   server.on('error', error => { console.error(`${label}: ${error.message}`); for (const s of servers) s.close(); process.exitCode = 1; });

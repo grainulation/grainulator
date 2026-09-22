@@ -4,123 +4,63 @@ const { assertSafeOutput } = require("../output-safety.js");
 const fs = require("node:fs");
 const path = require("node:path");
 
-/**
- * Convert HTML artifacts to clean Markdown.
- * Uses a minimal tag-stripping approach -- no dependencies.
- * Handles the common patterns from wheat sprint HTML output.
- */
+const { tokens, decodeEntities, withoutElements } = require("../../../shared/lib/html.cjs");
 
+function markdownText(text, decoded = false) {
+  return (decoded ? text : decodeEntities(text)).replace(/[\\`*_[\]<>#!]/g, char => `\\${char}`);
+}
+function destination(value) {
+  if (!value || /[\x00-\x20\x7f\\]/.test(value)) return null;
+  const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(value);
+  if (scheme && !["https", "http", "mailto"].includes(scheme[1].toLowerCase())) return null;
+  return value.replace(/[()<>"']/g, char => encodeURIComponent(char).replace(/[()']/g, c => `%${c.charCodeAt(0).toString(16)}`));
+}
 function htmlToMarkdown(html) {
-  let md = html;
-
-  // Remove doctype, head, scripts, styles
-  md = md.replace(/<!DOCTYPE[^>]*>/gi, "");
-  md = md.replace(/<head[\s\S]*?<\/head>/gi, "");
-  md = md.replace(/<script[\s\S]*?<\/script>/gi, "");
-  md = md.replace(/<style[\s\S]*?<\/style>/gi, "");
-
-  // Headings
-  md = md.replace(/<h1[^>]*>([\s\S]*?)<\/h1>/gi, (_, c) => `# ${strip(c)}\n\n`);
-  md = md.replace(
-    /<h2[^>]*>([\s\S]*?)<\/h2>/gi,
-    (_, c) => `## ${strip(c)}\n\n`,
-  );
-  md = md.replace(
-    /<h3[^>]*>([\s\S]*?)<\/h3>/gi,
-    (_, c) => `### ${strip(c)}\n\n`,
-  );
-  md = md.replace(
-    /<h4[^>]*>([\s\S]*?)<\/h4>/gi,
-    (_, c) => `#### ${strip(c)}\n\n`,
-  );
-  md = md.replace(
-    /<h5[^>]*>([\s\S]*?)<\/h5>/gi,
-    (_, c) => `##### ${strip(c)}\n\n`,
-  );
-  md = md.replace(
-    /<h6[^>]*>([\s\S]*?)<\/h6>/gi,
-    (_, c) => `###### ${strip(c)}\n\n`,
-  );
-
-  // Bold, italic, code
-  md = md.replace(/<strong[^>]*>([\s\S]*?)<\/strong>/gi, "**$1**");
-  md = md.replace(/<b[^>]*>([\s\S]*?)<\/b>/gi, "**$1**");
-  md = md.replace(/<em[^>]*>([\s\S]*?)<\/em>/gi, "*$1*");
-  md = md.replace(/<i[^>]*>([\s\S]*?)<\/i>/gi, "*$1*");
-  md = md.replace(/<code[^>]*>([\s\S]*?)<\/code>/gi, "`$1`");
-
-  // Pre/code blocks
-  md = md.replace(
-    /<pre[^>]*><code[^>]*>([\s\S]*?)<\/code><\/pre>/gi,
-    (_, c) => {
-      return "\n```\n" + decodeEntities(c) + "\n```\n\n";
-    },
-  );
-  md = md.replace(/<pre[^>]*>([\s\S]*?)<\/pre>/gi, (_, c) => {
-    return "\n```\n" + decodeEntities(c) + "\n```\n\n";
-  });
-
-  // Links
-  md = md.replace(/<a[^>]+href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, "[$2]($1)");
-
-  // Images
-  md = md.replace(
-    /<img[^>]+src="([^"]*)"[^>]*alt="([^"]*)"[^>]*\/?>/gi,
-    "![$2]($1)",
-  );
-  md = md.replace(/<img[^>]+src="([^"]*)"[^>]*\/?>/gi, "![]($1)");
-
-  // Lists
-  md = md.replace(
-    /<li[^>]*>([\s\S]*?)<\/li>/gi,
-    (_, c) => `- ${strip(c).trim()}\n`,
-  );
-  md = md.replace(/<\/?[ou]l[^>]*>/gi, "\n");
-
-  // Paragraphs and breaks
-  md = md.replace(
-    /<p[^>]*>([\s\S]*?)<\/p>/gi,
-    (_, c) => `${strip(c).trim()}\n\n`,
-  );
-  md = md.replace(/<br\s*\/?>/gi, "\n");
-  md = md.replace(/<hr\s*\/?>/gi, "\n---\n\n");
-
-  // Blockquotes
-  md = md.replace(/<blockquote[^>]*>([\s\S]*?)<\/blockquote>/gi, (_, c) => {
-    return (
-      strip(c)
-        .trim()
-        .split("\n")
-        .map((l) => `> ${l}`)
-        .join("\n") + "\n\n"
-    );
-  });
-
-  // Strip remaining tags
-  md = md.replace(/<[^>]+>/g, "");
-
-  // Decode common entities
-  md = decodeEntities(md);
-
-  // Normalize whitespace
-  md = md.replace(/\n{3,}/g, "\n\n");
-  md = md.trim() + "\n";
-
-  return md;
-}
-
-function strip(html) {
-  return html.replace(/<[^>]+>/g, "");
-}
-
-function decodeEntities(str) {
-  return str
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&nbsp;/g, " ");
+  const root = { children: [] }, stack = [root];
+  for (const token of tokens(withoutElements(html, ["head", "script", "style", "iframe", "object"]))) {
+    const parent = stack[stack.length - 1];
+    if (token.text !== undefined) { parent.children.push(token); continue; }
+    if (token.close) {
+      for (let i = stack.length - 1; i > 0; i--) {
+        if (stack[i].name === token.name) { stack.length = i; break; }
+      }
+    } else {
+      const node = { ...token, children: [] }; parent.children.push(node);
+      if (!token.selfClosing && !["img", "br", "hr", "meta", "link", "input", "wbr"].includes(token.name) && stack.length < 256) stack.push(node);
+    }
+  }
+  const plain = node => node.text !== undefined ? decodeEntities(node.text) : node.children.map(plain).join("");
+  function render(node) {
+    if (node.text !== undefined) return markdownText(node.text);
+    if (node.name === "pre") {
+      const content = plain(node);
+      const longest = (content.match(/`+/g) || []).reduce((longest, x) => Math.max(longest, x.length), 2);
+      const fence = "`".repeat(longest + 1);
+      return `\n${fence}\n${content}\n${fence}\n\n`;
+    }
+    if (node.name === "code") {
+      const content = plain(node).replace(/\r?\n/g, " ");
+      const longest = (content.match(/`+/g) || []).reduce((longest, x) => Math.max(longest, x.length), 0);
+      const fence = "`".repeat(longest + 1);
+      return `${fence} ${content} ${fence}`;
+    }
+    const text = node.children.map(render).join("");
+    if (/^h[1-6]$/.test(node.name || "")) return `${"#".repeat(Number(node.name[1]))} ${text.trim()}\n\n`;
+    switch (node.name) {
+      case "strong": case "b": return `**${text}**`;
+      case "em": case "i": return `*${text}*`;
+      case "p": return `${text.trim()}\n\n`;
+      case "br": return "\n";
+      case "hr": return "\n---\n\n";
+      case "li": return `- ${text.trim()}\n`;
+      case "ul": case "ol": return `\n${text}\n`;
+      case "blockquote": return text.trim().split("\n").map(line => `> ${line}`).join("\n") + "\n\n";
+      case "a": { const url = destination(node.attrs.href); return url ? `[${text}](${url})` : text; }
+      case "img": { const url = destination(node.attrs.src), alt = markdownText(node.attrs.alt || "", true); return url && !url.startsWith("mailto:") ? `![${alt}](${url})` : alt; }
+      default: return text;
+    }
+  }
+  return render(root).replace(/\n{3,}/g, "\n\n").trim() + "\n";
 }
 
 function deriveOutputPath(inputPath, explicit) {

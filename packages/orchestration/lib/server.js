@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { tryReadStaticFile } from "../../shared/lib/fs-safe.cjs";
 /**
  * orchard serve -- local HTTP server for the orchard portfolio dashboard
  *
@@ -786,11 +787,12 @@ ${ROUTES.map((r) => "<tr><td><code>" + r.method + "</code></td><td><code>" + r.p
       return;
     }
 
-    if (existsSync(filePath) && !statSync(filePath).isDirectory()) {
+    const staticContent = tryReadStaticFile(PUBLIC_DIR, filePath);
+    if (staticContent !== null) {
       const ext = extname(filePath);
       const mime = MIME[ext] || "application/octet-stream";
       try {
-        const content = readFileSync(filePath);
+        const content = staticContent;
         res.writeHead(200, { "Content-Type": mime });
         res.end(content);
       } catch {

@@ -29,7 +29,7 @@ export function convert(compilation) {
 
   // YAML front matter
   lines.push("---");
-  lines.push(`sprint: ${sprint}`);
+  lines.push(`sprint: "${escapeFrontMatter(sprint)}"`);
   if (question) lines.push(`question: "${escapeFrontMatter(question)}"`);
   if (audience) lines.push(`audience: "${escapeFrontMatter(audience)}"`);
   lines.push(`claim_count: ${claims.length}`);
@@ -140,5 +140,5 @@ function truncate(str, max) {
 }
 
 function escapeFrontMatter(str) {
-  return String(str).replace(/"/g, '\\"');
+  return JSON.stringify(String(str)).slice(1, -1);
 }

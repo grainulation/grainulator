@@ -1,3 +1,4 @@
+import { decodeEntities as decodeHtmlEntities, withoutElements } from "../../shared/lib/html.cjs";
 /**
  * smart-fetch.js — Size-efficient web fetch with semantic extraction
  *
@@ -107,13 +108,12 @@ async function assertSafeUrl(url, { allowPrivate = false } = {}) {
 
 const DEFAULT_UA = "Mozilla/5.0 (compatible; GrainulationSmartFetch/1.0)";
 const DEFAULT_TIMEOUT = 15000;
-const WIKI_DOCS_PATTERNS = [
-  /wikipedia\.org/i,
-  /\/wiki\//i,
-  /\/docs?\//i,
-  /developer\.mozilla\.org/i,
-  /nodejs\.org\/api\//i,
-];
+function isWikiOrDocsUrl(value) {
+  const { hostname, pathname } = new URL(value);
+  return hostname === "wikipedia.org" || hostname.endsWith(".wikipedia.org") ||
+    hostname === "developer.mozilla.org" || (hostname === "nodejs.org" && pathname.startsWith("/api/")) ||
+    pathname.includes("/wiki/") || pathname.includes("/doc/") || pathname.includes("/docs/");
+}
 
 /**
  * Fetch and extract. Opt-in; no default behavior changes elsewhere.
@@ -327,7 +327,7 @@ export async function smartFetch(url, options = {}) {
 // ─── Fetch strategies ────────────────────────────────────────────────────────
 
 async function fetchWithStrategy(url, opts, warnings) {
-  const isWikiOrDocs = WIKI_DOCS_PATTERNS.some((re) => re.test(url));
+  const isWikiOrDocs = isWikiOrDocsUrl(url);
 
   // HEAD first to check Content-Type + size (when possible)
   let headInfo = null;
@@ -651,16 +651,7 @@ function extractMeta(html) {
 }
 
 function extractBody(html) {
-  const stripped = html
-    .replace(/<script[\s\S]*?<\/script>/gi, "")
-    .replace(/<style[\s\S]*?<\/style>/gi, "")
-    .replace(/<nav[\s\S]*?<\/nav>/gi, "")
-    .replace(/<footer[\s\S]*?<\/footer>/gi, "")
-    .replace(/<aside[\s\S]*?<\/aside>/gi, "")
-    .replace(/<header[\s\S]*?<\/header>/gi, "")
-    .replace(/<iframe[\s\S]*?<\/iframe>/gi, "")
-    .replace(/<form[\s\S]*?<\/form>/gi, "")
-    .replace(/<!--[\s\S]*?-->/g, "");
+  const stripped = withoutElements(html, ["script", "style", "nav", "footer", "aside", "header", "iframe", "form"]);
 
   let target = "";
   const m1 = /<main[^>]*>([\s\S]*?)<\/main>/i.exec(stripped);
@@ -720,17 +711,9 @@ function hasSensitiveParams(url) {
   }
 }
 
-function decodeEntities(s) {
-  if (!s) return s;
-  return s
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)));
-}
+
+
+function decodeEntities(value) { return value ? decodeHtmlEntities(value) : value; }
 
 // Exposed for unit tests:
 export {

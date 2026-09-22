@@ -24,3 +24,13 @@ The manifest is a bundled reproducibility record, not a cryptographic signature 
 Runner redaction recognizes credential-like environment names and exact values of at least eight characters. It does not discover arbitrary secrets, encoded/derived values, short values, or credentials under unrecognized names. Review generated artifacts before sharing them. Live-provider quality, independent citation support and cumulative spending limits remain separate product questions.
 
 Existing host processes must restart to load a newly installed plugin. Release verification must identify the actual installed build; testing a checkout does not upgrade a cache.
+
+## CodeQL baseline remediation (September 2026)
+
+The 90 initial alerts were reviewed by source and grouped by shared cause. The changes replace predictable temporary writes with exclusive, randomly named files; stop stealing live locks by age; use descriptor-based file reads and exclusive new-file creation; and constrain static reads to the resolved serving root. Cache lock timeout now fails instead of updating without a lock. A crashed tips-hook lock requires inspecting the owner and removing the abandoned lock before retrying.
+
+HTML extraction uses tokenized text processing and one-pass entity decoding. Markdown exports escape literal HTML and Markdown metacharacters, reject executable URL schemes, and preserve ordinary headings, links, lists and code blocks. YAML metadata remains a quoted scalar even when it contains newlines, quotes or backslashes. BibTeX escaping is single-pass. URL strategy selection matches parsed hostnames; expensive delimiter regexes were replaced with direct scanning.
+
+New files and atomic replacements use owner-only permissions. Session and clipboard file reads reject final symbolic links and non-regular files; static reads permit links only when their resolved targets stay within the serving root. These are intentional behavior changes. Shared directories and concurrent replacement of parent directories remain a host trust boundary. Atomic replacement does not serialize every read/modify/write operation. Custom endpoints remain trusted configuration, and the bundled integrity manifest remains unsigned.
+
+Regression tests cover temporary-file symlinks, failed replacement cleanup, lock timeout, static-root escapes, file limits, hostile export metadata, safe Markdown destinations, and entity/BibTeX correctness. Test-only JavaScript literals passed directly to Node and timestamp fixtures inside private temporary directories are reviewed separately from shipped runtime findings. No scanning rule or source directory is excluded to reduce the alert count.

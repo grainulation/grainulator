@@ -1,3 +1,4 @@
+import { atomicWriteJSON } from "../../shared/lib/atomic.js";
 /**
  * store.js — Local claim/template storage (filesystem-based)
  *
@@ -162,9 +163,7 @@ export class Store {
 	}
 
 	_writeJSON(filePath, data) {
-		const tmp = filePath + ".tmp." + process.pid;
-		fs.writeFileSync(tmp, JSON.stringify(data, null, 2) + "\n", "utf-8");
-		fs.renameSync(tmp, filePath);
+		atomicWriteJSON(filePath, data);
 	}
 
 	_hash(str) {

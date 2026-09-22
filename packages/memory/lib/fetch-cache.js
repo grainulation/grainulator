@@ -1,3 +1,5 @@
+import { atomicWrite } from "../../shared/lib/atomic.js";
+import { withFileTransaction } from "../../shared/lib/transaction.js";
 /**
  * fetch-cache.js — Bounded, self-cleaning cache for smart-fetch
  *
@@ -91,8 +93,7 @@ export class FetchCache {
     this._writeFile(filePath, serialized);
 
     // Cross-process-safe index update: hold a lockfile over read-modify-write.
-    // Best-effort — if lock fails (EEXIST or lock stuck), we fall back to
-    // the non-locked path and accept the rare last-writer-wins race.
+    // A busy lock fails explicitly; callers may continue without caching.
     this._withLock(() => {
       const index = this._readIndex();
       index.seq = (index.seq || 0) + 1;
@@ -209,57 +210,12 @@ export class FetchCache {
   }
 
   _writeFile(filePath, content) {
-    const tmp = filePath + ".tmp." + process.pid + "." + Date.now();
-    try {
-      fs.writeFileSync(tmp, content, "utf-8");
-      fs.renameSync(tmp, filePath);
-    } catch (err) {
-      // Clean up the tmp file on any failure so we don't leak
-      try {
-        fs.unlinkSync(tmp);
-      } catch {
-        // tmp file may not have been created yet
-      }
-      throw err;
-    }
+    atomicWrite(filePath, content);
   }
 
-  // Serialize read-modify-write on index.json via a lockfile.
-  // Best-effort with bounded retries; falls through on timeout.
+  // Never continue a read/modify/write operation without owning its lock.
   _withLock(fn) {
-    const lockPath = this.indexPath + ".lock";
-    const maxWaitMs = 2000;
-    const pollMs = 20;
-    const started = Date.now();
-    let acquired = false;
-    while (!acquired && Date.now() - started < maxWaitMs) {
-      try {
-        fs.writeFileSync(lockPath, String(process.pid), { flag: "wx" });
-        acquired = true;
-      } catch {
-        // Another process holds the lock. Check for stale locks (>10s).
-        try {
-          const stat = fs.statSync(lockPath);
-          if (Date.now() - stat.mtimeMs > 10000) {
-            fs.unlinkSync(lockPath);
-          }
-        } catch {
-          // Lock vanished — next iteration will retry
-        }
-        // Busy-wait briefly
-        const target = Date.now() + pollMs;
-        while (Date.now() < target) {}
-      }
-    }
-    try {
-      fn();
-    } finally {
-      if (acquired) {
-        try {
-          fs.unlinkSync(lockPath);
-        } catch {}
-      }
-    }
+    return withFileTransaction(this.indexPath, fn, { timeoutMs: 2000 });
   }
 
   _removeFile(key) {

@@ -145,7 +145,7 @@ function parseLlmsTxt(source) {
   const placeholders = []; // any remaining {{…}}
 
   const placeholderRe = /\{\{[A-Z0-9_]+\}\}/g;
-  const linkRe = /^\s*-\s*\[([^\]]+)\]\(([^)]+)\)\s*(?::\s*(.+))?$/;
+
 
   for (const line of lines) {
     // Track placeholders anywhere.
@@ -166,7 +166,7 @@ function parseLlmsTxt(source) {
       continue;
     }
     if (currentSection) {
-      const lm = line.match(linkRe);
+      const lm = parseLink(line);
       if (lm) {
         sections[currentSection].push({
           label: lm[1].trim(),
@@ -180,13 +180,36 @@ function parseLlmsTxt(source) {
   return { h1, blockquote, sections, placeholders };
 }
 
+// Delimiter searches advance once; malformed long lines do not backtrack.
+function parseLink(line) {
+  const text = line.trim();
+  if (!text.startsWith("-")) return null;
+  const rest = text.slice(1).trimStart();
+  if (!rest.startsWith("[")) return null;
+  const labelEnd = rest.indexOf("](", 1);
+  if (labelEnd < 2) return null;
+  const urlEnd = rest.indexOf(")", labelEnd + 2);
+  if (urlEnd <= labelEnd + 2) return null;
+  const tail = rest.slice(urlEnd + 1).trim();
+  if (tail && !tail.startsWith(":")) return null;
+  return [text, rest.slice(1, labelEnd), rest.slice(labelEnd + 2, urlEnd), tail.slice(1).trim()];
+}
+
 // Normalize a package name to a bare slug (strip @grainulation/ scope,
 // parenthetical qualifiers, trailing "(umbrella)" etc.).
 function normalizeName(name) {
   if (!name) return "";
   let n = name.trim().toLowerCase();
   n = n.replace(/@grainulation\//, "");
-  n = n.replace(/\(.*?\)/g, "").trim();
+  let text = "", cursor = 0;
+  while (cursor < n.length) {
+    const open = n.indexOf("(", cursor);
+    if (open < 0) { text += n.slice(cursor); break; }
+    const close = n.indexOf(")", open + 1);
+    if (close < 0) { text += n.slice(cursor); break; }
+    text += n.slice(cursor, open); cursor = close + 1;
+  }
+  n = text.trim();
   n = n.replace(/\s+/g, "");
   return n;
 }

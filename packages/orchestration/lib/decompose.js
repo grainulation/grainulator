@@ -1,3 +1,5 @@
+import { atomicWrite } from "../../shared/lib/atomic.js";
+import { writeNewFile } from "../../shared/lib/fs-safe.cjs";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -204,7 +206,7 @@ export function applyDecomposition(root, question, opts = {}) {
         },
         claims: [],
       };
-      fs.writeFileSync(
+      writeNewFile(
         claimsPath,
         JSON.stringify(initial, null, 2) + "\n",
         "utf8",
@@ -227,7 +229,7 @@ export function applyDecomposition(root, question, opts = {}) {
     }
   }
 
-  fs.writeFileSync(orchardPath, JSON.stringify(config, null, 2) + "\n", "utf8");
+  atomicWrite(orchardPath, JSON.stringify(config, null, 2) + "\n", "utf8");
 
   return sprints;
 }

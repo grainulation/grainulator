@@ -1,3 +1,4 @@
+import { tryReadStaticFile } from "../../shared/lib/fs-safe.cjs";
 /**
  * wheat serve — local HTTP server for the wheat sprint dashboard
  *
@@ -356,12 +357,13 @@ ${ROUTES.map(
 			return;
 		}
 
-		if (fs.existsSync(resolved) && fs.statSync(resolved).isFile()) {
+		const staticContent = tryReadStaticFile(PUBLIC_DIR, resolved);
+		if (staticContent !== null) {
 			const ext = path.extname(resolved);
 			res.writeHead(200, {
 				"Content-Type": MIME[ext] || "application/octet-stream",
 			});
-			res.end(fs.readFileSync(resolved));
+			res.end(staticContent);
 			return;
 		}
 

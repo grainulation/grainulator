@@ -70,14 +70,6 @@ function claimToEntry(claim, author, year) {
 
 function escapeBibtex(value) {
   if (value == null) return "";
-  return String(value)
-    .replace(/\\/g, "\\textbackslash{}")
-    .replace(/&/g, "\\&")
-    .replace(/%/g, "\\%")
-    .replace(/#/g, "\\#")
-    .replace(/_/g, "\\_")
-    .replace(/\{/g, "\\{")
-    .replace(/\}/g, "\\}")
-    .replace(/~/g, "\\textasciitilde{}")
-    .replace(/\^/g, "\\textasciicircum{}");
+  const escapes = { "\\": "\\textbackslash{}", "&": "\\&", "%": "\\%", "#": "\\#", "_": "\\_", "{": "\\{", "}": "\\}", "~": "\\textasciitilde{}", "^": "\\textasciicircum{}", "$": "\\$" };
+  return Array.from(String(value), char => escapes[char] ?? char).join("");
 }

@@ -1,3 +1,4 @@
+import { withoutElements, htmlText } from "../../shared/lib/html.cjs";
 /**
  * wheat serve-mcp -- Local MCP server for Claude Code
  *
@@ -221,11 +222,7 @@ function toolDeepwiki(_dir, args) {
 					res.on("end", () => {
 						// Extract useful content from DeepWiki HTML
 						// Strip script/style tags, extract text content from main sections
-						const cleaned = body
-							.replace(/<script[\s\S]*?<\/script>/gi, "")
-							.replace(/<style[\s\S]*?<\/style>/gi, "")
-							.replace(/<nav[\s\S]*?<\/nav>/gi, "")
-							.replace(/<footer[\s\S]*?<\/footer>/gi, "");
+						const cleaned = withoutElements(body, ["script", "style", "nav", "footer"]);
 
 						// Extract headings and their content for structured output
 						const sections = [];
@@ -233,7 +230,7 @@ function toolDeepwiki(_dir, args) {
 						let match;
 						while ((match = headingRegex.exec(cleaned)) !== null) {
 							const level = parseInt(match[1], 10);
-							const title = match[2].replace(/<[^>]+>/g, "").trim();
+							const title = htmlText(match[2]).trim();
 							if (title) sections.push({ level, title });
 						}
 
@@ -241,7 +238,7 @@ function toolDeepwiki(_dir, args) {
 						const paragraphs = [];
 						const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
 						while ((match = pRegex.exec(cleaned)) !== null) {
-							const text = match[1].replace(/<[^>]+>/g, "").trim();
+							const text = htmlText(match[1]).trim();
 							if (text && text.length > 30) paragraphs.push(text);
 						}
 

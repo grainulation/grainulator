@@ -58,6 +58,7 @@ try {
   assert.equal(session.question, 'Static research');
   assert.equal(session.config.provider, 'openrouter');
   await page.locator('#import-session').setInputFiles({ name: 'session.json', mimeType: 'application/json', buffer: Buffer.from(contents) });
+  await page.getByText('Session opened. Add your provider key to continue.', { exact: true }).waitFor();
   assert.equal(await page.locator('#question').inputValue(), 'Static research');
   report.checks.push('static configure, export, reimport, and explicit local continuation; credentials disabled');
   await page.locator('#provider').selectOption('custom');

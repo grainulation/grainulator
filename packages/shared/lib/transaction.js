@@ -10,7 +10,7 @@ export function withFileTransaction(file, operation, { timeoutMs = 5000 } = {}) 
   const lock = `${target}.lock`;
   const deadline = Date.now() + timeoutMs;
   for (;;) {
-    try { fs.mkdirSync(lock); break; }
+    try { fs.mkdirSync(lock, { mode: 0o700 }); break; }
     catch (error) {
       if (error.code !== 'EEXIST') throw error;
       if (Date.now() >= deadline) {
@@ -22,7 +22,7 @@ export function withFileTransaction(file, operation, { timeoutMs = 5000 } = {}) 
     }
   }
   try {
-    fs.writeFileSync(path.join(lock, 'owner.json'), JSON.stringify({ pid: process.pid, createdAt: new Date().toISOString() }));
+    fs.writeFileSync(path.join(lock, 'owner.json'), JSON.stringify({ pid: process.pid, createdAt: new Date().toISOString() }), { flag: "wx", mode: 0o600 });
     return operation();
   } finally {
     fs.rmSync(lock, { recursive: true, force: true });
