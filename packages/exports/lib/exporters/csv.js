@@ -26,10 +26,15 @@ function escapeCsvField(value) {
   if (value == null) return "";
   let str = String(value);
   // CWE-1236: Prevent CSV injection by prefixing formula-triggering characters
-  if (/^[=+\-@\t\r]/.test(str)) {
+  if (/^[\s\uFEFF]*[=+\-@]|^[\t\r\n]/.test(str)) {
     str = "'" + str;
   }
-  if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+  if (
+    str.includes(",") ||
+    str.includes('"') ||
+    str.includes("\n") ||
+    str.includes("\r")
+  ) {
     return `"${str.replace(/"/g, '""')}"`;
   }
   return str;
@@ -42,14 +47,24 @@ function claimToRow(claim) {
         Array.isArray(claim.tags) ? claim.tags.join("; ") : "",
       );
     }
-    if (col === "text") return escapeCsvField(claim.content ?? claim.text ?? "");
-    if (col === "created") return escapeCsvField(claim.timestamp ?? claim.created ?? "");
+    if (col === "text")
+      return escapeCsvField(claim.content ?? claim.text ?? "");
+    if (col === "created")
+      return escapeCsvField(claim.timestamp ?? claim.created ?? "");
     if (col === "evidence_tier") {
-      return escapeCsvField(typeof claim.evidence === "string" ? claim.evidence : claim.evidence?.tier ?? claim.evidence_tier ?? "");
+      return escapeCsvField(
+        typeof claim.evidence === "string"
+          ? claim.evidence
+          : (claim.evidence?.tier ?? claim.evidence_tier ?? ""),
+      );
     }
     if (col === "source") {
       const source = claim.evidence?.source ?? claim.source ?? "";
-      return escapeCsvField(source && typeof source === "object" ? source.artifact || source.origin || JSON.stringify(source) : source);
+      return escapeCsvField(
+        source && typeof source === "object"
+          ? source.artifact || source.origin || JSON.stringify(source)
+          : source,
+      );
     }
     return escapeCsvField(claim[col]);
   }).join(",");

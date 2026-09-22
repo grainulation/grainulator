@@ -1,3 +1,4 @@
+import { importClaims } from "./import-claims.js";
 import { withoutElements, htmlText } from "../../shared/lib/html.cjs";
 /**
  * wheat serve-mcp -- Local MCP server for Claude Code
@@ -222,7 +223,12 @@ function toolDeepwiki(_dir, args) {
 					res.on("end", () => {
 						// Extract useful content from DeepWiki HTML
 						// Strip script/style tags, extract text content from main sections
-						const cleaned = withoutElements(body, ["script", "style", "nav", "footer"]);
+						const cleaned = withoutElements(body, [
+							"script",
+							"style",
+							"nav",
+							"footer",
+						]);
 
 						// Extract headings and their content for structured output
 						const sections = [];
@@ -364,6 +370,19 @@ const TOOLS = [
 					},
 					required: ["origin"],
 				},
+				calibration: {
+					type: "object",
+					properties: {
+						prediction_id: { type: "string" },
+						verdict: {
+							type: "string",
+							enum: ["correct", "wrong", "partial", "unknown"],
+						},
+						outcome: { type: "string" },
+						delta: { type: "number" },
+					},
+					required: ["prediction_id", "verdict", "outcome"],
+				},
 				conflicts_with: {
 					type: "array",
 					items: { type: "string" },
@@ -378,6 +397,36 @@ const TOOLS = [
 				},
 			},
 			required: ["id", "type", "topic", "content"],
+		},
+	},
+	{
+		name: "wheat/import-claims",
+		description:
+			"Import active document findings atomically with stable source IDs; skip inactive records, preserve source provenance and use stated evidence. Repeated imports are idempotent; changed source records require review. Not a ledger restore.",
+		inputSchema: {
+			type: "object",
+			properties: {
+				dir: DIR_PARAM,
+				source: { type: "string" },
+				claims: {
+					type: "array",
+					items: {
+						type: "object",
+						properties: {
+							id: { type: "string" },
+							type: { type: "string", enum: VALID_TYPES },
+							topic: { type: "string" },
+							content: { type: "string" },
+							status: { type: "string" },
+							evidence: { type: "string" },
+							source: { type: "object" },
+							conflicts_with: { type: "array", items: { type: "string" } },
+						},
+						required: ["id", "type", "topic", "content"],
+					},
+				},
+			},
+			required: ["source", "claims"],
 		},
 	},
 	{
@@ -406,6 +455,18 @@ const TOOLS = [
 			type: "object",
 			properties: {
 				dir: DIR_PARAM,
+				id: {
+					type: "string",
+					description: "Exact claim ID; returns the complete record",
+				},
+				full: {
+					type: "boolean",
+					description: "Return complete records without truncation",
+				},
+				include_inactive: {
+					type: "boolean",
+					description: "Include superseded claims (default false)",
+				},
 				topic: { type: "string", description: "Filter by topic slug" },
 				type: {
 					type: "string",
@@ -570,6 +631,9 @@ async function handleRequest(dir, method, params, id) {
 			switch (toolName) {
 				case "wheat/compile":
 					result = toolCompile(effectiveDir);
+					break;
+				case "wheat/import-claims":
+					result = importClaims(effectiveDir, toolArgs);
 					break;
 				case "wheat/add-claim":
 					result = toolAddClaim(effectiveDir, toolArgs);

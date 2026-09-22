@@ -47,3 +47,24 @@ export function capitalize(str) {
   if (str == null || str.length === 0) return "";
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
+
+/** Treat arbitrary claim/metadata strings as text in Markdown exports.
+ * Escaping HTML prevents raw elements; consumer renderers still own URL and
+ * plugin policies. This returns a copy and never changes the evidence ledger.
+ */
+export function escapeMarkdownData(value) {
+  if (typeof value === "string")
+    return value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  if (Array.isArray(value)) return value.map(escapeMarkdownData);
+  if (value && typeof value === "object")
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [
+        key,
+        escapeMarkdownData(item),
+      ]),
+    );
+  return value;
+}

@@ -1,3 +1,4 @@
+import { escapeMarkdownData } from "./_shared.mjs";
 /**
  * mill format: changelog
  *
@@ -18,6 +19,7 @@ export const description =
  * @returns {string} Markdown changelog output
  */
 export function convert(compilation) {
+  compilation = escapeMarkdownData(compilation);
   const claims = compilation.claims || [];
   const conflicts = compilation.conflicts || [];
   const meta = compilation.meta || {};

@@ -42,7 +42,9 @@ async function discoverFormats() {
 
   const formats = [];
   try {
-    const files = fs.readdirSync(FORMATS_DIR).filter((f) => f.endsWith(".mjs"));
+    const files = fs
+      .readdirSync(FORMATS_DIR)
+      .filter((f) => f.endsWith(".mjs") && !f.startsWith("_"));
     for (const file of files) {
       try {
         const mod = await import(path.join(FORMATS_DIR, file));
@@ -105,7 +107,11 @@ async function toolConvert(dir, args) {
   let dataPath = sourceFile;
 
   if (!fs.existsSync(dataPath)) {
-    if (!source && isInsideDir(fallbackFile, dir) && fs.existsSync(fallbackFile)) {
+    if (
+      !source &&
+      isInsideDir(fallbackFile, dir) &&
+      fs.existsSync(fallbackFile)
+    ) {
       dataPath = fallbackFile;
     } else {
       return {
@@ -133,8 +139,15 @@ async function toolConvert(dir, args) {
   // Write output if path provided
   if (output) {
     const outPath = path.resolve(dir, output);
-    try { assertSafeOutput(outPath, [dataPath, path.join(dir, "claims.json"), path.join(dir, "compilation.json")]); }
-    catch (error) { return {status: "error", message: error.message}; }
+    try {
+      assertSafeOutput(outPath, [
+        dataPath,
+        path.join(dir, "claims.json"),
+        path.join(dir, "compilation.json"),
+      ]);
+    } catch (error) {
+      return { status: "error", message: error.message };
+    }
     // Prevent path traversal — output must stay within workspace
     if (!isInsideDir(outPath, dir)) {
       return {

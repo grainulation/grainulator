@@ -75,7 +75,7 @@ function claimToRow(claim) {
           Array.isArray(claim.tags) ? claim.tags.join("; ") : "",
         );
       case "confidence":
-        return claim.confidence != null ? String(claim.confidence) : "";
+        return escapeField(claim.confidence);
       default:
         return escapeField(claim[col]);
     }
@@ -86,10 +86,15 @@ function escapeField(value) {
   if (value == null) return "";
   let str = String(value);
   // CWE-1236: Prevent CSV injection by prefixing formula-triggering characters
-  if (/^[=+\-@\t\r]/.test(str)) {
+  if (/^[\s\uFEFF]*[=+\-@]|^[\t\r\n]/.test(str)) {
     str = "'" + str;
   }
-  if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+  if (
+    str.includes(",") ||
+    str.includes('"') ||
+    str.includes("\n") ||
+    str.includes("\r")
+  ) {
     return `"${str.replace(/"/g, '""')}"`;
   }
   return str;

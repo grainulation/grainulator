@@ -22,6 +22,9 @@ Usage:
   grainulator search [options]
 
 Options:
+  --id <id>         Exact ID, complete record (use --json)
+  --full            Return complete records in JSON
+  --include-inactive Include superseded claims
   --topic <slug>     Filter by topic slug
   --type <type>      Filter by claim type: ${VALID_TYPES.join(", ")}
   --evidence <tier>  Filter by evidence tier: ${VALID_EVIDENCE.join(", ")}
@@ -45,7 +48,15 @@ Examples:
 	const evidence = parseFlag(args, "--evidence");
 	const query = parseFlag(args, "--query");
 
-	const result = searchClaims(dir, { topic, type, evidence, query });
+	const result = searchClaims(dir, {
+		topic,
+		type,
+		evidence,
+		query,
+		id: parseFlag(args, "--id"),
+		full: args.includes("--full"),
+		include_inactive: args.includes("--include-inactive"),
+	});
 
 	if (result.status === "error") {
 		if (jsonMode) {

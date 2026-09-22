@@ -1,4 +1,7 @@
-import { decodeEntities as decodeHtmlEntities, withoutElements } from "../../shared/lib/html.cjs";
+import {
+  decodeEntities as decodeHtmlEntities,
+  withoutElements,
+} from "../../shared/lib/html.cjs";
 /**
  * smart-fetch.js — Size-efficient web fetch with semantic extraction
  *
@@ -110,9 +113,15 @@ const DEFAULT_UA = "Mozilla/5.0 (compatible; GrainulationSmartFetch/1.0)";
 const DEFAULT_TIMEOUT = 15000;
 function isWikiOrDocsUrl(value) {
   const { hostname, pathname } = new URL(value);
-  return hostname === "wikipedia.org" || hostname.endsWith(".wikipedia.org") ||
-    hostname === "developer.mozilla.org" || (hostname === "nodejs.org" && pathname.startsWith("/api/")) ||
-    pathname.includes("/wiki/") || pathname.includes("/doc/") || pathname.includes("/docs/");
+  return (
+    hostname === "wikipedia.org" ||
+    hostname.endsWith(".wikipedia.org") ||
+    hostname === "developer.mozilla.org" ||
+    (hostname === "nodejs.org" && pathname.startsWith("/api/")) ||
+    pathname.includes("/wiki/") ||
+    pathname.includes("/doc/") ||
+    pathname.includes("/docs/")
+  );
 }
 
 /**
@@ -233,16 +242,14 @@ export async function smartFetch(url, options = {}) {
 
   // Quality check
   let quality = assessQuality(bodyExtract);
-  let modeUsed = opts.mode;
+  let modeUsed = opts.mode === "auto" ? "concise" : opts.mode;
 
   // Auto mode: retry with full fetch if quality is bad AND we didn't already do a full fetch
   if (opts.mode === "auto" && quality === "failed" && fetched.truncated) {
     warnings.push("auto-retry: full fetch after failed concise");
     try {
       const full = await fetchRaw(url, { ...opts, forceFull: true }, warnings);
-      fetched.body = full.body;
-      fetched.size = full.size;
-      fetched.truncated = false;
+      fetched = full;
       const retryExtract = extractBody(full.body);
       if (retryExtract.length > bodyExtract.length) {
         bodyExtract.splice(0, bodyExtract.length, ...retryExtract);
@@ -285,6 +292,8 @@ export async function smartFetch(url, options = {}) {
     charset: charset || "utf-8",
     mode_used: modeUsed,
     quality,
+    truncated:
+      fetched.truncated || content.length < bodyExtract.join("\n\n").length,
     title: meta.title,
     description: meta.description,
     content,
@@ -651,7 +660,16 @@ function extractMeta(html) {
 }
 
 function extractBody(html) {
-  const stripped = withoutElements(html, ["script", "style", "nav", "footer", "aside", "header", "iframe", "form"]);
+  const stripped = withoutElements(html, [
+    "script",
+    "style",
+    "nav",
+    "footer",
+    "aside",
+    "header",
+    "iframe",
+    "form",
+  ]);
 
   let target = "";
   const m1 = /<main[^>]*>([\s\S]*?)<\/main>/i.exec(stripped);
@@ -711,9 +729,9 @@ function hasSensitiveParams(url) {
   }
 }
 
-
-
-function decodeEntities(value) { return value ? decodeHtmlEntities(value) : value; }
+function decodeEntities(value) {
+  return value ? decodeHtmlEntities(value) : value;
+}
 
 // Exposed for unit tests:
 export {

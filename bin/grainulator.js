@@ -12,7 +12,7 @@ const version = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf
 const [requestedCommand = 'help', ...requestedArgs] = process.argv.slice(2);
 const evidencePrefix = requestedCommand === 'evidence';
 const [command = 'help', ...args] = evidencePrefix ? requestedArgs : [requestedCommand, ...requestedArgs];
-const evidenceCommands = new Set(['init', 'add', 'resolve', 'compile', 'search', 'status', 'guard', 'mcp', 'help', '--help', '-h']);
+const evidenceCommands = new Set(['init', 'add', 'import', 'resolve', 'compile', 'search', 'status', 'guard', 'mcp', 'help', '--help', '-h']);
 const option = (name, fallback) => { const i = args.indexOf(name); return i < 0 ? fallback : args[i + 1]; };
 const children = {
   evidence: 'packages/evidence/bin/wheat.js', wheat: 'packages/evidence/bin/wheat.js',
@@ -60,7 +60,7 @@ try {
     else (await import('../lib/grainulator-mcp.js')).startServer({dir: path.resolve(option('--dir', process.cwd())), memoryDir: option('--memory-dir')});
   }
   else if (children[command]) forward(children[command], args);
-  else if (['init', 'add', 'resolve', 'compile', 'search', 'status', 'guard'].includes(command)) {
+  else if (['init', 'add', 'import', 'resolve', 'compile', 'search', 'status', 'guard'].includes(command)) {
     forward(children.evidence, [command, ...(command === 'init' && !args.includes('--headless') ? ['--headless'] : []), ...args]);
   } else if (command === 'preview') forward('scripts/preview.mjs', args);
   else if (command === 'doctor') {
@@ -87,6 +87,6 @@ try {
     console.log(args.includes('--json') ? JSON.stringify(result, null, 2) : `\n${result.status}\n${result.rounds.at(-1)?.answer || result.error || ''}\nTrace: ${result.trace}`);
     process.exitCode = result.status === 'verified' ? 0 : 2;
   } else if (['help', '--help', '-h'].includes(command) || (command === 'run' && args.includes('--help'))) {
-    console.log(`Grainulator\n\nUsage: node bin/grainulator.js <command> [options]\n\n  research         Run or resume an exported playground session (--help)\n  doctor           Check the local workspace\n  demo             Run the offline repair + verifier example\n  run              Attach a JSON command adapter to a bounded task loop\n  init / add / compile / status / search / resolve\n                   Work with an evidence sprint (--dir <directory>)\n  check            Evaluate a legacy execution ledger\n  memory / export / analytics / orchestrate\n                   Access the consolidated components\n  setup            Save the default native Codex workspace (--dir absolute-path)\n  --version / -v   Print the installed product version\n  connect          Print a local MCP configuration; changes no host settings\n  preview          Preview Grainulator and the sibling Grainulation site\n\nrun options:\n  --task <text> --adapter <executable> --adapter-args '<JSON array>'\n  --verify '<JSON argv>' --dir <workspace> --max-rounds 3 --timeout-ms 60000\n  --adapter-format json|text  Use text for ordinary prompt-in / answer-out CLIs\n  --json           Machine-readable output\n\nAdapter protocol and dogfood guide: docs/DOGFOOD.md\nNo release or installation into your global agent configuration is performed.`);
+    console.log(`Grainulator\n\nUsage: node bin/grainulator.js <command> [options]\n\n  research         Run or resume an exported playground session (--help)\n  doctor           Check the local workspace\n  demo             Run the offline repair + verifier example\n  run              Attach a JSON command adapter to a bounded task loop\n  init / add / import / compile / status / search / resolve\n                   Work with an evidence sprint (--dir <directory>)\n  check            Evaluate a legacy execution ledger\n  memory / export / analytics / orchestrate\n                   Access the consolidated components\n  setup            Save the default native Codex workspace (--dir absolute-path)\n  --version / -v   Print the installed product version\n  connect          Print a local MCP configuration; changes no host settings\n  preview          Preview Grainulator and the sibling Grainulation site\n\nrun options:\n  --task <text> --adapter <executable> --adapter-args '<JSON array>'\n  --verify '<JSON argv>' --dir <workspace> --max-rounds 3 --timeout-ms 60000\n  --adapter-format json|text  Use text for ordinary prompt-in / answer-out CLIs\n  --json           Machine-readable output\n\nAdapter protocol and dogfood guide: docs/DOGFOOD.md\nNo release or installation into your global agent configuration is performed.`);
   } else { console.error(`Unknown command: ${command}. Run grainulator --help.`); process.exitCode = 1; }
 } catch (error) { console.error(`Grainulator: ${error.message}`); process.exitCode = 1; }

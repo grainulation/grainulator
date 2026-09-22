@@ -148,6 +148,27 @@ function addClaimUnlocked(dir, args) {
 		return { status: "error", message: `Claim ID "${id}" already exists.` };
 	}
 
+	if (args.calibration !== undefined) {
+		const cal = args.calibration;
+		const target = claims.find(
+			(c) => c.id === cal?.prediction_id && c.status === "active",
+		);
+		if (
+			!cal ||
+			!target ||
+			!["estimate", "risk", "recommendation"].includes(target.type) ||
+			!["correct", "wrong", "partial", "unknown"].includes(cal.verdict) ||
+			typeof cal.outcome !== "string" ||
+			!cal.outcome.trim() ||
+			(cal.delta !== undefined && !Number.isFinite(cal.delta))
+		) {
+			return {
+				status: "error",
+				message:
+					"calibration requires an active prediction_id (estimate/risk/recommendation), verdict (correct/wrong/partial/unknown), outcome text and optional finite numeric delta.",
+			};
+		}
+	}
 	const claim = {
 		id,
 		type,
@@ -168,6 +189,7 @@ function addClaimUnlocked(dir, args) {
 		conflicts_with: args.conflicts_with || [],
 		resolved_by: null,
 		tags: tags || [],
+		...(args.calibration ? { calibration: { ...args.calibration } } : {}),
 	};
 
 	(data.claims || (data.claims = [])).push(claim);
@@ -211,7 +233,10 @@ function searchClaims(dir, args) {
 			message: loadErrors[0]?.message || "No claims.json found.",
 		};
 	}
-	let results = data.claims.filter((c) => c.status === "active");
+	let results = data.claims.filter(
+		(c) => args.include_inactive || c.status === "active",
+	);
+	if (args.id) results = results.filter((c) => c.id === args.id);
 
 	if (args.topic) {
 		results = results.filter((c) => c.topic === args.topic);
@@ -230,16 +255,24 @@ function searchClaims(dir, args) {
 	return {
 		status: "ok",
 		count: results.length,
-		claims: results.map((c) => ({
-			id: c.id,
-			type: c.type,
-			topic: c.topic,
-			evidence: c.evidence,
-			content: c.content.slice(0, 200) + (c.content.length > 200 ? "..." : ""),
-			source: c.source,
-			tags: c.tags,
-			conflicts_with: c.conflicts_with,
-		})),
+		claims: results.map((c) =>
+			args.full || args.id
+				? { ...c }
+				: {
+						id: c.id,
+						status: c.status,
+						timestamp: c.timestamp,
+						truncated: c.content.length > 200,
+						type: c.type,
+						topic: c.topic,
+						evidence: c.evidence,
+						content:
+							c.content.slice(0, 200) + (c.content.length > 200 ? "..." : ""),
+						source: c.source,
+						tags: c.tags,
+						conflicts_with: c.conflicts_with,
+					},
+		),
 	};
 }
 
@@ -331,11 +364,24 @@ function getStatus(dir) {
 				c.status === "active"),
 	);
 	const topics = [...new Set(active.map((c) => c.topic))];
-	const types = {};
+	const types = Object.fromEntries(VALID_TYPES.map((type) => [type, 0]));
 	active.forEach((c) => {
 		types[c.type] = (types[c.type] || 0) + 1;
 	});
 
+	const activeIds = new Set(active.map((c) => c.id));
+	const edges = new Map();
+	for (const c of active)
+		for (const id of c.conflicts_with || []) {
+			if (activeIds.has(id))
+				edges.set(JSON.stringify([c.id, id].sort()), [c.id, id]);
+		}
+	const evidenceDistribution = Object.fromEntries(
+		VALID_EVIDENCE.map((tier) => [tier, 0]),
+	);
+	for (const c of active)
+		evidenceDistribution[c.evidence] =
+			(evidenceDistribution[c.evidence] || 0) + 1;
 	const paths = resolvePaths(dir);
 	let compilationStatus = "unknown";
 	let next_actions = {
@@ -370,6 +416,10 @@ function getStatus(dir) {
 
 	return {
 		status: "ok",
+		dir: path.resolve(dir),
+		topic_list: topics,
+		evidence_distribution: evidenceDistribution,
+		conflicts: [...edges.values()],
 		question: (data.meta || {}).question || "(no question set)",
 		phase: (data.meta || {}).phase || "unknown",
 		total_claims: claims.length,

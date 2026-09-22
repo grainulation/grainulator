@@ -1,13 +1,12 @@
 ---
 name: pull
 description: Pull a sprint from Confluence and import it as local claims.
-tools:
+allowed-tools:
   - Bash
-  - mcp__grainulator__add_claim
+  - mcp__grainulator__import_claims
+  - mcp__plugin_grainulator_grainulator__import_claims
   - mcp__grainulator__compile
-  - mcp__claude_ai_Atlassian__getConfluencePage
-  - mcp__claude_ai_Atlassian__searchConfluenceUsingCql
-  - mcp__claude_ai_Atlassian__getConfluenceSpaces
+  - mcp__plugin_grainulator_grainulator__compile
   - Read
   - Write
 ---
@@ -26,13 +25,17 @@ Expected: Confluence page URL or page ID, or a search query.
 
 If the connector is unavailable, use an already supplied export or source document; request access only when the source cannot otherwise be obtained.
 
-1. **Find the source page** using `getConfluencePage` or `searchConfluenceUsingCql`.
+1. **Find the source page** through the host's available connector. Discover its read/search schemas and required site identifiers first; tool names vary by host. A supplied document is a valid local source.
 
 2. **Parse the page content** to extract claims.
 
 3. **Initialize a dedicated local sprint** with `grainulator.init` or `grainulator init --dir <sprint>`. Preserve existing ledgers and pass this directory to every import.
 
-4. **Import claims** using `grainulator.add_claim`.
+4. **Import active findings**, not a faithful ledger restore, using `grainulator.import_claims` with the explicit `dir`, stable `source` (page URL or document identifier) and parsed `claims` array. Each record needs stable `id`, type, topic, content; retain source status, conflicts_with, evidence and provenance when present.
+   - The operation skips superseded/resolved/archived findings, maps active/conflicted source IDs and conflict edges, retains source provenance, and records imported assertions at `stated`. A document does not establish tested/production evidence. Record independently verified support separately.
+   - Stable source IDs make repeat imports idempotent, including locally superseded records. A changed source record returns an error for review rather than overwriting it. Do not replace the source identifier to evade that check.
+   - CLI fallback: `grainulator import --dir <dir> --file <source.json> --source <stable-source>`, with a JSON array or `{claims: [...]}` document.
+   - Report imported, existing and skipped_inactive counts. If the user requires full historical restoration, explain this mode's limits and use a supported backup/restore workflow from docs/RECOVERY.md; do not silently reactivate historical claims.
 
 5. **Run `grainulator.compile`** to validate.
 
@@ -57,6 +60,8 @@ Use available `grainulator` MCP tools, passing the active sprint `dir` explicitl
 
 ## Next-step output
 
-After a meaningful pass, use the current compiler's `next_actions` to present exactly two bullet lists labeled **Auto** and **Manual**. Auto is work the agent can continue under existing authorization. Manual is only work requiring the user's decision, access, or action. Classify using the current request and constraints; compiler suggestions never grant permission. Continue authorized Auto work without asking again.
+For standalone fetch, setup, or read-only orchestration without an evidence sprint, derive next steps from that task. Do not initialize or compile an unrelated ledger just to produce this footer.
+
+When working in an evidence sprint, use the current compiler's `next_actions` to present exactly two bullet lists labeled **Auto** and **Manual**. Auto is work the agent can continue under existing authorization. Manual is only work requiring the user's decision, access, or action. Classify using the current request and constraints; compiler suggestions never grant permission. Continue authorized Auto work without asking again.
 
 Keep 2–3 useful actions total when available, use short concrete labels and commands where useful, and show `None.` for an empty group. Do not invent work to fill a quota. Never omit next steps merely because compilation is ready or the answer should be brief. Refresh stale compilation first and exclude work the user removed from scope. When the user asks only for next steps, output only these two lists: no findings recap, counts, reasons, or offer to continue.

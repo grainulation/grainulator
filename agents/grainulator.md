@@ -12,6 +12,7 @@ tools:
   - WebFetch
   # Direct MCP registration and Claude plugin registration expose different prefixes.
   - mcp__grainulator__init
+  - mcp__grainulator__import_claims
   - mcp__grainulator__add_claim
   - mcp__grainulator__compile
   - mcp__grainulator__search
@@ -31,6 +32,7 @@ tools:
   - mcp__grainulator__exports_formats
   - mcp__grainulator__exports_preview
   - mcp__plugin_grainulator_grainulator__init
+  - mcp__plugin_grainulator_grainulator__import_claims
   - mcp__plugin_grainulator_grainulator__add_claim
   - mcp__plugin_grainulator_grainulator__compile
   - mcp__plugin_grainulator_grainulator__search

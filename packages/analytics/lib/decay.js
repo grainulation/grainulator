@@ -49,10 +49,18 @@ const URGENCY_TIERS = {
 
 export function checkDecay(sprints, opts = {}) {
   const thresholdDays = opts.thresholdDays || DEFAULT_THRESHOLD_DAYS;
-  const now = new Date();
+  const now = opts.now ? new Date(opts.now) : new Date();
 
   const allClaims = sprints.flatMap((s) =>
-    s.claims.map((c) => ({ ...c, _sprint: s.name })),
+    s.claims
+      .filter(
+        (c) =>
+          !c.status ||
+          c.status === "active" ||
+          c.status === "contested" ||
+          c.status === "challenged",
+      )
+      .map((c) => ({ ...c, _sprint: s.name })),
   );
 
   const decaying = [];
@@ -60,7 +68,7 @@ export function checkDecay(sprints, opts = {}) {
   const unresolved = [];
 
   for (const claim of allClaims) {
-    const created = claim.created || claim.date || claim.timestamp;
+    const created = lastValidation(claim, allClaims);
     const age = created ? daysBetween(new Date(created), now) : null;
 
     // Stale: old claims with volatile evidence
@@ -75,7 +83,10 @@ export function checkDecay(sprints, opts = {}) {
         type: claim.type,
         evidence: claim.evidence,
         ageDays: age,
-        text: truncate(claim.text || claim.claim || claim.description, 120),
+        text: truncate(
+          claim.content || claim.text || claim.claim || claim.description,
+          120,
+        ),
         reason: `${claim.evidence}-tier evidence is ${age} days old (threshold: ${thresholdDays}).`,
       });
     }
@@ -88,7 +99,10 @@ export function checkDecay(sprints, opts = {}) {
         type: claim.type,
         evidence: claim.evidence,
         ageDays: age,
-        text: truncate(claim.text || claim.claim || claim.description, 120),
+        text: truncate(
+          claim.content || claim.text || claim.claim || claim.description,
+          120,
+        ),
         reason: `Claim is ${age} days old with no revalidation.`,
       });
     }
@@ -99,7 +113,10 @@ export function checkDecay(sprints, opts = {}) {
         id: claim.id,
         sprint: claim._sprint,
         type: claim.type,
-        text: truncate(claim.text || claim.claim || claim.description, 120),
+        text: truncate(
+          claim.content || claim.text || claim.claim || claim.description,
+          120,
+        ),
         reason: "Claim was challenged but never resolved.",
       });
     }
@@ -134,8 +151,30 @@ export function checkDecay(sprints, opts = {}) {
   };
 }
 
+// Only full supporting witnesses renew freshness; a contradiction or partial
+// corroboration must not hide an old claim. IDs are scoped to their sprint.
+function lastValidation(claim, claims) {
+  const dates = [
+    claim.updated_at,
+    claim.timestamp,
+    claim.created,
+    claim.date,
+    ...claims
+      .filter(
+        (c) =>
+          c._sprint === claim._sprint &&
+          c.source?.witnessed_claim === claim.id &&
+          c.source?.relationship === "full_support",
+      )
+      .map((c) => c.timestamp || c.created || c.date),
+  ]
+    .map((d) => new Date(d).getTime())
+    .filter(Number.isFinite);
+  return dates.length ? new Date(Math.max(...dates)) : null;
+}
+
 function daysBetween(a, b) {
-  return Math.floor(Math.abs(b - a) / (1000 * 60 * 60 * 24));
+  return Math.max(0, Math.floor((b - a) / (1000 * 60 * 60 * 24)));
 }
 
 function truncate(str, maxLen) {
@@ -191,15 +230,23 @@ function generateDecayInsight(total, stale, decaying, unresolved) {
  */
 export function decayAlerts(sprints, opts = {}) {
   const halfLives = { ...DEFAULT_HALF_LIVES, ...(opts.halfLives || {}) };
-  const now = new Date();
+  const now = opts.now ? new Date(opts.now) : new Date();
 
   const allClaims = sprints.flatMap((s) =>
-    s.claims.map((c) => ({ ...c, _sprint: s.name })),
+    s.claims
+      .filter(
+        (c) =>
+          !c.status ||
+          c.status === "active" ||
+          c.status === "contested" ||
+          c.status === "challenged",
+      )
+      .map((c) => ({ ...c, _sprint: s.name })),
   );
   const alerts = [];
 
   for (const claim of allClaims) {
-    const created = claim.created || claim.date || claim.timestamp;
+    const created = lastValidation(claim, allClaims);
     if (!created) continue;
 
     const ageDays = daysBetween(new Date(created), now);
@@ -223,7 +270,11 @@ export function decayAlerts(sprints, opts = {}) {
         decayRatio: Math.round(ratio * 100) / 100,
         urgency,
         text: truncate(
-          claim.text || claim.claim || claim.description || claim.content,
+          claim.content ||
+            claim.text ||
+            claim.claim ||
+            claim.description ||
+            claim.content,
           120,
         ),
       });

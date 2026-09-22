@@ -14,14 +14,26 @@ try {
 	);
 	process.exit(0);
 }
-const file = context.tool_input?.file_path;
-const name =
-	typeof file === "string"
-		? file.replace(/\\/g, "/").split("/").pop().toLowerCase()
-		: "";
-if (name === "claims.json" || name === "compilation.json") {
-	process.stderr.write(
-		`BLOCKED: ${name} is managed evidence. Use grainulator.add_claim or grainulator.resolve for claims and grainulator.compile for compilation.\n`,
-	);
-	process.exit(2);
+const files = [context.tool_input?.file_path];
+const patch =
+	context.tool_input?.command ??
+	context.tool_input?.patch ??
+	context.tool_input?.input;
+if (typeof patch === "string") {
+	for (const match of patch.matchAll(
+		/^\*\*\* (?:Add File|Update File|Delete File|Move to): (.+)$/gm,
+	))
+		files.push(match[1]);
+}
+for (const file of files) {
+	const name =
+		typeof file === "string"
+			? file.trim().replace(/\\/g, "/").split("/").pop().toLowerCase()
+			: "";
+	if (name === "claims.json" || name === "compilation.json") {
+		process.stderr.write(
+			`BLOCKED: ${name} is managed evidence. Use grainulator.add_claim or grainulator.resolve for claims and grainulator.compile for compilation.\n`,
+		);
+		process.exit(2);
+	}
 }

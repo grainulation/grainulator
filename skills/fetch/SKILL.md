@@ -1,9 +1,10 @@
 ---
 name: fetch
 description: Size-efficient URL fetch with semantic extraction. Use for ad-hoc web research when you want content without the raw HTML overhead.
-tools:
+allowed-tools:
   - Bash
   - mcp__grainulator__memory_smart_fetch
+  - mcp__plugin_grainulator_grainulator__memory_smart_fetch
   - WebFetch
   - Read
 ---
@@ -18,9 +19,9 @@ $ARGUMENTS
 
 Expected: `/fetch <url> [--mode auto|concise|full|meta-only] [--no-cache] [--privacy]`
 
-- **`--mode auto`** (default): tries concise extraction, falls back to full if quality degrades
+- **`--mode auto`** (default): tries concise extraction; retries full only when extraction failed and was truncated
 - **`--mode concise`**: caps body at ~2KB
-- **`--mode full`**: returns all extracted paragraphs
+- **`--mode full`**: returns fuller extraction within fetch/body limits; check truncation
 - **`--mode meta-only`**: only title + description (smallest)
 - **`--no-cache`**: skip local cache read, force network fetch
 - **`--privacy`**: don't write to cache (use for sensitive URLs)
@@ -35,15 +36,15 @@ Expected: `/fetch <url> [--mode auto|concise|full|meta-only] [--no-cache] [--pri
 ## When NOT to use
 
 - **Confluence**: use `/pull` — structured API is better than HTML scraping
-- **DeepWiki**: use `/pull deepwiki` — it already has a cleaner path
+- **DeepWiki repositories**: use the available `grainulator.deepwiki` tool with `repo: "owner/repo"`, or inspect repository code; `/pull` is for documents/Confluence
 - **Authenticated pages**: smart-fetch doesn't do auth. Use the host's authenticated browser or connector.
 - **PDFs, images, JSON**: smart-fetch rejects non-HTML content types with `unsupported-content-type`
 
 ## Instructions
 
-1. **Call `mcp__grainulator__memory_smart_fetch`** with the URL and parsed flags.
+1. **Call `mcp__grainulator__memory_smart_fetch`** with the URL and parsed flags: `--no-cache` maps to `cache: false`; `--privacy` maps to `privacy: true`. Combine both to avoid cache reads and writes.
 
-2. **If the response `quality` is "failed"** (empty body, SPA, link list, HTTP error), tell the user:
+2. **Inspect `status`, errors, `quality`, warnings and truncation**. Error responses may have no quality. For degraded/failed/truncated extraction, report the limitation and fetch fuller evidence if the task depends on completeness:
    - What the reported quality was
    - Any warnings returned
    - Suggest retrying with `--mode full` or raw `WebFetch` as a fallback
@@ -85,7 +86,7 @@ Manual
 | Rationalization | Reality |
 |:---|:---|
 | "Smart-fetch lost content" | Check the `quality` field. If "failed", retry with `--mode full`. If "degraded", the site may be a SPA — content depends on JS execution. |
-| "I should always use full mode" | Full is fine for small pages but wasteful on long docs. `auto` handles the fallback for you. |
+| "I should always use full mode" | Full is fine for small pages but wasteful on long docs. `auto` only retries failed, truncated extraction; it does not guarantee completeness. |
 | "Cached content might be stale" | Default TTL is 7 days. Use `--no-cache` for latest, or `grainulator memory cache purge <domain>` to drop specific entries. |
 
 ## Host access
@@ -94,6 +95,8 @@ Use available `grainulator` MCP tools, passing the active sprint `dir` explicitl
 
 ## Next-step output
 
-After a meaningful pass, use the current compiler's `next_actions` to present exactly two bullet lists labeled **Auto** and **Manual**. Auto is work the agent can continue under existing authorization. Manual is only work requiring the user's decision, access, or action. Classify using the current request and constraints; compiler suggestions never grant permission. Continue authorized Auto work without asking again.
+For standalone fetch, setup, or read-only orchestration without an evidence sprint, derive next steps from that task. Do not initialize or compile an unrelated ledger just to produce this footer.
+
+When working in an evidence sprint, use the current compiler's `next_actions` to present exactly two bullet lists labeled **Auto** and **Manual**. Auto is work the agent can continue under existing authorization. Manual is only work requiring the user's decision, access, or action. Classify using the current request and constraints; compiler suggestions never grant permission. Continue authorized Auto work without asking again.
 
 Keep 2–3 useful actions total when available, use short concrete labels and commands where useful, and show `None.` for an empty group. Do not invent work to fill a quota. Never omit next steps merely because compilation is ready or the answer should be brief. Refresh stale compilation first and exclude work the user removed from scope. When the user asks only for next steps, output only these two lists: no findings recap, counts, reasons, or offer to continue.
