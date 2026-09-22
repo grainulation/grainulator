@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "id": "release-2.0.2-d12f6c05dab145b8",
+  "id": "release-2.0.2-c6a453b3c75c4b2a",
   "version": "2.0.2",
-  "source_sha256": "d12f6c05dab145b878a6dd9711bf2a77203ac3c3a0579d5447ac6422f0d3d4a6",
+  "source_sha256": "c6a453b3c75c4b2a1a83843379851b75bad6dff0762048fa9941d3079b7cd8b7",
   "files": {
     ".claude-plugin/marketplace.json": "36df9ebc937281ef8c90b0bc94ea03220b9cf650ff593ea12826a4a0294d76e4",
     ".claude-plugin/plugin.json": "ebd08d15b2c3b53515ac4ba09f518681a609b8c6f7cfec55404f3316ef3214a1",
@@ -12,7 +12,7 @@
     "CODE_OF_CONDUCT.md": "90386f504766a8352d15c54f7d31ec87cbb141690fb209b73ba2c7dc24f2ba31",
     "CONTRIBUTING.md": "c86748bcd8ea485d16831c3b83b0a341810bf49de28053ecccb84760a279b444",
     "LICENSE": "893000d487292a6322507960deedfde43f41e7b22f933c0947db52d556501cc7",
-    "README.md": "24ca974528b673cb6bacf3c918b912c237f52e582cc194dc943a267bf2c44a67",
+    "README.md": "7f99ee90dc9d4064b905d2bf97508f9e5a9ba00d3f9bfc8d8047a4ad51e78725",
     "SECURITY.md": "e2a70089e24e73d766cb2c4bcc810110303505ca576573cbbcd08b84d446283f",
     "agents/grainulator.md": "14338359dd9719cd8062c3d6d102c8f639bf5553c39271dbbb9ee26393f32a21",
     "bin/grainulator-plugin.js": "c97aed4bb442be83b68f019e48d80fcf7f0999532d5f3cd85b1bbfd79e670b57",
