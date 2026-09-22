@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <a href="https://grainulator.app/"><img src="https://img.shields.io/badge/see_the_example-grainulator.app-98f3ef?style=for-the-badge" alt="See the Grainulator example"></a>
+  <a href="https://grainulator.app/"><img src="https://img.shields.io/badge/website-grainulator.app-98f3ef?style=for-the-badge" alt="See the Grainulator homepage"></a>
 </p>
 
 <p align="center">
