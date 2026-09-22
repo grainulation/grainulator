@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.4] - 2026-09-22
+
+### Fixed
+
+- Retrieve complete claim evidence by ID, persist prediction outcomes for scoring, and show accurate lifecycle, conflict and freshness information.
+- Import active document findings without duplicate or resurrected claims; retain source provenance and label imported assertions conservatively.
+- Preserve CSV/YAML content, escape raw HTML in Markdown exports, and fit HTML reports to mobile screens.
+- Report fetch truncation accurately, correct skill workflows, handle patch-tool paths in the write guard, and preserve unresolved warnings in publication results.
+
+### Verification scope
+
+- Node 24 component/dogfood tests, package/install checks, runtime conformance, and targeted archive/browser regressions passed for the fixes. Release CI verifies Node 24 and 25, lint, runtime, site, dependencies and CodeQL before publication.
+- Codex CLI 0.155.1 still does not dispatch portable-plugin hooks; explicitly compile after mutations. Live Atlassian acceptance remains untested.
+- GitHub release only; no npm publication. Update the installed plugin and restart existing host sessions to load the new build.
+
 ## [2.0.3] - 2026-09-22
 
 ### Fixed

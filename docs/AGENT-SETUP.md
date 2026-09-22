@@ -2,7 +2,7 @@
 
 Grainulator works inside Claude Code and Codex. Choose the agent you use; you do not need to change models.
 
-First, get the [v2.0.3 GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.0.3) and use Node.js 24 or later. This version is not on npm. See [installation](INSTALLATION.md) if you need help getting the release.
+First, get the [v2.0.4 GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.0.4) and use Node.js 24 or later. This version is not on npm. See [installation](INSTALLATION.md) if you need help getting the release.
 
 ## Claude Code
 
