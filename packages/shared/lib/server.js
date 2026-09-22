@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { tryReadStaticFile } from "./fs-safe.cjs";
 /**
  * barn serve — local HTTP server for the barn UI
  *
@@ -353,12 +354,13 @@ ${ROUTES.map((r) => "<tr><td><code>" + r.method + "</code></td><td><code>" + r.p
     return;
   }
 
-  if (existsSync(resolved) && statSync(resolved).isFile()) {
+  const staticContent = tryReadStaticFile(PUBLIC_DIR, resolved);
+  if (staticContent !== null) {
     const ext = extname(resolved);
     res.writeHead(200, {
       "Content-Type": MIME[ext] || "application/octet-stream",
     });
-    res.end(readFileSync(resolved));
+    res.end(staticContent);
     return;
   }
 

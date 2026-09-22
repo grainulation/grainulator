@@ -24,7 +24,9 @@ import { Confluence } from "../lib/confluence.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const TEST_DIR = path.join(os.tmpdir(), `silo-test-${Date.now()}`);
+const TEST_ROOT = fs.mkdtempSync(path.join(os.tmpdir(), "silo-test-"));
+const TEST_DIR = path.join(TEST_ROOT, "fixtures");
+process.on("exit", () => fs.rmSync(TEST_ROOT, { recursive: true, force: true }));
 
 function cleanup() {
   if (fs.existsSync(TEST_DIR)) {

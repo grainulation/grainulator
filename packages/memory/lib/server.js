@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { tryReadStaticFile } from "../../shared/lib/fs-safe.cjs";
 /**
  * silo serve -- local HTTP server for the silo knowledge browser UI
  *
@@ -420,11 +421,12 @@ ${ROUTES.map((r) => "<tr><td><code>" + r.method + "</code></td><td><code>" + r.p
       return;
     }
 
-    if (existsSync(resolved) && statSync(resolved).isFile()) {
+    const staticContent = tryReadStaticFile(PUBLIC_DIR, resolved);
+  if (staticContent !== null) {
       const ext = extname(resolved);
       const mime = MIME[ext] || "application/octet-stream";
       try {
-        const content = readFileSync(resolved);
+        const content = staticContent;
         res.writeHead(200, { "Content-Type": mime });
         res.end(content);
       } catch {

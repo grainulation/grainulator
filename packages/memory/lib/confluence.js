@@ -1,3 +1,4 @@
+import { decodeEntities } from "../../shared/lib/html.cjs";
 /**
  * confluence.js — Confluence backend adapter for silo
  *
@@ -25,7 +26,8 @@ export class Confluence {
    * @param {string} opts.spaceKey   — Default space key
    */
   constructor(opts = {}) {
-    this.baseUrl = (opts.baseUrl || "").replace(/\/+$/, "");
+    this.baseUrl = opts.baseUrl || "";
+    while (this.baseUrl.endsWith("/")) this.baseUrl = this.baseUrl.slice(0, -1);
     this.token = opts.token || "";
     this.email = opts.email || "";
     this.spaceKey = opts.spaceKey || "";
@@ -339,10 +341,5 @@ function _esc(str) {
     .replace(/"/g, "&quot;");
 }
 
-function _unesc(str) {
-  return String(str)
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"');
+function _unesc(str) { return decodeEntities(str);
 }

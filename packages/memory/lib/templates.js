@@ -1,3 +1,4 @@
+import { atomicWriteJSON } from "../../shared/lib/atomic.js";
 /**
  * templates.js — Sprint template management
  *
@@ -35,9 +36,7 @@ export class Templates {
 				savedAt: new Date().toISOString(),
 			};
 			const filePath = path.join(this.store.templatesDir, `${id}.json`);
-			const tmp1 = filePath + ".tmp." + process.pid;
-			fs.writeFileSync(tmp1, JSON.stringify(entry, null, 2) + "\n", "utf-8");
-			fs.renameSync(tmp1, filePath);
+			atomicWriteJSON(filePath, entry);
 
 			this.store._addToIndexUnlocked({
 				id,
@@ -108,13 +107,7 @@ export class Templates {
 			...c,
 			id: c.id || `d${String(i + 1).padStart(3, "0")}`,
 		}));
-		const tmpClaims = claimsPath + ".tmp." + process.pid;
-		fs.writeFileSync(
-			tmpClaims,
-			JSON.stringify(claims, null, 2) + "\n",
-			"utf-8",
-		);
-		fs.renameSync(tmpClaims, claimsPath);
+		atomicWriteJSON(claimsPath, claims);
 
 		// Write sprint config stub
 		const configPath = path.join(targetDir, "sprint.json");
@@ -125,13 +118,7 @@ export class Templates {
 			fromTemplate: template.id,
 			createdAt: new Date().toISOString(),
 		};
-		const tmpConfig = configPath + ".tmp." + process.pid;
-		fs.writeFileSync(
-			tmpConfig,
-			JSON.stringify(config, null, 2) + "\n",
-			"utf-8",
-		);
-		fs.renameSync(tmpConfig, configPath);
+		atomicWriteJSON(configPath, config);
 
 		return {
 			claimsFile: claimsPath,

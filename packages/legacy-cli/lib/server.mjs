@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { tryReadStaticFile } from '../../shared/lib/fs-safe.cjs';
 
 /**
  * grainulation serve — local HTTP server for the ecosystem control center
@@ -12,7 +13,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { createRequire } from 'node:module';
 import { dirname, extname, join, resolve } from 'node:path';
@@ -583,9 +584,10 @@ ${ROUTES.map((r) => `<tr><td><code>${r.method}</code></td><td><code>${r.path}</c
     return;
   }
 
-  if (existsSync(resolved) && statSync(resolved).isFile()) {
+  const staticContent = tryReadStaticFile(PUBLIC_DIR, resolved);
+  if (staticContent !== null) {
     const ext = extname(resolved);
-    const content = readFileSync(resolved);
+    const content = staticContent;
     res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream' });
     res.end(content);
     return;

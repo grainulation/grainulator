@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+import { atomicWrite } from "../lib/atomic.js";
+import { writeNewFile } from "../lib/fs-safe.cjs";
 /**
  * sync-assets — vendor shared grainulation primitives into a consumer site/.
  *
@@ -208,7 +210,7 @@ function main() {
         lines.push(`  (dry-run) overwrite  ${asset.dst}`);
         continue;
       }
-      writeFileSync(dstPath, srcBuf);
+      atomicWrite(dstPath, srcBuf);
       report.overwritten++;
       lines.push(`  overwrite  ${asset.dst}`);
       continue;
@@ -220,7 +222,7 @@ function main() {
       lines.push(`  (dry-run) copy  ${asset.dst}`);
       continue;
     }
-    writeFileSync(dstPath, srcBuf);
+    writeNewFile(dstPath, srcBuf);
     report.copied++;
     lines.push(`  copied  ${asset.dst}`);
   }

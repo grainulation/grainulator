@@ -1,3 +1,4 @@
+import { htmlText } from "../../shared/lib/html.cjs";
 import { withFileTransaction } from "../../shared/lib/transaction.js";
 import { atomicWriteJSON } from "../../shared/lib/atomic.js";
 /**
@@ -74,9 +75,9 @@ export function normalizeClaim(claim) {
     normalized.evidence = "stated";
   }
 
-  // String sanitization: strip HTML tags from content
+  // Extract plain text; rendering consumers still escape for their context.
   if (typeof normalized.content === "string") {
-    normalized.content = normalized.content.replace(/<[^>]*>/g, "");
+    normalized.content = htmlText(normalized.content);
   }
 
   // Normalize source to object form

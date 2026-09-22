@@ -151,7 +151,7 @@ function buildClaimPage(claim) {
   lines.push(`type: "${escYaml(type)}"`);
   lines.push(`evidence: "${escYaml(evidence)}"`);
   lines.push(`status: "${escYaml(status)}"`);
-  if (confidence !== "") lines.push(`confidence: ${confidence}`);
+  if (confidence !== "") lines.push(`confidence: ${Number.isFinite(confidence) ? confidence : JSON.stringify(String(confidence))}`);
   if (tags.length > 0)
     lines.push(`tags: [${tags.map((t) => `"${escYaml(t)}"`).join(", ")}]`);
   lines.push("---");
@@ -170,7 +170,7 @@ function getEvidence(claim) {
 
 function escYaml(str) {
   if (str == null) return "";
-  return String(str).replace(/"/g, '\\"');
+  return JSON.stringify(String(str)).slice(1, -1);
 }
 
 function sanitizeSlug(str) {

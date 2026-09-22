@@ -1,3 +1,5 @@
+import { atomicWrite } from "../../shared/lib/atomic.js";
+import { writeNewFile } from "../../shared/lib/fs-safe.cjs";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -95,7 +97,7 @@ export function initHackathon(root, opts = {}) {
     status: "active",
   };
 
-  fs.writeFileSync(hackPath, JSON.stringify(hackathon, null, 2) + "\n", "utf8");
+  writeNewFile(hackPath, JSON.stringify(hackathon, null, 2) + "\n", "utf8");
   return hackathon;
 }
 
@@ -136,7 +138,7 @@ export function addTeam(root, teamName, question) {
     },
     claims: [],
   };
-  fs.writeFileSync(
+  atomicWrite(
     path.join(absPath, "claims.json"),
     JSON.stringify(initialClaims, null, 2) + "\n",
     "utf8",
@@ -149,7 +151,7 @@ export function addTeam(root, teamName, question) {
   });
 
   const hackPath = path.join(root, HACKATHON_FILE);
-  fs.writeFileSync(hackPath, JSON.stringify(hack, null, 2) + "\n", "utf8");
+  atomicWrite(hackPath, JSON.stringify(hack, null, 2) + "\n", "utf8");
 
   // Also add to orchard.json if it exists
   const orchardPath = path.join(root, "orchard.json");
@@ -164,7 +166,7 @@ export function addTeam(root, teamName, question) {
         question: question || `${teamName}'s hackathon research`,
         assigned_to: teamName,
       });
-      fs.writeFileSync(
+      atomicWrite(
         orchardPath,
         JSON.stringify(config, null, 2) + "\n",
         "utf8",
@@ -283,7 +285,7 @@ export function endHackathon(root) {
   hack.endedAt = new Date().toISOString();
 
   const hackPath = path.join(root, HACKATHON_FILE);
-  fs.writeFileSync(hackPath, JSON.stringify(hack, null, 2) + "\n", "utf8");
+  atomicWrite(hackPath, JSON.stringify(hack, null, 2) + "\n", "utf8");
 
   return leaderboard(root);
 }

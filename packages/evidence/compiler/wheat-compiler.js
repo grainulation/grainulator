@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { withoutElements } from "../../shared/lib/html.cjs";
 /**
  * Wheat Compiler — Bran-based compilation passes for research claims
  *
@@ -917,13 +918,7 @@ function scanSelfContainment(dirs) {
 			const raw = fs.readFileSync(path.join(dir, file), "utf8");
 			// Strip inline script/style bodies so URLs inside JS/CSS data aren't flagged.
 			// Preserve <script src="..."> tags (external scripts we DO want to detect).
-			const content = raw
-				.replace(/(<script(?:\s[^>]*)?)>([\s\S]*?)<\/script>/gi, (_, open) => {
-					return open + "></script>";
-				})
-				.replace(/(<style(?:\s[^>]*)?)>([\s\S]*?)<\/style>/gi, (_, open) => {
-					return open + "></style>";
-				});
+			const content = withoutElements(raw, ["script", "style"], { keepTags: true });
 			const matches = [];
 			let m;
 			while ((m = extPattern.exec(content)) !== null) {
