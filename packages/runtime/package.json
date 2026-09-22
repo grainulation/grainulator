@@ -50,8 +50,8 @@
     "node": ">=20"
   },
   "devDependencies": {
-    "typescript": "^5.7.0",
-    "@types/node": "^22.0.0"
+    "typescript": "^7.0.2",
+    "@types/node": "^26.6.2"
   },
   "publishConfig": {
     "access": "public"
