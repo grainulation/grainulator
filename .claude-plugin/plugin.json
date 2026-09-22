@@ -1,6 +1,6 @@
 {
 	"name": "grainulator",
-	"version": "2.0.3",
+	"version": "2.0.4",
 	"description": "Evidence and verification for model-assisted work. Portable workflows, a unified MCP interface, and clear next actions.",
 	"author": {
 		"name": "Grainulation"
