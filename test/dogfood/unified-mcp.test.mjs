@@ -48,7 +48,7 @@ test("one server exposes canonical metadata with no startup filesystem writes", 
 		(await rpc(handle, "initialize")).result.serverInfo.name,
 		"grainulator",
 	);
-	assert.equal((await rpc(handle, "tools/list")).result.tools.length, 19);
+	assert.equal((await rpc(handle, "tools/list")).result.tools.length, 20);
 	assert.ok(TOOLS.every((tool) => /^[a-z][a-z_]+$/.test(tool.name)));
 	assert.doesNotMatch(JSON.stringify(TOOLS), /\bwheat\b|\bsilo\b|\bmill\b/i);
 	assert.ok(

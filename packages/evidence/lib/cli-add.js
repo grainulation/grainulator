@@ -36,6 +36,7 @@ Options:
   --source-artifact <ref>      Source URL or local evidence reference
   --source-connector <name>    Optional source connector
   --conflicts-with <ids>       Comma-separated conflicting claim IDs
+  --calibration <json>         Structured prediction_id, verdict, outcome, optional delta
   --json             Output as JSON
   --help             Show this help
 
@@ -69,7 +70,19 @@ Examples:
 	const conflicts_with = conflictsRaw
 		? conflictsRaw.split(",").map((value) => value.trim())
 		: undefined;
+	let calibration;
+	const calibrationJson = parseFlag(args, "--calibration");
+	if (calibrationJson !== undefined) {
+		try {
+			calibration = JSON.parse(calibrationJson);
+		} catch {
+			console.error("Invalid --calibration JSON");
+			process.exitCode = 1;
+			return;
+		}
+	}
 	const result = addClaim(dir, {
+		calibration,
 		id,
 		type,
 		topic,

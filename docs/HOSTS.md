@@ -27,3 +27,9 @@ The direct MCP tests above use an explicit workspace path. They do not establish
 Codex Desktop must receive that variable in its own process environment; an export in another terminal is insufficient for an already running app. The alternative is a direct MCP registration using the configuration printed by `grainulator connect --dir /absolute/path/to/project`. That path binds the workspace explicitly and does not require the native plugin variable, but it does not test plugin skills or hooks. Claude's plugin registration does not need this Codex-specific binding.
 
 The native Codex package uses the root Agent Plugin `plugin.json` and `mcp.json`, with a `.codex-plugin/plugin.json` host overlay. Refer to [installation](INSTALLATION.md) and [full-plugin acceptance](PLUGIN-TESTING.md) for the current setup and exact test scope; do not infer a native-plugin pass from the historical direct-MCP results above.
+
+## Codex CLI 0.155.1 hook limitation
+
+Acceptance on 2026-09-22 found `hooks/list` empty for the portable AgentPlugin package. The pinned host [loader](https://github.com/openai/codex/blob/rust-v0.155.1/codex-rs/core-plugins/src/loader.rs#L954) skips its hook sources. Adding a hook manifest field or changing trust does not repair that host branch. Explicitly call `compile` after mutations and before reading current next actions. Native write protection is unavailable on that host/package combination.
+
+The guard handler supports Write/Edit `file_path` and apply_patch `command` patch headers (add/update/delete/move). Direct tests establish handler behavior only; native dispatch requires a host that loads the hook. Shell writes remain outside this guard. Recheck hook discovery for a newer host before claiming automatic protection or refresh.

@@ -1,3 +1,4 @@
+import { escapeMarkdownData } from "./_shared.mjs";
 /**
  * mill format: github-issues
  *
@@ -18,6 +19,7 @@ export const description =
  * @returns {string} Markdown output
  */
 export function convert(compilation) {
+  compilation = escapeMarkdownData(compilation);
   const meta = compilation.meta || {};
   const claims = compilation.claims || [];
   const sprint = meta.sprint || "unknown";

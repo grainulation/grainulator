@@ -36,7 +36,7 @@ The plugin config starts only this server. Its `deepwiki` tool fetches public re
 
 | Tools | Purpose |
 |---|---|
-| `init`, `add_claim`, `compile`, `resolve`, `search`, `status` | Initialize a sprint, record evidence, compile findings, resolve conflicts, and inspect progress |
+| `init`, `add_claim`, `import_claims`, `compile`, `resolve`, `search`, `status` | Initialize a sprint, record evidence, compile findings, resolve conflicts, and inspect progress |
 | `deepwiki`, `sync_log` | Retrieve public repository documentation and inspect publication history |
 | `memory_search`, `memory_list`, `memory_store`, `memory_pull` | Find and reuse evidence across sprints |
 | `memory_packs`, `memory_graph` | Browse knowledge packs and relationships |
@@ -80,3 +80,15 @@ Existing `wheat/*`, `silo/*`, and `mill/*` tool calls and resource URIs remain a
 These aliases apply inside the `grainulator` server. They do not recreate old MCP server IDs, host-generated prefixes, or the removed automatic remote DeepWiki connection. Update custom registrations and allowlists to the tools your host exposes. See the [1.x upgrade checklist](UPGRADING.md).
 
 Changing source code does not update a plugin that is already running. To test these tools, point your agent at this checkout or a local archive, then restart its connection. You do not need to install or publish anything globally.
+
+## Complete records, calibration and document import
+
+Use `search` with `{dir, id}` for an exact complete record, or `{dir, full: true}` for complete filtered records. Search defaults to active records; `include_inactive: true` includes history. Compact results include `truncated`, timestamp and status. CLI equivalents: `search --id <id> --full --include-inactive --json --dir <sprint>`.
+
+`add_claim` accepts an optional `calibration` object: `prediction_id` (an active estimate/risk/recommendation), `verdict` (`correct`, `wrong`, `partial`, `unknown`), `outcome` text, and optional numeric `delta`. The CLI accepts the same JSON through `--calibration`. Analytics uses explicit links scoped to the sprint; partial/unknown outcomes are separate from binary accuracy. Existing legacy references remain readable. Scores describe observations, not proven forecasting skill.
+
+`import_claims` takes `{dir, source, claims}`. This imports **active document findings**, not a historical ledger restore. It skips superseded/resolved/archived records, maps source IDs/conflicts deterministically, retains original provenance/tier as source metadata, and records document assertions at stated evidence. Repeat imports are no-ops; changed source records require a reviewed correction. Local supersession is preserved. CLI: `grainulator import --dir <sprint> --file <claims.json> --source <stable-document-id>`.
+
+Status includes `dir`, `topic_list`, `evidence_distribution` and complete active `conflicts` pairs in addition to existing counts. `active_claims` differs from `total_claims`. Memory search retains lifecycle and resolution fields so historical hits cannot be mistaken for active evidence.
+
+CSV and SQL are flattened presentations, not lossless provenance interchange. Use raw-ledger NDJSON for full record preservation. Markdown exports escape raw HTML text; downstream renderers still own link-scheme, plugin and sanitization policy.

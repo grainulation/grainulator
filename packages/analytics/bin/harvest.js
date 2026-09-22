@@ -154,7 +154,9 @@ function loadSingleSprint(dir) {
       sprint.claims = sprint.claims.claims || [];
     }
   } catch (e) {
-    console.error(`grainulator analytics: could not parse ${claimsPath}: ${e.message}`);
+    console.error(
+      `grainulator analytics: could not parse ${claimsPath}: ${e.message}`,
+    );
   }
 
   const compilationPath = path.join(dir, "compilation.json");
@@ -250,6 +252,7 @@ async function main() {
       });
       const outPath =
         opts.output || path.join(process.cwd(), "retrospective.html");
+      fs.mkdirSync(path.dirname(outPath), { recursive: true });
       fs.writeFileSync(outPath, html, "utf8");
       console.log(`Retrospective written to ${outPath}`);
     },
@@ -314,8 +317,6 @@ async function main() {
     process.exit(0);
   }
 
-
-
   if (opts.command === "serve") {
     // Launch the ESM server module in-process via dynamic import.
     // start() installs its own SIGTERM/SIGINT handlers and crash handlers.
@@ -338,7 +339,9 @@ async function main() {
       const { start } = await import("../lib/server.js");
       start({ port, root, corsOrigin, verbose });
     } catch (err) {
-      console.error(`grainulator analytics: error starting server: ${err.message}`);
+      console.error(
+        `grainulator analytics: error starting server: ${err.message}`,
+      );
       process.exit(1);
     }
     return;

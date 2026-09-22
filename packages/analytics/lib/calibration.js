@@ -12,22 +12,42 @@
 
 export function calibrate(sprints) {
   const allClaims = sprints.flatMap((s) =>
-    s.claims.map((c) => ({ ...c, _sprint: s.name })),
+    s.claims
+      .filter((c) => !c.status || c.status === "active")
+      .map((c) => ({ ...c, _sprint: s.name })),
   );
 
-  const estimates = allClaims.filter((c) => c.type === "estimate");
+  const estimates = allClaims.filter(
+    (c) =>
+      (c.type === "estimate" ||
+        (["risk", "recommendation"].includes(c.type) &&
+          allClaims.some(
+            (outcome) =>
+              outcome._sprint === c._sprint &&
+              outcome.calibration?.prediction_id === c.id,
+          ))) &&
+      !c.calibration,
+  );
   const calibrations = allClaims.filter(
-    (c) => c.id && (c.id.startsWith("cal") || c.type === "calibration"),
+    (c) =>
+      c.calibration ||
+      (c.id && (c.id.startsWith("cal") || c.type === "calibration")),
   );
 
   // Match calibrations to estimates
   const scored = [];
   for (const cal of calibrations) {
-    const refs = cal.references || cal.refs || [];
+    const refs = cal.calibration
+      ? [cal.calibration.prediction_id]
+      : cal.references || cal.refs || [];
     const matchedEstimates = estimates.filter(
       (e) =>
-        refs.includes(e.id) ||
-        (cal.tags && e.tags && cal.tags.some((t) => e.tags.includes(t))),
+        e._sprint === cal._sprint &&
+        (refs.includes(e.id) ||
+          (!refs.length &&
+            cal.tags &&
+            e.tags &&
+            cal.tags.some((t) => e.tags.includes(t)))),
     );
 
     for (const est of matchedEstimates) {
@@ -35,19 +55,33 @@ export function calibrate(sprints) {
         estimateId: est.id,
         calibrationId: cal.id,
         sprint: est._sprint,
-        estimateText: est.text || est.claim || est.description,
-        outcomeText: cal.text || cal.claim || cal.description,
-        estimateConfidence: est.confidence || null,
-        actualOutcome: cal.outcome || cal.actual || null,
-        accurate: cal.accurate ?? null,
-        delta: cal.delta ?? null,
+        estimateText: est.content || est.text || est.claim || est.description,
+        outcomeText: cal.content || cal.text || cal.claim || cal.description,
+        estimateConfidence: est.confidence ?? null,
+        actualOutcome:
+          cal.calibration?.outcome ?? cal.outcome ?? cal.actual ?? null,
+        accurate: cal.calibration
+          ? ({ correct: true, wrong: false }[cal.calibration.verdict] ?? null)
+          : (cal.accurate ?? null),
+        verdict:
+          cal.calibration?.verdict ??
+          (cal.accurate === true
+            ? "correct"
+            : cal.accurate === false
+              ? "wrong"
+              : "unknown"),
+        delta: cal.calibration?.delta ?? cal.delta ?? null,
       });
     }
   }
 
   // Unmatched estimates -- predictions with no follow-up
-  const scoredEstimateIds = new Set(scored.map((s) => s.estimateId));
-  const unmatched = estimates.filter((e) => !scoredEstimateIds.has(e.id));
+  const scoredEstimateIds = new Set(
+    scored.map((s) => `${s.sprint}\0${s.estimateId}`),
+  );
+  const unmatched = estimates.filter(
+    (e) => !scoredEstimateIds.has(`${e._sprint}\0${e.id}`),
+  );
 
   // Compute aggregate stats
   const accurateCount = scored.filter((s) => s.accurate === true).length;
@@ -63,6 +97,7 @@ export function calibrate(sprints) {
     low: { total: 0, accurate: 0 },
   };
   for (const s of scored) {
+    if (typeof s.accurate !== "boolean") continue;
     const conf = s.estimateConfidence;
     let bucket = "medium";
     if (typeof conf === "number") {
@@ -95,6 +130,10 @@ export function calibrate(sprints) {
       matched: scored.length,
       unmatched: unmatched.length,
       accuracyRate,
+      correct: accurateCount,
+      wrong: inaccurateCount,
+      partial: scored.filter((s) => s.verdict === "partial").length,
+      unknown: scored.filter((s) => s.verdict === "unknown").length,
       brierScore: brierData.score,
     },
     calibrationByConfidence: calibrationScore,
@@ -105,12 +144,16 @@ export function calibrate(sprints) {
       calibrationId: s.calibrationId,
       sprint: s.sprint,
       accurate: s.accurate,
+      verdict: s.verdict,
+      estimateText: s.estimateText,
+      outcomeText: s.outcomeText,
+      actualOutcome: s.actualOutcome,
       delta: s.delta,
     })),
     unmatchedEstimates: unmatched.map((e) => ({
       id: e.id,
       sprint: e._sprint,
-      text: e.text || e.claim || e.description,
+      text: e.content || e.text || e.claim || e.description,
       age: e.created ? daysSince(e.created) : null,
     })),
     insight: generateInsight(

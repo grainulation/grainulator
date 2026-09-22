@@ -1,8 +1,9 @@
 ---
 name: analytics
 description: Sprint analytics — type distributions, stale claims, velocity, prediction scoring
-tools:
+allowed-tools:
   - mcp__grainulator__status
+  - mcp__plugin_grainulator_grainulator__status
   - Bash
   - Read
 ---
@@ -20,7 +21,7 @@ Optional: `--full` to generate an HTML retrospective report. `--calibrate` to ru
 ## Instructions
 
 1. **Detect the sprint directory**:
-   - Run `grainulator.status` to get the current sprint metadata.
+   - Honor the explicit user directory, active sprint in AGENTS.md, or configured task context before checking cwd. Pass the resolved `dir` to `grainulator.status`.
    - Identify the sprint directory from the status output (the directory containing `claims.json`).
    - If no active sprint is found, check the current working directory for a `claims.json` file.
    - If still not found, stop and tell the user: "No active sprint detected. Run `/init` to start one."
@@ -33,10 +34,10 @@ Optional: `--full` to generate an HTML retrospective report. `--calibrate` to ru
 
 3. **Run stale claim detection**:
    - Execute: `grainulator analytics decay <dir> --days 7`
-   - This flags claims that haven't been updated, corroborated, or challenged in 7+ days.
+   - This checks age since creation/update or a linked full-support witness. Partial support and contradictions do not renew freshness. It reports volatile-evidence stale claims and older decaying claims separately.
    - Capture the list of stale claim IDs and their ages.
 
-4. **Display the analytics summary**:
+4. Run `grainulator analytics velocity <dir> --json`, then **display the analytics summary**:
 
    ```
    Analytics: <sprint-slug>
@@ -50,25 +51,24 @@ Optional: `--full` to generate an HTML retrospective report. `--calibrate` to ru
      stated: <n>  |  web: <n>  |  documented: <n>  |  tested: <n>  |  production: <n>
 
    Weak areas:
-     - <list any evidence tiers with 0 claims, or types with heavy concentration>
-     - <flag if >60% of claims share the same type (type monoculture)>
-     - <flag if >50% of evidence is "stated" or "web" (weak evidence base)>
+     - <material gaps relative to the task, not missing tiers or a quota>
+     - <a stated stakeholder constraint can be appropriate evidence of that requirement>
 
    Stale claims (<n> total):
      - <id>: "<summary>" — <age> days stale
      - ...
 
    Velocity:
-     <output from analyze, e.g. claims/day, time between phases>
+     <actual output from velocity>
    ```
 
 5. **Suggest full retrospective**:
    - Tell the user they can generate a full HTML retrospective report:
      ```
      For a full retrospective report:
-       grainulator analytics report <dir> -o output/analytics.html
+       grainulator analytics report <dir> -o <dir>/output/analytics.html
      ```
-   - If the user passed `--full`, run the report command directly and write the output to `output/analytics.html`.
+   - If the user passed `--full`, run the report command directly and write the output to `<dir>/output/analytics.html` (use an absolute resolved directory).
 
 6. **Recommend calibration if sprint is complete**:
    - If the sprint appears to be in a late phase (has recommendations, has a brief, or the user mentioned shipping), suggest:
@@ -94,7 +94,7 @@ Optional: `--full` to generate an HTML retrospective report. `--calibrate` to ru
    Tailor the suggestions:
    - Stale claims exist -> suggest `/challenge` or `/research` on the stalest
    - Weak evidence base -> suggest `/witness` or `/research`
-   - Type monoculture -> suggest `/challenge` to diversify
+   - Type concentration -> assess whether the task actually requires another perspective; do not add filler claims
    - Sprint looks healthy -> suggest `/brief` or `/present`
 
 ## Host access
@@ -103,6 +103,8 @@ Use available `grainulator` MCP tools, passing the active sprint `dir` explicitl
 
 ## Next-step output
 
-After a meaningful pass, use the current compiler's `next_actions` to present exactly two bullet lists labeled **Auto** and **Manual**. Auto is work the agent can continue under existing authorization. Manual is only work requiring the user's decision, access, or action. Classify using the current request and constraints; compiler suggestions never grant permission. Continue authorized Auto work without asking again.
+For standalone fetch, setup, or read-only orchestration without an evidence sprint, derive next steps from that task. Do not initialize or compile an unrelated ledger just to produce this footer.
+
+When working in an evidence sprint, use the current compiler's `next_actions` to present exactly two bullet lists labeled **Auto** and **Manual**. Auto is work the agent can continue under existing authorization. Manual is only work requiring the user's decision, access, or action. Classify using the current request and constraints; compiler suggestions never grant permission. Continue authorized Auto work without asking again.
 
 Keep 2–3 useful actions total when available, use short concrete labels and commands where useful, and show `None.` for an empty group. Do not invent work to fill a quota. Never omit next steps merely because compilation is ready or the answer should be brief. Refresh stale compilation first and exclude work the user removed from scope. When the user asks only for next steps, output only these two lists: no findings recap, counts, reasons, or offer to continue.

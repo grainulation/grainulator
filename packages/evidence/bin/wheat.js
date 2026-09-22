@@ -65,7 +65,12 @@ const subArgs = args.slice(1);
 
 // ─── Help / Version ──────────────────────────────────────────────────────────
 
-if (!subcommand || subcommand === "help" || subcommand === "--help" || subcommand === "-h") {
+if (
+	!subcommand ||
+	subcommand === "help" ||
+	subcommand === "--help" ||
+	subcommand === "-h"
+) {
 	console.log(`Grainulator evidence v${VERSION} — Evidence operations
 
 Usage:
@@ -76,6 +81,7 @@ Commands:
   init       Bootstrap a new research sprint in this repo
   compile    Validate and compile claims.json
   add        Add a typed claim to the sprint
+  import     Import active document findings
   search     Search claims by topic, type, evidence, or text
   resolve    Resolve a conflict between two claims
   guard      PreToolUse guard hook (used by Claude Code)
@@ -110,7 +116,9 @@ if (subcommand === "--version" || subcommand === "-v") {
 if (subArgs.includes("--help") || subArgs.includes("-h")) {
 	const { showCommandHelp } = await import("../lib/cli-help.js");
 	if (await showCommandHelp(subcommand)) process.exit(0);
-	console.error(`Grainulator: unknown command: ${subcommand}\nRun "grainulator evidence --help" for available commands.`);
+	console.error(
+		`Grainulator: unknown command: ${subcommand}\nRun "grainulator evidence --help" for available commands.`,
+	);
 	process.exit(1);
 }
 
@@ -137,6 +145,7 @@ if (subcommand === "mcp") {
 		quickstart: "../lib/quickstart.js",
 		compile: "../lib/compiler.js",
 		add: "../lib/cli-add.js",
+		import: "../lib/cli-import.js",
 		search: "../lib/cli-search.js",
 		resolve: "../lib/cli-resolve.js",
 		guard: "../lib/guard.js",
@@ -149,7 +158,9 @@ if (subcommand === "mcp") {
 
 	// ─── wheat migrate (not yet implemented) ────────────────────────────────────
 	if (subcommand === "migrate") {
-		console.error("No automatic ledger format migration is provided. Existing compatible ledgers can be read directly.");
+		console.error(
+			"No automatic ledger format migration is provided. Existing compatible ledgers can be read directly.",
+		);
 		process.exit(1);
 	}
 
@@ -189,6 +200,9 @@ if (subcommand === "mcp") {
 			break;
 		case "compile":
 			handler = await import("../lib/compiler.js");
+			break;
+		case "import":
+			handler = await import("../lib/cli-import.js");
 			break;
 		case "add":
 			handler = await import("../lib/cli-add.js");

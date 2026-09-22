@@ -1,3 +1,4 @@
+import { escapeMarkdownData } from "./_shared.mjs";
 /**
  * mill format: markdown
  *
@@ -17,6 +18,7 @@ export const description = "Clean Markdown document from compilation data";
  * @returns {string} Markdown output
  */
 export function convert(compilation) {
+  compilation = escapeMarkdownData(compilation);
   const lines = [];
   const meta = compilation.meta || {};
   const claims = compilation.claims || [];

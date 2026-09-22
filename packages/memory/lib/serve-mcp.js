@@ -206,7 +206,7 @@ export const TOOLS = [
 					type: "string",
 					enum: ["auto", "full", "concise", "meta-only"],
 					description:
-						"auto (default) tries concise and falls back to full on failed quality. concise caps body at 2KB. meta-only returns only title + description. full returns all extracted paragraphs.",
+						"auto (default) uses concise output and retries only failed, body-truncated extraction. concise caps body at 2KB. meta-only returns title + description. full remains bounded; inspect truncated and warnings.",
 				},
 				cache: {
 					type: "boolean",
@@ -278,6 +278,9 @@ export function createHandler({ storeDir } = {}) {
 			count: results.length,
 			claims: results.map((r) => ({
 				id: r.claim.id,
+				status: r.claim.status || "active",
+				resolved_by: r.claim.resolved_by ?? null,
+				resolution: r.claim.resolution ?? null,
 				type: r.claim.type,
 				topic: r.claim.topic,
 				evidence: r.claim.evidence,
@@ -417,6 +420,9 @@ export function createHandler({ storeDir } = {}) {
 					count: results.length,
 					related: results.map((r) => ({
 						id: r.claim.id,
+						status: r.claim.status || "active",
+						resolved_by: r.claim.resolved_by ?? null,
+						resolution: r.claim.resolution ?? null,
 						type: r.claim.type,
 						topic: r.claim.topic,
 						content: (r.claim.content || "").slice(0, 200),
@@ -435,6 +441,9 @@ export function createHandler({ storeDir } = {}) {
 					count: results.length,
 					claims: results.map((r) => ({
 						id: r.claim.id,
+						status: r.claim.status || "active",
+						resolved_by: r.claim.resolved_by ?? null,
+						resolution: r.claim.resolution ?? null,
 						type: r.claim.type,
 						content: (r.claim.content || "").slice(0, 200),
 						source: r.source,

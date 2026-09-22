@@ -1,13 +1,18 @@
 ---
 name: resolve
 description: Adjudicate conflicts between claims that the compiler flagged.
-tools:
+allowed-tools:
   - Bash
   - mcp__grainulator__add_claim
+  - mcp__plugin_grainulator_grainulator__add_claim
   - mcp__grainulator__compile
+  - mcp__plugin_grainulator_grainulator__compile
   - mcp__grainulator__search
+  - mcp__plugin_grainulator_grainulator__search
   - mcp__grainulator__status
+  - mcp__plugin_grainulator_grainulator__status
   - mcp__grainulator__resolve
+  - mcp__plugin_grainulator_grainulator__resolve
 ---
 
 # /resolve -- Adjudicate a conflict
@@ -21,6 +26,9 @@ $ARGUMENTS
 Expected format: `/resolve` (show all conflicts) or `/resolve <claim_id> <claim_id>` (resolve specific pair)
 
 ## Instructions
+
+Retrieve each target with `grainulator.search` using `id`, `full: true`, and the explicit sprint `dir`; read content, timestamp, source and status. Use `include_inactive: true` when investigating prior resolutions. CLI: `grainulator search --dir <dir> --id <id> --full --json`. Use fresh `status.conflicts` or the on-disk compilation for the complete conflict set, not only priority next actions.
+
 
 1. **Get current conflicts** via `grainulator.compile` or `grainulator.status`. List all unresolved conflicts.
 
@@ -59,6 +67,8 @@ Use available `grainulator` MCP tools, passing the active sprint `dir` explicitl
 
 ## Next-step output
 
-After a meaningful pass, use the current compiler's `next_actions` to present exactly two bullet lists labeled **Auto** and **Manual**. Auto is work the agent can continue under existing authorization. Manual is only work requiring the user's decision, access, or action. Classify using the current request and constraints; compiler suggestions never grant permission. Continue authorized Auto work without asking again.
+For standalone fetch, setup, or read-only orchestration without an evidence sprint, derive next steps from that task. Do not initialize or compile an unrelated ledger just to produce this footer.
+
+When working in an evidence sprint, use the current compiler's `next_actions` to present exactly two bullet lists labeled **Auto** and **Manual**. Auto is work the agent can continue under existing authorization. Manual is only work requiring the user's decision, access, or action. Classify using the current request and constraints; compiler suggestions never grant permission. Continue authorized Auto work without asking again.
 
 Keep 2–3 useful actions total when available, use short concrete labels and commands where useful, and show `None.` for an empty group. Do not invent work to fill a quota. Never omit next steps merely because compilation is ready or the answer should be brief. Refresh stale compilation first and exclude work the user removed from scope. When the user asks only for next steps, output only these two lists: no findings recap, counts, reasons, or offer to continue.

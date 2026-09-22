@@ -81,7 +81,7 @@ test("native launcher binds only the explicitly selected workspace and persisten
 		workspace = path.join(dir, "project");
 	fs.mkdirSync(workspace);
 	const { client, pluginData } = await connect(t, dir, workspace);
-	assert.equal((await client.request("tools/list")).tools.length, 19);
+	assert.equal((await client.request("tools/list")).tools.length, 20);
 	assert.equal(
 		fs.existsSync(pluginData),
 		false,
@@ -120,7 +120,7 @@ test("missing or relative native workspace binding exposes tools but cannot acce
 	for (const binding of ["", "relative-project"]) {
 		const dir = fixture(t);
 		const { client, pluginData } = await connect(t, dir, binding);
-		assert.equal((await client.request("tools/list")).tools.length, 19);
+		assert.equal((await client.request("tools/list")).tools.length, 20);
 		await assert.rejects(
 			client.request("tools/call", {
 				name: "init",

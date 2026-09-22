@@ -100,6 +100,7 @@ test("mutation reminder covers canonical and plugin-prefixed names plus legacy c
 	for (const name of [
 		"mcp__grainulator__add_claim",
 		"mcp__grainulator__resolve",
+		"mcp__grainulator__import_claims",
 		"mcp__plugin_grainulator_grainulator__add_claim",
 		"mcp__wheat__wheat_add_claim",
 		"mcp__plugin_grainulator_wheat__wheat_resolve",

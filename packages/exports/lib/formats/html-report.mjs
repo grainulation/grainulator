@@ -114,6 +114,10 @@ export function convert(compilation) {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title>
 <style>
+  html { overflow-wrap:anywhere; }
+  .cards, .card { min-width:0; }
+  table { table-layout:fixed; }
+  @media (max-width:480px) { body { padding:1rem !important; } th, td { padding:0.35rem !important; } }
   :root { --bg:#0a0e1a; --surface:#111827; --border:#1e293b; --text:#e2e8f0; --muted:#94a3b8; }
   * { margin:0; padding:0; box-sizing:border-box; }
   body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; line-height:1.6; padding:2rem; }

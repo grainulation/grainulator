@@ -55,7 +55,7 @@ try {
       const list=await client.request('tools/list');assert.ok(list.tools.some(t=>t.name===tool));
       const value=toolJSON(await client.request('tools/call',{name:tool,arguments:{dir:sprint}}));assert.equal(value.status,'ok');if(name==='wheat'||name==='grainulator'){assert.ok(Array.isArray(value.next_actions.auto));assert.ok(Array.isArray(value.next_actions.manual));assert.match(value.next_actions_instruction,/Auto and Manual/);}
       if(name==='grainulator') {
-        assert.equal(list.tools.length,19);assert.ok(list.tools.every(tool=>!tool.name.includes('/')));
+        assert.equal(list.tools.length,20);assert.ok(list.tools.every(tool=>!tool.name.includes('/')));
         assert.equal(toolJSON(await client.request('tools/call',{name:'wheat/status',arguments:{dir:sprint}})).status,'ok');
         assert.equal(toolJSON(await client.request('tools/call',{name:'memory_store',arguments:{dir:sprint,name:'Installed artifact'}})).claimCount,3);
         assert.equal(toolJSON(await client.request('tools/call',{name:'memory_search',arguments:{query:'synthetic'}})).count,1);
