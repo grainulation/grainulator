@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "id": "release-2.0.4-25e6f029114b0232",
+  "id": "release-2.0.4-9c045a433ee0b1d4",
   "version": "2.0.4",
-  "source_sha256": "25e6f029114b0232c9bee2b937b91eb01c46cf498551e44656c33b9970f9c3dc",
+  "source_sha256": "9c045a433ee0b1d4eb1989148c9148c2f4e10d2d0cb17d74c79079b3486a1a79",
   "files": {
     ".claude-plugin/marketplace.json": "0c0a77fe035995eff1c835fc49d436a7655f3151d45b3aac3fe63edffa2a40cc",
     ".claude-plugin/plugin.json": "f8a7a6b837d567ee38056c1c6fc71423642d265fffc86e4aa704b66d6ffb9c5c",
@@ -52,7 +52,7 @@
     "lib/tips-hook.cjs": "9c252e0a95cbd03b9d799d6701c6f3d765cbd47613da54a0da219c460fbf36cf",
     "lib/workspace-config.js": "91d039249c5639f1682ba7eb2f6aa21ab5a506e642dfd709a27b4ce7167ec2f0",
     "mcp.json": "2c8c556298b8ac787d67b68cae25417af81db0278b79cd71a8de3525259a4837",
-    "package.json": "6105293c51f6f013b18e7f6b672612143ad81e9d9a3a6a6dfb5fe7aad62fd23b",
+    "package.json": "ca7f4c6e6d0094afe87f4d4c5b00beb176a8a1b2c46c0c9f1a66e35967db9cb1",
     "packages/analytics/CHANGELOG.md": "486e916c7d1778bb20a14a81efcbfee9c1330f640962fc287b4c5b6a8d426488",
     "packages/analytics/CODE_OF_CONDUCT.md": "90386f504766a8352d15c54f7d31ec87cbb141690fb209b73ba2c7dc24f2ba31",
     "packages/analytics/CONTRIBUTING.md": "6fdc79c6abf1ada36e54a70132ae96952ab9ca5e65b9f43fb63ca8c090a79ede",
@@ -298,7 +298,7 @@
     "packages/runtime/SECURITY.md": "3e12a1dcfb262837a28f74319bd2e995847417746ac4b46d2fdb3559bb988f35",
     "packages/runtime/bin/bean-check.js": "679cff98753265b8bd66a0af2713f18c23e59b5478794738650c07b632cea802",
     "packages/runtime/install.sh": "bc4155d9d86e483a6eaf3d704a0fb5ede8af6462edcd9d1fe105894d4cf2c6c4",
-    "packages/runtime/package.json": "88843ac2337a64295016f6168b5e75c7b4c720731d72e3a5cee4db68e46e37be",
+    "packages/runtime/package.json": "4f3be7104e465b54cbcfc3c86fe4181f73aa1a8c62e502d47cfecaa5090e2271",
     "packages/runtime/schemas/claim.schema.json": "72915ab24c6e29f4b2b3464e5e8eea879ea4c32b94e39faf322abc7d20e4a022",
     "packages/runtime/schemas/lessons.schema.json": "2b4d2aeb90ee4bdfccdb6c0b7e1bd0dcb3cbba933725a0bc69199d0796331266",
     "packages/runtime/schemas/result.schema.json": "47421d5954e773ea986bfdb2e3d698fccd80e68f6da2c2d1dc87cd40b13c6269",
