@@ -28,6 +28,14 @@ import { maybeHint } from "../lib/hints.js";
 import { detectSprints } from "../../shared/tools/detect-sprints.js";
 // Direct manifest generation — avoids subprocess + redundant detectSprints call
 import { buildManifest } from "./generate-manifest.js";
+import {
+	isDigest,
+	MAX_PASSAGE_BYTES_PER_COMPILE,
+	MAX_PASSAGES_PER_COMPILE,
+	quoteInPassage,
+	quoteProblem,
+	readPassage,
+} from "../lib/passages.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -472,6 +480,149 @@ function analyzeCoverage(claims) {
 	return { coverage: result, corroboration };
 }
 
+// ─── Pass 6b: Passage Integrity (audit only; never changes a winner) ─────────
+// A claim may cite `source.quote` from a passage stored at
+// evidence/passages/<source.passage_sha256>.txt. A record is valid when the
+// passage bytes still hash to that name and the quote occurs in them. Valid
+// records are counted and reported; they do not decide conflicts. Support
+// eligibility is read from the input statuses, before auto-resolution.
+const SUPPORT_STATUSES = new Set(["active", "resolved"]);
+const hasPassageFields = (source) =>
+	!!source &&
+	(source.quote !== undefined ||
+		source.passage_sha256 !== undefined ||
+		source.passage !== undefined);
+
+function auditPassages(claims, root) {
+	// Statuses as given, before auto-resolution changes any of them.
+	const inputStatus = new Map(claims.map((c) => [c.id, c.status]));
+	// digest → readPassage result (bytes, never quotes). Digests are read in
+	// sorted order so the byte budget is spent deterministically; once it runs
+	// out, further passages are reported as limit_exceeded without being read.
+	const reads = new Map();
+	let budget = MAX_PASSAGE_BYTES_PER_COMPILE;
+	const digests = [
+		...new Set(
+			claims
+				.map((c) => c?.source?.passage_sha256)
+				.filter((d) => isDigest(d)),
+		),
+	].sort();
+	for (const digest of digests) {
+		let result;
+		if (reads.size >= MAX_PASSAGES_PER_COMPILE || budget <= 0)
+			result = { ok: false, code: "limit_exceeded", bytes: 0 };
+		else result = readPassage(root, digest, budget);
+		budget -= result.bytes || 0;
+		reads.set(digest, result);
+	}
+
+	const integrity = {};
+	const observations = [];
+	const ordered = [...claims]
+		.filter((c) => typeof c.id === "string" && hasPassageFields(c.source))
+		.sort((a, b) => a.id.localeCompare(b.id));
+	for (const claim of ordered) {
+		const { quote, passage_sha256: digest } = claim.source;
+		let reason = null;
+		// Every well-formed digest is observed on disk, whatever the quote, so
+		// the fingerprint covers every referenced passage.
+		const observed = isDigest(digest) ? reads.get(digest) : null;
+		if (claim.source.passage !== undefined) reason = "raw_passage_in_ledger";
+		else if (quote === undefined) reason = "quote_missing";
+		else if (digest === undefined) reason = "passage_missing";
+		else if (!isDigest(digest)) reason = "invalid_digest";
+		else reason = quoteProblem(quote);
+		if (!reason) {
+			if (!observed.ok) reason = observed.code;
+			else if (!quoteInPassage(quote, observed.text))
+				reason = "quote_not_found";
+		}
+		integrity[claim.id] = {
+			valid: !reason,
+			passage_sha256: isDigest(digest) ? digest : null,
+			reason: reason || "ok",
+		};
+		// The fingerprint records what was observed on disk: the content hash of
+		// every passage that could be read, else a stable failure code. A change
+		// to readable bytes is always visible; bytes that were not read
+		// (oversized, unreadable, over the budget) are covered only by that code.
+		observations.push(
+			[
+				claim.id,
+				isDigest(digest) ? digest : "-",
+				observed ? observed.code || "ok" : "-",
+				observed?.actual || "-",
+				reason || "ok",
+			].join(":"),
+		);
+	}
+
+	const byId = new Map(claims.map((c) => [c.id, c]));
+	const supports = (w, target) =>
+		w.id !== target &&
+		w.source?.witnessed_claim === target &&
+		w.source.relationship === "full_support" &&
+		SUPPORT_STATUSES.has(inputStatus.get(w.id)) &&
+		integrity[w.id]?.valid === true;
+	const record = (c) => ({
+		claim: c.id,
+		passage_sha256: c.source.passage_sha256,
+		quote: c.source.quote,
+	});
+	// A claim's own valid record supports it unless it is only partial support;
+	// full_support witnesses with valid records support their target.
+	const supportOf = (id) => {
+		const own = byId.get(id);
+		const items = [];
+		if (
+			own &&
+			integrity[id]?.valid &&
+			own.source.relationship !== "partial_support"
+		)
+			items.push(record(own));
+		for (const w of claims) if (supports(w, id)) items.push(record(w));
+		return items.sort((a, b) => a.claim.localeCompare(b.claim));
+	};
+
+	const distinct = {};
+	for (const w of claims) {
+		const target = w.source?.witnessed_claim;
+		if (typeof target !== "string" || !byId.has(target) || !supports(w, target))
+			continue;
+		if (!distinct[target]) distinct[target] = new Set();
+		distinct[target].add(w.source.passage_sha256);
+	}
+	const distinctSupportingPassages = Object.fromEntries(
+		Object.keys(distinct)
+			.sort()
+			.map((id) => [id, distinct[id].size]),
+	);
+
+	return {
+		integrity,
+		distinctSupportingPassages,
+		supportOf,
+		fingerprint: `sha256:${crypto
+			.createHash("sha256")
+			.update(JSON.stringify(observations))
+			.digest("hex")}`,
+	};
+}
+
+/** Fingerprint of every referenced passage as it is on disk now. */
+export function passagesFingerprint(claimsData, root) {
+	return auditPassages(claimsData?.claims || [], root).fingerprint;
+}
+
+// Raw passage text never goes into compiled output; only the digest and quote.
+function compiledSource(source) {
+	if (!source || typeof source !== "object" || !("passage" in source))
+		return source;
+	const { passage, ...rest } = source;
+	return rest;
+}
+
 // ─── Pass 7: Readiness Check ─────────────────────────────────────────────────
 function checkReadiness(errors, unresolvedConflicts, coverage) {
 	const blockers = [...errors];
@@ -560,7 +711,7 @@ function canonicalJSON(obj) {
 }
 
 // ─── Compilation Certificate ─────────────────────────────────────────────────
-export const COMPILER_VERSION = "0.2.1";
+export const COMPILER_VERSION = "0.3.0";
 export function generateCertificate(claimsData, compilerVersion = COMPILER_VERSION) {
 	const hash = crypto
 		.createHash("sha256")
@@ -791,16 +942,45 @@ function compile(inputPath, outputPath, dir, opts = {}) {
 		(c) => c.status === "active" || c.status === "resolved",
 	);
 
+	// Audit before auto-resolution mutates statuses (support eligibility uses the
+	// input statuses). Passages live beside claims.json.
+	const passages = auditPassages(claims, path.dirname(path.resolve(claimsPath)));
+	certificate.passages_hash = passages.fingerprint;
+	let conflictSupport = [];
+
 	if (allValidationErrors.length === 0) {
 		const sortedClaims = sortByEvidenceTier(claims);
 		const conflicts = detectConflicts(sortedClaims);
 		conflictGraph = autoResolve(claims, conflicts);
+		for (const r of conflictGraph.resolved) r.basis = "tier";
+		conflictSupport = [
+			...conflictGraph.resolved.map((r) => ["resolved", r.winner, r.loser]),
+			...conflictGraph.unresolved.map((u) => ["unresolved", u.claimA, u.claimB]),
+		]
+			.map(([outcome, a, b]) => {
+				const [x, y] = [a, b].sort();
+				const support = { [x]: passages.supportOf(x), [y]: passages.supportOf(y) };
+				return {
+					claims: [x, y],
+					outcome,
+					support,
+					both_supported: support[x].length > 0 && support[y].length > 0,
+				};
+			})
+			.sort((p, q) => p.claims.join("\0").localeCompare(q.claims.join("\0")));
 		coverageResult = analyzeCoverage(claims);
 		readiness = checkReadiness(
 			[],
 			conflictGraph.unresolved,
 			coverageResult.coverage,
 		);
+		for (const [id, entry] of Object.entries(passages.integrity))
+			if (!entry.valid)
+				readiness.warnings.push({
+					code: "W_PASSAGE_INTEGRITY",
+					message: `Claim ${id}: quoted passage record is not usable (${entry.reason}); it counts as no passage support.`,
+					claims: [id],
+				});
 		resolvedClaims = claims.filter(
 			(c) => c.status === "active" || c.status === "resolved",
 		);
@@ -854,7 +1034,7 @@ function compile(inputPath, outputPath, dir, opts = {}) {
 			confidence: c.confidence,
 			status: c.status,
 			phase_added: c.phase_added,
-			source: c.source,
+			source: compiledSource(c.source),
 			conflicts_with: c.conflicts_with,
 			resolved_by: c.resolved_by,
 			resolution: c.resolution,
@@ -863,6 +1043,9 @@ function compile(inputPath, outputPath, dir, opts = {}) {
 		conflict_graph: conflictGraph,
 		coverage: coverageResult.coverage,
 		corroboration: coverageResult.corroboration,
+		passage_integrity: passages.integrity,
+		distinct_supporting_passages: passages.distinctSupportingPassages,
+		conflict_support: conflictSupport,
 		phase_summary: phaseSummary,
 		sprints: sprintSummaries,
 		sprint_meta: {
@@ -1369,14 +1552,30 @@ function computeNextActions(comp) {
 	const phases = comp.phase_summary || {};
 	const corroboration = comp.corroboration || {};
 
+	// ── Priority 0: Conflicts with quoted passage support on both sides ─────
+	// Same policy as lib/next-actions.cjs: the user decides these.
+	const userDecides = new Set();
+	for (const c of comp.conflict_support || []) {
+		if (!c.both_supported) continue;
+		userDecides.add(JSON.stringify(c.claims));
+		actions.push({
+			priority: "P0-USER",
+			score: 1001,
+			command: `/resolve ${c.claims[0]} ${c.claims[1]}`,
+			reason: `Both ${c.claims[0]} and ${c.claims[1]} quote a stored source passage; compare both quotes and decide (${c.outcome}).`,
+			impact: "A person, not the evidence tier or a model, settles the disagreement.",
+		});
+	}
+
 	// ── Priority 1: Unresolved conflicts (blocks compilation) ──────────────
 	if (conflicts.unresolved.length > 0) {
 		conflicts.unresolved.forEach((c) => {
+			if (userDecides.has(JSON.stringify([c.claimA, c.claimB].sort()))) return;
 			actions.push({
 				priority: "P0-BLOCKER",
 				score: 1000,
-				command: `/resolve ${c.claim_a} ${c.claim_b}`,
-				reason: `Unresolved conflict between ${c.claim_a} and ${c.claim_b} — blocks compilation.`,
+				command: `/resolve ${c.claimA} ${c.claimB}`,
+				reason: `Unresolved conflict between ${c.claimA} and ${c.claimB} — blocks compilation.`,
 				impact: "Unblocks compilation. Status changes from BLOCKED to READY.",
 			});
 		});

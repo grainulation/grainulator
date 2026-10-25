@@ -13,7 +13,30 @@ function nextActions(compilation = {}) {
 		(c) =>
 			!excluded.has(c.topic) && !["superseded", "refuted"].includes(c.status),
 	);
-	const conflicts = compilation.conflict_graph?.unresolved || [];
+	// Conflicts where both sides cite an intact quoted passage are where an
+	// automatic or model judgment is least reliable; they go to the user, even
+	// when the evidence tier already settled them.
+	const manual = [];
+	const bothSupported = (compilation.conflict_support || []).filter(
+		(c) => c.both_supported,
+	);
+	if (bothSupported.length)
+		manual.push({
+			command: "/resolve",
+			label: "Decide conflicts where both sides quote a source",
+			reason: `${bothSupported.length} conflict(s) have quoted passage support on both sides; compare both quotes before accepting either claim.`,
+			claim_ids: [...new Set(bothSupported.flatMap((c) => c.claims))].sort(),
+		});
+	const userDecides = new Set(
+		bothSupported.map((c) => JSON.stringify(c.claims)),
+	);
+	const conflicts = (compilation.conflict_graph?.unresolved || []).filter(
+		(c) =>
+			!userDecides.has(
+				JSON.stringify([c.claimA, c.claimB].filter(Boolean).sort()),
+			),
+	);
+	const unresolvedCount = (compilation.conflict_graph?.unresolved || []).length;
 	const errors = compilation.errors || [];
 	if (conflicts.length) {
 		const ids = [
@@ -30,20 +53,20 @@ function nextActions(compilation = {}) {
 			ids,
 		);
 	}
-	if (errors.length && !conflicts.length)
+	if (errors.length && !unresolvedCount)
 		add(
 			"grainulator compile --summary",
 			"Repair the reported validation errors",
 			`${errors[0].code || "Validation"}: ${errors[0].message || "The compiler cannot validate the ledger."} Fix the reported input, then recompile.`,
 			errors.flatMap((e) => e.claims || []),
 		);
-	if (errors.length || conflicts.length) {
+	if (errors.length || unresolvedCount) {
 		add(
 			"grainulator compile --summary --check",
 			"Recheck after the fixes",
 			"Run after repairing the blockers; a passing ledger check is still not product acceptance.",
 		);
-		return { auto: actions.slice(0, 3), manual: [] };
+		return { auto: actions.slice(0, 3), manual };
 	}
 	const topics = Object.entries(compilation.coverage || {}).filter(
 		([topic, data]) =>
@@ -115,7 +138,7 @@ function nextActions(compilation = {}) {
 			"Prepare the decision brief after gap review",
 			"Use the current compiled evidence and disclose remaining limitations. This does not authorize publication.",
 		);
-	return { auto: actions.slice(0, 3), manual: [] };
+	return { auto: actions.slice(0, 3), manual };
 }
 
 const nextActionsInstruction =
