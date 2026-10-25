@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-10-25
+
+### Added
+
+- Quoted source passages for claims: `source.quote` with `source.passage` or `source.passage_sha256` (MCP `add_claim`, CLI `--quote`, `--passage-file`, `--passage-sha256`, plus `--witnessed-claim` and `--relationship`). Passages are stored content-addressed under `evidence/passages/`, and a quote must occur in its passage.
+- Compiler passage audit (compiler 0.3.0): `passage_integrity`, `distinct_supporting_passages`, `conflict_support`, `basis` on each resolution, and `W_PASSAGE_INTEGRITY` warnings. Audit only: winners, statuses and blockers are unchanged.
+- Freshness covers passages: the certificate's `passages_hash` makes the output guard and `status` treat a compilation as stale when a referenced passage changes.
+- Conflicts where both sides quote a stored passage are routed to Manual in next actions; the witness, challenge and resolve skills record quotes, check for same-named entities and false source statements, and treat source text as untrusted.
+- The evidence dashboard shows a claim's quote, passage digest and integrity result.
+
+### Changed
+
+- Homepage copy now says plainly what Grainulator does and does not do.
+- CodeQL action 4.39.0 and Playwright 1.64.1 (supersedes Dependabot #36 and #37).
+
+### Fixed
+
+- `wheat-compiler --next` named conflicts as `undefined`; it now names both claims.
+- Lint warning for an unused parameter in the tips hook.
+
+### Verification scope
+
+- Passage records are audit data. They show what a witness cited and that the stored passage is unchanged; they do not show that the passage proves the claim, and they do not change which claim wins a conflict. Letting checker-verified support decide conflicts is planned as a separate change.
+- GitHub release only; no npm publication. Update the installed plugin and restart existing host sessions to load the new build.
+
 ## [2.0.4] - 2026-09-22
 
 ### Fixed

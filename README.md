@@ -20,7 +20,7 @@
   <a href="https://github.com/grainulation/grainulator/actions/workflows/ci.yml"><img src="https://github.com/grainulation/grainulator/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI on main"></a>
   <a href="docs/INSTALLATION.md"><img src="https://img.shields.io/badge/node-%E2%89%A524-339933?logo=nodedotjs&logoColor=white" alt="Node.js 24 or later"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license"></a>
-  <a href="https://deepwiki.com/grainulation/grainulator"><img src="https://deepwiki.com/badge.svg" alt="Docs on DeepWiki"></a>
+  <a href="https://deepwiki.com/grainulation/grainulator"><img src="https://img.shields.io/badge/docs-DeepWiki-1f6feb" alt="Docs on DeepWiki"></a>
 </p>
 
 <p align="center">
@@ -55,7 +55,7 @@ Requires **Node.js 24+**. Node 25 is the development default.
 **Upgrading from 1.x?** Follow the [migration checklist](docs/UPGRADING.md) to update the plugin and keep your existing research data.
 
 ```sh
-git clone --branch v2.0.4 https://github.com/grainulation/grainulator.git
+git clone --branch v2.1.0 https://github.com/grainulation/grainulator.git
 cd grainulator
 npm ci --ignore-scripts
 node bin/grainulator.js doctor
@@ -65,7 +65,7 @@ To use Grainulator inside your agent, follow the **[Claude Code or Codex setup g
 
 The local research playground remains available through `node bin/grainulator.js preview`. It runs models using a provider account you configure locally.
 
-> **Distribution:** v2.0.4 is a [GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.0.4), not an npm registry release. For a separate local installation, follow the [archive installation guide](docs/INSTALLATION.md).
+> **Distribution:** v2.1.0 is a [GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.1.0), not an npm registry release. For a separate local installation, follow the [archive installation guide](docs/INSTALLATION.md).
 
 ### Other agents: connect through MCP
 
