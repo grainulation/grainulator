@@ -6,9 +6,8 @@
  * Zero npm dependencies.
  */
 
-import fs from "node:fs";
 import { addClaim, VALID_EVIDENCE, VALID_TYPES } from "./claims-ops.js";
-import { PASSAGE_MAX_BYTES } from "./passages.js";
+import { PASSAGE_MAX_BYTES, readBoundedRegularFile } from "./passages.js";
 
 function parseFlag(args, flag) {
 	const idx = args.indexOf(flag);
@@ -18,13 +17,15 @@ function parseFlag(args, flag) {
 
 // Reads a regular file of at most PASSAGE_MAX_BYTES as UTF-8 text.
 function readPassageFile(file) {
-	const st = fs.statSync(file);
-	if (!st.isFile()) throw new Error(`--passage-file ${file} is not a regular file.`);
-	if (st.size > PASSAGE_MAX_BYTES)
-		throw new Error(
-			`--passage-file ${file} is ${st.size} bytes; the limit is ${PASSAGE_MAX_BYTES}.`,
-		);
-	return fs.readFileSync(file, "utf8");
+	const read = readBoundedRegularFile(file, PASSAGE_MAX_BYTES);
+	if (read.ok) return read.data.toString("utf8");
+	const why = {
+		missing: "does not exist",
+		symlink: "is a symbolic link",
+		not_regular: "is not a regular file",
+		too_large: `is larger than ${PASSAGE_MAX_BYTES} bytes`,
+	};
+	throw new Error(`--passage-file ${file} ${why[read.code] || "cannot be read"}.`);
 }
 
 export async function run(dir, args) {

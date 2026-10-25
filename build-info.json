@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "id": "release-2.1.0-0498d7bcc5536eb9",
+  "id": "release-2.1.0-d8c2cbadb6b1e9e1",
   "version": "2.1.0",
-  "source_sha256": "0498d7bcc5536eb97fb5d6f9becbb44991baae269f575b2f9c11faded37239a2",
+  "source_sha256": "d8c2cbadb6b1e9e1631073a461b2274ac3f7dea9aceeb635efe585f814df0f16",
   "files": {
     ".claude-plugin/marketplace.json": "11d1d8ed772afc05cd09605128b2887c175dfb5b9ce72dd28f9b6c0e9c8daae6",
     ".claude-plugin/plugin.json": "fddab0ca31e6768a8eaa7e7794d15bfbb822580516557f08a12169eb12dac018",
@@ -89,7 +89,7 @@
     "packages/evidence/compiler/generate-manifest.js": "8415578ed3b9abada827f97a6cbe2d07e1874f5142417010330bedb83aeb6b72",
     "packages/evidence/compiler/wheat-compiler.js": "c5ff5b351a1436234960d3cdea93e5b0a60e482318fa598709b4eda42ebadf95",
     "packages/evidence/lib/claims-ops.js": "6a4fe184f46366d645d01aeee0537a7170f473e209d55792f6f456d20c7aa12c",
-    "packages/evidence/lib/cli-add.js": "8ffc6189833c2a7c56ea99fac2bd4c2f48fd7a0f08233c48d8d5d01b84faa239",
+    "packages/evidence/lib/cli-add.js": "f9fb5e03a6953d833d1ff3547422f2639c33fffb6981f1e90225bac980640b9a",
     "packages/evidence/lib/cli-help.js": "06e1a5e6328c80ba9bdfa4adbbb68ed4b581f106167704247f01045522763382",
     "packages/evidence/lib/cli-import.js": "942c1cefd0b45ca723298e16c99edbaf005b993ca3392b256223e8057358ab75",
     "packages/evidence/lib/cli-resolve.js": "0e0f71f1d84e653f2d8ac16c244f6332f6ca8ec6e0ebd8dc54b341ed19800c7b",
@@ -105,7 +105,7 @@
     "packages/evidence/lib/install-prompt.js": "2c9aea19c7cb50f6cf38b36fd61feadf1cb4f2a1c9a5281054d5481311e0afd8",
     "packages/evidence/lib/load-claims.js": "a0ff93e182d5d11c181229e481275b05d49cd344142011291254938e1d0045d1",
     "packages/evidence/lib/next-actions.cjs": "5acf4a1ac11dc7258c99312ad20e335a608d2456300a9f6446a840ad0314699b",
-    "packages/evidence/lib/passages.js": "c529ed6b64bde9b842c005c826bde479d0d88d9f32b3885715ae657bc5f9ddac",
+    "packages/evidence/lib/passages.js": "c551054e2e23e301937a8702ad0a37e86270618da2696b030d9669abd7d408bb",
     "packages/evidence/lib/quickstart.js": "f8c91876b593aebc5e58b6f229ccaae23d691ab72a047f46c60cd997fb0302f8",
     "packages/evidence/lib/serve-mcp.js": "b081d3aecf1a5e044de7edc2cfe3fc70e12e7af604dceec69df54a156c943278",
     "packages/evidence/lib/server.js": "0abc3cf1d2a09f82496328b4eab110bcbef01d72339c3fd0f6b456abf381804b",

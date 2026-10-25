@@ -104,52 +104,67 @@ export function readPassage(root, digest, budget = PASSAGE_MAX_BYTES) {
 	}
 	if (dirProblem) return { ok: false, code: dirProblem, bytes: 0 };
 	const file = path.join(passageDir(root), `${digest}.txt`);
-	let st;
-	try {
-		st = fs.lstatSync(file);
-	} catch {
-		return { ok: false, code: "missing", bytes: 0 };
-	}
-	if (st.isSymbolicLink()) return { ok: false, code: "symlink", bytes: 0 };
-	if (!st.isFile()) return { ok: false, code: "not_regular", bytes: 0 };
-	if (st.size > PASSAGE_MAX_BYTES)
-		return { ok: false, code: "too_large", bytes: 0 };
 	const limit = Math.min(PASSAGE_MAX_BYTES, Math.max(0, budget));
-	if (st.size > limit) return { ok: false, code: "limit_exceeded", bytes: 0 };
+	const read = readBoundedRegularFile(file, limit);
+	if (!read.ok)
+		return {
+			ok: false,
+			code:
+				read.code === "too_large" && limit < PASSAGE_MAX_BYTES
+					? "limit_exceeded"
+					: read.code,
+			bytes: read.bytes,
+		};
+	const actual = sha256(read.data);
+	if (actual !== digest)
+		return { ok: false, code: "hash_mismatch", actual, bytes: read.bytes };
+	let text;
+	try {
+		text = new TextDecoder("utf-8", { fatal: true }).decode(read.data);
+	} catch {
+		return { ok: false, code: "invalid_utf8", actual, bytes: read.bytes };
+	}
+	return { ok: true, text, actual, bytes: read.bytes };
+}
+
+/**
+ * Read a regular file of at most `limit` bytes. The file is opened first and
+ * every check runs on the open descriptor, so the checks and the read always
+ * concern the same file. Symlinks are refused (O_NOFOLLOW; where the platform
+ * lacks it, by checking the path after opening), special files are refused
+ * without blocking (O_NONBLOCK), and a file that grows past the limit while
+ * being read is refused. Returns { ok: true, data, bytes } or
+ * { ok: false, code, bytes }; filesystem errors become codes.
+ */
+export function readBoundedRegularFile(file, limit) {
 	let fd;
 	try {
 		fd = fs.openSync(file, O_RDONLY | O_NOFOLLOW | O_NONBLOCK);
-	} catch {
-		return { ok: false, code: "unreadable", bytes: 0 };
+	} catch (err) {
+		const code =
+			err.code === "ENOENT"
+				? "missing"
+				: err.code === "ELOOP" || err.code === "EMLINK"
+					? "symlink"
+					: "unreadable";
+		return { ok: false, code, bytes: 0 };
 	}
 	let n = 0;
 	try {
-		if (!fs.fstatSync(fd).isFile())
-			return { ok: false, code: "not_regular", bytes: 0 };
+		const st = fs.fstatSync(fd);
+		if (!st.isFile()) return { ok: false, code: "not_regular", bytes: 0 };
+		if (!O_NOFOLLOW && fs.lstatSync(file).isSymbolicLink())
+			return { ok: false, code: "symlink", bytes: 0 };
+		if (st.size > limit) return { ok: false, code: "too_large", bytes: 0 };
 		// Read at most one byte past the limit, so a file that grew is rejected.
 		const buf = Buffer.alloc(limit + 1);
 		for (;;) {
 			const r = fs.readSync(fd, buf, n, buf.length - n, n);
 			if (r === 0) break;
 			n += r;
-			if (n > limit)
-				return {
-					ok: false,
-					code: limit < PASSAGE_MAX_BYTES ? "limit_exceeded" : "too_large",
-					bytes: n,
-				};
+			if (n > limit) return { ok: false, code: "too_large", bytes: n };
 		}
-		const bytes = buf.subarray(0, n);
-		const actual = sha256(bytes);
-		if (actual !== digest)
-			return { ok: false, code: "hash_mismatch", actual, bytes: n };
-		let text;
-		try {
-			text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-		} catch {
-			return { ok: false, code: "invalid_utf8", actual, bytes: n };
-		}
-		return { ok: true, text, actual, bytes: n };
+		return { ok: true, data: buf.subarray(0, n), bytes: n };
 	} catch {
 		return { ok: false, code: "unreadable", bytes: n };
 	} finally {
