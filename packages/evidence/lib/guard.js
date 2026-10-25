@@ -16,7 +16,8 @@
 
 import fs from "fs";
 import path from "path";
-import { generateCertificate, COMPILER_VERSION } from "../compiler/wheat-compiler.js";
+import { COMPILER_VERSION } from "../compiler/wheat-compiler.js";
+import { compilationFreshness } from "./freshness.js";
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
@@ -92,8 +93,7 @@ export function guard(dir, toolInput) {
 				};
 			}
 			const certificate = compilation.compilation_certificate;
-			const expected = generateCertificate(JSON.parse(fs.readFileSync(claimsPath, "utf8")));
-			if (compilation.errors.length || certificate?.compiler_version !== COMPILER_VERSION || certificate?.input_hash !== expected.input_hash) {
+			if (compilation.errors.length || certificate?.compiler_version !== COMPILER_VERSION || !compilationFreshness(claimsPath, compilation).fresh) {
 				return { allow: false, reason: "BLOCKED: Compilation is stale or uncertified. Run grainulator compile." };
 			}
 

@@ -1291,7 +1291,7 @@ function renderDetail() {
       '</div>';
 
   // Source section
-  if (source.origin || source.artifact || source.witnessed_claim || source.challenged_claim || source.url) {
+  if (source.origin || source.artifact || source.witnessed_claim || source.challenged_claim || source.url || source.quote) {
     html += '<div class="detail-section">' +
       '<div class="detail-section-title">Source</div>';
     if (source.origin) html += '<div class="detail-field"><span class="detail-field-label">origin</span><span class="detail-field-value">' + esc(source.origin) + '</span></div>';
@@ -1299,6 +1299,13 @@ function renderDetail() {
     if (source.url) html += '<div class="detail-field"><span class="detail-field-label">url</span><span class="detail-field-value" style="word-break:break-all">' + esc(source.url) + '</span></div>';
     if (source.witnessed_claim) html += '<div class="detail-field"><span class="detail-field-label">witnesses</span><span class="related-claim" onclick="selectClaim(\'' + escAttr(source.witnessed_claim) + '\')">' + esc(source.witnessed_claim) + '</span></div>';
     if (source.challenged_claim) html += '<div class="detail-field"><span class="detail-field-label">challenges</span><span class="related-claim" onclick="selectClaim(\'' + escAttr(source.challenged_claim) + '\')">' + esc(source.challenged_claim) + '</span></div>';
+    if (source.quote) {
+      // Quoted source text is untrusted: always escaped, never interpreted.
+      var integrity = state.compilation && state.compilation.passage_integrity && state.compilation.passage_integrity[claim.id];
+      var label = !integrity ? 'not compiled' : integrity.valid ? 'quote found in stored passage' : 'passage record not usable: ' + integrity.reason;
+      html += '<div class="detail-field"><span class="detail-field-label">quote</span><span class="detail-field-value">\u201c' + esc(source.quote) + '\u201d</span></div>';
+      html += '<div class="detail-field"><span class="detail-field-label">passage</span><span class="detail-field-value" style="word-break:break-all">' + esc(source.passage_sha256 || '(none)') + ' (' + esc(label) + ')</span></div>';
+    }
     html += '</div>';
   }
 

@@ -10,12 +10,22 @@
  */
 
 import fs from "node:fs";
-import { generateCertificate } from "../compiler/wheat-compiler.js";
+import { compilationFreshness } from "./freshness.js";
 import nextActionsModule from "./next-actions.cjs";
 import path from "node:path";
 import { atomicWriteJSON } from "../../shared/lib/atomic.js";
 import { withFileTransaction } from "../../shared/lib/transaction.js";
 import { loadClaims } from "./load-claims.js";
+import {
+	isDigest,
+	normalizeStored,
+	PASSAGE_MAX_BYTES,
+	QUOTE_MAX_BYTES,
+	quoteInPassage,
+	quoteProblem,
+	readPassage,
+	storePassage,
+} from "./passages.js";
 
 // --- Constants ---------------------------------------------------------------
 
@@ -38,6 +48,66 @@ function resolvePaths(dir) {
 		brief: path.join(dir, "output", "brief.html"),
 		compiler: path.join(dir, "wheat-compiler.js"),
 	};
+}
+
+// --- Quoted passages ---------------------------------------------------------
+
+function withoutPassageInput(source) {
+	const { quote, passage, passage_sha256, ...rest } = source;
+	return rest;
+}
+
+// Validates source.quote with source.passage (stored now) or
+// source.passage_sha256 (stored earlier). The quote must occur in the passage.
+// Returns the fields to keep on the claim; passage text never enters claims.json.
+function sealPassage(dir, source) {
+	const { quote, passage, passage_sha256: digest } = source;
+	if (quote === undefined && passage === undefined && digest === undefined)
+		return { status: "ok", fields: {} };
+	const fail = (message) => ({ status: "error", message });
+	if (passage !== undefined && digest !== undefined)
+		return fail("Give source.passage or source.passage_sha256, not both.");
+	const problem = quoteProblem(quote);
+	if (problem === "quote_not_string")
+		return fail(
+			"source.quote is required with a passage and must be a string.",
+		);
+	if (problem === "quote_too_large")
+		return fail(`source.quote must be at most ${QUOTE_MAX_BYTES} UTF-8 bytes.`);
+	if (problem === "quote_empty") return fail("source.quote is empty.");
+	let text;
+	if (passage !== undefined) {
+		if (typeof passage !== "string")
+			return fail("source.passage must be a string.");
+		text = normalizeStored(passage);
+		if (Buffer.byteLength(text, "utf8") > PASSAGE_MAX_BYTES)
+			return fail(
+				`source.passage must be at most ${PASSAGE_MAX_BYTES} UTF-8 bytes.`,
+			);
+	} else {
+		if (!isDigest(digest))
+			return fail(
+				"source.passage_sha256 must be 64 lowercase hexadecimal characters.",
+			);
+		const stored = readPassage(dir, digest);
+		if (!stored.ok)
+			return fail(`Stored passage ${digest} is not usable (${stored.code}).`);
+		text = stored.text;
+	}
+	if (!quoteInPassage(quote, text))
+		return fail("source.quote does not occur in the passage.");
+	try {
+		return {
+			status: "ok",
+			fields: {
+				quote,
+				passage_sha256:
+					passage !== undefined ? storePassage(dir, passage) : digest,
+			},
+		};
+	} catch (err) {
+		return fail(`Could not store the passage: ${err.message}`);
+	}
 }
 
 // --- Operations --------------------------------------------------------------
@@ -169,6 +239,12 @@ function addClaimUnlocked(dir, args) {
 			};
 		}
 	}
+	let passageSource = {};
+	if (args.source) {
+		const sealed = sealPassage(dir, args.source);
+		if (sealed.status === "error") return sealed;
+		passageSource = sealed.fields;
+	}
 	const claim = {
 		id,
 		type,
@@ -176,7 +252,8 @@ function addClaimUnlocked(dir, args) {
 		content,
 		source: args.source
 			? {
-					...args.source,
+					...withoutPassageInput(args.source),
+					...passageSource,
 					origin: args.source.origin.trim(),
 					artifact: args.source.artifact ?? null,
 					connector: args.source.connector ?? null,
@@ -399,11 +476,7 @@ function getStatus(dir) {
 	if (fs.existsSync(paths.compilation)) {
 		try {
 			const comp = JSON.parse(fs.readFileSync(paths.compilation, "utf8"));
-			if (
-				comp.compilation_certificate?.input_hash ===
-				generateCertificate(JSON.parse(fs.readFileSync(paths.claims, "utf8")))
-					.input_hash
-			) {
+			if (compilationFreshness(paths.claims, comp).fresh) {
 				compilationStatus = comp.status || "unknown";
 				next_actions = nextActionsModule.nextActions(comp);
 			} else {

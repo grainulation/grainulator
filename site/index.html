@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'">
   <meta name="theme-color" content="#060d10">
-  <meta name="description" content="Keep the evidence behind your AI work, check the result, and catch changes before you share it.">
-  <title>Grainulator — Keep your model. Raise the standard.</title>
-  <meta property="og:title" content="Grainulator — Keep your model. Raise the standard.">
-  <meta property="og:description" content="Keep the evidence behind your AI work, check the result, and catch changes before you share it.">
+  <meta name="description" content="Use Grainulator with Claude Code or Codex to record findings and sources, flag gaps in evidence, and run checks you choose.">
+  <title>Grainulator — Check your AI’s work before you share it</title>
+  <meta property="og:title" content="Grainulator — Check your AI’s work before you share it">
+  <meta property="og:description" content="Use Grainulator with Claude Code or Codex to record findings and sources, flag gaps in evidence, and run checks you choose.">
   <meta property="og:image" content="https://grainulator.app/og-image.png?v=2">
   <link rel="icon" type="image/png" href="/favicon-32.png">
   <link rel="stylesheet" href="/background.css">
@@ -27,9 +27,9 @@
     </header>
     <main id="main-content">
       <section class="intro" aria-labelledby="page-title">
-        <p class="eyebrow">Research and verification for AI work</p>
-        <h1 id="page-title">Keep your model.<br><em>Raise the standard.</em></h1>
-        <div class="intro-bottom"><p>Use the AI tool you already know. Grainulator keeps the facts behind its work, checks what has changed, and shows what still needs review.</p><a class="primary-link" href="#workbench">See how the check works <span aria-hidden="true">↓</span></a></div>
+        <p class="eyebrow">Evidence and checks for AI agents</p>
+        <h1 id="page-title">Use your AI.<br><em>Check its work.</em></h1>
+        <div class="intro-bottom"><p>Grainulator works with Claude Code and Codex. It keeps the findings and sources your agent records together, flags gaps in evidence, and helps you check results before sharing.</p><a class="primary-link" href="#workbench">See how the check works <span aria-hidden="true">↓</span></a></div>
       </section>
       <section class="workbench" id="workbench" aria-labelledby="case-title">
         <div class="workbench-header"><div><p class="eyebrow">See what a check catches</p><h2 id="case-title">Good yesterday.<br>Still good today?</h2></div><span class="trace-label">Recorded check</span></div>
@@ -56,8 +56,8 @@
         <div class="trace-footer"><p>This check catches changed evidence. Your team still decides whether the release is ready.</p><a href="/handoff-trace.json" download>Download the full record <span aria-hidden="true">↓</span></a></div>
       </section>
       <section class="workflow" aria-labelledby="workflow-title">
-        <div><p class="eyebrow">Where Grainulator fits</p><h2 id="workflow-title">A clearer way to check AI work.</h2><p>Grainulator saves the reasons behind a result, checks what you ask it to check, and helps your agent address any problems it finds.</p></div>
-        <ol class="workflow-steps"><li><span>01</span><div><h3>Start with your task</h3><p>Give your agent the question, background, and goal.</p></div></li><li><span>02</span><div><h3>Check what matters</h3><p>Choose a test or review step. See what passed and what needs work.</p></div></li><li><span>03</span><div><h3>Try again with feedback</h3><p>Send a failed check back to the agent, with a limit on retries.</p></div></li></ol>
+        <div><p class="eyebrow">How it works</p><h2 id="workflow-title">Keep findings and sources together.</h2><p>Grainulator stores the findings and source references your agent records, flags gaps, and helps your agent address failed checks.</p></div>
+        <ol class="workflow-steps"><li><span>01</span><div><h3>Start with your task</h3><p>Give your agent the question, background, and goal.</p></div></li><li><span>02</span><div><h3>Check what matters</h3><p>Choose a test or review step. See what passed, and check the evidence behind conflicting findings.</p></div></li><li><span>03</span><div><h3>Try again with feedback</h3><p>Set up a check-and-retry loop to send failed checks back to your agent, with a limit on attempts.</p></div></li></ol>
       </section>
       <section class="connect" id="connect" aria-labelledby="connect-title">
         <div><p class="eyebrow">From example to real work</p><h2 id="connect-title">Use Grainulator with your agent.</h2><p>Choose your agent to see how to set up Grainulator in your project.</p></div>
@@ -67,7 +67,7 @@
           <p class="other-agents">Using another agent? <a href="https://github.com/grainulation/grainulator/blob/main/docs/AGENT-SETUP.md#other-agents">See other connection options ↗</a></p>
         </div>
       </section>
-      <details class="scope"><summary>What this example proves</summary><p>The saved record shows Grainulator catching a change after a report was checked. It stops the old check from being used. It does not decide whether the release is safe.</p><p>Small local model comparisons do not show a general improvement in accuracy or speed.</p><p>To repeat the example from the source code, run <code>node scripts/record-handoff.mjs</code>. The technical contract is in <code>docs/ADAPTERS.md</code>.</p></details>
+      <details class="scope"><summary>What this example shows</summary><p>The saved record shows Grainulator catching a change after a report was checked. It stops the old check from being used. It does not decide whether the release is safe.</p><p>Grainulator helps you inspect and check AI work. Evaluations have not established a general improvement in accuracy or speed.</p><p>To repeat the example from the source code, run <code>node scripts/record-handoff.mjs</code>. The technical contract is in <code>docs/ADAPTERS.md</code>.</p></details>
     </main>
     <footer><span>grainulator <span class="footer-divider">/</span> by grainulation</span><div><a href="https://deepwiki.com/grainulation/grainulator">Docs</a><a href="/privacy.html">Privacy</a><button id="motion-toggle" type="button" aria-pressed="false">Pause background</button></div></footer>
   </div>

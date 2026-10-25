@@ -1,5 +1,5 @@
 // Cache only same-origin static GETs. Model requests never enter the cache.
-const CACHE = "grainulator-static-v16";
+const CACHE = "grainulator-static-v17";
 const ASSETS = [
 	"/",
 	"/index.html",
