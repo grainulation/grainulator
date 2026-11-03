@@ -6,7 +6,7 @@ Already using 1.x? Start with the [upgrade checklist](UPGRADING.md). Updating so
 
 ## Obtain the v2.1.0 GitHub release
 
-Use Node.js 24 or later. Get the tagged source from the [v2.1.0 GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.1.0). This version is not published to npm, so an npm registry install will not give you this release. The [local setup page](../site/install.html) shows the same source and archive steps.
+Use Node.js 24 or later. Get the tagged source from the [v2.1.0 GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.1.0). This version is not published to npm, so an npm registry install will not give you this release. The [setup page](https://grainulator.dev/install.html) shows the same source and archive steps.
 
 Tagged releases and marketplace builds include `build-info.json`, an integrity manifest with an ID such as `release-2.1.0-<hash>`. Doctor checks its shipped-file checksums. A standard `npm pack --ignore-scripts` archive preserves that identity; `pack:local` below creates a distinct development build.
 

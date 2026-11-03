@@ -4,7 +4,7 @@
 	"description": "Portable evidence and execution tools for model-assisted work",
 	"type": "module",
 	"license": "MIT",
-	"homepage": "https://grainulator.app",
+	"homepage": "https://grainulator.dev",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/grainulation/grainulator.git"
@@ -41,7 +41,6 @@
 		"packages/legacy-cli/bin",
 		"packages/legacy-cli/lib",
 		"packages/legacy-cli/public",
-		"packages/legacy-cli/site",
 		"packages/legacy-cli/CHANGELOG.md",
 		"packages/legacy-cli/LICENSE",
 		"packages/legacy-cli/CODE_OF_CONDUCT.md",
@@ -123,7 +122,6 @@
 		"packages/analytics/CHANGELOG.md",
 		"scripts/preview.mjs",
 		"evals/fixtures/",
-		"site/",
 		"scripts/record-handoff.mjs",
 		"docs/RESEARCH.md",
 		"docs/INSTALLATION.md",
@@ -134,12 +132,12 @@
 		"docs/PLUGIN-TESTING.md",
 		"docs/DEPLOYMENT.md",
 		"docs/NEXT-ACTIONS.md",
-		"scripts/build-site.mjs",
 		"docs/RECOVERY.md",
 		"docs/STRUCTURE.md",
 		"docs/READINESS.md",
 		"docs/BLIND-SPOTS.md",
-		"docs/source-imports.json"
+		"docs/source-imports.json",
+		"public/"
 	],
 	"author": "grainulation contributors",
 	"bugs": {
@@ -147,8 +145,8 @@
 	},
 	"scripts": {
 		"test": "node scripts/test-workspace.mjs",
-		"test:e2e": "npm run test:site",
-		"test:all": "npm test && npm run test:runtime && npm run test:site && npm run test:install",
+		"test:e2e": "npm run test:playground",
+		"test:all": "npm test && npm run test:runtime && npm run test:playground && npm run test:install",
 		"build:identity": "node scripts/build-identity.mjs",
 		"sync-version": "node scripts/sync-version.js",
 		"version": "node scripts/sync-version.js && npx --yes @biomejs/biome format --write .claude-plugin/ .codex-plugin/ plugin.json && git add .claude-plugin/plugin.json .claude-plugin/marketplace.json .codex-plugin/plugin.json plugin.json",
@@ -160,10 +158,8 @@
 		"pack:local": "node scripts/pack-local.mjs",
 		"lint": "biome check .",
 		"test:runtime": "npm run test:conformance --workspace @grainulation/bean",
-		"test:site": "npm run test:static && node scripts/workbench-check.mjs && node scripts/playground-check.mjs && node scripts/demo-check.mjs && node scripts/scroll-check.mjs && node scripts/organization-check.mjs",
 		"test:install": "node scripts/package-isolation-check.mjs",
-		"build:site": "node scripts/build-site.mjs",
-		"test:static": "node scripts/static-site-check.mjs"
+		"test:playground": "node scripts/run-playground-check.mjs"
 	},
 	"engines": {
 		"node": ">=24"

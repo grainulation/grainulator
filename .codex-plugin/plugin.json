@@ -5,7 +5,7 @@
 	"author": {
 		"name": "Grainulation"
 	},
-	"homepage": "https://grainulator.app",
+	"homepage": "https://grainulator.dev",
 	"skills": "./skills/",
 	"mcpServers": {
 		"grainulator": {
@@ -26,7 +26,7 @@
 			"Read",
 			"Write"
 		],
-		"websiteURL": "https://grainulator.app",
+		"websiteURL": "https://grainulator.dev",
 		"defaultPrompt": [
 			"Use Grainulator to investigate this question.",
 			"Review the evidence and show the next steps."

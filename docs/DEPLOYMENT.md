@@ -1,48 +1,35 @@
-# Static sites and local research
+# Website ownership and local research
 
-Both sites build locally into `dist/site/` with no bundler, dependency installation, network fetch, or mutation of their authored `site/` assets:
+Public websites are maintained and deployed from [grainulation/infra](https://github.com/grainulation/infra). The canonical product website is https://grainulator.dev. Its static playground exports sessions but never runs models or collects provider keys. The infrastructure repository owns the old-domain redirects and website build/browser checks.
 
-```sh
-node scripts/build-site.mjs
-```
+This repository ships the local research application in `public/`. Its shared session and evidence modules are used by both the CLI and the local browser UI; they are runtime assets, not a marketing website. Future changes to the public playground must be coordinated with the corresponding static copy in infra to preserve the session format.
 
-Run the command from each checkout. The paired preview server injects an explicit product-port marker into the organization homepage so its links reach the paired local product. Authored and generated static HTML carry no marker and retain public links, including when served locally on port 4518.
-
-The Grainulation builder copies its new site directly; it does not run the retired shared-asset generator or package publisher. Historical CLI source remains in that checkout until an explicitly authorized cleanup.
-
-The Pages workflows build and upload `dist/site/`, then deploy that artifact through GitHub Pages. The product workflow runs on relevant `main` changes or manual dispatch. The custom domains in each site's existing `CNAME` are retained. These artifacts target those domain roots; hosting under a repository URL subpath would require a separate base-path configuration.
-
-## Recorded deployment evidence
-
-Both recorded deployments completed successfully: [Grainulator Pages run 34183217426](https://github.com/grainulation/grainulator/actions/runs/34183217426) for `1933344`, and [Grainulation Pages run 34182960813](https://github.com/grainulation/grainulation/actions/runs/34182960813) for `ccef901`. These records apply to their own commits and artifacts; check a later deployment's run separately. Product and organization deployments are distinct from the GitHub source release and do not publish an npm package.
-
-## Routes
-
-`/playground/` is a real directory with `index.html`. An ordinary static server redirects `/playground` to that directory. `/playground.html` and `/research.html` redirect in the browser and preserve query strings and shared-question hashes. Their HTML includes a usable destination link when JavaScript is unavailable. The homepage retains shared-question and example links. API requests and the playground are excluded from the homepage service worker cache.
-
-## Public execution boundary
-
-The static artifact marks the playground as configuration mode. It makes no `/api/research/*` requests and disables model execution and credential entry. Visitors can choose providers, models and features, inspect the labeled example, import a session, and export configuration or completed work. The page gives two supported continuations:
+## Local playground
 
 ```sh
 grainulator preview
-# Open http://127.0.0.1:4517/playground/ and choose Open session.
-
-grainulator research --session session.json --dir ./research-session
 ```
 
-From a source checkout, replace `grainulator` with `node bin/grainulator.js`. The local preview serves the authored site in local mode and exposes the loopback research API. It accepts a provider key entered on the local page or explicitly configured server environment credentials. The public website never connects across origins to a visitor's local server. Completed passes survive export and import; edits create a fresh research basis. No research backend needs to be deployed with either website.
+From a checkout use `npm run dev` or `node bin/grainulator.js preview`. Open http://127.0.0.1:4517/playground/. The root URL redirects there. `GRAINULATOR_PORT` selects another loopback port. No sibling organization website is required or served.
 
-## Local acceptance
+The local server exposes the loopback research API and accepts provider keys from the local page or configured environment. Keys remain excluded from session exports. A session exported from the public website can be imported here or resumed with `grainulator research --session session.json --dir ./research-session`.
 
-Run these acceptance commands from the full source checkout after installing its development dependencies. The browser test scripts are not included in the installed CLI archive; `scripts/build-site.mjs` is included.
+## Checks
 
 ```sh
-node scripts/static-site-check.mjs
-# With the paired preview stopped, verify the formerly ambiguous port:
-node scripts/static-site-check.mjs --organization-port 4518
+npm test
+npm run test:playground
+npm run build:identity
+npm run check:package
+npm run test:install
 ```
 
-Requires Python 3 and Playwright Chromium (or `PLAYWRIGHT_CHROMIUM_EXECUTABLE`). The check builds the product artifact and, when available, the sibling organization artifact. It uses Python's unmodified `SimpleHTTPRequestHandler`, with no SPA fallbacks or API routes, and checks navigation, old links, imported questions, session exports, the static execution boundary, local continuation instructions, missing assets, browser errors, and four viewport widths. The report is `.dogfood/static-site-results.json`.
+The playground check requires Playwright Chromium (or `PLAYWRIGHT_CHROMIUM_EXECUTABLE`). It starts and stops its own loopback server, simulates providers without charges, and checks session import/export, cancellation, safe formatting, keyboard controls, and four responsive widths. The report is `.dogfood/playground-results.json`.
 
-`npm run test:site` also tests the local preview and its browser workflows. Tests of paid provider execution and model quality are separate from static artifact acceptance. A local build does not establish deployment success, custom-domain routing, or CDN propagation. Verify those against the actual Pages run and live site for the revision being shipped.
+The installed-package test verifies that the marketing sources are absent while research commands and runtime assets remain available. No website build step is needed to package or run Grainulator.
+
+## Migration merge gate
+
+Keep the website extraction PR in draft until the infra deployment has been reviewed, the canonical product site and legacy paths work over HTTPS, and redirects from grainulator.app preserve paths and queries. Retain the old hosting configuration for rollback until the cutover passes. Removing the Pages workflow from this source tree does not itself move DNS or prove a deployment succeeded.
+
+The website handoff source is Grainulator commit `7c4555ad7287eaf6e3d3510b9ddac76136ccc143`. Infra records its own resulting revision and deployment evidence. No release or production cutover is performed by this change.

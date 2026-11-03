@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { compile, COMPILER_VERSION, generateCertificate } from '../packages/evidence/compiler/wheat-compiler.js';
 import { guard } from '../packages/evidence/lib/guard.js';
 
@@ -46,7 +45,10 @@ try {
     scope: 'The guard validates compilation freshness for an output path when the host invokes it. It does not verify the truth of claims or enforce a release gate on its own.',
     stages,
   };
-  const destination = fileURLToPath(new URL('../site/handoff-trace.json', import.meta.url));
+  const output = process.argv[2];
+  if (!output) throw new Error('Provide an output path; website artifacts are maintained in grainulation/infra.');
+  const destination = path.resolve(output);
+  fs.mkdirSync(path.dirname(destination), { recursive: true });
   fs.writeFileSync(destination, JSON.stringify(artifact, null, '\t') + '\n');
   console.log('Recorded three real guard decisions: allow → block → allow. Assertions passed.');
 } finally {

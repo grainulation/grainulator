@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#060d10"><meta name="description" content="Choose your model, tune the research workflow, and take the session with you. The Grainulator research playground.">
   <title>Research playground — Grainulator</title>
   <meta name="research-mode" content="local">
-  <link rel="canonical" href="https://grainulator.app/playground/">
+  <link rel="canonical" href="https://grainulator.dev/playground/">
   <link rel="icon" href="/favicon-32.png"><link rel="stylesheet" href="/workbench.css"><link rel="stylesheet" href="/research/playground.css">
 
   <script type="module" src="/research/playground.js"></script>
@@ -14,11 +14,11 @@
 <body class="playground-page">
   <a class="skip-link" href="#main-content">Skip to content</a>
   <div class="page-shell">
-    <header class="site-header"><a class="wordmark" href="/" aria-label="Grainulator home"><img src="/glitchy-56.png" width="28" height="28" alt="">grainulator <span class="muted">/ playground</span></a><nav aria-label="Main navigation"><a href="/">Back to home <span aria-hidden="true">↗</span></a></nav></header>
+    <header class="site-header"><a class="wordmark" href="https://grainulator.dev/" aria-label="Grainulator home"><img src="/glitchy-56.png" width="28" height="28" alt="">grainulator <span class="muted">/ playground</span></a><nav aria-label="Main navigation"><a href="https://grainulator.dev/">Back to home <span aria-hidden="true">↗</span></a></nav></header>
     <main id="main-content">
       <div class="playground-heading"><div><p class="eyebrow">Research, on your terms</p><h1>Your question.<br>Your model. Your workflow.</h1><p>Try a setup here. Take the whole session into your work.</p></div><div class="file-actions"><label class="action" for="import-session">Open session<input id="import-session" type="file" accept=".json,application/json" class="file-input"></label><button type="button" id="export-session" class="action">Export session ↓</button></div></div>
       <p id="service-status" class="notice" role="status">Checking the local research connection…</p>
-      <details id="local-setup" class="local-setup" hidden><summary>Run this setup locally</summary><p>Export your session, then use your local Grainulator installation. Your provider credentials stay on your machine.</p><p>First time here? <a href="/install.html">Set up the local build</a>. Use the GitHub release; this version is not published to npm.</p><pre><code>grainulator preview</code></pre><p>Open <a href="http://127.0.0.1:4517/playground/">the local playground</a> and choose Open session, or continue in your terminal:</p><pre><code>grainulator research --session session.json --dir ./research-session</code></pre><p class="field-note">From a source checkout, use <code>node bin/grainulator.js</code> in place of <code>grainulator</code>. Configure OPENAI_API_KEY or OPENROUTER_API_KEY locally, or enter your key in the local playground.</p></details>
+      <details id="local-setup" class="local-setup" hidden><summary>Run this setup locally</summary><p>Export your session, then use your local Grainulator installation. Your provider credentials stay on your machine.</p><p>First time here? <a href="https://grainulator.dev/install.html">Set up the local build</a>. Use the GitHub release; this version is not published to npm.</p><pre><code>grainulator preview</code></pre><p>Open <a href="http://127.0.0.1:4517/playground/">the local playground</a> and choose Open session, or continue in your terminal:</p><pre><code>grainulator research --session session.json --dir ./research-session</code></pre><p class="field-note">From a source checkout, use <code>node bin/grainulator.js</code> in place of <code>grainulator</code>. Configure OPENAI_API_KEY or OPENROUTER_API_KEY locally, or enter your key in the local playground.</p></details>
       <noscript><p class="notice">Enable JavaScript to configure and export a research session. The public playground does not run models or collect provider keys.</p></noscript>
       <div class="playground-layout">
         <form id="research-form" class="settings">
@@ -50,7 +50,7 @@
         </section>
       </div>
     </main>
-    <footer><span>grainulator / research playground</span><div><a href="/">Home</a><a href="/privacy.html">Privacy</a></div></footer>
+    <footer><span>grainulator / research playground</span><div><a href="https://grainulator.dev/">Home</a><a href="/privacy.html">Privacy</a></div></footer>
   </div>
 </body>
 </html>

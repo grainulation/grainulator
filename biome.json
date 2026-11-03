@@ -3,8 +3,8 @@
 	"files": {
 		"includes": [
 			"lib/**",
-			"site/**/*.js",
-			"site/**/*.json",
+			"public/**/*.js",
+			"public/**/*.json",
 			"test/**",
 			".claude-plugin/**",
 			".mcp.json",

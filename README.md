@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://grainulator.app"><img src="site/glitchy.png" alt="Glitchy — the Grainulator mascot" width="200"></a>
+  <a href="https://grainulator.dev"><img src="public/glitchy.png" alt="Glitchy — the Grainulator mascot" width="200"></a>
 </p>
 
 <h1 align="center">Grainulator</h1>
@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <a href="https://grainulator.app/"><img src="https://img.shields.io/badge/website-grainulator.app-98f3ef?style=for-the-badge" alt="See the Grainulator homepage"></a>
+  <a href="https://grainulator.dev/"><img src="https://img.shields.io/badge/website-grainulator.dev-98f3ef?style=for-the-badge" alt="See the Grainulator homepage"></a>
 </p>
 
 <p align="center">
@@ -61,7 +61,7 @@ npm ci --ignore-scripts
 node bin/grainulator.js doctor
 ```
 
-To use Grainulator inside your agent, follow the **[Claude Code or Codex setup guide](docs/AGENT-SETUP.md)**. The [website](https://grainulator.app/) shows a saved example of an evidence check. It does not send your question to a model.
+To use Grainulator inside your agent, follow the **[Claude Code or Codex setup guide](docs/AGENT-SETUP.md)**. The [website](https://grainulator.dev/) shows a saved example of an evidence check. It does not send your question to a model.
 
 The local research playground remains available through `node bin/grainulator.js preview`. It runs models using a provider account you configure locally.
 

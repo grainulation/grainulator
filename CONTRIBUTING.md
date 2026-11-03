@@ -38,7 +38,7 @@ For native Codex, install the intended local plugin through its marketplace mech
 
 ## Verification and CI
 
-CI runs `npm test`, `npm run build:site`, `npm run check:package`, and `npm run test:install` on Node 24 and 25. Separate jobs run lint, Rust runtime conformance, and the Playwright static-site check on Node 25. Browser tooling is a development dependency in this repository.
+CI runs `npm test`, `npm run check:package`, and `npm run test:install` on Node 24 and 25. Separate jobs run lint, Rust runtime conformance, and the Playwright local-playground check on Node 25. Browser tooling is a development dependency in this repository.
 
 ```sh
 npm run lint
@@ -48,7 +48,7 @@ npx playwright install chromium
 npm run test:static
 ```
 
-Rust/Cargo is required for runtime conformance; Python 3 and Playwright Chromium are required for the static-site test. `npm run test:site` additionally exercises the local preview, playground, demo, scrolling, and organization site. Start `npm run dev` for the preview-dependent checks; see [deployment and browser checks](docs/DEPLOYMENT.md). Paid-provider and native-host tests require the relevant credentials and are separate from CI's static and synthetic checks.
+Rust/Cargo is required for runtime conformance; Playwright Chromium is required for `npm run test:playground`. That command starts and stops its own isolated local preview and checks the runtime UI with synthetic provider responses. Marketing websites and their deployment tests live in [grainulation/infra](https://github.com/grainulation/infra). See [deployment and browser checks](docs/DEPLOYMENT.md). Paid-provider and native-host tests require the relevant credentials and are separate from CI's synthetic checks.
 
 ## Skills and shared templates
 

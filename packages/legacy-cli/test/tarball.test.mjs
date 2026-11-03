@@ -16,7 +16,6 @@ import { test } from 'node:test';
 const REQUIRED_PATHS = [
   'package/public/index.html',
   'package/public/grainulation-tokens.css',
-  'package/site/index.html',
   'package/lib/server.mjs',
   'package/lib/router.js',
   'package/bin/grainulation.js',
@@ -33,6 +32,7 @@ test('npm pack --dry-run includes every load-bearing file', () => {
   });
   const packed = JSON.parse(out)[0];
   const files = new Set((packed.files || []).map((f) => f.path));
+  assert.ok(![...files].some((name) => /^(?:package\/)?site\//.test(name)), 'marketing site is owned by infra');
   for (const req of REQUIRED_PATHS) {
     const bare = req.startsWith('package/') ? req.slice('package/'.length) : req;
     assert.ok(files.has(req) || files.has(bare), `missing from tarball: ${req}`);
