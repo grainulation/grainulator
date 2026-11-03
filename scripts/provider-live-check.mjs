@@ -6,7 +6,7 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { handleResearch } from '../lib/research-http.js';
-import { createSession, exportSession, importSession, runResearch } from '../site/research/session.js';
+import { createSession, exportSession, importSession, runResearch } from '../public/research/session.js';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const usage = `Usage: node scripts/provider-live-check.mjs [openai|openrouter]

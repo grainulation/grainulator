@@ -19,7 +19,7 @@ import {
 	importSession,
 	runResearch,
 	sessionBasis,
-} from "../../site/research/session.js";
+} from "../../public/research/session.js";
 
 const session = () =>
 	createSession({
@@ -349,7 +349,7 @@ test("local research proxy rejects cross-origin credential access", async () => 
 
 test("feature switches change executed passes and export without inventing evidence tiers", async () => {
 	const { claimsDocument, evidenceReport } = await import(
-		"../../site/research/evidence.js"
+		"../../public/research/evidence.js"
 	);
 	const calls = [];
 	const s = createSession({
@@ -460,7 +460,7 @@ test("the evidence gate blocks synthesis, survives import, and can be disabled f
 
 test("ledger validation rejects malformed claims and does not checkpoint invalid model JSON", async () => {
 	const { readLedger, evidenceReport } = await import(
-		"../../site/research/evidence.js"
+		"../../public/research/evidence.js"
 	);
 	assert.throws(() => readLedger("Not JSON"), /valid JSON/);
 	const c = {

@@ -1,9 +1,10 @@
 import { chromium } from '@playwright/test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { importSession } from '../site/research/session.js';
+import { importSession } from '../public/research/session.js';
 const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || undefined });
 const results = [];
+const baseURL = process.env.GRAINULATOR_TEST_URL || 'http://127.0.0.1:4517';
 try {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
   const errors = [], requests = [];
@@ -15,10 +16,10 @@ try {
     const text = `Pass ${requests.length}: Verify the cache isolation. café 🔎`;
     return route.fulfill({ contentType: 'application/x-ndjson', body: JSON.stringify({ type: 'delta', text }) + '\n' + JSON.stringify({ type: 'result', result: { text, model: req.config.model, sources: [{ title: 'Provider source', url: 'https://example.org/evidence' }], usage: { inputTokens: 30, outputTokens: 40 } } }) + '\n' });
   });
-  await page.goto('http://127.0.0.1:4517/playground');
+  await page.goto(`${baseURL}/playground`);
   await page.getByText('Connected to your local research server.', { exact: false }).waitFor();
   assert.equal(await page.locator('canvas').count(), 0);
-  assert.equal(await page.locator('header nav a').getAttribute('href'), '/');
+  assert.equal(await page.locator('header nav a').getAttribute('href'), 'https://grainulator.dev/');
   await page.locator('#question').fill('Should we migrate the shared cache?');
   await page.locator('#context').fill('Full context ' + 'matters '.repeat(60));
   await page.locator('#api-key').fill('openai-test-secret');
@@ -162,12 +163,8 @@ try {
   assert.ok(await page.locator('#context').evaluate(el => el.clientHeight > 150));
   const playgroundWidth = await page.locator('.page-shell').evaluate(el => el.getBoundingClientRect().width);
   assert.equal(await page.locator('header img').evaluate(el => el.naturalWidth > 0), true);
-  await page.locator('header nav a').click();
-  await page.locator('#page-title').waitFor();
-  const homepageWidth = await page.locator('.page-shell').evaluate(el => el.getBoundingClientRect().width);
-  assert.equal(homepageWidth, playgroundWidth, 'homepage and playground must share a shell width');
-  await page.goto('http://127.0.0.1:4517/privacy.html');
-  assert.equal(await page.locator('.page-shell').evaluate(el => el.getBoundingClientRect().width), homepageWidth);
+  await page.goto(`${baseURL}/privacy.html`);
+  assert.equal(await page.locator('.page-shell').evaluate(el => el.getBoundingClientRect().width), playgroundWidth);
   assert.equal(await page.locator('header img').evaluate(el => el.naturalWidth > 0), true);
   for (const width of [320, 768, 1024, 1440]) {
     await page.setViewportSize({width, height:1000});
@@ -176,7 +173,7 @@ try {
   }
   await page.locator('aside a[href="#keys"]').focus(); await page.keyboard.press('Enter');
   assert.equal(new URL(page.url()).hash, '#keys');
-  await page.goto('http://127.0.0.1:4517/playground');
+  await page.goto(`${baseURL}/playground`);
   // Missing server still permits configuration export, without pretending to run a model.
   await page.route('**/api/research/capabilities', route => route.fulfill({ status: 404 }));
   await page.reload();
@@ -185,5 +182,5 @@ try {
   assert.equal(await page.locator('#export-session').isEnabled(), true);
   assert.deepEqual(errors, []);
 } finally { await browser.close(); }
-fs.writeFileSync('.dogfood/playground-results.json', JSON.stringify({ results, checks: ['provider/model selection', 'credentials excluded from export', 'provider-key isolation', 'UTF-8', 'citations', 'reimport', 'config invalidation', 'partial resume', 'clean URL and home navigation', 'static background', 'fresh reset', 'stop before first text', 'late response isolation', 'safe formatted output', 'mascot', 'consistent page widths', 'textarea growth and unclipped helper text', 'unavailable-server handling', 'feature toggles affect real pass order', 'blocking evidence gate', 'claims download', 'keyboard feature help', 'responsive privacy page'] }, null, 2));
+fs.writeFileSync('.dogfood/playground-results.json', JSON.stringify({ results, checks: ['provider/model selection', 'credentials excluded from export', 'provider-key isolation', 'UTF-8', 'citations', 'reimport', 'config invalidation', 'partial resume', 'clean URL and canonical website link', 'static background', 'fresh reset', 'stop before first text', 'late response isolation', 'safe formatted output', 'mascot', 'consistent page widths', 'textarea growth and unclipped helper text', 'unavailable-server handling', 'feature toggles affect real pass order', 'blocking evidence gate', 'claims download', 'keyboard feature help', 'responsive privacy page'] }, null, 2));
 console.log('PASS: configurable playground, safe exports, resumable passes, and four responsive widths.');

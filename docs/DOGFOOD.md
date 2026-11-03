@@ -49,7 +49,7 @@ node packages/runtime/test/conformance.mjs
 npm run check:package
 ```
 
-Run Rust conformance from `packages/runtime` using `node test/conformance.mjs` if invoking an older imported script. Rust/Cargo are needed for this check, not for the JavaScript CLI. With the preview server running and Playwright Chromium installed, `npm run test:site` checks responsive behavior, shared links, cancellation, and pipeline latency using simulated provider responses. Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` when using an existing browser installation. Results are in `.dogfood/workbench-results.json`.
+Run Rust conformance from `packages/runtime` using `node test/conformance.mjs` if invoking an older imported script. Rust/Cargo are needed for this check, not for the JavaScript CLI. With Playwright Chromium installed, `npm run test:playground` starts an isolated preview server and checks responsive behavior, session import/export, and cancellation using simulated provider responses. Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` when using an existing browser installation. Results are in `.dogfood/playground-results.json`.
 
 Results from `npm test` are saved in `.dogfood/test-results.json` and `.dogfood/test-logs/`.
 

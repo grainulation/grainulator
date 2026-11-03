@@ -5,7 +5,7 @@
 	"author": {
 		"name": "Grainulation"
 	},
-	"homepage": "https://grainulator.app",
+	"homepage": "https://grainulator.dev",
 	"skills": "./skills/",
 	"agents": ["./agents/grainulator.md"],
 	"mcpServers": "./.mcp.json",

@@ -5,7 +5,7 @@ import { Readable } from "node:stream";
 import test from "node:test";
 import { handleResearch } from "../../lib/research-http.js";
 import { completeResearch } from "../../lib/research-provider.js";
-import { DEFAULTS } from "../../site/research/session.js";
+import { DEFAULTS } from "../../public/research/session.js";
 
 async function listen(t, listener) {
 	const server = http.createServer(listener);

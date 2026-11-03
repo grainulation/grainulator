@@ -6,7 +6,7 @@ Use the active sprint directory identified by the current task or project instru
 
 Source imports and local-edit provenance live in `docs/source-imports.json`. Do not overwrite original checkouts. Retained package names are compatibility aliases; package directories describe responsibilities.
 
-Run `npm test` for component suites and dogfood regressions. Run `node test/conformance.mjs` from `packages/runtime` for Rust runtime conformance. Use `npm run dev` for site previews; validate responsive and keyboard behavior before handing off visual changes.
+Run `npm test` for component suites and dogfood regressions. Run `node test/conformance.mjs` from `packages/runtime` for Rust runtime conformance. Use `npm run dev` for the local research playground and `npm run test:playground` for responsive and keyboard checks. Public website code and deployment belong to grainulation/infra.
 
 The permission dashboard and its connectors have been removed at the maintainer’s request. Do not restore that application, its hooks, or its runtime dependencies. Native hosts own permissions and remote access. Generated evidence and analytics reports remain supported.
 

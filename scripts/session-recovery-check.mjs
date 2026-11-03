@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { createSession, exportSession, importSession } from '../site/research/session.js';
+import { createSession, exportSession, importSession } from '../public/research/session.js';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 export async function checkSessionRecovery() {

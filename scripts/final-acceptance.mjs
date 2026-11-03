@@ -5,7 +5,7 @@ const report={at:new Date().toISOString(),node:process.version,checks:[]};
 const env={...process.env,PATH:`${path.dirname(process.execPath)}${path.delimiter}${process.env.PATH}`};
 const groups=[
  [['lint',['npm','run','lint']],['runtime',['npm','run','test:runtime']],['migration',[process.execPath,'scripts/migration-check.mjs']]],
- [['site',['npm','run','test:site']]],
+ [['playground',['npm','run','test:playground']]],
  [['host-next-actions',[process.execPath,'scripts/next-actions-host-check.mjs']],['host-integration',[process.execPath,'scripts/host-integration-check.mjs']]],
 ];
 await Promise.all(groups.map(async checks=>{

@@ -56,7 +56,6 @@ test("native Codex onboarding discloses workspace binding and direct MCP scope",
 		"skills/setup/SKILL.md",
 		"docs/HOSTS.md",
 		"docs/INSTALLATION.md",
-		"site/install.html",
 	]) {
 		const source = read(file);
 		assert.match(

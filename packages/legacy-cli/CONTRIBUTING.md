@@ -47,7 +47,7 @@ lib/setup.js              First-run setup and configuration
 lib/pm.js                 Package management for grainulation tools
 lib/server.mjs            Local server -- unified ecosystem dashboard (ESM)
 public/                   Web UI -- ecosystem overview and status
-site/                     Public website (grainulation.com)
+Public websites are maintained in https://github.com/grainulation/infra.
 test/                     Node built-in test runner tests
 ```
 
