@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.4.8/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.6.4/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -14,7 +14,7 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
       "correctness": {
         "noUnusedVariables": "warn",
         "noUnusedImports": "warn"
@@ -28,13 +28,7 @@
     }
   },
   "files": {
-    "includes": [
-      "**/*.js",
-      "**/*.mjs",
-      "**/*.css",
-      "!site/grainulation-print.css",
-      "!site/grainulation-tokens.css"
-    ]
+    "includes": ["**/*.js", "**/*.mjs", "**/*.css", "!site/grainulation-print.css", "!site/grainulation-tokens.css"]
   },
   "root": false
 }
