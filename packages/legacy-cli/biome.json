@@ -28,7 +28,7 @@
     }
   },
   "files": {
-    "includes": ["**/*.js", "**/*.mjs", "**/*.css", "!site/grainulation-print.css", "!site/grainulation-tokens.css"]
+    "includes": ["**/*.js", "**/*.mjs", "**/*.css"]
   },
   "root": false
 }

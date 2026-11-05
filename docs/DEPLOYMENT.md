@@ -4,6 +4,8 @@ Public websites are maintained and deployed from [grainulation/infra](https://gi
 
 This repository ships the local research application in `public/`. Its shared session and evidence modules are used by both the CLI and the local browser UI; they are runtime assets, not a marketing website. Future changes to the public playground must be coordinated with the corresponding static copy in infra to preserve the session format.
 
+The imported component marketing sites under `packages/*/site/` and their site-only SEO scripts have also been removed. Component `public/` directories, generated-report templates, and general asset/export tools remain product runtime resources. Historical hashes in `docs/source-imports.json` describe the original imports; they are retained as provenance rather than a current file inventory.
+
 ## Local playground
 
 ```sh

@@ -41,7 +41,6 @@ const expectedFiles = [
   "tools/build-pdf.js",
   "templates/explainer.html",
   "templates/dashboard.html",
-  "site/index.html",
 ];
 
 for (const file of expectedFiles) {
@@ -126,17 +125,6 @@ try {
 } catch (e) {
   assert(false, `detect-sprints --help runs: ${e.message}`);
 }
-
-// ─── Site checks ─────────────────────────────────────────────────────────────
-
-console.log("\n--- Site ---");
-
-const site = readFileSync(join(ROOT, "site/index.html"), "utf8");
-assert(site.includes("#e11d48"), "site uses barn rose-red accent");
-assert(site.includes("@grainulation/barn"), "site mentions package name");
-assert(site.includes("detect-sprints"), "site documents detect-sprints");
-assert(site.includes("generate-manifest"), "site documents generate-manifest");
-assert(site.includes("build-pdf"), "site documents build-pdf");
 
 // ─── detect-sprints: functional tests ────────────────────────────────────────
 

@@ -53,7 +53,6 @@ lib/index.js          Core library -- template resolution and rendering
 lib/server.js         Local preview server (SSE, zero deps)
 templates/            HTML + JSON schema pairs for each artifact type
 public/               Web UI -- two-column template nav + preview
-site/                 Public website (barn.grainulation.com)
 tools/                Utility scripts
 test/                 Node built-in test runner tests
 ```

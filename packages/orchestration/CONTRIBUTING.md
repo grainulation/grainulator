@@ -53,7 +53,6 @@ lib/dashboard.js          Dashboard data aggregation
 lib/server.js             Local preview server (SSE, zero deps)
 templates/                HTML templates (orchard-dashboard, etc.)
 public/                   Web UI -- multi-sprint planning dashboard
-site/                     Public website (orchard.grainulation.com)
 test/                     Node built-in test runner tests
 ```
 
