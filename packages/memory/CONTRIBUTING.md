@@ -60,7 +60,6 @@ lib/server.js             Local preview server (SSE, zero deps)
 lib/templates.js          Template rendering for HTML output
 packs/                    Built-in knowledge packs (JSON)
 public/                   Web UI -- search and browse interface
-site/                     Public website (silo.grainulation.com)
 test/                     Node built-in test runner tests
 ```
 

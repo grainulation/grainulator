@@ -58,7 +58,6 @@ lib/json-ld-common.js     Shared JSON-LD vocabulary helpers
 lib/serve-mcp.js          MCP (Model Context Protocol) server
 lib/server.js             Local preview server (SSE, zero deps)
 public/                   Web UI -- format preview and conversion
-site/                     Public website (mill.grainulation.com)
 test/                     Node built-in test runner tests
 ```
 

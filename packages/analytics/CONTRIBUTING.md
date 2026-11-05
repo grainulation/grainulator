@@ -50,7 +50,6 @@ lib/templates.js          Template rendering for HTML output
 lib/velocity.js           Sprint velocity tracking
 templates/                HTML templates (retrospective, etc.)
 public/                   Web UI -- retrospective dashboard
-site/                     Public website (harvest.grainulation.com)
 test/                     Node built-in test runner tests
 ```
 
