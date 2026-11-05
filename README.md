@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/grainulation/grainulator/releases"><img src="https://img.shields.io/github/v/release/grainulation/grainulator?label=release" alt="Latest GitHub release"></a>
+  <a href="https://github.com/grainulation/grainulator/releases/latest">Latest GitHub release</a>
   <a href="https://github.com/grainulation/grainulator/actions/workflows/ci.yml"><img src="https://github.com/grainulation/grainulator/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI on main"></a>
   <a href="docs/INSTALLATION.md"><img src="https://img.shields.io/badge/node-%E2%89%A524-339933?logo=nodedotjs&logoColor=white" alt="Node.js 24 or later"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license"></a>
