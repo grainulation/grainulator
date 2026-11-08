@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-11-08
+
+### Added
+
+- Antigravity support: `agy plugin install https://github.com/grainulation/grainulator` installs the tools, research skills and research agent. `mcp_config.json` gives Antigravity the MCP server.
+- Plugin servers use the project folder the agent shares through MCP roots. Codex and Antigravity start plugins outside the project; the server now asks the agent for its folder instead of relying on a launch argument.
+- Agent setup guide rewritten with one tested install per agent (Claude Code, Codex, Antigravity, other MCP agents), a check step, update and remove commands and troubleshooting.
+
+### Changed
+
+- Plugin project folder order: `GRAINULATOR_WORKSPACE`, then the folder the agent shares, then the saved default from `grainulator setup`. When the agent shares a folder it now takes priority over the saved default. The plugin folder is never used as the project.
+- Codex project setup and other MCP agents use `npx -y github:grainulation/grainulator#v2.2.0`, so no local clone is needed.
+
 ## [2.1.0] - 2026-10-25
 
 ### Added

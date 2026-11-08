@@ -54,7 +54,7 @@ Requires **Node.js 24+**. Node 25 is the development default.
 **Upgrading from 1.x?** Follow the [migration checklist](docs/UPGRADING.md) to update the plugin and keep your existing research data.
 
 ```sh
-git clone --branch v2.1.0 https://github.com/grainulation/grainulator.git
+git clone --branch v2.2.0 https://github.com/grainulation/grainulator.git
 cd grainulator
 npm ci --ignore-scripts
 node bin/grainulator.js doctor
@@ -64,14 +64,14 @@ To use Grainulator inside your agent, follow the **[Claude Code or Codex setup g
 
 The local research playground remains available through `node bin/grainulator.js preview`. It runs models using a provider account you configure locally.
 
-> **Distribution:** v2.1.0 is a [GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.1.0), not an npm registry release. For a separate local installation, follow the [archive installation guide](docs/INSTALLATION.md).
+> **Distribution:** v2.2.0 is a [GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.2.0), not an npm registry release. For a separate local installation, follow the [archive installation guide](docs/INSTALLATION.md).
 
 ### Other agents: connect through MCP
 
 Add an MCP server that runs this command, with your project's absolute path:
 
 ```sh
-npx -y github:grainulation/grainulator#v2.1.0 mcp --dir /absolute/path/to/project
+npx -y github:grainulation/grainulator#v2.2.0 mcp --dir /absolute/path/to/project
 ```
 
 Antigravity installs the full plugin. See the [agent setup guide](docs/AGENT-SETUP.md) for Antigravity, Cursor and other MCP agents.
