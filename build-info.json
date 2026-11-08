@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "id": "release-2.1.0-e797ae2ca75c1c54",
+  "id": "release-2.1.0-17102e04a3c4d217",
   "version": "2.1.0",
-  "source_sha256": "e797ae2ca75c1c54cb3d6ca1debb235710262439e9ef6caed00a3c360687e697",
+  "source_sha256": "17102e04a3c4d2172126a190ae9e224974be461c3f100ea2ca160be6d206961e",
   "files": {
     ".claude-plugin/marketplace.json": "fea38620d5ceff7e89144fc0f9071d91e3e495d48b3a43aad571ce42b7683896",
     ".claude-plugin/plugin.json": "69037f7ec3af8903a504a9e24b2835dfbc92a604245bc903b1e70f6fe7c90adf",
@@ -42,7 +42,7 @@
     "lib/build-info.js": "5664cca20c9b8eb3a02c14af69606eb814a7d84a0ef4ac323c87f111889540b5",
     "lib/confluence-pull.js": "567a40b3471d07cba4ad7de2b79bd1ad7749078f9cd20c0b799b921d87dcb80e",
     "lib/confluence-sync.js": "d01d616974ceb8ac018295d50d42217cf97fd29e01c089e6f68e9d79141f9834",
-    "lib/grainulator-mcp.js": "1a915981d3775d1b37f5c6a1dcfd9b194108ca13627cbf51781b747792aa0e5f",
+    "lib/grainulator-mcp.js": "92b6ff88f0fe810726beece675e33eefce767db65664ae97522fc6997bb6c334",
     "lib/research-cli.js": "6f091fdd42732341cfa83c0b50c12a3c6094bbae009b446337c1c65aff1f8d43",
     "lib/research-http.js": "27bf357c1b8f01c7dd2c9d955f979a36872c5aa4bde3461c3eff2a2e4a3b414f",
     "lib/research-provider.js": "172c0496cc69bf2be2f622bb6df2afc99505def1004583336fd7cfeff04e8810",
