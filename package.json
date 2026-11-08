@@ -24,6 +24,8 @@
 		".claude-plugin/",
 		".codex-plugin/",
 		"plugin.json",
+		"gemini-extension.json",
+		"GEMINI.md",
 		"mcp.json",
 		"build-info.json",
 		".mcp.json",

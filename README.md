@@ -68,13 +68,13 @@ The local research playground remains available through `node bin/grainulator.js
 
 ### Other agents: connect through MCP
 
-From the project you want Grainulator to access:
+Add an MCP server that runs this command, with your project's absolute path:
 
 ```sh
-node /path/to/grainulator/bin/grainulator.js connect --dir "$PWD"
+npx -y github:grainulation/grainulator#v2.1.0 mcp --dir /absolute/path/to/project
 ```
 
-Add the printed MCP configuration to your agent, then restart the connection. This command only prints the settings; it does not install the plugin.
+Gemini CLI can also install Grainulator as an extension. See the [agent setup guide](docs/AGENT-SETUP.md#other-agents) for Gemini, Cursor and other MCP agents.
 
 For the full Claude Code or Codex plugin, use the **[agent setup guide](docs/AGENT-SETUP.md)**. Codex needs a project folder; the guide shows how to set it. CLI and direct MCP access remain available to other hosts.
 

@@ -20,7 +20,7 @@ function writeJSON(p, obj) {
   writeFileSync(p, JSON.stringify(obj, null, "\t") + "\n");
 }
 
-for (const name of [".claude-plugin/plugin.json", ".codex-plugin/plugin.json", "plugin.json"]) {
+for (const name of [".claude-plugin/plugin.json", ".codex-plugin/plugin.json", "plugin.json", "gemini-extension.json"]) {
   const pluginPath = resolve(root, name);
   const plugin = JSON.parse(readFileSync(pluginPath, "utf8"));
   if (plugin.version !== version) {
