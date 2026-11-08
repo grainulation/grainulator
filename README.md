@@ -74,7 +74,7 @@ Add an MCP server that runs this command, with your project's absolute path:
 npx -y github:grainulation/grainulator#v2.1.0 mcp --dir /absolute/path/to/project
 ```
 
-Gemini CLI can also install Grainulator as an extension. See the [agent setup guide](docs/AGENT-SETUP.md#other-agents) for Gemini, Cursor and other MCP agents.
+Antigravity installs the full plugin. See the [agent setup guide](docs/AGENT-SETUP.md) for Antigravity, Cursor and other MCP agents.
 
 For the full Claude Code or Codex plugin, use the **[agent setup guide](docs/AGENT-SETUP.md)**. Codex needs a project folder; the guide shows how to set it. CLI and direct MCP access remain available to other hosts.
 
