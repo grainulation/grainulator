@@ -1,0 +1,9 @@
+{
+	"mcpServers": {
+		"grainulator": {
+			"command": "node",
+			"args": ["${PLUGIN_ROOT}/bin/grainulator-plugin.js"],
+			"env": { "GRAINULATOR_MEMORY_DIR": "${PLUGIN_DATA}/memory" }
+		}
+	}
+}

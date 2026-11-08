@@ -24,6 +24,7 @@
 		".claude-plugin/",
 		".codex-plugin/",
 		"plugin.json",
+		"mcp_config.json",
 		"mcp.json",
 		"build-info.json",
 		".mcp.json",
