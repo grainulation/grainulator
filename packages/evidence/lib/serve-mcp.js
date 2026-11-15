@@ -367,6 +367,11 @@ const TOOLS = [
 							type: "string",
 							enum: ["full_support", "partial_support", "contradicts"],
 						},
+						what_differs: {
+							type: ["string", "null"],
+							description:
+								"How the implementation, rule, or conclusion diverges from the cited source or preregistration.",
+						},
 						quote: {
 							type: "string",
 							description:

@@ -1,0 +1,44 @@
+[
+	{
+		"id": "L1",
+		"area": "Claim lifecycle",
+		"limit": "Older active risks and time-specific facts remain beside newer evidence; resolve requires an actual conflict relationship",
+		"status": "Deliberately bounded",
+		"mitigation": "Reviewed presentations select and cite the latest findings; full-ledger exports retain history"
+	},
+	{
+		"id": "L2",
+		"area": "Real usage acceptance",
+		"limit": "A paid-provider playground run needs a locally configured API key; native host fixture tests do not replace real host tasks",
+		"status": "Deliberately bounded",
+		"mitigation": "Install the local build in the target host and exercise it on a real task before claiming host readiness"
+	},
+	{
+		"id": "L3",
+		"area": "Public execution",
+		"limit": "The static playground configures, imports, and exports only; model execution happens strictly locally",
+		"status": "Deliberately bounded",
+		"mitigation": "Run model-backed tasks through the local CLI, MCP server, or host plugins"
+	},
+	{
+		"id": "L4",
+		"area": "Organization source cleanup",
+		"limit": "Existing bin/, lib/, public/, tests, and legacy CLI metadata remain in grainulation-dogfood alongside the site",
+		"status": "Open",
+		"mitigation": "Retained explicitly for compatibility until website-only checkout separation is scheduled"
+	},
+	{
+		"id": "L5",
+		"area": "Outcome evidence",
+		"limit": "Semantic-v2 found no general answer-quality or efficiency improvement; verification catches specified failures, not source truth",
+		"status": "Deliberately bounded",
+		"mitigation": "Use explicit verifiers and adversarial rejected-claims checks; never claim universal accuracy or cost gains"
+	},
+	{
+		"id": "L6",
+		"area": "Release boundary",
+		"limit": "Local verification does not perform remote CI, deployment, publication, or repository archival without authorization",
+		"status": "Deliberately bounded",
+		"mitigation": "Require green CI and explicit maintainer release authorization before tagging or publishing"
+	}
+]

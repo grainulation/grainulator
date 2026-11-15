@@ -1,6 +1,6 @@
 {
 	"name": "@grainulation/grainulator",
-	"version": "2.2.0",
+	"version": "2.3.0",
 	"description": "Portable evidence and execution tools for model-assisted work",
 	"type": "module",
 	"license": "MIT",
@@ -123,6 +123,7 @@
 		"packages/analytics/CHANGELOG.md",
 		"scripts/preview.mjs",
 		"evals/fixtures/",
+		"evals/rejected-claims/",
 		"scripts/record-handoff.mjs",
 		"docs/RESEARCH.md",
 		"docs/INSTALLATION.md",
@@ -137,6 +138,7 @@
 		"docs/STRUCTURE.md",
 		"docs/READINESS.md",
 		"docs/BLIND-SPOTS.md",
+		"docs/limits.json",
 		"docs/source-imports.json",
 		"public/"
 	],

@@ -1,0 +1,66 @@
+[
+	{
+		"id": "rc-001-quote-not-in-passage",
+		"description": "Quote claims 0% downtime, but the sealed passage states 15 minutes of read-only downtime.",
+		"reason_code": "NO: quote_not_in_passage",
+		"claim": {
+			"id": "c-adv-1",
+			"type": "factual",
+			"topic": "migration",
+			"content": "Logical replication cutover requires zero downtime.",
+			"evidence": "documented",
+			"source": {
+				"origin": "runbook",
+				"artifact": "docs/cutover.md",
+				"quote": "Cutover requires zero downtime.",
+				"passage": "During logical replication cutover, the primary database enters read-only mode for 15 minutes while sequences are synchronized."
+			}
+		}
+	},
+	{
+		"id": "rc-002-unresolved-equal-tier-contradiction",
+		"description": "Two active documented claims directly contradict each other without resolution.",
+		"reason_code": "NO: unresolved_conflict",
+		"seed_claims": [
+			{
+				"id": "c-base-1",
+				"type": "factual",
+				"topic": "latency",
+				"content": "P99 latency stays under 20ms at 5,000 RPS.",
+				"evidence": "documented",
+				"source": { "origin": "bench-v1", "artifact": "reports/v1.json" }
+			}
+		],
+		"claim": {
+			"id": "c-adv-2",
+			"type": "factual",
+			"topic": "latency",
+			"content": "P99 latency exceeds 180ms at 5,000 RPS.",
+			"evidence": "documented",
+			"conflicts_with": ["c-base-1"],
+			"source": {
+				"origin": "bench-v2",
+				"artifact": "reports/v2.json",
+				"witnessed_claim": "c-base-1",
+				"relationship": "contradicts",
+				"what_differs": "Measured with connection pooling disabled under burst traffic."
+			}
+		}
+	},
+	{
+		"id": "rc-003-fabricated-empty-origin",
+		"description": "Claim supplies an empty source origin string.",
+		"reason_code": "NO: invalid_source_origin",
+		"claim": {
+			"id": "c-adv-3",
+			"type": "factual",
+			"topic": "security",
+			"content": "All tokens are rotated every 60 seconds.",
+			"evidence": "tested",
+			"source": {
+				"origin": "   ",
+				"artifact": "none"
+			}
+		}
+	}
+]
