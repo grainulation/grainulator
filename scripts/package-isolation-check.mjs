@@ -45,7 +45,7 @@ try {
     report.checks.push('installed playground root redirect and runtime assets work without marketing sources');
   } finally {preview.kill('SIGTERM');await stopped;}
   const cli=path.join(installed,'bin/grainulator.js');
-  const run=args=>command([process.execPath,cli,...args],{cwd:consumer});
+  const run=(args,env={})=>command([process.execPath,cli,...args],{cwd:consumer,env});
   for(const args of [['dashboard','--help'],['evidence','connect','farmer'],['evidence','disconnect','farmer'],['analytics','connect','farmer'],['orchestrate','connect','farmer'],['legacy','farmer','start']])check(`retired command rejected: ${args.join(' ')}`,()=>assert.throws(()=>run(args)));
   check('installed binary is not a workspace symlink',()=>assert.equal(fs.lstatSync(installed).isSymbolicLink(),false));
   check('installed onboarding documents have their local link targets',()=>{
@@ -93,10 +93,17 @@ try {
   check('evidence add',()=>run(['add','--dir',sprint,'--id','r001','--type','factual','--topic','installation','--content','A synthetic installation test claim.','--evidence','stated']));
   check('evidence compile with grouped next steps',()=>{const out=run(['compile','--dir',sprint]);assert.match(out,/^Auto\n/);assert.match(out,/\nManual\n/);assert.doesNotMatch(out,/Status:|Claims:/);});
   assert.ok(JSON.parse(fs.readFileSync(path.join(sprint,'claims.json'))).claims.some(c=>c.id==='r001'));
-  check('installed CLI discovers CI export formats from encoded package path',()=>{
-    const result=JSON.parse(run(['export','ci-artifacts','compilation.json','--dir',sprint,'--formats','markdown','--output',path.join(dir,'ci-artifacts'),'--json']));
-    assert.equal(result.artifacts.length,1);assert.equal(result.artifacts[0].format,'markdown');
-    assert.match(fs.readFileSync(result.artifacts[0].file,'utf8'),/synthetic installation test claim/);
+  for(const withSummary of [false,true])check(`installed CLI discovers CI export formats from encoded package path (${withSummary?'with':'without'} step summary)`,()=>{
+    // Exercise both modes explicitly and keep the caller's GitHub summary untouched.
+    const summaryFile=path.join(dir,'github-step-summary.md');
+    const outputDir=path.join(dir,withSummary?'ci-artifacts-summary':'ci-artifacts');
+    const result=JSON.parse(run(['export','ci-artifacts','compilation.json','--dir',sprint,'--formats','markdown','--output',outputDir,'--json'],{GITHUB_STEP_SUMMARY:withSummary?summaryFile:''}));
+    assert.deepEqual(result.artifacts.map(artifact=>artifact.file),withSummary?[path.join(outputDir,'markdown.md'),path.join(outputDir,'step-summary.md')]:[path.join(outputDir,'markdown.md')]);
+    for(const artifact of result.artifacts){
+      assert.equal(artifact.format,'markdown');
+      assert.match(fs.readFileSync(artifact.file,'utf8'),/synthetic installation test claim/);
+    }
+    if(withSummary)assert.equal(fs.readFileSync(summaryFile,'utf8'),fs.readFileSync(result.artifacts[0].file,'utf8')+'\n');
   });
   const sessionFile=path.join(dir,'session.json');fs.writeFileSync(sessionFile,exportSession(createSession({question:'Test session portability',context:'Fixture only.',config:{webSearch:false}})));
   check('research preparation from exported session',()=>run(['research','--session',sessionFile,'--dir',path.join(dir,'research'),'--prepare-only']));
