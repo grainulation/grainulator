@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import {fileURLToPath} from 'node:url';
-import {spawn} from 'node:child_process';
+import {spawn,spawnSync} from 'node:child_process';
 import {once} from 'node:events';
 import net from 'node:net';
 import {command,mcp,toolJSON} from './lib/local-checks.mjs';
@@ -15,7 +15,7 @@ const check=(name,fn)=>{fn();report.checks.push(name);};
 try {
   if(process.env.GRAINULATOR_TEST_ARCHIVE){report.archive=path.resolve(process.env.GRAINULATOR_TEST_ARCHIVE);report.archiveBytes=fs.statSync(report.archive).size;}
   else {const packed=JSON.parse(command(['npm','pack','--ignore-scripts','--json','--pack-destination',dir],{cwd:root}))[0];report.archive=path.join(dir,packed.filename);report.archiveBytes=packed.size;}
-  const consumer=path.join(dir,'consumer');fs.mkdirSync(consumer);fs.writeFileSync(path.join(consumer,'package.json'),JSON.stringify({name:'isolated-consumer',version:'0.0.0',private:true}));
+  const consumer=path.join(dir,'consumer with spaces # café');fs.mkdirSync(consumer);fs.writeFileSync(path.join(consumer,'package.json'),JSON.stringify({name:'isolated-consumer',version:'0.0.0',private:true}));
   command(['npm','install','--offline','--ignore-scripts','--no-audit','--no-fund','--cache',path.join(dir,'empty-cache'),report.archive],{cwd:consumer});
   report.checks.push('offline install with empty npm cache and scripts disabled');
   const installed=path.join(consumer,'node_modules/@grainulation/grainulator');report.installed=installed;
@@ -45,7 +45,7 @@ try {
     report.checks.push('installed playground root redirect and runtime assets work without marketing sources');
   } finally {preview.kill('SIGTERM');await stopped;}
   const cli=path.join(installed,'bin/grainulator.js');
-  const run=args=>command([process.execPath,cli,...args],{cwd:consumer});
+  const run=(args,env={})=>command([process.execPath,cli,...args],{cwd:consumer,env});
   for(const args of [['dashboard','--help'],['evidence','connect','farmer'],['evidence','disconnect','farmer'],['analytics','connect','farmer'],['orchestrate','connect','farmer'],['legacy','farmer','start']])check(`retired command rejected: ${args.join(' ')}`,()=>assert.throws(()=>run(args)));
   check('installed binary is not a workspace symlink',()=>assert.equal(fs.lstatSync(installed).isSymbolicLink(),false));
   check('installed onboarding documents have their local link targets',()=>{
@@ -63,12 +63,48 @@ try {
   check('CLI help',()=>assert.match(run(['--help']),/Grainulator/));
   check('doctor validates the required runtime and packaged components',()=>{const checks=JSON.parse(run(['doctor','--json'])).checks;assert.ok(checks.every(c=>c.available));assert.equal(checks.find(c=>c.component==='node').required,JSON.parse(fs.readFileSync(path.join(installed,'package.json'))).engines.node);});
   if(fs.existsSync(path.join(installed,'build-info.json')))check('identified build verifies all recorded files',()=>{const build=JSON.parse(run(['doctor','--json'])).build;assert.equal(build.verified,true);assert.match(build.id,/^(?:local-|release-[^-]+-)[a-f0-9]{16}$/);});
+  // Use the real installed package in a path requiring file-URL encoding, never a source symlink.
+  const corpus=JSON.parse(fs.readFileSync(path.join(installed,'evals/rejected-claims/corpus.json'),'utf8'));
+  const verifier=path.join(installed,'evals/rejected-claims/verifier.mjs');
+  const answerFor=verdict=>JSON.stringify(Object.fromEntries(corpus.map(entry=>[entry.id,{...(verdict===undefined?{}:{verdict}),reason_code:entry.reason_code}])));
+  for(const [name,answer,exitCode,verifierCode,status,maxRounds] of [
+    ['honest REJECTED',answerFor('REJECTED'),0,0,'verified',3],
+    ['dishonest ACCEPTED',answerFor('ACCEPTED'),3,3,'soundness_break',3],
+    ['missing verdict',answerFor(undefined),2,1,null,1],
+    ['unknown verdict',answerFor('UNKNOWN'),2,1,null,1],
+    ['malformed answer','{',2,1,null,1],
+  ])check(`installed verifier through runner in encoded path: ${name}`,()=>{
+    const workspace=path.join(dir,`verifier-${name.replaceAll(' ','-')}`);fs.mkdirSync(workspace);
+    const adapterCode=`console.log(${JSON.stringify(JSON.stringify({answer}))})`;
+    const result=spawnSync(process.execPath,[cli,'run','--task','Reject adversarial fixture claims','--adapter',process.execPath,'--adapter-args',JSON.stringify(['-e',adapterCode]),'--verify',JSON.stringify([process.execPath,verifier]),'--dir',workspace,'--max-rounds',String(maxRounds),'--timeout-ms','10000','--json'],{cwd:consumer,encoding:'utf8',timeout:30000});
+    assert.ifError(result.error);assert.equal(result.status,exitCode,result.stderr||result.stdout);
+    const runResult=JSON.parse(result.stdout);
+    if(status)assert.equal(runResult.status,status);else assert.notEqual(runResult.status,'verified');
+    assert.equal(runResult.rounds.length,1,'soundness breaks must halt immediately; other fixtures use one round');
+    assert.equal(runResult.rounds[0].verification.exitCode,verifierCode);
+    assert.equal(runResult.rounds[0].verification.passed,exitCode===0);
+    assert.equal(runResult.rounds[0].verification.soundnessBreak,verifierCode===3);
+    if(verifierCode===0)assert.match(runResult.rounds[0].verification.feedback,/YES: all 3 adversarial claims rejected as expected/);
+    if(verifierCode===3)assert.match(runResult.rounds[0].verification.feedback,/LOOK: soundness break/);
+  });
   for(const component of ['evidence','memory','export','analytics','orchestrate','legacy'])check(`${component} help`,()=>run([component,'--help']));
   const sprint=path.join(dir,'sprint');
   check('evidence init',()=>run(['init','--dir',sprint,'--question','Can the installed archive run independently?','--audience','test','--constraints','Local only','--done','Validated artifact']));
   check('evidence add',()=>run(['add','--dir',sprint,'--id','r001','--type','factual','--topic','installation','--content','A synthetic installation test claim.','--evidence','stated']));
   check('evidence compile with grouped next steps',()=>{const out=run(['compile','--dir',sprint]);assert.match(out,/^Auto\n/);assert.match(out,/\nManual\n/);assert.doesNotMatch(out,/Status:|Claims:/);});
   assert.ok(JSON.parse(fs.readFileSync(path.join(sprint,'claims.json'))).claims.some(c=>c.id==='r001'));
+  for(const withSummary of [false,true])check(`installed CLI discovers CI export formats from encoded package path (${withSummary?'with':'without'} step summary)`,()=>{
+    // Exercise both modes explicitly and keep the caller's GitHub summary untouched.
+    const summaryFile=path.join(dir,'github-step-summary.md');
+    const outputDir=path.join(dir,withSummary?'ci-artifacts-summary':'ci-artifacts');
+    const result=JSON.parse(run(['export','ci-artifacts','compilation.json','--dir',sprint,'--formats','markdown','--output',outputDir,'--json'],{GITHUB_STEP_SUMMARY:withSummary?summaryFile:''}));
+    assert.deepEqual(result.artifacts.map(artifact=>artifact.file),withSummary?[path.join(outputDir,'markdown.md'),path.join(outputDir,'step-summary.md')]:[path.join(outputDir,'markdown.md')]);
+    for(const artifact of result.artifacts){
+      assert.equal(artifact.format,'markdown');
+      assert.match(fs.readFileSync(artifact.file,'utf8'),/synthetic installation test claim/);
+    }
+    if(withSummary)assert.equal(fs.readFileSync(summaryFile,'utf8'),fs.readFileSync(result.artifacts[0].file,'utf8')+'\n');
+  });
   const sessionFile=path.join(dir,'session.json');fs.writeFileSync(sessionFile,exportSession(createSession({question:'Test session portability',context:'Fixture only.',config:{webSearch:false}})));
   check('research preparation from exported session',()=>run(['research','--session',sessionFile,'--dir',path.join(dir,'research'),'--prepare-only']));
   for(const [name,args,tool] of [['grainulator',['mcp','--dir',sprint],'status'],['wheat',['wheat','mcp','--dir',sprint],'wheat/status'],['mill',['export','serve-mcp','--dir',sprint],'mill/formats'],['silo',['memory','serve-mcp'],'silo/list']]) {

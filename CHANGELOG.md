@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2026-11-15
+
+### Added
+
+- Structured scope differences on claims: `source.what_differs` (`--what-differs` in CLI `add`, `what_differs` in MCP `add_claim`), preserved through `wheat-compiler` into `compilation.json` so witnesses can record what differs between a cited source and the current scope.
+- First-class verifier soundness break (`exit 3`): `grainulator run --verify <cmd>` treats exit code `3` as `status: "soundness_break"`, stops the retry loop immediately, and exits with code `3`.
+- Adversarial rejected-claims evaluation corpus (`evals/rejected-claims/corpus.json` and `evals/rejected-claims/verifier.mjs`) testing three structural rejection cases: non-verbatim quotes, unresolved equal-tier contradictions, and empty source origins.
+- Machine-readable limits ledger (`docs/limits.json`, `L1`–`L6`) synced with the summary table in `docs/BLIND-SPOTS.md` and verified in the test suite.
+- Agent onboarding prompt block and 4-column Routes & Requirements table in `README.md`, plus explicit no-bypass verification and reporting rules in `AGENTS.md`.
+
 ## [2.2.0] - 2026-11-08
 
 ### Added

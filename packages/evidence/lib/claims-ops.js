@@ -181,6 +181,7 @@ function addClaimUnlocked(dir, args) {
 			"connector",
 			"witnessed_claim",
 			"challenged_claim",
+			"what_differs",
 		])
 			if (
 				args.source[key] !== undefined &&

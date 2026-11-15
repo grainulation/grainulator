@@ -3,6 +3,7 @@
 "use strict";
 
 const path = require("node:path");
+const { pathToFileURL } = require("node:url");
 const { parseArgs } = require("node:util");
 const { fork } = require("node:child_process");
 
@@ -420,7 +421,7 @@ async function runCiArtifacts(args) {
   const formatMap = {};
   for (const file of formatFiles) {
     try {
-      const mod = await import(path.join(FORMATS_DIR, file));
+      const mod = await import(pathToFileURL(path.join(FORMATS_DIR, file)).href);
       formatMap[mod.name || file.replace(".mjs", "")] = mod;
     } catch {}
   }

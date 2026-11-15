@@ -51,6 +51,7 @@ Options:
   --source-connector <name>    Optional source connector
   --witnessed-claim <id>       Claim this finding corroborates or contradicts
   --relationship <kind>        full_support, partial_support or contradicts
+  --what-differs <text>        How this implementation or finding diverges from the cited source
   --quote <text>               Exact sentence the finding relies on (needs a passage)
   --passage-file <path>        File holding the paragraph that contains the quote
   --passage-sha256 <hex>       Digest of a passage already stored in this sprint
@@ -83,6 +84,7 @@ Examples:
 	const connector = parseFlag(args, "--source-connector");
 	const witnessed_claim = parseFlag(args, "--witnessed-claim");
 	const relationship = parseFlag(args, "--relationship");
+	const what_differs = parseFlag(args, "--what-differs");
 	const quote = parseFlag(args, "--quote");
 	const passage_sha256 = parseFlag(args, "--passage-sha256");
 	const passageFile = parseFlag(args, "--passage-file");
@@ -100,6 +102,7 @@ Examples:
 		Object.entries({
 			witnessed_claim,
 			relationship,
+			what_differs,
 			quote,
 			passage,
 			passage_sha256,

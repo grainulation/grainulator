@@ -10,6 +10,10 @@ Run `npm test` for component suites and dogfood regressions. Run `node test/conf
 
 The permission dashboard and its connectors have been removed at the maintainer’s request. Do not restore that application, its hooks, or its runtime dependencies. Native hosts own permissions and remote access. Generated evidence and analytics reports remain supported.
 
+## Verification and reporting
+
+Never bypass a failing check or permission refusal with `sudo`, `chmod`, `chown`, `rm`, by editing ledger artifacts (`claims.json`, `compilation.json`) directly to skip validation, or by weakening tests or verification gates. Quote exact commands, exit codes (including exit `3` on verifier soundness breaks), and terminal verdict lines when reporting verification evidence. Distinguish direct CLI/MCP checks from full host plugin discovery.
+
 ## Next-step output
 
 After a meaningful pass, use the current compiler's `next_actions` to present exactly two bullet lists labeled **Auto** and **Manual**. Auto is work the agent can continue under existing authorization. Manual is only work requiring the user's decision, access, or action. Classify using the current request and constraints; compiler suggestions never grant permission. Continue authorized Auto work without asking again.

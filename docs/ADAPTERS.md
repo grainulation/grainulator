@@ -16,7 +16,7 @@ Write one response to stdout and diagnostic logs to stderr:
 
 The command runs inside the workspace selected by `--dir`. A coding-agent wrapper may edit that workspace using the host's existing permissions. The runner is not a sandbox or an approval service.
 
-A verifier receives the same request plus `answer` and `answerHash`. Exit 0 means its declared check passed; any other exit means it failed. Output becomes feedback for the next attempt. Pick a verifier that actually measures your task (for coding, a script running relevant independent tests). A passing check does not establish facts outside that check's scope. Trace hashes identify an answer, not an attestation of all workspace files.
+A verifier receives the same request plus `answer` and `answerHash`. Exit 0 means its declared check passed; exit 3 (`ACCEPT` — soundness break, such as falsely accepting a contradicted claim or fabricated citation) immediately halts the loop with `status: "soundness_break"` and CLI exit code 3; any other non-zero exit means the check failed and its output becomes feedback for the next attempt. Pick a verifier that actually measures your task (for coding, a script running relevant independent tests). A passing check does not establish facts outside that check's scope. Trace hashes identify an answer, not an attestation of all workspace files.
 
 ```sh
 node bin/grainulator.js run \

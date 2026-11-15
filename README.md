@@ -54,7 +54,7 @@ Requires **Node.js 24+**. Node 25 is the development default.
 **Upgrading from 1.x?** Follow the [migration checklist](docs/UPGRADING.md) to update the plugin and keep your existing research data.
 
 ```sh
-git clone --branch v2.2.0 https://github.com/grainulation/grainulator.git
+git clone --branch v2.3.0 https://github.com/grainulation/grainulator.git
 cd grainulator
 npm ci --ignore-scripts
 node bin/grainulator.js doctor
@@ -64,19 +64,34 @@ To use Grainulator inside your agent, follow the **[Claude Code or Codex setup g
 
 The local research playground remains available through `node bin/grainulator.js preview`. It runs models using a provider account you configure locally.
 
-> **Distribution:** v2.2.0 is a [GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.2.0), not an npm registry release. For a separate local installation, follow the [archive installation guide](docs/INSTALLATION.md).
+> **Distribution:** v2.3.0 is a [GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.3.0), not an npm registry release. For a separate local installation, follow the [archive installation guide](docs/INSTALLATION.md).
 
 ### Other agents: connect through MCP
 
 Add an MCP server that runs this command, with your project's absolute path:
 
 ```sh
-npx -y github:grainulation/grainulator#v2.2.0 mcp --dir /absolute/path/to/project
+npx -y github:grainulation/grainulator#v2.3.0 mcp --dir /absolute/path/to/project
 ```
 
 Antigravity installs the full plugin. See the [agent setup guide](docs/AGENT-SETUP.md) for Antigravity, Cursor and other MCP agents.
 
 For the full Claude Code or Codex plugin, use the **[agent setup guide](docs/AGENT-SETUP.md)**. Codex needs a project folder; the guide shows how to set it. CLI and direct MCP access remain available to other hosts.
+
+Or point your coding agent (Claude Code, Codex, or Antigravity) at this checkout:
+
+```text
+Read README.md and AGENTS.md in the Grainulator repository. Run node bin/grainulator.js doctor
+and node bin/grainulator.js demo, and report the exit codes and final status lines. Then tell me
+which routes below this machine can run, and ask me before starting any model-backed or paid run.
+```
+
+| Route | What it does | Needs | Time / Cost |
+| --- | --- | --- | --- |
+| **1. Local ledger & offline demo** | Runs `doctor`, `demo`, `init`, `add`, and `compile` | Node.js ≥24; no credentials | ~2 s · $0 (no model calls) |
+| **2. Managed command verifier** | Runs `grainulator run --adapter ... --verify ...` with soundness-break (`exit 3`) enforcement | Route 1 + local verifier script | Per-round timeout & round cap |
+| **3. Host plugin or MCP server** | Connects `add_claim`, `compile`, `resolve`, `memory`, and `exports` to Claude Code, Codex, Antigravity, or MCP hosts | Route 1 + host agent | Host session · $0 Grainulator overhead |
+| **4. Semantic & adversarial evals** | Runs `evals/rejected-claims` (offline) or `scripts/evaluate-semantic.mjs` (model-backed) | Route 1 (+ API credentials for live model matrix) | Offline $0 · live matrix requires explicit budget |
 
 ## Put it to work
 

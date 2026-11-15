@@ -15,6 +15,17 @@ Memory validation: 138 component tests on Node 25, plus 15 targeted memory/unifi
 
 ## Still open or deliberately bounded
 
+The machine-readable ledger lives in [`docs/limits.json`](limits.json) and is checked against the table below in `npm test`:
+
+| ID | Area | Limit / Boundary | Status | Mitigation / Reality |
+| --- | --- | --- | --- | --- |
+| `L1` | Claim lifecycle | Older active risks and time-specific facts remain beside newer evidence; resolve requires an actual conflict relationship | Deliberately bounded | Reviewed presentations select and cite the latest findings; full-ledger exports retain history |
+| `L2` | Real usage acceptance | A paid-provider playground run needs a locally configured API key; native host fixture tests do not replace real host tasks | Deliberately bounded | Install the local build in the target host and exercise it on a real task before claiming host readiness |
+| `L3` | Public execution | The static playground configures, imports, and exports only; model execution happens strictly locally | Deliberately bounded | Run model-backed tasks through the local CLI, MCP server, or host plugins |
+| `L4` | Organization source cleanup | Existing bin/, lib/, public/, tests, and legacy CLI metadata remain in grainulation-dogfood alongside the site | Open | Retained explicitly for compatibility until website-only checkout separation is scheduled |
+| `L5` | Outcome evidence | Semantic-v2 found no general answer-quality or efficiency improvement; verification catches specified failures, not source truth | Deliberately bounded | Use explicit verifiers and adversarial rejected-claims checks; never claim universal accuracy or cost gains |
+| `L6` | Release boundary | Local verification does not perform remote CI, deployment, publication, or repository archival without authorization | Deliberately bounded | Require green CI and explicit maintainer release authorization before tagging or publishing |
+
 - **Claim lifecycle:** older active risks and time-specific facts remain beside newer evidence. For example, r002 still prompts migration investigation after r053 records the matrix, and r018 combines local routing with unperformed public deployment. The current `resolve` operation requires an actual conflict relationship; it is not a generic risk-closure command. Do not invent contradiction edges or exclude a whole topic to silence useful residual risks. A first-class closure/supersession workflow remains a product gap. The reviewed presentation selects and cites the latest findings; the generic full-ledger export retains history.
 - **Real usage acceptance:** a paid-provider playground run needs a locally configured API key. Native host fixture tests do not replace installing the local build in the maintainer's normal host and using it on a real task.
 - **Public execution:** the static playground configures, imports, and exports; model execution happens locally. A hosted model-execution service is not delivered by the Pages artifact.
