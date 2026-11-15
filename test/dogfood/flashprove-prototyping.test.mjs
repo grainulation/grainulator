@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -156,4 +157,130 @@ test("docs/limits.json matches the rendered Markdown table in docs/BLIND-SPOTS.m
 		const [, id, area, limit, status, mitigation] = rows[i];
 		assert.deepEqual({ id, area, limit, status, mitigation }, limits[i]);
 	}
+});
+
+const verifierPath = path.join(ROOT, "evals/rejected-claims/verifier.mjs");
+const rejectedCorpus = JSON.parse(
+	fs.readFileSync(path.join(ROOT, "evals/rejected-claims/corpus.json"), "utf8"),
+);
+const rejectionAnswer = (corpus = rejectedCorpus) =>
+	Object.fromEntries(
+		corpus.map((entry) => [
+			entry.id,
+			{ verdict: "REJECTED", reason_code: entry.reason_code },
+		]),
+	);
+function checkVerifier(script, input, expectedExit, expectedOutput) {
+	const result = spawnSync(process.execPath, [script], {
+		input: typeof input === "string" ? input : JSON.stringify(input),
+		encoding: "utf8",
+		timeout: 10_000,
+	});
+	assert.equal(result.error, undefined);
+	assert.equal(result.status, expectedExit, result.stderr || result.stdout);
+	assert.match(result.stdout + result.stderr, expectedOutput);
+	if (expectedExit !== 0) assert.doesNotMatch(result.stdout, /YES:/);
+}
+
+test("verifier subprocess requires explicit, complete rejection reports", () => {
+	checkVerifier(verifierPath, { answer: rejectionAnswer() }, 0, /YES: all 3/);
+	checkVerifier(
+		verifierPath,
+		{ answer: JSON.stringify(rejectionAnswer()) },
+		0,
+		/YES: all 3/,
+	);
+	for (const answer of [null, [], 123, "not JSON", {}]) {
+		checkVerifier(verifierPath, { answer }, 1, /Verifier error:/);
+	}
+	for (const report of [
+		null,
+		[],
+		"REJECTED",
+		{},
+		{ reason_code: rejectedCorpus[0].reason_code },
+		{ verdict: null, reason_code: rejectedCorpus[0].reason_code },
+		{ verdict: "APPROVED", reason_code: rejectedCorpus[0].reason_code },
+		{ verdict: "REJECTED" },
+		{ verdict: "REJECTED", reason_code: "wrong" },
+	]) {
+		const answer = rejectionAnswer();
+		answer[rejectedCorpus[0].id] = report;
+		checkVerifier(verifierPath, { answer }, 1, /Verifier error:/);
+	}
+	for (const input of ["{", "null", "[]", ""]) {
+		checkVerifier(verifierPath, input, 1, /Verifier error:/);
+	}
+	// Even an incomplete report must not hide an explicit false acceptance.
+	checkVerifier(
+		verifierPath,
+		{ answer: { [rejectedCorpus[2].id]: { verdict: "ACCEPTED" } } },
+		3,
+		/LOOK: soundness break/,
+	);
+});
+
+function copiedVerifier(t) {
+	const dir = fs.mkdtempSync(
+		path.join(os.tmpdir(), "grainulator verifier # ü-"),
+	);
+	t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+	fs.mkdirSync(path.join(dir, "evals/rejected-claims"), { recursive: true });
+	// Junctions work without Windows symlink privileges; native directory links elsewhere.
+	for (const name of ["lib", "packages"]) {
+		fs.symlinkSync(
+			path.join(ROOT, name),
+			path.join(dir, name),
+			process.platform === "win32" ? "junction" : "dir",
+		);
+	}
+	const script = path.join(dir, "evals/rejected-claims/verifier.mjs");
+	const corpusPath = path.join(dir, "evals/rejected-claims/corpus.json");
+	fs.copyFileSync(verifierPath, script);
+	fs.writeFileSync(corpusPath, JSON.stringify(rejectedCorpus));
+	return { dir, script, corpusPath };
+}
+
+test("verifier executes from paths containing spaces, hash and Unicode", (t) => {
+	const { script } = copiedVerifier(t);
+	checkVerifier(script, { answer: rejectionAnswer() }, 0, /YES: all 3/);
+	checkVerifier(script, { answer: {} }, 1, /Verifier error:/);
+	checkVerifier(
+		script,
+		{ answer: { [rejectedCorpus[0].id]: { verdict: "ACCEPTED" } } },
+		3,
+		/LOOK: soundness break/,
+	);
+});
+
+test("verifier executes through a symlink alias", {
+	skip:
+		process.platform === "win32"
+			? "File symlinks require elevated Windows privileges"
+			: false,
+}, (t) => {
+	const { dir, script } = copiedVerifier(t);
+	const alias = path.join(dir, "alias # ü.mjs");
+	fs.symlinkSync(script, alias);
+	checkVerifier(alias, { answer: rejectionAnswer() }, 0, /YES: all 3/);
+	checkVerifier(alias, { answer: {} }, 1, /Verifier error:/);
+});
+
+test("verifier rejects local reason drift and fixture setup failures", (t) => {
+	const { script, corpusPath } = copiedVerifier(t);
+	const corpus = structuredClone(rejectedCorpus);
+	// Still rejected structurally, but for a different reason than the fixture promises.
+	corpus[0].claim.source.origin = "";
+	fs.writeFileSync(corpusPath, JSON.stringify(corpus));
+	checkVerifier(
+		script,
+		{ answer: rejectionAnswer(corpus) },
+		1,
+		/Local reason mismatch/,
+	);
+	corpus[0] = structuredClone(rejectedCorpus[0]);
+	corpus[0].seed_claims = [{ id: "invalid-seed" }];
+	fs.writeFileSync(corpusPath, JSON.stringify(corpus));
+	checkVerifier(script, { answer: rejectionAnswer(corpus) }, 1, /seed error/);
+	assert.throws(() => evaluateAdversarialCase(corpus[0]), /seed error/);
 });

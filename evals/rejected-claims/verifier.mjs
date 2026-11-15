@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { compile } from "../../packages/evidence/compiler/wheat-compiler.js";
 import { addClaim } from "../../packages/evidence/lib/claims-ops.js";
 import { initializeSprint } from "../../lib/sprint-init.js";
@@ -12,24 +13,25 @@ import { initializeSprint } from "../../lib/sprint-init.js";
 export function evaluateAdversarialCase(entry) {
 	const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-rc-"));
 	try {
-		initializeSprint(tmp, {
+		const initialized = initializeSprint(tmp, {
 			question: "Adversarial rejected-claims check",
 			audience: "engineers",
 			constraints: "",
 			done: "Reject invalid or unresolved conflicting claims",
 		});
+		if (initialized.status === "error") throw new Error(`setup error: ${initialized.message}`);
 		for (const seed of entry.seed_claims || []) {
 			const res = addClaim(tmp, seed);
 			if (res.status === "error") {
-				return { rejected: true, reason: `seed error: ${res.message}` };
+				throw new Error(`seed error: ${res.message}`);
 			}
 		}
 		const added = addClaim(tmp, entry.claim);
 		if (added.status === "error") {
-			if ( added.message.includes("quote") || added.message.includes("passage")) {
+			if (added.message === "source.quote does not occur in the passage.") {
 				return { rejected: true, reason: "NO: quote_not_in_passage" };
 			}
-			if (added.message.includes("origin")) {
+			if (added.message === "source.origin must be a nonempty string.") {
 				return { rejected: true, reason: "NO: invalid_source_origin" };
 			}
 			return { rejected: true, reason: `NO: ${added.message}` };
@@ -39,47 +41,73 @@ export function evaluateAdversarialCase(entry) {
 			path.join(tmp, "compilation.json"),
 			tmp,
 		);
-		if (compiled.status === "blocked" || (compiled.conflicts?.unresolved?.length ?? 0) > 0) {
+		if ((compiled.conflict_graph?.unresolved?.length ?? 0) > 0) {
 			return { rejected: true, reason: "NO: unresolved_conflict" };
 		}
-		return { rejected: false, reason: "ACCEPT: claim was falsely certified" };
+		if (compiled.status !== "ready") {
+			throw new Error(`Unexpected compilation status: ${compiled.status}`);
+		}
+		return { rejected: false, reason: "ACCEPT: adversarial claim passed structural checks" };
 	} finally {
 		fs.rmSync(tmp, { recursive: true, force: true });
 	}
 }
 
-// When invoked as a runner verifier subprocess: reads request from stdin.
-// If the adapter answer reports all cases rejected with their expected reason_code -> exit 0.
-// If the adapter or checker falsely accepts an adversarial claim -> exit 3 (soundness break).
-if (import.meta.url === `file://${process.argv[1]}`) {
-	const raw = fs.readFileSync(0, "utf8").trim();
-	const req = raw ? JSON.parse(raw) : {};
-	let parsed;
+// Resolve native paths rather than constructing file URLs: spaces, #, Unicode,
+// Windows drive letters and a symlink used as argv[1] must all run the verifier.
+function isMain() {
+	if (!process.argv[1]) return false;
 	try {
-		parsed = typeof req.answer === "string" ? JSON.parse(req.answer) : req.answer;
+		return fs.realpathSync(fileURLToPath(import.meta.url)) ===
+			fs.realpathSync(process.argv[1]);
 	} catch {
-		console.error("Invalid JSON answer from adapter");
-		process.exit(1);
+		return false;
 	}
-	const corpus = JSON.parse(
-		fs.readFileSync(new URL("./corpus.json", import.meta.url), "utf8"),
-	);
-	for (const entry of corpus) {
-		const actual = evaluateAdversarialCase(entry);
-		const reported = parsed?.[entry.id];
-		if (!actual.rejected || reported?.verdict === "ACCEPTED") {
-			console.error(
-				`LOOK: soundness break on ${entry.id}: expected ${entry.reason_code}, got ${reported?.verdict || actual.reason}`,
-			);
-			process.exit(3);
+}
+
+const isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+
+// Exit 0 requires explicit rejection and matching adapter AND local reasons.
+// Exit 3 denotes a false acceptance; malformed input/setup failures use exit 1.
+if (isMain()) {
+	try {
+		const req = JSON.parse(fs.readFileSync(0, "utf8"));
+		if (!isObject(req)) throw new Error("Request must be an object");
+		const parsed = typeof req.answer === "string" ? JSON.parse(req.answer) : req.answer;
+		if (!isObject(parsed)) throw new Error("Answer must be an object");
+		const corpus = JSON.parse(
+			fs.readFileSync(new URL("./corpus.json", import.meta.url), "utf8"),
+		);
+		// An explicit false acceptance remains a soundness break even if another
+		// case is absent. Otherwise require the complete, valid rejection report.
+		for (const entry of corpus) {
+			const reported = parsed[entry.id];
+			if (isObject(reported) && reported.verdict === "ACCEPTED") {
+				console.error(`LOOK: soundness break on ${entry.id}: expected ${entry.reason_code}, got ACCEPTED`);
+				process.exit(3);
+			}
 		}
-		if (reported?.reason_code !== entry.reason_code) {
-			console.error(
-				`Mismatch on ${entry.id}: expected ${entry.reason_code}, got ${reported?.reason_code}`,
-			);
-			process.exit(1);
+		for (const entry of corpus) {
+			const reported = parsed[entry.id];
+			if (!Object.hasOwn(parsed, entry.id) || !isObject(reported) ||
+				reported.verdict !== "REJECTED" || typeof reported.reason_code !== "string") {
+				throw new Error(`Invalid rejection report for ${entry.id}`);
+			}
+			if (reported.reason_code !== entry.reason_code) {
+				throw new Error(`Mismatch on ${entry.id}: expected ${entry.reason_code}, got ${reported.reason_code}`);
+			}
+			const actual = evaluateAdversarialCase(entry);
+			if (!actual.rejected) {
+				console.error(`LOOK: soundness break on ${entry.id}: expected ${entry.reason_code}, got ${actual.reason}`);
+				process.exit(3);
+			}
+			if (actual.reason !== entry.reason_code) {
+				throw new Error(`Local reason mismatch on ${entry.id}: expected ${entry.reason_code}, got ${actual.reason}`);
+			}
 		}
+		console.log(`YES: all ${corpus.length} adversarial claims rejected as expected`);
+	} catch (err) {
+		console.error(`Verifier error: ${err.message}`);
+		process.exitCode = 1;
 	}
-	console.log(`YES: all ${corpus.length} adversarial claims rejected as expected`);
-	process.exit(0);
 }

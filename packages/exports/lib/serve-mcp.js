@@ -18,6 +18,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { pathToFileURL } = require("node:url");
 const readline = require("readline");
 const { jsonRpcError, jsonRpcResponse } = require("../../shared/lib/mcp.cjs");
 const { isInsideDir } = require("../../shared/lib/paths.cjs");
@@ -47,7 +48,7 @@ async function discoverFormats() {
       .filter((f) => f.endsWith(".mjs") && !f.startsWith("_"));
     for (const file of files) {
       try {
-        const mod = await import(path.join(FORMATS_DIR, file));
+        const mod = await import(pathToFileURL(path.join(FORMATS_DIR, file)).href);
         formats.push({
           id: file.replace(".mjs", ""),
           name: mod.name || file.replace(".mjs", ""),
