@@ -140,7 +140,8 @@
 		"docs/BLIND-SPOTS.md",
 		"docs/limits.json",
 		"docs/source-imports.json",
-		"public/"
+		"public/",
+		"docs/GROUNDED-REPORTS.md"
 	],
 	"author": "grainulation contributors",
 	"bugs": {

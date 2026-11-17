@@ -120,7 +120,8 @@
     "destination": "packages/evidence",
     "localChanges": [
       "AGENTS.md",
-      "templates/claude.md"
+      "templates/claude.md",
+      "lib/load-claims.js"
     ],
     "includedUntracked": [],
     "sha256": {

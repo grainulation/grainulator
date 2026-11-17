@@ -10,6 +10,7 @@
 import fs from "fs";
 import path from "path";
 import { checkAndMigrateSchema } from "../compiler/wheat-compiler.js";
+import { readBoundedRegularFile } from "./passages.js";
 
 /**
  * Load and migrate claims.json from a directory.
@@ -32,7 +33,13 @@ export function loadClaims(dir, opts = {}) {
 
 	let raw;
 	try {
-		raw = fs.readFileSync(claimsPath, "utf8");
+		if (opts.maxBytes !== undefined) {
+			if (!Number.isSafeInteger(opts.maxBytes) || opts.maxBytes <= 0)
+				throw new Error("maxBytes must be a positive safe integer.");
+			const read = readBoundedRegularFile(claimsPath, opts.maxBytes);
+			if (!read.ok) throw new Error(`Claims file is unusable (${read.code}).`);
+			raw = new TextDecoder("utf-8", { fatal: true }).decode(read.data);
+		} else raw = fs.readFileSync(claimsPath, "utf8");
 	} catch (err) {
 		return {
 			data: null,
@@ -71,5 +78,6 @@ export function loadClaims(dir, opts = {}) {
 		data: result.errors.length > 0 ? null : result.data,
 		errors: result.errors,
 		path: claimsPath,
+		...(opts.maxBytes !== undefined ? { raw } : {}),
 	};
 }
