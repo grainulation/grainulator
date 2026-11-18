@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2026-11-17
+
+### Added
+
+- Grounded report packet and auditing: `grainulator report packet` generates a verifiable bundle containing claims, passages, certificates, and an audit trail of grounded sentences.
+- DSSE in-toto statement attestation: `grainulator report attest` and `grainulator report verify-attestation` generate and verify cryptographically-signed DSSE envelopes enclosing in-toto Statement v1 predicates (`https://grainulation.org/attestations/grounded-report/v1`).
+- Semantic evaluation and blind compare: `grainulator report verify-semantics` validates claim coverage and structured scope differences; `grainulator report compare` performs blind scoring against ungrounded draft baselines.
+- Grounding Guard and strict validation: `grainulator report check --strict` flags ungrounded assertions, missing passages, or stale certificates with immediate non-zero exit codes.
+- Canonical source alias normalization: automatic deduplication and normalization for DOI (`https://doi.org/...`), arXiv (`arxiv:...`), and standard web URLs in passages and evidence records.
+- Reference grounded-report sprint example (`examples/grounded-report-sprint`) and comprehensive end-to-end dogfood test suite.
+
 ## [2.3.0] - 2026-11-15
 
 ### Added
