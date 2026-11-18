@@ -1,6 +1,6 @@
-# Harvest Metrics Reference
+# Grainulator analytics Metrics Reference
 
-Harvest tracks quantitative metrics across your wheat sprints. Every metric is computed from `compilation.json` and stored as a JSON object with a consistent schema.
+Grainulator analytics tracks quantitative metrics across your evidence sprints. Every metric is computed from `compilation.json` and stored as a JSON object with a consistent schema.
 
 ## Claim Counts by Type
 
@@ -69,7 +69,7 @@ Measures how many distinct topics have claims and the depth per topic. Topics wi
 
 ## Prediction Accuracy (Brier Scores)
 
-After `/calibrate`, harvest computes Brier scores for estimate claims. Lower is better. A score of 0 means perfect prediction; 1 means maximally wrong.
+After `/calibrate`, analytics computes Brier scores for estimate claims. Lower is better. A score of 0 means perfect prediction; 1 means maximally wrong.
 
 ```json
 {
@@ -158,4 +158,4 @@ Every metric object includes:
 | `timestamp` | string | ISO 8601 timestamp of computation |
 | `data`      | object | Metric-specific payload           |
 
-Harvest writes metrics to `.harvest/metrics.jsonl` as newline-delimited JSON. Each line is one metric snapshot. Historical data is never overwritten — harvest appends only, giving you a full time series.
+Grainulator analytics writes metrics to `.analytics/metrics.jsonl` as newline-delimited JSON. Each line is one metric snapshot. Historical data is never overwritten — analytics appends only, giving you a full time series.

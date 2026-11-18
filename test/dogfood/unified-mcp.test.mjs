@@ -107,7 +107,7 @@ test("stdio performs evidence, reusable memory, exports, resources and hidden al
 		claim.content,
 	);
 	assert.equal(
-		(await call("wheat/search", { query: "literal" })).claims[0].content,
+		(await call("search", { query: "literal" })).claims[0].content,
 		claim.content,
 	);
 	assert.equal(
@@ -118,7 +118,7 @@ test("stdio performs evidence, reusable memory, exports, resources and hidden al
 		(await call("memory_search", { query: "literal" })).claims[0].content,
 		claim.content,
 	);
-	assert.equal((await call("silo/list")).count, 1);
+	assert.equal((await call("memory_list")).count, 1);
 	await call("init", {
 		dir: "second",
 		question: "Can another sprint reuse the finding?",
@@ -136,7 +136,7 @@ test("stdio performs evidence, reusable memory, exports, resources and hidden al
 	assert.equal((await call("search", { query: "literal" })).claims.length, 1);
 	assert.ok((await call("exports_formats")).count > 0);
 	assert.equal(
-		(await call("mill/formats")).count,
+		(await call("exports_formats")).count,
 		(await call("exports_formats")).count,
 	);
 	assert.match(
@@ -149,9 +149,9 @@ test("stdio performs evidence, reusable memory, exports, resources and hidden al
 		"grainulator://claims",
 	);
 	assert.equal(
-		(await client.request("resources/read", { uri: "wheat://claims" }))
+		(await client.request("resources/read", { uri: "grainulator://claims" }))
 			.contents[0].uri,
-		"wheat://claims",
+		"grainulator://claims",
 	);
 	assert.equal(
 		JSON.parse(
@@ -470,7 +470,7 @@ test("exports preserve ledgers, host settings, sources, and symlink aliases", as
 	assert.equal(
 		(
 			await rpc(handle, "tools/call", {
-				name: "mill/convert",
+				name: "exports_convert",
 				arguments: {
 					format: "markdown",
 					source: "source.json",
@@ -521,7 +521,7 @@ test("exports protect native manifests and new host configuration through direct
 	]) {
 		fs.mkdirSync(path.dirname(path.join(workspace, name)), { recursive: true });
 		fs.writeFileSync(path.join(workspace, name), "Original host configuration");
-		for (const tool of ["exports_convert", "mill/convert"]) {
+		for (const tool of ["exports_convert", "exports_convert"]) {
 			const result = await rpc(handle, "tools/call", {
 				name: tool,
 				arguments: { format: "markdown", output: name },
@@ -589,13 +589,13 @@ test("sync-log tools and resource reads reject an outside file symlink", async (
 	);
 	fs.symlinkSync(external, path.join(workspace, "output", "sync-log.json"));
 	const handle = createHandler({ dir: workspace, memoryDir });
-	for (const name of ["sync_log", "wheat/sync-log"]) {
+	for (const name of ["sync_log", "sync_log"]) {
 		const response = await rpc(handle, "tools/call", { name });
 		assert.equal(response.result.isError, true);
 		assert.match(response.result.content[0].text, /outside workspace/);
 		assert.doesNotMatch(JSON.stringify(response), /outside-private-fixture/);
 	}
-	for (const uri of ["grainulator://sync-log", "wheat://sync-log"])
+	for (const uri of ["grainulator://sync-log", "grainulator://sync-log"])
 		assert.equal(
 			(await rpc(handle, "resources/read", { uri })).error.code,
 			-32602,
@@ -773,7 +773,7 @@ test("CLI CSV exports preserve canonical claim content and evidence", (t) => {
 	assert.doesNotMatch(csv, /\[object Object\]/);
 });
 
-test("canonical evidence prefix rejects unknown words without writes and uses minimal init", (t) => {
+test("old prefixes reject unknown words without writes; root init creates canonical evidence state", (t) => {
 	const { workspace } = fixture(t);
 	for (const args of [
 		["evidence", "nonexistent"],
@@ -793,7 +793,6 @@ test("canonical evidence prefix rejects unknown words without writes and uses mi
 			[
 				process.execPath,
 				path.join(root, "bin/grainulator.js"),
-				"evidence",
 				"init",
 				"--question",
 				"Explicit canonical sprint",

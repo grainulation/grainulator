@@ -8,9 +8,8 @@ import { test } from "node:test";
 
 const REQUIRED_PATHS = [
   "package/lib/serve-mcp.js",
-  "package/bin/wheat.js",
-  "package/bin/wheat-mcp.cjs",
-  "package/compiler/wheat-compiler.js",
+  "package/bin/evidence.js",
+  "package/compiler/evidence-compiler.js",
   "package/package.json",
   "package/README.md",
   "package/LICENSE"

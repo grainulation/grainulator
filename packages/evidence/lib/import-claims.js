@@ -4,10 +4,12 @@ import path from "node:path";
 import { atomicWriteJSON } from "../../shared/lib/atomic.js";
 import { withFileTransaction } from "../../shared/lib/transaction.js";
 import { loadClaims } from "./load-claims.js";
-import { VALID_TYPES } from "./claims-ops.js";
+import { assertEvidenceMutation } from "./evidence-target.js";
+import { resolvePaths, VALID_TYPES } from "./claims-ops.js";
 
 export function importClaims(dir, { source, claims }) {
 	try {
+		assertEvidenceMutation(dir);
 		if (typeof source !== "string" || !source.trim() || !Array.isArray(claims))
 			throw new Error(
 				"source (stable document URL/identifier) and claims array are required.",
@@ -58,7 +60,7 @@ export function importClaims(dir, { source, claims }) {
 					.slice(0, 24)}`,
 			]),
 		);
-		return withFileTransaction(path.join(dir, "claims.json"), () => {
+		return withFileTransaction(resolvePaths(dir).claims, () => {
 			const { data, errors } = loadClaims(dir);
 			if (!data)
 				throw new Error(
@@ -118,7 +120,7 @@ export function importClaims(dir, { source, claims }) {
 			}
 			if (additions.length) {
 				data.claims.push(...additions);
-				atomicWriteJSON(path.join(dir, "claims.json"), data, 2);
+				atomicWriteJSON(resolvePaths(dir).claims, data, 2);
 			}
 			return {
 				status: "ok",

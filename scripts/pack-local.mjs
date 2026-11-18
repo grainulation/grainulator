@@ -29,7 +29,7 @@ const pkg = JSON.parse(fs.readFileSync(packageFile, 'utf8'));
 const version = `${pkg.version.split('-')[0]}-local.${source_sha256.slice(0, 16)}`;
 pkg.version = version;
 fs.writeFileSync(packageFile, JSON.stringify(pkg, null, 2) + '\n');
-for (const name of ['.claude-plugin/plugin.json', '.codex-plugin/plugin.json', 'plugin.json']) {
+for (const name of ['.claude-plugin/plugin.json', '.codex-plugin/plugin.json', 'plugin.json', ...fs.readdirSync(path.join(stage,'packages')).filter(name=>fs.existsSync(path.join(stage,'packages',name,'package.json'))).map(name=>`packages/${name}/package.json`)]) {
   const target = path.join(stage, name);
   if (!fs.existsSync(target)) continue;
   const manifest = JSON.parse(fs.readFileSync(target, 'utf8'));

@@ -78,8 +78,8 @@
     {
       "id": "adr-005",
       "type": "recommendation",
-      "topic": "wheat-powered ADR workflow",
-      "content": "Use wheat sprint as ADR research phase: (1) Define decision question as sprint question. (2) Add constraints from stakeholders. (3) Research options — each generates factual claims with evidence tiers. (4) Challenge phase creates conflict claims between options. (5) Compile — the brief IS the ADR.",
+      "topic": "grainulator ADR workflow",
+      "content": "Use Grainulator sprint as ADR research phase: (1) Define decision question as sprint question. (2) Add constraints from stakeholders. (3) Research options — each generates factual claims with evidence tiers. (4) Challenge phase creates conflict claims between options. (5) Compile — the brief IS the ADR.",
       "source": {
         "origin": "best-practice",
         "artifact": null,
@@ -91,7 +91,7 @@
       "timestamp": "2026-01-01T00:00:00.000Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["adr", "wheat", "workflow", "recommendation"]
+      "tags": ["adr", "grainulator", "workflow", "recommendation"]
     },
     {
       "id": "adr-006",
@@ -169,7 +169,7 @@
       "id": "adr-010",
       "type": "recommendation",
       "topic": "ADR audit trail",
-      "content": "For enterprise compliance: ADRs created via wheat produce an immutable audit trail. The claims.json is version-controlled, the compilation certificate references a content hash, and git log shows who contributed what. This satisfies SOC 2 change management evidence requirements.",
+      "content": "For enterprise compliance: ADRs created via Grainulator produce an immutable audit trail. The claims.json is version-controlled, the compilation certificate references a content hash, and git log shows who contributed what. This satisfies SOC 2 change management evidence requirements.",
       "source": {
         "origin": "best-practice",
         "artifact": null,
@@ -187,7 +187,7 @@
       "id": "adr-011",
       "type": "estimate",
       "topic": "ADR time savings",
-      "content": "Traditional ADR process: 1-2 weeks of stakeholder meetings, document drafting, and review cycles. Wheat-powered ADR: 10-15 minute research sprint produces a compiled brief with evidence tiers, conflict resolution, and structured recommendations — then a 30-minute review meeting to accept.",
+      "content": "Traditional ADR process: 1-2 weeks of stakeholder meetings, document drafting, and review cycles. Grainulator ADR: 10-15 minute research sprint produces a compiled brief with evidence tiers, conflict resolution, and structured recommendations — then a 30-minute review meeting to accept.",
       "source": { "origin": "research", "artifact": null, "connector": null },
       "evidence": "stated",
       "status": "active",

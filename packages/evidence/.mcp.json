@@ -1,8 +1,8 @@
 {
 	"mcpServers": {
-		"wheat": {
+		"evidence": {
 			"command": "npx",
-			"args": ["-y", "@grainulation/wheat", "mcp"]
+			"args": ["-y", "@grainulation/grainulator-evidence", "mcp"]
 		}
 	}
 }

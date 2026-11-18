@@ -16,7 +16,7 @@ import {
 	executePull,
 	extractJsonFromStorage,
 	mcpGetPage,
-	mcpSearchWheatPages,
+	mcpSearchGrainulatorPages,
 	planPull,
 	validateClaimsStructure,
 	writeLocalClaims,
@@ -251,7 +251,7 @@ describe("confluence-sync", () => {
 
 		it("produces a valid sync plan", () => {
 			const plan = planSync({
-				wheatRoot: tmpDir,
+				evidenceRoot: tmpDir,
 				sprintSlug: "test-sprint",
 				spaceKey: "RES",
 			});
@@ -265,7 +265,7 @@ describe("confluence-sync", () => {
 
 		it("detects unchanged content", () => {
 			const plan1 = planSync({
-				wheatRoot: tmpDir,
+				evidenceRoot: tmpDir,
 				sprintSlug: "test-sprint",
 				spaceKey: "RES",
 			});
@@ -275,7 +275,7 @@ describe("confluence-sync", () => {
 				pages: {},
 			});
 			const plan2 = planSync({
-				wheatRoot: tmpDir,
+				evidenceRoot: tmpDir,
 				sprintSlug: "test-sprint",
 				spaceKey: "RES",
 			});
@@ -288,7 +288,7 @@ describe("confluence-sync", () => {
 			);
 			assert.throws(() => {
 				planSync({
-					wheatRoot: tmpDir,
+					evidenceRoot: tmpDir,
 					sprintSlug: "test-sprint",
 					spaceKey: "RES",
 				});
@@ -297,12 +297,12 @@ describe("confluence-sync", () => {
 
 		it("sets archive labels when archive flag is true", () => {
 			const plan = planSync({
-				wheatRoot: tmpDir,
+				evidenceRoot: tmpDir,
 				sprintSlug: "test-sprint",
 				spaceKey: "RES",
 				archive: true,
 			});
-			assert.deepEqual(plan.labels, ["wheat-archived"]);
+			assert.deepEqual(plan.labels, ["grainulator-archived"]);
 		});
 	});
 
@@ -328,11 +328,11 @@ describe("confluence-sync", () => {
 				spaceKey: "RES",
 				title: "Test",
 				body: "<p>Hi</p>",
-				labels: ["wheat-active"],
+				labels: ["grainulator-active"],
 			});
 			assert.equal(call.tool, "mcp__claude_ai_Atlassian__createConfluencePage");
 			assert.equal(call.params.spaceKey, "RES");
-			assert.equal(call.params.labels, "wheat-active");
+			assert.equal(call.params.labels, "grainulator-active");
 		});
 
 		it("mcpUpdatePage builds correct descriptor", () => {
@@ -349,11 +349,11 @@ describe("confluence-sync", () => {
 		it("mcpSearchPages builds CQL query", () => {
 			const call = mcpSearchPages({
 				spaceKey: "RES",
-				label: "wheat-active",
+				label: "grainulator-active",
 				title: "Test",
 			});
 			assert.ok(call.params.cql.includes('space = "RES"'));
-			assert.ok(call.params.cql.includes('label = "wheat-active"'));
+			assert.ok(call.params.cql.includes('label = "grainulator-active"'));
 		});
 	});
 });
@@ -490,7 +490,7 @@ describe("confluence-pull", () => {
 				Date.now(),
 			);
 			const plan = planPull({
-				wheatRoot: "/tmp/test",
+				evidenceRoot: "/tmp/test",
 				sprintSlug: "test-sprint",
 				pageBody: body,
 			});
@@ -502,7 +502,7 @@ describe("confluence-pull", () => {
 		it("throws on missing JSON", () => {
 			assert.throws(() => {
 				planPull({
-					wheatRoot: "/tmp/test",
+					evidenceRoot: "/tmp/test",
 					sprintSlug: "test",
 					pageBody: "<p>No JSON here</p>",
 				});
@@ -513,7 +513,7 @@ describe("confluence-pull", () => {
 			const body = buildJsonCodeBlock({ not_a_sprint: true });
 			assert.throws(() => {
 				planPull({
-					wheatRoot: "/tmp/test",
+					evidenceRoot: "/tmp/test",
 					sprintSlug: "test",
 					pageBody: body,
 				});
@@ -527,7 +527,7 @@ describe("confluence-pull", () => {
 
 		it("writes claims to local filesystem", () => {
 			const result = executePull({
-				wheatRoot: tmpDir,
+				evidenceRoot: tmpDir,
 				sprintSlug: "test-sprint",
 				claimsData: SAMPLE_CLAIMS_JSON,
 				backup: false,
@@ -543,9 +543,12 @@ describe("confluence-pull", () => {
 			assert.equal(call.params.pageId, "456");
 		});
 
-		it("mcpSearchWheatPages builds CQL with wheat-active label", () => {
-			const call = mcpSearchWheatPages({ spaceKey: "RES", sprintSlug: "test" });
-			assert.ok(call.params.cql.includes("wheat-active"));
+		it("mcpSearchGrainulatorPages builds CQL with grainulator-active label", () => {
+			const call = mcpSearchGrainulatorPages({
+				spaceKey: "RES",
+				sprintSlug: "test",
+			});
+			assert.ok(call.params.cql.includes("grainulator-active"));
 			assert.ok(call.params.cql.includes("test"));
 		});
 	});
@@ -589,7 +592,7 @@ describe("cross-platform paths", () => {
 		);
 
 		const plan = planSync({
-			wheatRoot: tmpDir,
+			evidenceRoot: tmpDir,
 			sprintSlug: "path-test",
 			spaceKey: "TEST",
 		});

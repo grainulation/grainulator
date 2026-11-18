@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import { evaluateAdversarialCase } from "../../evals/rejected-claims/verifier.mjs";
 import { runTask } from "../../lib/runner.js";
 import { initializeSprint } from "../../lib/sprint-init.js";
-import { compile } from "../../packages/evidence/compiler/wheat-compiler.js";
+import { compile } from "../../packages/evidence/compiler/evidence-compiler.js";
 import { addClaim } from "../../packages/evidence/lib/claims-ops.js";
 
 const ROOT = path.resolve(

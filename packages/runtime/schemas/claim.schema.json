@@ -1,7 +1,7 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "https://github.com/grainulation/bean/schemas/claim.schema.json",
-	"title": "bean claim (Bran-IR)",
+	"$id": "urn:grainulator:runtime:claim:1",
+	"title": "Grainulator runtime claim",
 	"type": "object",
 	"required": ["id", "type", "topic", "evidence"],
 	"additionalProperties": true,
@@ -34,7 +34,7 @@
 		"depends_on": {
 			"type": "array",
 			"items": { "type": "string" },
-			"description": "Claim ids this claim relies on; bean-check flags it stale (E_STALE_DEPENDENT) if any becomes superseded/inactive."
+			"description": "Claim ids this claim relies on; grainulator-runtime-check flags it stale (E_STALE_DEPENDENT) if any becomes superseded/inactive."
 		},
 		"resolved_by": { "type": ["string", "null"] },
 		"tags": {
@@ -45,7 +45,7 @@
 		"verified_by": {
 			"type": "object",
 			"required": ["verifier"],
-			"description": "2.0: points this load-bearing claim at a registered oracle (run.json oracles). bean-check reads the recorded verdict in .bean/verdicts/<id>.<verifier>.json; in strict mode the claim converges only if that verdict is declared, fresh (claim_binding matches), and pass.",
+			"description": "2.0: points this load-bearing claim at a registered oracle (run.json oracles). grainulator-runtime-check reads the recorded verdict in .grainulator/runtime/verdicts/<id>.<verifier>.json; in strict mode the claim converges only if that verdict is declared, fresh (claim_binding matches), and pass.",
 			"properties": { "verifier": { "type": "string", "minLength": 1 } }
 		}
 	}

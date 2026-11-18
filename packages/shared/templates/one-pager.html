@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{SPRINT_NAME}} -- One-Pager</title>
 <style>
-  /* barn/templates/one-pager.html — single viewport executive summary
+  /* shared/templates/one-pager.html — single viewport executive summary
      Compact summary; content stays readable when it exceeds one viewport.
      System font stack, no external dependencies, fully self-contained. */
 
@@ -182,7 +182,7 @@
     font-family: monospace; letter-spacing: 0;
   }
 
-  footer .barn-mark { font-size: 9pt; color: var(--text-dim); }
+  footer .shared-mark { font-size: 9pt; color: var(--text-dim); }
 
   @media (max-width: 768px) {
     body { padding: 16px; }
@@ -204,7 +204,7 @@
     .recommendation-box p { color: #111; }
     .risk-box { background: #fff0f0; }
     .sprint-label { align-self: flex-start; background: none; color: var(--text-muted); }
-    footer .meta, footer .barn-mark { color: #999; }
+    footer .meta, footer .shared-mark { color: #999; }
   }
 
   /* Evidence documents keep their data prominent and controls quiet. */
@@ -259,7 +259,7 @@
 
   <footer aria-label="Metadata">
     <span class="meta">{{META}}</span>
-    <span class="barn-mark">Built with barn</span>
+    <span class="shared-mark">Built with shared</span>
   </footer>
 </main>
 

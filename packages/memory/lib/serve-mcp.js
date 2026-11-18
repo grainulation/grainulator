@@ -1,31 +1,10 @@
-/**
- * silo serve-mcp — Local MCP server for Claude Code
- *
- * Exposes cross-sprint search and knowledge pack tools over stdio.
- * Zero npm dependencies.
- *
- * Tools:
- *   silo/search   — Full-text search across all stored claims
- *   silo/list     — List stored collections and packs
- *   silo/pull     — Pull claims from a pack into current sprint
- *   silo/store    — Store current sprint claims in silo
- *   silo/packs    — List available knowledge packs
- *
- * Resources:
- *   silo://index  — Silo index (all collections)
- *   silo://packs  — Available knowledge packs
- *
- * Install:
- *   claude mcp add silo -- npx @grainulation/silo serve-mcp
- */
+/** Private Grainulator memory MCP handlers; only the root server owns stdio/discovery. */
 
 import fs from "node:fs";
 import path from "node:path";
-import readline from "node:readline";
 import { fileURLToPath } from "node:url";
 import { jsonRpcError, jsonRpcResponse } from "../../shared/lib/mcp.js";
 import { isInsideDir } from "../../shared/lib/paths.js";
-import { installCrashHandlers } from "../../shared/lib/mcp-crash.js";
 import { Store } from "./store.js";
 import { Search } from "./search.js";
 import { ImportExport } from "./import-export.js";
@@ -39,17 +18,17 @@ const __dirname = path.dirname(__filename);
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
-const SERVER_NAME = "silo";
+const SERVER_NAME = "grainulator";
 const SERVER_VERSION = JSON.parse(
 	fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf-8"),
 ).version;
 const PROTOCOL_VERSION = "2024-11-05";
 
-// ─── Initialize silo components ─────────────────────────────────────────────
+// ─── Initialize memory components ─────────────────────────────────────────────
 
 export const TOOLS = [
 	{
-		name: "silo/search",
+		name: "memory_search",
 		description:
 			"Full-text search across all stored claims and knowledge packs. Returns ranked results with relevance scores.",
 		inputSchema: {
@@ -82,13 +61,13 @@ export const TOOLS = [
 		},
 	},
 	{
-		name: "silo/list",
+		name: "memory_list",
 		description:
-			"List all stored collections in the silo (completed sprints, imported knowledge).",
+			"List all stored collections in the memory (completed sprints, imported knowledge).",
 		inputSchema: { type: "object", properties: {} },
 	},
 	{
-		name: "silo/pull",
+		name: "memory_pull",
 		description:
 			"Pull claims from a knowledge pack or stored collection into the current sprint claims.json. Deduplicates and re-prefixes IDs to avoid collisions.",
 		inputSchema: {
@@ -108,9 +87,9 @@ export const TOOLS = [
 		},
 	},
 	{
-		name: "silo/store",
+		name: "memory_store",
 		description:
-			"Store the current sprint claims into the silo for future reuse across other sprints.",
+			"Store the current sprint claims into the memory for future reuse across other sprints.",
 		inputSchema: {
 			type: "object",
 			properties: {
@@ -127,13 +106,13 @@ export const TOOLS = [
 		},
 	},
 	{
-		name: "silo/packs",
+		name: "memory_packs",
 		description:
 			"List available knowledge packs (built-in: compliance, security, architecture, migration, vendor-eval, adr, hackathon categories, etc.).",
 		inputSchema: { type: "object", properties: {} },
 	},
 	{
-		name: "silo/graph",
+		name: "memory_graph",
 		description:
 			"Cross-sprint knowledge graph — find related claims, explore topics, and discover clusters across all stored collections and packs.",
 		inputSchema: {
@@ -163,7 +142,7 @@ export const TOOLS = [
 		},
 	},
 	{
-		name: "silo/confluence",
+		name: "memory_confluence",
 		description:
 			"Confluence backend adapter — publish claims to Confluence pages or pull claims from existing pages. Requires CONFLUENCE_BASE_URL, CONFLUENCE_TOKEN, CONFLUENCE_EMAIL env vars.",
 		inputSchema: {
@@ -184,6 +163,8 @@ export const TOOLS = [
 						"Source claims.json path (publish, default: ./claims.json)",
 				},
 				into: { type: "string", description: "Target claims.json path (pull)" },
+				sourceId: {type:"string",description:"Stable reviewed collection/source identity when publishing a migrated source."},
+				newSource: {type:"string",description:"Explicit stable identity for a genuinely new collection after completed remote migration; never use for an existing mapped source."},
 				pageId: {
 					type: "string",
 					description: "Confluence page ID (pull/publish update)",
@@ -195,7 +176,7 @@ export const TOOLS = [
 		},
 	},
 	{
-		name: "silo/smart-fetch",
+		name: "memory_smart_fetch",
 		description:
 			"Fetch a URL and extract structured content (title, description, main body) with 80-99% size reduction vs raw HTML. Use for /witness corroboration, /pull from external sources, or ad-hoc web research. Opt-in: no existing flows change unless you call this tool explicitly.",
 		inputSchema: {
@@ -230,14 +211,14 @@ export const TOOLS = [
 
 export const RESOURCES = [
 	{
-		uri: "silo://index",
-		name: "Silo Index",
+		uri: "grainulator://memory/index",
+		name: "Grainulator memory Index",
 		description:
 			"All stored collections — IDs, names, claim counts, timestamps.",
 		mimeType: "application/json",
 	},
 	{
-		uri: "silo://packs",
+		uri: "grainulator://memory/packs",
 		name: "Knowledge Packs",
 		description: "Available built-in and local knowledge packs.",
 		mimeType: "application/json",
@@ -486,7 +467,7 @@ export function createHandler({ storeDir } = {}) {
 
 		switch (action) {
 			case "publish": {
-				const { title, from, spaceKey, parentId, pageId } = args;
+				const { title, from, spaceKey, parentId, pageId, sourceId, newSource } = args;
 				if (!title)
 					return { status: "error", message: "Required field: title" };
 				const sourceFile = from
@@ -507,7 +488,7 @@ export function createHandler({ storeDir } = {}) {
 				const raw = JSON.parse(fs.readFileSync(sourceFile, "utf8"));
 				const claims = Array.isArray(raw) ? raw : raw.claims || [];
 				return confluence
-					.publish(title, claims, { spaceKey, parentId, pageId })
+					.publish(title, claims, { dir, workspace:args.workspace, spaceKey, parentId, pageId, sourceId, newSource })
 					.then((result) => ({
 						status: "ok",
 						message: `Published to Confluence: ${result.title}`,
@@ -536,7 +517,7 @@ export function createHandler({ storeDir } = {}) {
 						if (into) {
 							const targetFile = path.resolve(dir, into);
 							io.mergeClaims(result.claims, targetFile, {
-								source: `confluence:${target}`,
+								source: `confluence:${JSON.stringify([confluence.baseUrl, spaceKey || confluence.spaceKey, result.pageId])}`,
 							});
 						}
 						return {
@@ -550,7 +531,7 @@ export function createHandler({ storeDir } = {}) {
 			case "list": {
 				const { spaceKey } = args;
 				return confluence
-					.listPages({ spaceKey })
+					.listPages({ dir, workspace:args.workspace, spaceKey })
 					.then((result) => ({ status: "ok", ...result }))
 					.catch((err) => ({ status: "error", message: err.message }));
 			}
@@ -610,28 +591,28 @@ export function createHandler({ storeDir } = {}) {
 				let result;
 
 				switch (toolName) {
-					case "silo/search":
+					case "memory_search":
 						result = toolSearch(toolArgs);
 						break;
-					case "silo/list":
+					case "memory_list":
 						result = toolList();
 						break;
-					case "silo/pull":
+					case "memory_pull":
 						result = toolPull(dir, toolArgs);
 						break;
-					case "silo/store":
+					case "memory_store":
 						result = toolStore(dir, toolArgs);
 						break;
-					case "silo/packs":
+					case "memory_packs":
 						result = toolPacks();
 						break;
-					case "silo/graph":
+					case "memory_graph":
 						result = toolGraph(toolArgs);
 						break;
-					case "silo/confluence":
+					case "memory_confluence":
 						result = toolConfluence(dir, toolArgs);
 						break;
-					case "silo/smart-fetch":
+					case "memory_smart_fetch":
 						result = toolSmartFetch(toolArgs);
 						break;
 					default:
@@ -662,10 +643,10 @@ export function createHandler({ storeDir } = {}) {
 				let text;
 
 				switch (uri) {
-					case "silo://index":
+					case "grainulator://memory/index":
 						text = JSON.stringify(store.list(), null, 2);
 						break;
-					case "silo://packs":
+					case "grainulator://memory/packs":
 						text = JSON.stringify(
 							packs.list().map((p) => ({
 								name: p.name,
@@ -705,55 +686,3 @@ export function handleRequest(...args) {
 }
 
 // ─── Stdio transport ────────────────────────────────────────────────────────
-
-export function startServer(dir) {
-	installCrashHandlers({ service: "silo", version: SERVER_VERSION });
-
-	const rl = readline.createInterface({
-		input: process.stdin,
-		terminal: false,
-	});
-
-	if (process.stdout._handle && process.stdout._handle.setBlocking) {
-		process.stdout._handle.setBlocking(true);
-	}
-
-	rl.on("line", (line) => {
-		if (!line.trim()) return;
-		let msg;
-		try {
-			msg = JSON.parse(line);
-		} catch {
-			process.stdout.write(jsonRpcError(null, -32700, "Parse error") + "\n");
-			return;
-		}
-		const response = handleRequest(dir, msg.method, msg.params || {}, msg.id);
-		if (response && typeof response.then === "function") {
-			response.then((r) => {
-				if (r !== null) process.stdout.write(r + "\n");
-			});
-		} else if (response !== null) {
-			process.stdout.write(response + "\n");
-		}
-	});
-
-	rl.on("close", () => process.exit(0));
-
-	process.stderr.write(`silo MCP server v${SERVER_VERSION} ready on stdio\n`);
-	process.stderr.write(
-		`  Memory store: ${process.env.GRAINULATOR_MEMORY_DIR || process.env.SILO_STORE || "default"}\n`,
-	);
-	process.stderr.write(
-		`  Tools: ${TOOLS.length} | Resources: ${RESOURCES.length}\n`,
-	);
-}
-
-// ─── Entry point ────────────────────────────────────────────────────────────
-
-export async function run(dir) {
-	startServer(dir);
-}
-
-if (import.meta.url === `file://${process.argv[1]}`) {
-	startServer(process.cwd());
-}

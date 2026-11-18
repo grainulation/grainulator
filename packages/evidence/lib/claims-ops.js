@@ -1,3 +1,5 @@
+import projectConfig from "../../shared/lib/project-config.cjs";
+import { assertEvidenceMutation } from "./evidence-target.js";
 /**
  * claims-ops — Shared claim operations for MCP + CLI
  *
@@ -42,11 +44,13 @@ const VALID_EVIDENCE = ["stated", "web", "documented", "tested", "production"];
 // --- Paths -------------------------------------------------------------------
 
 function resolvePaths(dir) {
+	assertEvidenceMutation(dir);
+	const config=projectConfig.evidenceConfig(dir);
 	return {
-		claims: path.join(dir, "claims.json"),
-		compilation: path.join(dir, "compilation.json"),
-		brief: path.join(dir, "output", "brief.html"),
-		compiler: path.join(dir, "wheat-compiler.js"),
+		claims: path.resolve(config.origin, config.compiler.claims),
+		compilation: path.resolve(config.origin, config.compiler.compilation),
+		brief: path.resolve(config.origin, config.dirs.output, "brief.html"),
+		compiler: path.join(dir, "evidence-compiler.js"),
 	};
 }
 
@@ -444,7 +448,7 @@ function getStatus(dir) {
 			status: "no_sprint",
 			message:
 				loadErrors[0]?.message ||
-				"No claims.json found. Run wheat init to start a sprint.",
+				"No claims.json found. Run evidence init to start a sprint.",
 		};
 	}
 

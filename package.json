@@ -1,6 +1,6 @@
 {
 	"name": "@grainulation/grainulator",
-	"version": "2.4.0",
+	"version": "3.0.0",
 	"description": "Portable evidence and execution tools for model-assisted work",
 	"type": "module",
 	"license": "MIT",
@@ -39,15 +39,6 @@
 		"docs/UPGRADING.md",
 		"docs/SECURITY-REVIEW.md",
 		"docs/DOGFOOD.md",
-		"packages/legacy-cli/package.json",
-		"packages/legacy-cli/bin",
-		"packages/legacy-cli/lib",
-		"packages/legacy-cli/CHANGELOG.md",
-		"packages/legacy-cli/LICENSE",
-		"packages/legacy-cli/CODE_OF_CONDUCT.md",
-		"packages/legacy-cli/CONTRIBUTING.md",
-		"packages/legacy-cli/SECURITY.md",
-		"packages/legacy-cli/README.md",
 		"packages/memory/package.json",
 		"packages/memory/bin",
 		"packages/memory/lib",
@@ -70,12 +61,7 @@
 		"packages/evidence/SECURITY.md",
 		"packages/evidence/CHANGELOG.md",
 		"packages/runtime/package.json",
-		"packages/runtime/.claude-plugin",
-		"packages/runtime/.codex-plugin",
-		"packages/runtime/skills",
-		"packages/runtime/bin",
 		"packages/runtime/schemas",
-		"packages/runtime/install.sh",
 		"packages/runtime/README.md",
 		"packages/runtime/LICENSE",
 		"packages/shared/package.json",
@@ -139,7 +125,14 @@
 		"docs/source-imports.json",
 		"public/",
 		"docs/GROUNDED-REPORTS.md",
-		"docs/EVIDENCE-MAINTENANCE.md"
+		"docs/EVIDENCE-MAINTENANCE.md",
+		"packages/shared/schemas",
+		"docs/CONFIGURATION.md",
+		"docs/UNINSTALL.md",
+		"docs/RUNTIME.md",
+		"share/",
+		"docs/RELEASING.md",
+		"packages/runtime/EXAMPLE.md"
 	],
 	"author": "grainulation contributors",
 	"bugs": {
@@ -159,9 +152,11 @@
 		"check:package": "node scripts/check-package.mjs",
 		"pack:local": "node scripts/pack-local.mjs",
 		"lint": "biome check .",
-		"test:runtime": "npm run test:conformance --workspace @grainulation/bean",
+		"test:runtime": "npm run test:conformance --workspace @grainulation/grainulator-runtime",
 		"test:install": "node scripts/package-isolation-check.mjs",
-		"test:playground": "node scripts/run-playground-check.mjs"
+		"test:playground": "node scripts/run-playground-check.mjs",
+		"test:distribution": "node --test migration/*.test.mjs scripts/homebrew*.test.mjs",
+		"check:surface": "node scripts/check-surface.mjs && node scripts/generate-reference.mjs --check"
 	},
 	"engines": {
 		"node": ">=24"

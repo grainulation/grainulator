@@ -1,7 +1,7 @@
 # Socket.dev configuration
 # https://docs.socket.dev/docs/socket-yml
 #
-# wheat uses execFileSync (not execSync) for git queries and compiler invocation.
+# evidence uses execFileSync (not execSync) for git queries and compiler invocation.
 # execFileSync bypasses the shell entirely — arguments are passed as arrays,
 # not interpolated strings. No user input reaches these calls.
 #

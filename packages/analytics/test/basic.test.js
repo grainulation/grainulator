@@ -13,7 +13,7 @@ import {
   getSeason,
   detectArchetype,
   detectMilestones,
-} from "../lib/harvest-card.js";
+} from "../lib/report-card.js";
 
 // --- Test fixtures ---
 

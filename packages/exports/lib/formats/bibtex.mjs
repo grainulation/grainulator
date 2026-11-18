@@ -1,5 +1,5 @@
 /**
- * mill format: bibtex
+ * exports format: bibtex
  *
  * Converts compilation.json claims to BibTeX .bib entries.
  * Each claim becomes an @misc entry with metadata in note/keywords fields.
@@ -21,7 +21,7 @@ export function convert(compilation) {
   const claims = compilation.claims || [];
   const meta = compilation.meta || {};
   const year = new Date().getFullYear().toString();
-  const author = meta.sprint ? `wheat sprint: ${meta.sprint}` : "wheat sprint";
+  const author = meta.sprint ? `evidence sprint: ${meta.sprint}` : "evidence sprint";
 
   if (claims.length === 0) {
     return `% No claims in compilation\n`;

@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { compile } from "../../packages/evidence/compiler/wheat-compiler.js";
+import { compile } from "../../packages/evidence/compiler/evidence-compiler.js";
 import {
 	addClaim,
 	resolveClaim,

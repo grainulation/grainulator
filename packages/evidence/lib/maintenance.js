@@ -1,8 +1,9 @@
+import { assertEvidenceMutation } from "./evidence-target.js";
 import { randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 import { observeCommand } from '../../shared/lib/observe-command.js';
 import { loadClaims } from './load-claims.js';
-import { prepareClaim } from './claims-ops.js';
+import { prepareClaim, resolvePaths } from './claims-ops.js';
 import { atomicWriteJSON } from '../../shared/lib/atomic.js';
 import { withFileTransaction } from '../../shared/lib/transaction.js';
 import { bytesDigest, captureSource, confinedEvidencePath, currentObservations, evidenceDigest, evidenceHealth, inspectObservation, premiseDigest } from './evidence-health.js';
@@ -23,7 +24,8 @@ function reason(value) {
   return value.trim();
 }
 function transaction(dir, operation) {
-  const file = confinedEvidencePath(dir, 'claims.json');
+  assertEvidenceMutation(dir);
+  const file = resolvePaths(dir).claims;
   return withFileTransaction(file, () => {
     const data = load(dir);
     const result = operation(data);

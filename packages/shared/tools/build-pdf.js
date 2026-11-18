@@ -3,8 +3,8 @@
  * build-pdf.js — Convert markdown to PDF via npx md-to-pdf
  *
  * Usage:
- *   barn build-pdf <markdown-file>
- *   barn build-pdf output/brief.md
+ *   shared build-pdf <markdown-file>
+ *   shared build-pdf output/brief.md
  *
  * Uses npx to invoke md-to-pdf, so no local install is required.
  * Zero npm dependencies (Node built-in only).
@@ -29,7 +29,7 @@ export function buildPdf(target) {
   return target.replace(/\.md$/, ".pdf");
 }
 
-// CLI entry — guarded so `import "@grainulation/barn/build-pdf"` from a
+// CLI entry — guarded so `import "@grainulation/grainulator-shared/build-pdf"` from a
 // consumer doesn't execute argv parsing or process.exit() at import time.
 if (import.meta.url === `file://${process.argv[1]}`) {
   const target = process.argv[2];
@@ -38,10 +38,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.log(`build-pdf — convert markdown to PDF
 
 Usage:
-  barn build-pdf <markdown-file>
+  shared build-pdf <markdown-file>
 
 Example:
-  barn build-pdf output/brief.md
+  shared build-pdf output/brief.md
 
 Uses npx md-to-pdf under the hood. No local install needed.`);
     process.exit(target ? 0 : 1);

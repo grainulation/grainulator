@@ -18,9 +18,8 @@ function initialize(t, previousConfig) {
 	const result = spawnSync(
 		process.execPath,
 		[
-			path.join(root, "packages/evidence/bin/wheat.js"),
+			path.join(root, "bin/grainulator.js"),
 			"init",
-			"--headless",
 			"--dir",
 			dir,
 			"--question",
@@ -37,7 +36,7 @@ function initialize(t, previousConfig) {
 	assert.equal(result.status, 0, result.stderr);
 	return dir;
 }
-test("compatibility scaffold preserves malformed or existing canonical MCP configuration", (t) => {
+test("canonical initialization preserves malformed or existing canonical MCP configuration", (t) => {
 	for (const previous of [
 		'{"broken":',
 		JSON.stringify({ mcpServers: null }),
@@ -54,18 +53,14 @@ test("compatibility scaffold preserves malformed or existing canonical MCP confi
 		assert.equal(fs.existsSync(path.join(dir, ".git/hooks/pre-commit")), false);
 	}
 });
-test("compatibility scaffold registers only unified local tools and current workflow instructions", (t) => {
+test("canonical initialization creates no host registrations or instructions", (t) => {
 	const dir = initialize(t);
-	const config = JSON.parse(fs.readFileSync(path.join(dir, ".mcp.json")));
-	assert.deepEqual(Object.keys(config.mcpServers), ["grainulator"]);
-	assert.equal(config.mcpServers.grainulator.command, process.execPath);
-	assert.ok(config.mcpServers.grainulator.args.includes("mcp"));
-	const instructions = fs.readFileSync(path.join(dir, "CLAUDE.md"), "utf8");
-	assert.match(instructions, /\*\*Auto\*\*/);
-	assert.doesNotMatch(instructions, /Wheat|wheat|auto-commits/);
-	assert.equal(fs.existsSync(path.join(dir, ".claude/commands/wheat")), false);
-	assert.equal(
-		fs.existsSync(path.join(dir, ".claude/commands/grainulator/research.md")),
-		true,
-	);
+	for (const name of [
+		".mcp.json",
+		"CLAUDE.md",
+		"AGENTS.md",
+		".claude/commands",
+	])
+		assert.equal(fs.existsSync(path.join(dir, name)), false);
+	assert.ok(fs.existsSync(path.join(dir, "claims.json")));
 });

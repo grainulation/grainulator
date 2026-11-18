@@ -4,7 +4,7 @@ This is the Grainulator source checkout. Follow the user’s active scope for lo
 
 Use the active sprint directory identified by the current task or project instructions. If none exists, create a dedicated sprint for the requested work; never repurpose an unrelated ledger. Pass `--dir` or the MCP `dir` argument explicitly. Use `skills/grainulator/SKILL.md` for the portable workflow.
 
-Source imports and local-edit provenance live in `docs/source-imports.json`. Do not overwrite original checkouts. Retained package names are compatibility aliases; package directories describe responsibilities.
+Source imports and local-edit provenance live in `docs/source-imports.json`. Do not overwrite original checkouts. The only supported product is Grainulator. Private workspace packages and folders describe responsibilities; no component aliases or standalone discovery are retained.
 
 Run `npm test` for component suites and dogfood regressions. Run `node test/conformance.mjs` from `packages/runtime` for Rust runtime conformance. Use `npm run dev` for the local research playground and `npm run test:playground` for responsive and keyboard checks. Public website code and deployment belong to grainulation/infra.
 

@@ -56,7 +56,7 @@ try {
   const run=(args,env={})=>command([process.execPath,cli,...args],{cwd:consumer,env});
   for(const component of ['evidence','memory','export','analytics','orchestrate','legacy']) check(`retired component serve rejected: ${component}`,()=>{
     const result=spawnSync(process.execPath,[cli,component,'serve'],{cwd:consumer,encoding:'utf8',timeout:10000});
-    assert.ifError(result.error);assert.equal(result.status,1,result.stdout+result.stderr);assert.match(result.stdout+result.stderr,/retired/i);
+    assert.ifError(result.error);assert.equal(result.status,1,result.stdout+result.stderr);assert.match(result.stdout+result.stderr,/retired|unknown command/i);
   });
   for(const args of [['dashboard','--help'],['evidence','connect','farmer'],['evidence','disconnect','farmer'],['analytics','connect','farmer'],['orchestrate','connect','farmer'],['legacy','farmer','start']])check(`retired command rejected: ${args.join(' ')}`,()=>assert.throws(()=>run(args)));
   check('installed binary is not a workspace symlink',()=>assert.equal(fs.lstatSync(installed).isSymbolicLink(),false));
@@ -99,7 +99,7 @@ try {
     if(verifierCode===0)assert.match(runResult.rounds[0].verification.feedback,/YES: all 3 adversarial claims rejected as expected/);
     if(verifierCode===3)assert.match(runResult.rounds[0].verification.feedback,/LOOK: soundness break/);
   });
-  for(const component of ['evidence','memory','export','analytics','orchestrate','legacy'])check(`${component} help`,()=>run([component,'--help']));
+  for(const component of ['compile','memory','export','analytics','orchestrate','runtime'])check(`${component} help`,()=>run([component,'--help']));
   const sprint=path.join(dir,'sprint');
   check('evidence init',()=>run(['init','--dir',sprint,'--question','Can the installed archive run independently?','--audience','test','--constraints','Local only','--done','Validated artifact']));
   check('evidence add',()=>run(['add','--dir',sprint,'--id','r001','--type','factual','--topic','installation','--content','A synthetic installation test claim.','--evidence','stated']));
@@ -119,26 +119,22 @@ try {
   });
   const sessionFile=path.join(dir,'session.json');fs.writeFileSync(sessionFile,exportSession(createSession({question:'Test session portability',context:'Fixture only.',config:{webSearch:false}})));
   check('research preparation from exported session',()=>run(['research','--session',sessionFile,'--dir',path.join(dir,'research'),'--prepare-only']));
-  for(const [name,args,tool] of [['grainulator',['mcp','--dir',sprint],'status'],['wheat',['wheat','mcp','--dir',sprint],'wheat/status'],['mill',['export','serve-mcp','--dir',sprint],'mill/formats'],['silo',['memory','serve-mcp'],'silo/list']]) {
-    const client=mcp([process.execPath,cli,...args],{cwd:sprint,env:{SILO_STORE:path.join(dir,'silo')}});
-    try {
-      const init=await client.request('initialize',{protocolVersion:'2024-11-05',capabilities:{},clientInfo:{name:'grainulator-install-check',version:'1'}});assert.equal(init.serverInfo.name,name);
-      client.notify('notifications/initialized');
-      const list=await client.request('tools/list');assert.ok(list.tools.some(t=>t.name===tool));
-      const value=toolJSON(await client.request('tools/call',{name:tool,arguments:{dir:sprint}}));assert.equal(value.status,'ok');if(name==='wheat'||name==='grainulator'){assert.ok(Array.isArray(value.next_actions.auto));assert.ok(Array.isArray(value.next_actions.manual));assert.match(value.next_actions_instruction,/Auto and Manual/);}
-      if(name==='grainulator') {
-        assert.equal(list.tools.length,29);assert.ok(list.tools.every(tool=>!tool.name.includes('/')));
-        assert.equal(toolJSON(await client.request('tools/call',{name:'wheat/status',arguments:{dir:sprint}})).status,'ok');
-        assert.equal(toolJSON(await client.request('tools/call',{name:'memory_store',arguments:{dir:sprint,name:'Installed artifact'}})).claimCount,3);
-        assert.equal(toolJSON(await client.request('tools/call',{name:'memory_search',arguments:{query:'synthetic'}})).count,1);
-        assert.ok(toolJSON(await client.request('tools/call',{name:'exports_formats',arguments:{}})).count>0);
-        assert.match(toolJSON(await client.request('tools/call',{name:'exports_convert',arguments:{format:'markdown'}})).output,/synthetic installation/);
-        const resources=await client.request('resources/list');assert.equal(resources.resources.length,7);assert.ok(resources.resources.every(resource=>resource.uri.startsWith('grainulator://')));
-        report.checks.push('installed unified evidence, memory, export, canonical resources and hidden aliases');
-      }
-      report.checks.push(`${name} MCP initialize, tools/list, tools/call`);
-    } finally {await client.close();}
-  }
+  const client=mcp([process.execPath,cli,'mcp','--dir',sprint],{cwd:sprint,env:{GRAINULATOR_MEMORY_DIR:path.join(dir,'memory')}});
+  try {
+    const init=await client.request('initialize',{protocolVersion:'2024-11-05',capabilities:{},clientInfo:{name:'grainulator-install-check',version:'1'}});assert.equal(init.serverInfo.name,'grainulator');
+    client.notify('notifications/initialized');
+    const list=await client.request('tools/list');assert.equal(list.tools.length,29);assert.ok(list.tools.every(tool=>!tool.name.includes('/')));
+    const value=toolJSON(await client.request('tools/call',{name:'status',arguments:{dir:sprint}}));assert.equal(value.status,'ok');assert.ok(Array.isArray(value.next_actions.auto));assert.ok(Array.isArray(value.next_actions.manual));
+    assert.equal(toolJSON(await client.request('tools/call',{name:'memory_store',arguments:{dir:sprint,name:'Installed artifact'}})).claimCount,3);
+    assert.equal(toolJSON(await client.request('tools/call',{name:'memory_search',arguments:{query:'synthetic'}})).count,1);
+    assert.ok(toolJSON(await client.request('tools/call',{name:'exports_formats',arguments:{}})).count>0);
+    assert.match(toolJSON(await client.request('tools/call',{name:'exports_convert',arguments:{format:'markdown'}})).output,/synthetic installation/);
+    const resources=await client.request('resources/list');assert.equal(resources.resources.length,7);assert.ok(resources.resources.every(resource=>resource.uri.startsWith('grainulator://')));
+    for(const name of ['wheat/status','silo/list','mill/formats'])assert.ok((await client.request('tools/call',{name,arguments:{}}).catch(error=>({error}))).error,'historical alias rejected');
+    report.checks.push('installed unified evidence, memory, exports and canonical resources; historical aliases rejected');
+  } finally {await client.close();}
+  check('installed offline demo writes outside package and preserves verification protocol',()=>{const result=JSON.parse(run(['demo','--dir',path.join(dir,'demo'),'--json']));assert.equal(result.status,'verified');assert.equal(result.rounds.length,2);assert.ok(!result.trace.startsWith(installed+path.sep));});
+  check('installed config schema and generated reference are bundled',()=>{for(const entry of ['packages/shared/schemas/project-config.schema.json','share/completions/grainulator.bash','share/man/man1/grainulator.1'])assert.ok(fs.existsSync(path.join(installed,entry)));assert.equal(JSON.parse(run(['config','check','--dir',sprint,'--json'])).status,'ok');});
   report.passed=true;
 } catch(error) {report.error=error.message;process.exitCode=1;}
 fs.mkdirSync(path.join(root,'.dogfood'),{recursive:true});fs.writeFileSync(path.join(root,'.dogfood/package-isolation-audit.json'),JSON.stringify(report,null,2));

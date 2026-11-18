@@ -3,14 +3,6 @@
 version = 4
 
 [[package]]
-name = "bean-check"
-version = "2.1.0"
-dependencies = [
- "serde_json",
- "sha2",
-]
-
-[[package]]
 name = "block-buffer"
 version = "0.10.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -62,6 +54,14 @@ checksum = "85649ca51fd72272d7821adaf274ad91c288277713d9c18820d8499a7ff69e9a"
 dependencies = [
  "typenum",
  "version_check",
+]
+
+[[package]]
+name = "grainulator-runtime-check"
+version = "3.0.0"
+dependencies = [
+ "serde_json",
+ "sha2",
 ]
 
 [[package]]

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { compile, COMPILER_VERSION, generateCertificate } from '../packages/evidence/compiler/wheat-compiler.js';
+import { compile, COMPILER_VERSION, generateCertificate } from '../packages/evidence/compiler/evidence-compiler.js';
 import { guard } from '../packages/evidence/lib/guard.js';
 
 // An executable reproduction of the stale-evidence regression, not a model benchmark.

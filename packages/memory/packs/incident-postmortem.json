@@ -128,8 +128,8 @@
     {
       "id": "inc-008",
       "type": "recommendation",
-      "topic": "wheat-powered postmortem workflow",
-      "content": "Map wheat sprint to postmortem: (1) Sprint question = 'What caused incident X and how do we prevent recurrence?' (2) Factual claims = timeline events backed by logs. (3) Constraint claims = SLA requirements and detection targets. (4) Risk claims = contributing factors and systemic weaknesses. (5) Recommendation claims = action items with owners. (6) The compiled brief IS the postmortem document.",
+      "topic": "grainulator postmortem workflow",
+      "content": "Map Grainulator sprint to postmortem: (1) Sprint question = 'What caused incident X and how do we prevent recurrence?' (2) Factual claims = timeline events backed by logs. (3) Constraint claims = SLA requirements and detection targets. (4) Risk claims = contributing factors and systemic weaknesses. (5) Recommendation claims = action items with owners. (6) The compiled brief IS the postmortem document.",
       "source": {
         "origin": "best-practice",
         "artifact": null,
@@ -141,7 +141,7 @@
       "timestamp": "2026-03-21T00:00:00.000Z",
       "conflicts_with": [],
       "resolved_by": null,
-      "tags": ["postmortem", "wheat", "workflow", "recommendation"]
+      "tags": ["postmortem", "grainulator", "workflow", "recommendation"]
     },
     {
       "id": "inc-009",
@@ -201,7 +201,7 @@
       "id": "inc-012",
       "type": "recommendation",
       "topic": "learning dissemination",
-      "content": "Postmortem value is maximized when learnings spread beyond the incident team. Recommended: (1) Publish postmortem to internal wiki within 1 week. (2) Present at engineering all-hands for SEV1. (3) Add to onboarding reading list for the affected service. (4) Use wheat /witness to link related incidents across teams — the knowledge graph surfaces patterns humans miss.",
+      "content": "Postmortem value is maximized when learnings spread beyond the incident team. Recommended: (1) Publish postmortem to internal wiki within 1 week. (2) Present at engineering all-hands for SEV1. (3) Add to onboarding reading list for the affected service. (4) Use Grainulator /witness to link related incidents across teams — the knowledge graph surfaces patterns humans miss.",
       "source": {
         "origin": "best-practice",
         "artifact": null,

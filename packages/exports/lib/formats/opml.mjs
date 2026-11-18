@@ -1,5 +1,5 @@
 /**
- * mill format: opml
+ * exports format: opml
  *
  * Converts compilation.json claims to OPML 2.0 outline,
  * grouped by claim type.

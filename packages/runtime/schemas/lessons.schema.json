@@ -1,8 +1,8 @@
 {
 	"$schema": "http://json-schema.org/draft-07/schema#",
-	"$id": "https://github.com/grainulation/bean/schemas/lessons.schema.json",
-	"title": "bean lessons-candidates report (v0)",
-	"description": "Read-only report emitted by bean-lessons to .bean/lessons.json. It ranks candidate lessons derived deterministically from the trace corpus (.bean/runs/*.json). It PROPOSES; it never applies. No mutation of claims, prompts, skills, or memory. NOT cross-task learning.",
+	"$id": "urn:grainulator:runtime:lessons:1",
+	"title": "Grainulator runtime lessons candidates (v1)",
+	"description": "Read-only report emitted by grainulator-runtime-lessons to .grainulator/runtime/lessons.json. It ranks candidate lessons derived deterministically from the trace corpus (.grainulator/runtime/runs/*.json). It PROPOSES; it never applies. No mutation of claims, prompts, skills, or memory. NOT cross-task learning.",
 	"type": "object",
 	"additionalProperties": false,
 	"required": [
@@ -12,7 +12,7 @@
 		"candidates"
 	],
 	"properties": {
-		"schema_version": { "const": "bean.lessons.v0" },
+		"schema_version": { "const": "grainulator.runtime.lessons.v1" },
 		"generated_at": {
 			"type": "integer",
 			"description": "Report generation time as an INTEGER, milliseconds since the Unix epoch (not ISO-8601). Metadata only — excluded from determinism comparisons (the candidates are deterministic for a given corpus)."
@@ -20,7 +20,7 @@
 		"source_run_count": {
 			"type": "integer",
 			"minimum": 0,
-			"description": "Number of trace/v0 runs analyzed."
+			"description": "Number of grainulator.runtime.trace.v1 runs analyzed."
 		},
 		"candidates": {
 			"type": "array",

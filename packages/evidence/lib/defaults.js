@@ -1,5 +1,5 @@
 /**
- * Smart defaults and environment detection for wheat CLI.
+ * Smart defaults and environment detection for evidence CLI.
  * Central location for all process.env reads — other modules import from here.
  * Zero dependencies — Node built-ins only.
  */
@@ -12,7 +12,7 @@ export const DEFAULTS = {
 
 /**
  * Centralized environment variable reads.
- * Every process.env reference in the wheat codebase should go through this object.
+ * Every process.env reference in the evidence codebase should go through this object.
  */
 export const env = {
 	/** True if running in any CI environment */
@@ -26,25 +26,13 @@ export const env = {
 				process.env.BUILDKITE,
 		);
 	},
-	/** Suppress ecosystem cross-promotion hints ("off" to disable) */
-	get WHEAT_BTW() {
-		return process.env.WHEAT_BTW || "";
-	},
-	/** Set to "1" to suppress all hints */
-	get WHEAT_NO_HINTS() {
-		return process.env.WHEAT_NO_HINTS || "";
-	},
-	/** Set to "1" to suppress npx install prompts */
-	get WHEAT_NO_INSTALL_PROMPT() {
-		return process.env.WHEAT_NO_INSTALL_PROMPT || "";
-	},
 	/** Enable debug stack traces in CLI error output */
-	get WHEAT_DEBUG() {
-		return process.env.WHEAT_DEBUG || "";
+	get GRAINULATOR_DEBUG() {
+		return process.env.GRAINULATOR_DEBUG || "";
 	},
 	/** Pre-computed sprint data JSON to avoid re-running detectSprints */
-	get WHEAT_SPRINTS_CACHE() {
-		return process.env.WHEAT_SPRINTS_CACHE || "";
+	get GRAINULATOR_SPRINTS_CACHE() {
+		return process.env.GRAINULATOR_SPRINTS_CACHE || "";
 	},
 	/** Set when running inside Grainulation plugin — skips .mcp.json generation */
 	get CLAUDE_PLUGIN_ROOT() {

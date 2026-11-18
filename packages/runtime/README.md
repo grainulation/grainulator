@@ -1,21 +1,55 @@
-# Execution runtime module
+# Grainulator native runtime
 
-This directory is an internal module of Grainulator. Install the root `@grainulation/grainulator` archive; component packages are private and are not separate installation targets. Node 25 is preferred and Node 24 is the minimum. See the [installation contract](../../docs/INSTALLATION.md).
+The native convergence runtime checks a typed ledger, executes explicitly selected
+oracles and bounded agent rounds, and derives lessons from recorded traces. It is
+part of Grainulator. Use the root `grainulator runtime` commands; this directory
+has no separately installed plugin, package or public executable.
 
-Commands below run from the Grainulator root. An installed consumer can use the `grainulator` binary in place of `node bin/grainulator.js`.
-
-This module contains compatible execution-ledger checks and optional runtime components. The current product entry point is Grainulator's managed command loop, which can invoke a model adapter, run a verifier, attempt a bounded correction, and retain a trace.
+Native state lives in `<workspace>/.grainulator/runtime/`. The root
+`grainulator run` command uses a separate JS adapter engine and writes
+`.grainulator/runs/`; the two protocols do not share a ledger.
 
 ```sh
-node bin/grainulator.js run --help
-node bin/grainulator.js demo
-node bin/grainulator.js check --help
+grainulator runtime --help
+grainulator runtime init --dir /absolute/project
+grainulator runtime claim add --dir /absolute/project \
+  --id c1 --type factual --topic packaging --content 'A concrete finding' \
+  --evidence documented
+grainulator runtime check --dir /absolute/project --json --no-state
 ```
 
-The demo is an offline protocol fixture. It demonstrates repair and verification mechanics, not a measured improvement in model quality. Configure a real adapter and verifier using the [adapter contract](../../docs/ADAPTERS.md); see the [dogfood guide](../../docs/DOGFOOD.md) for local execution.
+Install a matching native archive explicitly with its release manifest and an
+independently obtained manifest SHA-256. Installation does not download code,
+build Rust, change PATH or register a host hook. Required host enforcement is a
+separate explicit enrollment into a retained user-cache release. The native Stop
+hook has no Node or Homebrew dependency and remains pinned across package cleanup.
 
-`grainulator check` reads a compatible runtime ledger under `.bean/` and returns a nonzero result when its checks do not pass. Evidence sprints use `grainulator compile` instead. These formats have distinct purposes; starting an evidence sprint does not install a native execution gate.
+Enrollment supports one active runtime workspace per host settings scope and one
+host settings scope per runtime workspace. Attempts to add another active cohort
+leave the first gate and its settings intact. Same-workspace upgrades on the same
+host scope replace only the owned hook through compare-and-swap; old verified
+assets remain available for rollback. Moving to another host scope needs a
+separately reviewed operator handoff. Other projects covered by the global gate
+need an explicit `not-managed` policy when they do not use native enforcement.
 
-The retained Bean commands and `install.sh` are optional legacy compatibility tooling. The installer requires the original runtime build sources, which are not included in the root archive. It is not part of current onboarding. Do not infer native Stop-hook support or universal enforcement from its presence: permissions and stopping behavior depend on the host and integration. The managed runner itself is not a sandbox.
+Read [runtime installation and enrollment](../../docs/RUNTIME.md),
+[upgrade guidance](../../docs/UPGRADING.md) and the [local example](EXAMPLE.md).
+The one-time migration converter is distributed separately from the normal CLI;
+converted oracle bindings require explicit review and subsequent verification.
 
-See [tested host behavior](../../docs/HOSTS.md) and [interruption and recovery](../../docs/RECOVERY.md).
+## Development
+
+Build the five explicitly named canonical binaries with:
+
+```sh
+cargo build --locked --release --manifest-path packages/runtime/rs/Cargo.toml
+node packages/runtime/test/conformance.mjs
+```
+
+The differential suite compares static and temporal behavior with the JS reference
+and exercises native oracle, driver, trace and lessons contracts. Release candidates
+also execute installed native archives on every advertised target. A cross-build
+alone does not establish support.
+
+Schemas are bundled under `schemas/` with immutable
+`urn:grainulator:runtime:<kind>:1` identities. No network schema resolution is needed.

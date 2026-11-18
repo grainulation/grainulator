@@ -9,7 +9,7 @@ You need Node.js 24 or later and git. Grainulator runs on your machine; there is
 | [Claude Code](#claude-code) | `claude plugin install grainulator --marketplace grainulation/grainulator` | Full plugin: tools, research skills, research agent and hooks |
 | [Codex](#codex) | `codex plugin marketplace add grainulation/grainulator`<br>`codex plugin add grainulator@grainulation-marketplace` | Full plugin, plus a one-time project setup |
 | [Antigravity](#antigravity) | `agy plugin install https://github.com/grainulation/grainulator` | Full plugin: tools, research skills and research agent |
-| [Other agents](#other-agents) | MCP server: `npx -y github:grainulation/grainulator#v2.3.0 mcp --dir <project>` | Tools only |
+| [Other agents](#other-agents) | MCP server: `node /absolute/path/to/grainulator/bin/grainulator.js mcp --dir <project>` | Tools only |
 
 After installing, [check that it works](#check-that-it-works).
 
@@ -37,7 +37,7 @@ codex plugin add grainulator@grainulation-marketplace
 Codex starts plugins outside your project, so Grainulator needs to know which project it may use. From your project folder, run:
 
 ```sh
-npx -y github:grainulation/grainulator#v2.3.0 setup --dir "$PWD"
+node /absolute/path/to/grainulator/bin/grainulator.js setup --dir "$PWD"
 ```
 
 Then restart Codex. This saves a default project in `~/.config/grainulator/workspace.json`. Run it again from another folder to switch projects or set `GRAINULATOR_WORKSPACE=/absolute/path/to/project` when launching Codex to override it for one session.
@@ -62,14 +62,14 @@ Any agent that supports MCP (Cursor, opencode, Claude Desktop and others) can ru
 {
 	"mcpServers": {
 		"grainulator": {
-			"command": "npx",
-			"args": ["-y", "github:grainulation/grainulator#v2.3.0", "mcp", "--dir", "/absolute/path/to/project"]
+			"command": "node",
+			"args": ["/absolute/path/to/grainulator/bin/grainulator.js", "mcp", "--dir", "/absolute/path/to/project"]
 		}
 	}
 }
 ```
 
-The first start downloads Grainulator and takes a few seconds; later starts are faster. Change `#v2.3.0` to move to a newer release.
+The first start downloads Grainulator and takes a few seconds; later starts are faster. Change `#v3.0.0` to move to a newer release.
 
 MCP gives your agent Grainulator's tools. The research skills, research agent and hooks come with the Claude Code, Codex and Antigravity plugins.
 
@@ -90,7 +90,7 @@ A working install answers with Grainulator's status. In a project without resear
 | Claude Code | `claude plugin update grainulator@grainulation-marketplace` | `claude plugin uninstall grainulator@grainulation-marketplace` |
 | Codex | `codex plugin marketplace upgrade grainulation-marketplace`, then `codex plugin add grainulator@grainulation-marketplace` | `codex plugin remove grainulator@grainulation-marketplace` |
 | Antigravity | Run the install command again | `agy plugin uninstall grainulator` |
-| Other agents | Change the `#v2.3.0` tag in your MCP settings | Delete the `grainulator` server from your MCP settings |
+| Other agents | Change the `#v3.0.0` tag in your MCP settings | Delete the `grainulator` server from your MCP settings |
 
 Restart your agent after updating.
 

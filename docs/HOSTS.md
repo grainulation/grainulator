@@ -7,7 +7,7 @@ Reproduce from the full source checkout with its development dependencies and ex
 ```sh
 npm run test:install
 node scripts/host-integration-check.mjs
-GRAINULATOR_LEGACY_WHEAT=/absolute/path/to/legacy/bin/wheat.js node scripts/migration-check.mjs
+GRAINULATOR_LEGACY_WHEAT=/absolute/path/to/legacy/bin/evidence.js node scripts/migration-check.mjs
 ```
 
 The live host command consumes model usage. It uses temporary fixtures and invocation-only MCP settings; it does not modify global settings or existing conversations. Evidence: `.dogfood/host-integration-audit.json`. Codex explicitly allows only the four fixture MCP tools at invocation time. Claude disables built-in tools and lifecycle hooks for this MCP test. These MCP results establish installed tool use and native continuation, not dashboard interception or cancellation in every host. A separate real-host hook check below covers the Write boundary.
@@ -16,7 +16,7 @@ A separate `node scripts/native-hook-check.mjs` run used real Claude Write calls
 
 The write guard now accepts Claude's stdin JSON hook payload and returns blocking exit code 2 for protected ledger writes. Regressions cover that protocol. It protects the matching Write/Edit boundary; shell writes and unrelated tools are outside its scope. See the official [Claude hooks contract](https://code.claude.com/docs/en/hooks), [Claude noninteractive usage](https://code.claude.com/docs/en/headless), and [Codex noninteractive usage](https://developers.openai.com/codex/noninteractive).
 
-The migration rehearsal creates data with the available legacy Wheat checkout, upgrades a copy through the installed root CLI, checks unchanged IDs, old claims, custom fields and nested metadata, then uses the old CLI to read/write the upgraded copy. Snapshot rollback restores exact claims and unrelated configuration hashes; originals remain untouched. Evidence: `.dogfood/migration-audit.json`. Set `GRAINULATOR_LEGACY_WHEAT` explicitly to the legacy CLI file when repeating this check; the script does not assume a maintainer checkout. This verifies the available version and format, not every historical configuration.
+The migration rehearsal creates data with the available legacy Grainulator checkout, upgrades a copy through the installed root CLI, checks unchanged IDs, old claims, custom fields and nested metadata, then uses the old CLI to read/write the upgraded copy. Snapshot rollback restores exact claims and unrelated configuration hashes; originals remain untouched. Evidence: `.dogfood/migration-audit.json`. Set `GRAINULATOR_LEGACY_WHEAT` explicitly to the legacy CLI file when repeating this check; the script does not assume a maintainer checkout. This verifies the available version and format, not every historical configuration.
 
 Grainulator integrates through CLI/MCP and the managed execution adapter. Agent permissions and remote access remain with the native host.
 
@@ -33,3 +33,5 @@ The native Codex package uses the root Agent Plugin `plugin.json` and `mcp.json`
 Acceptance on 2026-09-22 found `hooks/list` empty for the portable AgentPlugin package. The pinned host [loader](https://github.com/openai/codex/blob/rust-v0.155.1/codex-rs/core-plugins/src/loader.rs#L954) skips its hook sources. Adding a hook manifest field or changing trust does not repair that host branch. Explicitly call `compile` after mutations and before reading current next actions. Native write protection is unavailable on that host/package combination.
 
 The guard handler supports Write/Edit `file_path` and apply_patch `command` patch headers (add/update/delete/move). Direct tests establish handler behavior only; native dispatch requires a host that loads the hook. Shell writes remain outside this guard. Recheck hook discovery for a newer host before claiming automatic protection or refresh.
+
+Native enrollment supports one workspace and one host settings scope. Existing foreign or duplicate canonical gates are refused before mutation; move a cohort only through a separately reviewed handoff. No installation or missing marker silently makes a required gate optional. See [runtime handoff](RUNTIME.md).

@@ -75,7 +75,7 @@ async function resolveFormat(name) {
     mimeType: mod.mimeType,
     description: mod.description,
     convert: mod.convert,
-    // Bridge to the CJS exporter shape used by bin/mill.js export/convert.
+    // Bridge to the CJS exporter shape used by bin/exports.js export/convert.
     export: async (inputPath, outputPath) => {
       const data = loadSource(inputPath);
       const output = mod.convert(data);

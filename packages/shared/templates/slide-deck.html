@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{TITLE}}</title>
 <style>
-  /* barn/templates/slide-deck.html — full-screen keyboard-navigated presentation
+  /* shared/templates/slide-deck.html — full-screen keyboard-navigated presentation
      Arrow keys navigate, number keys jump to slide, progress bar tracks position.
      System font stack, no external dependencies, fully self-contained. */
 
@@ -127,7 +127,7 @@
     background: var(--accent); z-index: 200;
   }
 
-  .barn-footer {
+  .shared-footer {
     position: absolute; bottom: 24px; left: 80px;
     font-size: 9pt; color: var(--text-dim);
   }
@@ -138,7 +138,7 @@
     h2 { font-size: 18pt; }
     p, .subtitle { font-size: 12pt; max-width: 100%; }
     .grid-2, .grid-3 { grid-template-columns: 1fr; }
-    .barn-footer { left: 20px; }
+    .shared-footer { left: 20px; }
     .slide-counter { right: 20px; }
   }
 
@@ -186,7 +186,7 @@
     <h1>{{TITLE}}</h1>
     <p class="subtitle">{{SUBTITLE}}</p>
     <p class="meta-line">{{DATE}}</p>
-    <div class="barn-footer">Built with barn</div>
+    <div class="shared-footer">Built with shared</div>
   </section>
 
   {{TYPE_SLIDES}}
@@ -195,21 +195,21 @@
     <h3>Evidence</h3>
     <h2>Evidence tier breakdown</h2>
     {{EVIDENCE_SLIDE}}
-    <div class="barn-footer">Built with barn</div>
+    <div class="shared-footer">Built with shared</div>
   </section>
 
   <section class="slide" aria-label="Recommendations">
     <h3>Recommendations</h3>
     <h2>Recommendation</h2>
     {{RECOMMENDATION_SLIDE}}
-    <div class="barn-footer">Built with barn</div>
+    <div class="shared-footer">Built with shared</div>
   </section>
 
   <section class="slide" aria-label="Questions and discussion">
     <h3>Discussion</h3>
     <h2>Questions</h2>
     {{QA_SLIDE}}
-    <div class="barn-footer">Built with barn</div>
+    <div class="shared-footer">Built with shared</div>
   </section>
 
   <div class="slide-counter" aria-live="polite">1 / 1</div>

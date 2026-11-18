@@ -38,14 +38,14 @@ Each grainulation data format includes a `schema_version` field at the top level
 {
   "grainulation": {
     "schema_version": "1.0",
-    "tool": "wheat",
+    "tool": "evidence",
     "port": 9092,
     "ui": "public/index.html"
   }
 }
 ```
 
-### Silo knowledge packs
+### Grainulator memory knowledge packs
 
 ```json
 {
@@ -267,7 +267,7 @@ Data-reading commands should:
 
 ### On compilation
 
-The wheat compiler should:
+The evidence compiler should:
 
 1. Validate `schema_version` in claims.json before compiling.
 2. Include `schema_version` in the compilation certificate.
@@ -275,7 +275,7 @@ The wheat compiler should:
 
 ### On cross-tool communication
 
-When tools exchange data (e.g., silo importing from mill, harvest reading from wheat):
+When tools exchange data (e.g., memory importing from exports, analytics reading from evidence):
 
 1. Include `schema_version` in all API responses.
 2. Receiving tool checks version compatibility before processing.

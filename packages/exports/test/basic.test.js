@@ -6,7 +6,7 @@ const path = require("node:path");
 const os = require("node:os");
 const { execFileSync, spawnSync } = require("node:child_process");
 
-const MILL = path.join(__dirname, "..", "bin", "mill.js");
+const MILL = path.join(__dirname, "..", "bin", "exports.js");
 const FIXTURES = path.join(__dirname, "fixtures");
 
 let tmpDir;
@@ -339,7 +339,7 @@ test("JSON-LD has @context with schema.org vocab", () => {
   run(["export", "--format", "json-ld", input, "-o", output]);
   const doc = JSON.parse(fs.readFileSync(output, "utf-8"));
   assert.ok(doc["@context"]["@vocab"] === "https://schema.org/");
-  assert.ok(doc["@context"]["wheat"]);
+  assert.ok(doc["@context"]["grainulator"]);
 });
 
 test("JSON-LD items have required fields", () => {
@@ -349,7 +349,7 @@ test("JSON-LD items have required fields", () => {
   const doc = JSON.parse(fs.readFileSync(output, "utf-8"));
   const item = doc.hasPart.itemListElement[0].item;
   assert.ok(item["@type"] === "claim");
-  assert.ok(item["@id"].startsWith("wheat:claim/"));
+  assert.ok(item["@id"].startsWith("grainulator:claim/"));
   assert.ok(item.identifier);
   assert.ok(item.claimType);
   assert.ok(item.text);
@@ -462,7 +462,7 @@ test("static publisher uses dark theme with amber accent", () => {
   const index = fs.readFileSync(path.join(siteDir, "index.html"), "utf-8");
   assert.ok(index.includes("#d97706"), "uses amber accent color");
   assert.ok(index.includes("background: #111"), "uses dark background");
-  assert.ok(index.includes("Built with @grainulation/mill"), "has mill footer");
+  assert.ok(index.includes("Built with @grainulation/grainulator-exports"), "has mill footer");
 });
 
 // ─── HTML accessibility tests ────────────────────────────────────────────────

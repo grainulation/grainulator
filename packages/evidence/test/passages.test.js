@@ -22,7 +22,7 @@ import {
 	compile,
 	COMPILER_VERSION,
 	computeNextActions,
-} from "../compiler/wheat-compiler.js";
+} from "../compiler/evidence-compiler.js";
 import { addClaim, getStatus } from "../lib/claims-ops.js";
 import { guard } from "../lib/guard.js";
 import nextActionsModule from "../lib/next-actions.cjs";
@@ -36,7 +36,7 @@ import {
 } from "../lib/passages.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const BIN = path.resolve(__dirname, "..", "bin", "wheat.js");
+const BIN = path.resolve(__dirname, "../../..", "bin", "grainulator.js");
 const sha = (s) => crypto.createHash("sha256").update(s).digest("hex");
 
 const PASSAGE =

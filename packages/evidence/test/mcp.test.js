@@ -25,8 +25,8 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const MCP_BIN = path.resolve(__dirname, "..", "bin", "wheat-mcp.js");
-const WHEAT_BIN = path.resolve(__dirname, "..", "bin", "wheat.js");
+const MCP_BIN = path.resolve(__dirname, "../../..", "bin", "grainulator.js");
+const WHEAT_BIN = path.resolve(__dirname, "../../..", "bin", "grainulator.js");
 
 /**
  * Send a JSON-RPC message to a child process via stdin.
@@ -41,7 +41,7 @@ function sendJsonRpc(child, obj) {
  */
 function spawnAndInitialize(bin, args = []) {
 	return new Promise((resolve, reject) => {
-		const child = spawn(process.execPath, [bin, ...args], {
+		const child = spawn(process.execPath, [bin, ...(args[0]==="mcp"?args:["mcp",...args])], {
 			stdio: ["pipe", "pipe", "pipe"],
 		});
 
@@ -151,7 +151,7 @@ describe("wheat MCP server", () => {
 			assert.equal(response.id, 1);
 			assert.ok(response.result, "response should have result");
 			assert.ok(response.result.serverInfo, "result should have serverInfo");
-			assert.equal(response.result.serverInfo.name, "wheat");
+			assert.equal(response.result.serverInfo.name, "grainulator");
 			assert.ok(
 				response.result.protocolVersion,
 				"result should have protocolVersion",
@@ -205,12 +205,12 @@ describe("wheat MCP server", () => {
 			// Verify some expected tool names
 			const toolNames = response.result.tools.map((t) => t.name);
 			assert.ok(
-				toolNames.includes("wheat/compile"),
-				"should include wheat/compile tool",
+				toolNames.includes("compile"),
+				"should include compile tool",
 			);
 			assert.ok(
-				toolNames.includes("wheat/status"),
-				"should include wheat/status tool",
+				toolNames.includes("status"),
+				"should include status tool",
 			);
 		} finally {
 			cleanup(child);
@@ -237,7 +237,7 @@ describe("wheat MCP server", () => {
 		}
 	});
 
-	it("old path (wheat.js mcp) still works", async () => {
+	it("canonical root mcp route initializes the unified server", async () => {
 		const { response, child } = await spawnAndInitialize(WHEAT_BIN, ["mcp"]);
 		try {
 			assert.equal(response.jsonrpc, "2.0");
@@ -245,8 +245,8 @@ describe("wheat MCP server", () => {
 			assert.ok(response.result, "response should have result");
 			assert.equal(
 				response.result.serverInfo.name,
-				"wheat",
-				"old path should start the same wheat MCP server",
+				"grainulator",
+				"canonical path should start the same wheat MCP server",
 			);
 		} finally {
 			cleanup(child);
@@ -348,7 +348,7 @@ function makeSprintDir(prefix = "wheat-mcp-test-") {
 				id: "r002",
 				type: "factual",
 				topic: "test-topic",
-				content: "Conflicting claim used to exercise wheat/resolve.",
+				content: "Conflicting claim used to exercise resolve.",
 				source: { origin: "cli", artifact: null, connector: null },
 				evidence: "stated",
 				status: "active",
@@ -378,10 +378,10 @@ describe("wheat MCP tool handlers", () => {
 		fs.rmSync(sprintDir, { recursive: true, force: true });
 	});
 
-	it("wheat/status — returns sprint metadata", async () => {
+	it("status — returns sprint metadata", async () => {
 		const { child } = await spawnAndInitialize(MCP_BIN, ["--dir", sprintDir]);
 		try {
-			const { payload } = await callTool(child, 10, "wheat/status", {});
+			const { payload } = await callTool(child, 10, "status", {});
 			assert.equal(payload.status, "ok");
 			assert.equal(payload.question, "MCP handler test sprint");
 			assert.equal(payload.total_claims, 2);
@@ -391,12 +391,12 @@ describe("wheat MCP tool handlers", () => {
 		}
 	});
 
-	it("wheat/status — reports no_sprint when claims.json absent", async () => {
+	it("status — reports no_sprint when claims.json absent", async () => {
 		const emptyDir = fs.mkdtempSync(path.join(os.tmpdir(), "wheat-mcp-empty-"));
 		try {
 			const { child } = await spawnAndInitialize(MCP_BIN, ["--dir", emptyDir]);
 			try {
-				const { payload } = await callTool(child, 11, "wheat/status", {});
+				const { payload } = await callTool(child, 11, "status", {});
 				assert.equal(payload.status, "no_sprint");
 			} finally {
 				cleanup(child);
@@ -406,10 +406,10 @@ describe("wheat MCP tool handlers", () => {
 		}
 	});
 
-	it("wheat/search — filters by query string", async () => {
+	it("search — filters by query string", async () => {
 		const { child } = await spawnAndInitialize(MCP_BIN, ["--dir", sprintDir]);
 		try {
-			const { payload } = await callTool(child, 20, "wheat/search", {
+			const { payload } = await callTool(child, 20, "search", {
 				query: "seed",
 			});
 			assert.equal(payload.status, "ok");
@@ -421,10 +421,10 @@ describe("wheat MCP tool handlers", () => {
 		}
 	});
 
-	it("wheat/search — empty result set when query matches nothing", async () => {
+	it("search — empty result set when query matches nothing", async () => {
 		const { child } = await spawnAndInitialize(MCP_BIN, ["--dir", sprintDir]);
 		try {
-			const { payload } = await callTool(child, 21, "wheat/search", {
+			const { payload } = await callTool(child, 21, "search", {
 				query: "nonexistenttoken12345",
 			});
 			assert.equal(payload.status, "ok");
@@ -434,7 +434,7 @@ describe("wheat MCP tool handlers", () => {
 		}
 	});
 
-	it("wheat/compile — runs compiler and returns status summary", async () => {
+	it("compile — runs compiler and returns status summary", async () => {
 		const compileDir = makeSprintDir("wheat-mcp-compile-");
 		try {
 			const { child } = await spawnAndInitialize(MCP_BIN, [
@@ -442,7 +442,7 @@ describe("wheat MCP tool handlers", () => {
 				compileDir,
 			]);
 			try {
-				const { payload } = await callTool(child, 30, "wheat/compile", {});
+				const { payload } = await callTool(child, 30, "compile", {});
 				assert.equal(payload.status, "ok");
 				assert.ok(
 					typeof payload.output === "string" && payload.output.length > 0,
@@ -456,7 +456,7 @@ describe("wheat MCP tool handlers", () => {
 		}
 	});
 
-	it("wheat/compile — errors when no claims.json exists", async () => {
+	it("compile — errors when no claims.json exists", async () => {
 		const emptyDir = fs.mkdtempSync(path.join(os.tmpdir(), "wheat-mcp-empty-"));
 		try {
 			const { response, child } = await (async () => {
@@ -467,7 +467,7 @@ describe("wheat MCP tool handlers", () => {
 				const { response: resp, payload } = await callTool(
 					child,
 					31,
-					"wheat/compile",
+					"compile",
 					{},
 				);
 				assert.equal(payload.status, "error");
@@ -482,12 +482,12 @@ describe("wheat MCP tool handlers", () => {
 		}
 	});
 
-	it("wheat/add-claim — appends a valid claim", async () => {
+	it("add_claim — appends a valid claim", async () => {
 		const addDir = makeSprintDir("wheat-mcp-add-");
 		try {
 			const { child } = await spawnAndInitialize(MCP_BIN, ["--dir", addDir]);
 			try {
-				const { payload } = await callTool(child, 40, "wheat/add-claim", {
+				const { payload } = await callTool(child, 40, "add_claim", {
 					id: "r100",
 					type: "factual",
 					topic: "added",
@@ -512,13 +512,13 @@ describe("wheat MCP tool handlers", () => {
 		}
 	});
 
-	it("wheat/add-claim — rejects missing required fields", async () => {
+	it("add_claim — rejects missing required fields", async () => {
 		const { child } = await spawnAndInitialize(MCP_BIN, ["--dir", sprintDir]);
 		try {
 			const { response, payload } = await callTool(
 				child,
 				41,
-				"wheat/add-claim",
+				"add_claim",
 				{ id: "r999" }, // missing type, topic, content
 			);
 			assert.equal(payload.status, "error");
@@ -529,7 +529,7 @@ describe("wheat MCP tool handlers", () => {
 		}
 	});
 
-	it("wheat/resolve — resolves a conflict and supersedes loser", async () => {
+	it("resolve — resolves a conflict and supersedes loser", async () => {
 		const resolveDir = makeSprintDir("wheat-mcp-resolve-");
 		try {
 			const { child } = await spawnAndInitialize(MCP_BIN, [
@@ -537,7 +537,7 @@ describe("wheat MCP tool handlers", () => {
 				resolveDir,
 			]);
 			try {
-				const { payload } = await callTool(child, 50, "wheat/resolve", {
+				const { payload } = await callTool(child, 50, "resolve", {
 					winner: "r001",
 					loser: "r002",
 					reason: "test",
@@ -559,10 +559,10 @@ describe("wheat MCP tool handlers", () => {
 		}
 	});
 
-	it("wheat/resolve — errors when loser not found", async () => {
+	it("resolve — errors when loser not found", async () => {
 		const { child } = await spawnAndInitialize(MCP_BIN, ["--dir", sprintDir]);
 		try {
-			const { payload } = await callTool(child, 51, "wheat/resolve", {
+			const { payload } = await callTool(child, 51, "resolve", {
 				winner: "r001",
 				loser: "does-not-exist",
 			});
@@ -573,10 +573,10 @@ describe("wheat MCP tool handlers", () => {
 		}
 	});
 
-	it("wheat/sync-log — returns empty history with ok status", async () => {
+	it("sync_log — returns empty history with ok status", async () => {
 		const { child } = await spawnAndInitialize(MCP_BIN, ["--dir", sprintDir]);
 		try {
-			const { payload } = await callTool(child, 60, "wheat/sync-log", {});
+			const { payload } = await callTool(child, 60, "sync_log", {});
 			assert.equal(payload.status, "ok");
 			assert.ok(Array.isArray(payload.entries));
 			assert.equal(payload.entries.length, 0);
@@ -585,7 +585,7 @@ describe("wheat MCP tool handlers", () => {
 		}
 	});
 
-	it("wheat/sync-log — reads entries when file exists", async () => {
+	it("sync_log — reads entries when file exists", async () => {
 		const logDir = fs.mkdtempSync(path.join(os.tmpdir(), "wheat-mcp-synclog-"));
 		try {
 			fs.writeFileSync(path.join(logDir, "claims.json"), "{}\n");
@@ -599,7 +599,7 @@ describe("wheat MCP tool handlers", () => {
 			);
 			const { child } = await spawnAndInitialize(MCP_BIN, ["--dir", logDir]);
 			try {
-				const { payload } = await callTool(child, 61, "wheat/sync-log", {});
+				const { payload } = await callTool(child, 61, "sync_log", {});
 				assert.equal(payload.status, "ok");
 				assert.equal(payload.count, 1);
 			} finally {
@@ -610,12 +610,12 @@ describe("wheat MCP tool handlers", () => {
 		}
 	});
 
-	it("wheat/init — errors when question missing", async () => {
+	it("init — errors when question missing", async () => {
 		const initDir = fs.mkdtempSync(path.join(os.tmpdir(), "wheat-mcp-init-"));
 		try {
 			const { child } = await spawnAndInitialize(MCP_BIN, ["--dir", initDir]);
 			try {
-				const { payload } = await callTool(child, 70, "wheat/init", {});
+				const { payload } = await callTool(child, 70, "init", {});
 				assert.equal(payload.status, "error");
 				assert.ok(/question/i.test(payload.message));
 			} finally {
@@ -626,10 +626,10 @@ describe("wheat MCP tool handlers", () => {
 		}
 	});
 
-	it("wheat/init — errors when sprint already exists", async () => {
+	it("init — errors when sprint already exists", async () => {
 		const { child } = await spawnAndInitialize(MCP_BIN, ["--dir", sprintDir]);
 		try {
-			const { payload } = await callTool(child, 71, "wheat/init", {
+			const { payload } = await callTool(child, 71, "init", {
 				question: "Should not overwrite",
 			});
 			assert.equal(payload.status, "error");
@@ -639,10 +639,10 @@ describe("wheat MCP tool handlers", () => {
 		}
 	});
 
-	it("wheat/deepwiki — errors on malformed repo argument", async () => {
+	it("deepwiki — errors on malformed repo argument", async () => {
 		const { child } = await spawnAndInitialize(MCP_BIN, ["--dir", sprintDir]);
 		try {
-			const { payload } = await callTool(child, 80, "wheat/deepwiki", {
+			const { payload } = await callTool(child, 80, "deepwiki", {
 				repo: "not a valid repo string",
 			});
 			assert.equal(payload.status, "error");
@@ -652,10 +652,10 @@ describe("wheat MCP tool handlers", () => {
 		}
 	});
 
-	it("wheat/deepwiki — errors when repo missing", async () => {
+	it("deepwiki — errors when repo missing", async () => {
 		const { child } = await spawnAndInitialize(MCP_BIN, ["--dir", sprintDir]);
 		try {
-			const { payload } = await callTool(child, 81, "wheat/deepwiki", {});
+			const { payload } = await callTool(child, 81, "deepwiki", {});
 			assert.equal(payload.status, "error");
 		} finally {
 			cleanup(child);
@@ -675,7 +675,7 @@ describe("wheat MCP tool handlers", () => {
 			const response = await responsePromise;
 			assert.equal(response.id, 90);
 			assert.ok(response.error, "should return JSON-RPC error");
-			assert.equal(response.error.code, -32601);
+			assert.equal(response.error.code, -32602);
 		} finally {
 			cleanup(child);
 		}
@@ -694,14 +694,14 @@ describe("wheat MCP tool handlers", () => {
 				id: 91,
 				method: "tools/call",
 				params: {
-					name: "wheat/status",
+					name: "status",
 					arguments: { dir: outsideDir },
 				},
 			});
 			const response = await responsePromise;
 			assert.ok(response.result.isError, "should flag isError");
 			const payload = JSON.parse(response.result.content[0].text);
-			assert.ok(/outside workspace/i.test(payload.error));
+			assert.ok(/outside workspace/i.test(payload.message));
 		} finally {
 			cleanup(child);
 		}
@@ -717,20 +717,20 @@ describe("wheat MCP tool handlers", () => {
 // cause the process to exit with code 1 (so Claude Code surfaces a reload
 // prompt rather than a silent hang).
 //
-// The BARN_MCP_CRASH_TEST env var is a test-only hook that asks the server
+// The GRAINULATOR_MCP_CRASH_TEST env var is a test-only hook that asks the server
 // to schedule an async throw or rejection 50ms after startup. Never set in
 // production.
 // ────────────────────────────────────────────────────────────────────────────
 
 /**
- * Spawn the MCP server with BARN_MCP_CRASH_TEST set and collect stderr + exit
+ * Spawn the MCP server with GRAINULATOR_MCP_CRASH_TEST set and collect stderr + exit
  * code. Resolves when the process exits.
  */
 function spawnCrashing(mode, timeoutMs = 5_000) {
 	return new Promise((resolve, reject) => {
-		const child = spawn(process.execPath, [MCP_BIN], {
+		const child = spawn(process.execPath, [MCP_BIN, "mcp"], {
 			stdio: ["pipe", "pipe", "pipe"],
-			env: { ...process.env, BARN_MCP_CRASH_TEST: mode },
+			env: { ...process.env, GRAINULATOR_MCP_CRASH_TEST: mode },
 		});
 
 		let stderr = "";
@@ -783,9 +783,9 @@ describe("wheat MCP crash handlers", () => {
 		);
 		const payload = JSON.parse(lines[0]);
 		assert.equal(payload.level, "fatal");
-		assert.equal(payload.source, "wheat-mcp");
+		assert.equal(payload.source, "grainulator-mcp");
 		assert.equal(payload.kind, "uncaughtException");
-		assert.ok(payload.message.includes("BARN_MCP_CRASH_TEST uncaught"));
+		assert.ok(payload.message.includes("GRAINULATOR_MCP_CRASH_TEST uncaught"));
 		assert.ok(typeof payload.stack === "string" && payload.stack.length > 0);
 		assert.ok(typeof payload.version === "string");
 		assert.ok(typeof payload.pid === "number");
@@ -810,8 +810,8 @@ describe("wheat MCP crash handlers", () => {
 			.map((l) => JSON.parse(l))
 			.find((p) => p.level === "fatal");
 		assert.ok(fatal, "expected a fatal-level line");
-		assert.equal(fatal.source, "wheat-mcp");
+		assert.equal(fatal.source, "grainulator-mcp");
 		assert.equal(fatal.kind, "unhandledRejection");
-		assert.ok(fatal.message.includes("BARN_MCP_CRASH_TEST unhandled"));
+		assert.ok(fatal.message.includes("GRAINULATOR_MCP_CRASH_TEST unhandled"));
 	});
 });

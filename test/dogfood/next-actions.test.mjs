@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { compile } from "../../packages/evidence/compiler/wheat-compiler.js";
+import { compile } from "../../packages/evidence/compiler/evidence-compiler.js";
 import { addClaim, getStatus } from "../../packages/evidence/lib/claims-ops.js";
 import nextActionsModule from "../../packages/evidence/lib/next-actions.cjs";
 import { handleRequest } from "../../packages/evidence/lib/serve-mcp.js";
@@ -111,7 +111,7 @@ test("CLI, compiled artifact and MCP return the same grouped actions", async (t)
 	assert.deepEqual(cli.next_actions, expected);
 	const display = run("bin/grainulator.js", ["compile", "--dir", dir]);
 	assert.equal(display.trim(), formatNextActions(expected));
-	for (const name of ["wheat/compile", "wheat/status"]) {
+	for (const name of ["compile", "status"]) {
 		const response = await handleRequest(
 			dir,
 			"tools/call",

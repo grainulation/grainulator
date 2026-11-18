@@ -1,95 +1,95 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { spawn } from 'node:child_process';
-import { runTask } from '../lib/runner.js';
-import { researchCLI } from '../lib/research-cli.js';
-import { inspectBuild } from '../lib/build-info.js';
-
-const root = fileURLToPath(new URL('../', import.meta.url));
-const version = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).version;
-const [requestedCommand = 'help', ...requestedArgs] = process.argv.slice(2);
-const evidencePrefix = requestedCommand === 'evidence';
-const [command = 'help', ...args] = evidencePrefix ? requestedArgs : [requestedCommand, ...requestedArgs];
-const evidenceCommands = new Set(['init', 'add', 'import', 'resolve', 'compile', 'search', 'status', 'guard', 'maintain', 'mcp', 'help', '--help', '-h']);
-const option = (name, fallback) => { const i = args.indexOf(name); return i < 0 ? fallback : args[i + 1]; };
-const children = {
-  evidence: 'packages/evidence/bin/wheat.js', wheat: 'packages/evidence/bin/wheat.js',
-  check: 'packages/runtime/bin/bean-check.js', memory: 'packages/memory/bin/silo.js',
-  export: 'packages/exports/bin/mill.js', analytics: 'packages/analytics/bin/harvest.js',
-  orchestrate: 'packages/orchestration/bin/orchard.js',
-  legacy: 'packages/legacy-cli/bin/grainulation.js',
-};
-const commandHelp = {
-  demo: 'grainulator demo [--dir <output-directory>] [--json]\nRun a synthetic offline repair and verifier example. Does not measure model quality.',
-  run: 'grainulator run --task <text> --adapter <executable> [--adapter-args <JSON-array>] [--verify <JSON-argv>] [--dir <workspace>] [--max-rounds 3] [--timeout-ms 60000] [--adapter-format json|text] [--json]',
-  preview: 'grainulator preview\nStart the local playground preview on http://127.0.0.1:4517.',
-  connect: 'grainulator connect [--dir <workspace>]\nPrint direct MCP configuration without changing host settings. For native Codex workspace setup, use grainulator setup --dir /absolute/project.',
-  doctor: 'grainulator doctor [--json]\nCheck the Node runtime, packaged components, and build integrity.',
-};
-function forward(entry, argv) {
-  const child = spawn(process.execPath, [path.join(root, entry), ...argv], { stdio: 'inherit' });
-  for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, () => child.kill(signal));
-  child.on('error', error => { console.error(error.message); process.exitCode = 1; });
-  child.on('exit', code => { process.exitCode = code ?? 1; });
+import {fileURLToPath} from 'node:url';
+import {spawn} from 'node:child_process';
+import {runTask} from '../lib/runner.js';
+import {researchCLI} from '../lib/research-cli.js';
+import {inspectBuild} from '../lib/build-info.js';
+import {RUN_USAGE, helpText, completion, manpage} from '../lib/command-surface.js';
+import projectConfig from '../packages/shared/lib/project-config.cjs';
+const root=fileURLToPath(new URL('../',import.meta.url));
+const {version}=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
+const [command='help',...args]=process.argv.slice(2);
+const option=(name,fallback)=>{const i=args.indexOf(name);if(i<0)return fallback;if(!args[i+1]||args[i+1].startsWith('--'))throw new Error(`A value is required for ${name}.`);return args[i+1];};
+const json=args.includes('--json');
+function validateOptions(values=[],flags=[]) {
+  if(args.includes("--help")||args.includes("-h"))return;
+  for(let i=0;i<args.length;i++) {const name=args[i];if(['--help','-h',...flags].includes(name))continue;if(!values.includes(name))throw new Error(`Unknown option: ${name}`);if(!args[++i]||args[i].startsWith('--'))throw new Error(`A value is required for ${name}.`);}
 }
+const children={memory:'packages/memory/bin/memory.js',export:'packages/exports/bin/exports.js',analytics:'packages/analytics/bin/analytics.js',orchestrate:'packages/orchestration/bin/orchestrate.js',utils:'packages/shared/bin/shared.js'};
+const evidence=new Set(['add','import','compile','status','search','resolve','guard','stats']);
+async function forward(entry,argv) {
+  const child=spawn(process.execPath,[path.join(root,entry),...argv],{stdio:'inherit'});
+  const stop=signal=>child.kill(signal);const onInt=()=>stop('SIGINT'),onTerm=()=>stop('SIGTERM');
+  process.once('SIGINT',onInt);process.once('SIGTERM',onTerm);
+  try {process.exitCode=await new Promise((resolve,reject)=>{child.once('error',reject);child.once('exit',code=>resolve(code??1));});}
+  finally {process.removeListener('SIGINT',onInt);process.removeListener('SIGTERM',onTerm);}
+}
+const output=(value,text)=>console.log(json?JSON.stringify(value,null,2):text);
+const safePath=value=>args.includes('--details')?value: value ? '<local path>' : undefined;
 try {
-  if (['--version', '-v', 'version'].includes(command)) console.log(args.includes('--json') ? JSON.stringify({version, build: inspectBuild(root)}) : version);
-  else if (commandHelp[command] && (args.includes('--help') || args.includes('-h'))) console.log(commandHelp[command]);
-  else if (command === 'serve') { console.error('Component browser dashboards are retired. Use the CLI or MCP tools; grainulator preview opens the local research playground.'); process.exitCode = 1; }
-  else if (evidencePrefix && !evidenceCommands.has(command)) { console.error(`Unknown evidence command: ${command}. Run grainulator evidence --help.`); process.exitCode = 1; }
-  else if (command === 'setup') {
-    if (args.includes('--help') || args.includes('-h')) console.log('grainulator setup --dir <absolute-project> [--json]\nSave the default native Codex workspace in ~/.config/grainulator/workspace.json. Restart Codex after changing it. GRAINULATOR_WORKSPACE overrides the saved default. Changes no host settings.');
-    else {
-      const {saveWorkspace} = await import('../lib/workspace-config.js');
-      const result = saveWorkspace(option('--dir'));
-      console.log(args.includes('--json') ? JSON.stringify(result) : `Workspace: ${result.workspace}\nSaved: ${result.config}\nRestart Codex to load this default workspace. GRAINULATOR_WORKSPACE overrides it when set.\nHost settings were not changed.`);
+  if(['version','--version','-v'].includes(command)) {validateOptions([],['--json']);output({version,build:inspectBuild(root)},version);}
+  else if(['help','--help','-h'].includes(command)) console.log(helpText());
+  else if(command==='completion') {if(args.length!==1)throw new Error('Usage: grainulator completion bash|zsh|fish');process.stdout.write(completion(args[0]));}
+  else if(command==='man') {if(args.length)throw new Error('Usage: grainulator man');process.stdout.write(manpage());}
+  else if(command==='runtime') await (await import('../lib/runtime-cli.js')).runtimeCLI(args);
+  else if(command==='research') await researchCLI(args);
+  else if(command==='maintain') await (await import('../lib/maintenance-cli.js')).maintenanceCLI(args);
+  else if(command==='report') await (await import('../lib/report-packet.js')).reportCLI(args);
+  else if(command==='setup') {
+    validateOptions(['--dir'],['--json']);
+    if(args.includes('--help')||args.includes('-h'))console.log('Usage:\n  grainulator setup --dir <absolute-project> [--json]\nSave the default native-host workspace binding. Host settings are not changed. Restart the host after changing this binding.');
+    else {const result=(await import('../lib/workspace-config.js')).saveWorkspace(option('--dir'));output(result,`Workspace: ${result.workspace}\nSaved: ${result.config}\nRestart the host to load this default workspace.`);}
+  } else if(command==='init') {
+    validateOptions(['--question','--dir','--audience','--constraints','--done'],['--json','--force']);
+    if(args.includes('--help')||args.includes('-h'))console.log('Usage:\n  grainulator init --question <text> [--dir <path>] [--audience <text>] [--constraints <semicolon-separated text>] [--done <text>] [--force] [--json]\nCreates evidence sprint data. Existing ledgers require explicit force and a backup.');
+    else {const result=(await import('../lib/sprint-init.js')).initializeSprint(path.resolve(option('--dir',process.cwd())),{question:option('--question'),audience:option('--audience'),constraints:option('--constraints'),done:option('--done'),force:args.includes('--force')});output(result,result.status==='error'?result.message:`Sprint initialized: ${result.directory}\n${result.output}`);if(result.status==='error')process.exitCode=1;}
+  } else if(command==='mcp') {
+    validateOptions(['--dir','--memory-dir']);
+    if(args.includes('--help')||args.includes('-h'))console.log('Usage:\n  grainulator mcp [--dir <workspace>] [--memory-dir <path>]\nOne local stdio MCP server: 29 canonical tools and 7 resources.');
+    else (await import('../lib/grainulator-mcp.js')).startServer({dir:path.resolve(option('--dir',process.cwd())),memoryDir:option('--memory-dir')});
+  } else if(command==='connect') {
+    validateOptions(['--dir','--launcher']);
+    if(args.includes('--help')||args.includes('-h'))console.log('Usage:\n  grainulator connect [--dir <workspace>] [--launcher <absolute-stable-launcher>]\nPrint MCP registration without changing host settings. For Homebrew select its stable opt/bin/grainulator launcher explicitly; a versioned Cellar path will not survive cleanup.');
+    else {const launcher=option('--launcher',process.env.GRAINULATOR_INSTALL_ORIGIN==='homebrew'?process.env.GRAINULATOR_HOMEBREW_LAUNCHER:undefined);if(launcher&&!path.isAbsolute(launcher))throw new Error('--launcher must be absolute.');console.log(JSON.stringify({mcpServers:{grainulator:{command:launcher||process.execPath,args:[...(launcher?[]:[path.join(root,'bin/grainulator.js')]),'mcp','--dir',path.resolve(option('--dir',process.cwd()))]}}},null,2));}
+  } else if(command==='config') {
+    const [action,...rest]=args;if(!action||['--help','-h'].includes(action))console.log('Usage:\n  grainulator config check|explain [--dir <project>] [--workspace <root>] [--config <file>] [--json]\nRead-only. Validates the real section-scoped loaders; explanation reports sources, never config values. GRAINULATOR_CONFIG remains the separate host binding.');
+    else {if(!['check','explain'].includes(action))throw new Error('Unknown config action.');for(let i=0;i<rest.length;i++){if(rest[i]==='--json')continue;if(!['--dir','--workspace','--config'].includes(rest[i])||!rest[++i]||rest[i].startsWith('--'))throw new Error('Invalid config option.');}
+      const dir=path.resolve(option('--dir',process.cwd())), workspace=path.resolve(option('--workspace',dir));const options={workspace,configFile:option('--config')};
+      const runtimeSection=projectConfig.readSection(dir,'runtime',options);if(runtimeSection.value!==undefined)(await import('../lib/runtime-enrollment.js')).validateRun(runtimeSection.value);
+      const sections=Object.fromEntries(['evidence','orchestration','runtime'].map(section=>{const selected=projectConfig.readSection(dir,section,{...options,ascend:section==='orchestration'});return [section,{configured:selected.value!==undefined,source:selected.exists?path.relative(workspace,selected.file).split(path.sep).join('/'):null}];}));
+      let migration='ready';try{projectConfig.assertMigrationReady(dir,{workspace});}catch{migration='incomplete-or-invalid';}
+      const result={schema_version:'grainulator.config-check.v1',status:migration==='ready'?'ok':'blocked',sections,migration};output(result,`Project configuration: ${result.status}\n${Object.entries(sections).map(([name,v])=>`${name}: ${v.configured?'configured':'defaults'}`).join('\n')}`);if(result.status!=='ok')process.exitCode=1;
     }
-  }
-  else if (command === 'init') {
-    if (args.includes('--help') || args.includes('-h')) console.log('grainulator init --question <text> [--dir <path>] [--audience <text>] [--constraints <semicolon-separated text>] [--done <text>] [--force] [--json]\nCreates only the sprint ledger and compilation. Leaves host settings and Git hooks unchanged.');
+  } else if(command==='doctor') {
+    validateOptions(['--dir'],['--json','--details','--require-runtime']);
+    if(args.includes('--help')||args.includes('-h'))console.log('Usage:\n  grainulator doctor [--dir <workspace>] [--require-runtime] [--details] [--json]\nRead-only local installation and configuration checks. No providers, host probes or network. Optional native runtime absence is informational; --require-runtime makes it required.');
     else {
-      const result = (await import('../lib/sprint-init.js')).initializeSprint(path.resolve(option('--dir', process.cwd())), {question: option('--question'), audience: option('--audience'), constraints: option('--constraints'), done: option('--done'), force: args.includes('--force')});
-      console.log(args.includes('--json') ? JSON.stringify(result, null, 2) : result.status === 'error' ? result.message : `Sprint initialized: ${result.directory}\n${result.output}`);
-      if (result.status === 'error') process.exitCode = 1;
+      const build=inspectBuild(root),dir=path.resolve(option('--dir',process.cwd()));const major=Number(process.versions.node.split('.')[0]);
+      const checks=[{id:'node',component:'node',available:major>=24,required:'>=24',actual:process.version,status:major>=24?'pass':'fail',tested:[24,26].includes(major),message:[24,26].includes(major)?'Supported LTS line.':'This release is tested on Node 24 and 26 LTS.'},...Object.entries(children).map(([component,entry])=>({id:component,component,available:fs.existsSync(path.join(root,entry))})),{id:'evidence',component:'evidence',available:fs.existsSync(path.join(root,'packages/evidence/bin/evidence.js'))}];
+      let configuration={status:'valid',source:'project'};try{const selected=projectConfig.readProjectConfig(dir);projectConfig.evidenceConfig(dir);if(selected.data.runtime!==undefined)(await import('../lib/runtime-enrollment.js')).validateRun(selected.data.runtime);projectConfig.assertMigrationReady(dir);}catch{configuration={status:'invalid',message:'Project configuration or migration metadata needs attention; use config check.'};checks.push({id:'project-config',component:'project-config',available:false});}
+      let native={status:'not-installed',origin:'explicit-native-asset',live_host:'unknown'};try{const mod=await import('../lib/runtime-assets.js');native={...native,...mod.inspectRuntimeInstallation({workspace:dir})};}catch(error){if(error.code!=='ERR_MODULE_NOT_FOUND')native={...native,status:'invalid',error:'Native installation could not be inspected.'};}
+      let enrollment={status:'unknown',live_host:'unknown'};try{enrollment=(await import('../lib/runtime-enrollment.js')).inspectRuntimeEnrollment(dir);}catch{enrollment={status:'invalid',live_host:'unknown'};}
+      if(!args.includes('--details')){native=Object.fromEntries(['status','version','target','origin','live_host'].filter(key=>native[key]!==undefined).map(key=>[key,native[key]]));enrollment=Object.fromEntries(['status','policy','state','origin','asset_version','live_host'].filter(key=>enrollment[key]!==undefined).map(key=>[key,enrollment[key]]));}
+      if(enrollment.status==='invalid')checks.push({id:'runtime-enrollment',component:'runtime-enrollment',available:false});
+      if(args.includes('--require-runtime')||native.status==='invalid')checks.push({id:'native-runtime',component:'native-runtime',available:native.status==='available'});
+      const result={schema_version:'grainulator.doctor.v1',mode:'local',node:process.version,build,checks,configuration,native,enrollment,installation:{package:safePath(root),origin:['homebrew','source','archive','plugin'].includes(process.env.GRAINULATOR_INSTALL_ORIGIN)?process.env.GRAINULATOR_INSTALL_ORIGIN:'unknown',update_owner:'Use the channel that installed this copy.',running_host:'unknown'},adapters:['command-json-v1','command-text'],enforcement:'Managed command runner; native host permissions depend on the selected integration.'};
+      output(result,`Grainulator ${version} · ${build.id||build.status||'invalid build'}\n${checks.map(c=>`${c.available?'✓':'✗'} ${c.component}${c.actual?` ${c.actual}`:''}`).join('\n')}\nBuild integrity: ${build.verified===null?'source checkout':build.verified?'verified':'failed'}\nNative runtime: ${native.status}\nUse grainulator demo for an offline synthetic protocol example.`);
+      process.exitCode=checks.every(c=>c.available)&&build.verified!==false?0:1;
     }
-  }
-  else if (command === 'research') await researchCLI(args);
-  else if (command === 'maintain') await (await import('../lib/maintenance-cli.js')).maintenanceCLI(args);
-  else if (command === 'report') await (await import('../lib/report-packet.js')).reportCLI(args);
-  else if (command === 'mcp') {
-    if (args.includes('--help') || args.includes('-h')) console.log('grainulator mcp [--dir <workspace>] [--memory-dir <path>]\nOne local MCP server for evidence, memory, and exports. See docs/TOOLS.md.');
-    else (await import('../lib/grainulator-mcp.js')).startServer({dir: path.resolve(option('--dir', process.cwd())), memoryDir: option('--memory-dir')});
-  }
-  else if (children[command]) forward(children[command], args);
-  else if (['init', 'add', 'import', 'resolve', 'compile', 'search', 'status', 'guard'].includes(command)) {
-    forward(children.evidence, [command, ...(command === 'init' && !args.includes('--headless') ? ['--headless'] : []), ...args]);
-  } else if (command === 'preview') forward('scripts/preview.mjs', args);
-  else if (command === 'doctor') {
-    const build = inspectBuild(root);
-    const required = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).engines.node;
-    const minimumMajor = Number(required.match(/^>=(\d+)$/)?.[1]);
-    const runtimeAvailable = Number.isFinite(minimumMajor) && Number(process.versions.node.split('.')[0]) >= minimumMajor;
-    const checks = [{ component: 'node', available: runtimeAvailable, required, actual: process.version }, ...Object.entries(children).filter(([component]) => component !== 'wheat').map(([component, entry]) => ({ component, available: fs.existsSync(path.join(root, entry)) }))];
-    const result = { mode: 'local', node: process.version, build, checks, adapters: ['command-json-v1', 'command-text'], enforcement: 'Managed command runner; host integration depends on adapter capabilities.' };
-    console.log(args.includes('--json') ? JSON.stringify(result, null, 2) : `Grainulator ${version} · ${build.id || build.status || 'invalid build'}\n${checks.map(c => `${c.available ? '✓' : '✗'} ${c.component}${c.required ? ` ${c.actual} (requires ${c.required})` : ''}`).join('\n')}\n${build.verified === null ? 'No integrity manifest in this checkout. Version is available above; release installs include a verifiable manifest.' : `${build.verified ? '✓' : '✗'} Packaged files match build manifest`}\n\nUse grainulator demo for an offline, verified repair example.`);
-    process.exitCode = checks.every(c => c.available) && build.verified !== false ? 0 : 1;
-  } else if (command === 'connect') {
-    console.log(JSON.stringify({ mcpServers: { grainulator: { command: process.execPath, args: [path.join(root, 'bin/grainulator.js'), 'mcp', '--dir', path.resolve(option('--dir', process.cwd()))] } } }, null, 2));
-  } else if ((command === 'run' || command === 'demo') && !args.includes('--help')) {
-    const demo = command === 'demo';
-    const cwd = path.resolve(option('--dir', demo ? path.join(root, '.dogfood/demo') : process.cwd()));
-    if (demo) fs.mkdirSync(cwd, { recursive: true });
-    const adapter = demo ? [process.execPath, path.join(root, 'evals/fixtures/repair-adapter.mjs')] : [option('--adapter'), ...JSON.parse(option('--adapter-args', '[]'))];
-    const verifier = demo ? [process.execPath, path.join(root, 'evals/fixtures/answer-verifier.mjs')] : option('--verify') ? JSON.parse(option('--verify')) : null;
-    const controller = new AbortController();
-    process.once('SIGINT', () => controller.abort()); process.once('SIGTERM', () => controller.abort());
-    if (demo && !args.includes('--json')) console.log('Offline protocol fixture. Exercises repair and verification; does not measure model quality.\n');
-    const result = await runTask({ task: option('--task', demo ? 'Calculate 6 × 7. Return the number.' : ''), adapter, verifier, cwd, adapterFormat: option('--adapter-format', 'json'), maxRounds: Number(option('--max-rounds', 3)), timeoutMs: Number(option('--timeout-ms', 60000)), signal: controller.signal, onRound: r => { if (!args.includes('--json')) console.log(`Round ${r.round}: ${r.verification?.passed ? 'verification passed' : r.verification ? 'needs correction' : 'unverified'}`); } });
-    console.log(args.includes('--json') ? JSON.stringify(result, null, 2) : `\n${result.status}\n${result.rounds.at(-1)?.answer || result.error || ''}\nTrace: ${result.trace}`);
-    process.exitCode = result.status === 'verified' ? 0 : result.status === 'soundness_break' ? 3 : 2;
-  } else if (['help', '--help', '-h'].includes(command) || (command === 'run' && args.includes('--help'))) {
-    console.log(`Grainulator\n\nUsage: node bin/grainulator.js <command> [options]\n\n  maintain         Track premises, observations, audit findings and acceptance (--help)\n  report           Freeze/check a grounded report evidence packet (--help)\n  research         Run or resume an exported playground session (--help)\n  doctor           Check the local workspace\n  demo             Run the offline repair + verifier example\n  run              Attach a JSON command adapter to a bounded task loop\n  init / add / import / compile / status / search / resolve\n                   Work with an evidence sprint (--dir <directory>)\n  check            Evaluate a legacy execution ledger\n  memory / export / analytics / orchestrate\n                   Access the consolidated components\n  setup            Save the default native Codex workspace (--dir absolute-path)\n  --version / -v   Print the installed product version\n  connect          Print a local MCP configuration; changes no host settings\n  preview          Open the local research playground\n\nrun options:\n  --task <text> --adapter <executable> --adapter-args '<JSON array>'\n  --verify '<JSON argv>' --dir <workspace> --max-rounds 3 --timeout-ms 60000\n  --adapter-format json|text  Use text for ordinary prompt-in / answer-out CLIs\n  --json           Machine-readable output\n\nAdapter protocol and dogfood guide: docs/DOGFOOD.md\nNo release or installation into your global agent configuration is performed.`);
-  } else { console.error(`Unknown command: ${command}. Run grainulator --help.`); process.exitCode = 1; }
-} catch (error) { console.error(`Grainulator: ${error.message}`); process.exitCode = 1; }
+  } else if(command==='demo'||command==='run') {
+    validateOptions(['--dir','--task','--adapter','--adapter-args','--verify','--max-rounds','--timeout-ms','--adapter-format'],['--json']);
+    if(args.includes('--help')||args.includes('-h'))console.log(command==='run'?RUN_USAGE:'grainulator demo [--dir <writable-output-directory>] [--json]\nSynthetic offline repair/verifier protocol example; does not measure model quality. Defaults to a new temporary workspace.');
+    else {const demo=command==='demo';const selected=option('--dir');const cwd=path.resolve(selected||(demo?fs.mkdtempSync(path.join(os.tmpdir(),'grainulator-demo-')):process.cwd()));if(demo)fs.mkdirSync(cwd,{recursive:true});
+      const adapter=demo?[process.execPath,path.join(root,'evals/fixtures/repair-adapter.mjs')]:[option('--adapter'),...JSON.parse(option('--adapter-args','[]'))];const verifier=demo?[process.execPath,path.join(root,'evals/fixtures/answer-verifier.mjs')]:option('--verify')?JSON.parse(option('--verify')):null;
+      const controller=new AbortController();const stop=()=>controller.abort();process.once('SIGINT',stop);process.once('SIGTERM',stop);
+      try{const result=await runTask({task:option('--task',demo?'Calculate 6 × 7. Return the number.':''),adapter,verifier,cwd,adapterFormat:option('--adapter-format','json'),maxRounds:Number(option('--max-rounds',3)),timeoutMs:Number(option('--timeout-ms',60000)),signal:controller.signal,onRound:r=>{if(!json)console.log(`Round ${r.round}: ${r.verification?.passed?'verification passed':r.verification?'needs correction':'unverified'}`);}});output(result,`${demo?'Synthetic offline protocol fixture. Does not measure model quality.\n':''}${result.status}\n${result.rounds.at(-1)?.answer||result.error||''}\nTrace: ${result.trace}`);process.exitCode=result.status==='verified'?0:result.status==='soundness_break'?3:2;}
+      finally{process.removeListener('SIGINT',stop);process.removeListener('SIGTERM',stop);}
+    }
+  } else if(evidence.has(command))await forward('packages/evidence/bin/evidence.js',[command,...args]);
+  else if(children[command])await forward(children[command],args);
+  else if(command==='preview')await forward('scripts/preview.mjs',args);
+  else throw new Error(`Unknown command: ${command}. Run grainulator --help.`);
+} catch(error) {const message=error instanceof SyntaxError?'Invalid JSON argument.':error.message;if(json)console.log(JSON.stringify({schema_version:'grainulator.cli-error.v1',status:'error',message,error:{code:error.code||'E_USAGE',message}}));else console.error(`Grainulator: ${message}`);process.exitCode=1;}

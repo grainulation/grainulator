@@ -1,6 +1,6 @@
 # sync-assets — the vendor-at-build pattern
 
-Shared SEO and print primitives live in `@grainulation/barn/public/`. Every
+Shared SEO and print primitives live in `@grainulation/grainulator-shared/public/`. Every
 grainulation site needs them but **cannot load them cross-origin** because
 each site ships a strict Content-Security-Policy:
 
@@ -8,7 +8,7 @@ each site ships a strict Content-Security-Policy:
 default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; connect-src 'self'
 ```
 
-No cross-origin `<link href="https://barn.grainulation.com/...">` is allowed.
+No cross-origin `<link href="https://grainulator.dev/...">` is allowed.
 Instead, each site **vendors** the primitives into its own origin at build
 time via the `sync-assets` CLI.
 
@@ -17,7 +17,7 @@ time via the `sync-assets` CLI.
 Three reasons:
 
 1. **CSP gate.** All 8 sites ship `default-src 'self'`. Cross-origin loads
-   are blocked. Loosening CSP to allow `barn.grainulation.com` would be a
+   are blocked. Loosening CSP to allow `shared.grainulation.com` would be a
    coordinated 8-repo change with its own review burden and would open new
    attack surface.
 2. **Offline/mirror-friendly.** Same-origin assets work in corporate
@@ -39,11 +39,11 @@ In each consumer repo's `.github/workflows/pages.yml`, add a step between
         with:
           node-version: 20
 
-      - name: Install barn
-        run: npm install @grainulation/barn@^1.3.0
+      - name: Install shared
+        run: npm install @grainulation/grainulator-shared@^1.3.0
 
       - name: Vendor shared assets
-        run: node node_modules/@grainulation/barn/tools/sync-assets.js --target ./site --verbose
+        run: node node_modules/@grainulation/grainulator-shared/tools/sync-assets.js --target ./site --verbose
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -65,7 +65,7 @@ own design tokens.
 `sync-assets` uses only Node built-ins (`node:fs`, `node:crypto`,
 `node:path`). For each asset in the manifest:
 
-1. Read the source from `barn/public/`.
+1. Read the source from `shared/public/`.
 2. If the target file doesn't exist: copy it.
 3. If the target exists, compare sha256 hashes. Equal → skip. Different →
    overwrite (or in `--strict` mode, exit non-zero without writing).
@@ -95,10 +95,10 @@ blindly.
 
 ## Adding a new shared primitive
 
-1. Drop the asset in `barn/public/`.
+1. Drop the asset in `shared/public/`.
 2. Add an entry to the `SYNC_MANIFEST` array at the top of
-   `barn/tools/sync-assets.js`.
-3. Ship a **minor** bump of `@grainulation/barn` (e.g., 1.3.x → 1.4.0).
+   `shared/tools/sync-assets.js`.
+3. Ship a **minor** bump of `@grainulation/grainulator-shared` (e.g., 1.3.x → 1.4.0).
 4. Update the table above in this doc.
 5. Consumers pick it up the next time their pages.yml runs. No per-site
    code change needed for the copy; sites that need to **reference** the
@@ -117,15 +117,15 @@ terminal block), add `site/print-local.css` to that repo and reference it
 
 Higher source-order wins on equal specificity. `print-local.css` is NOT
 vendored — it's site-owned. Do not fork `grainulation-print.css` — if you
-need an upstream fix, send a PR to barn instead.
+need an upstream fix, send a PR to shared instead.
 
 ### When to PR upstream vs. ship print-local.css
 
 | Case                                                              | Where it lives                   |
 |-------------------------------------------------------------------|----------------------------------|
-| Rule benefits every site (e.g., hide a nav pattern all sites use) | upstream in `grainulation-print.css` (PR to barn) |
+| Rule benefits every site (e.g., hide a nav pattern all sites use) | upstream in `grainulation-print.css` (PR to shared) |
 | Rule is specific to ONE site (niche widget, brand wordmark)       | site-local `print-local.css`     |
-| Rule is specific to 2-3 sites with the same DOM class             | upstream; barn owns cross-site   |
+| Rule is specific to 2-3 sites with the same DOM class             | upstream; shared owns cross-site   |
 | Emergency fix before a stakeholder print                          | site-local first, upstream PR as follow-up |
 
 ### Known per-site hardening (absorbed in 1.3.1)
@@ -135,14 +135,14 @@ therefore do NOT need `print-local.css` in the consumer repos:
 
 | Site    | Hardening applied in 1.3.1                                           |
 |---------|----------------------------------------------------------------------|
-| harvest | `.bar`, `.accuracy-chart` get `print-color-adjust: exact`            |
-| orchard | `.dep-graph` / `.dep-node` / `.node-box` contrast overrides          |
-| mill    | `.term-*` blocks flattened; `.before-after` collapses to one column  |
-| wheat   | `.copy-wrap::before` traffic-light pseudo-element hidden             |
+| analytics | `.bar`, `.accuracy-chart` get `print-color-adjust: exact`            |
+| orchestration | `.dep-graph` / `.dep-node` / `.node-box` contrast overrides          |
+| exports    | `.term-*` blocks flattened; `.before-after` collapses to one column  |
+| evidence   | `.copy-wrap::before` traffic-light pseudo-element hidden             |
 
 If you see a regression in one of these areas, first check that your site
-has pulled `@grainulation/barn@^1.3.1` via `sync-assets`. If it has and the
-bug persists, PR a fix to barn rather than adding a `print-local.css`.
+has pulled `@grainulation/grainulator-shared@^1.3.1` via `sync-assets`. If it has and the
+bug persists, PR a fix to shared rather than adding a `print-local.css`.
 
 ## Failure modes
 
@@ -150,7 +150,7 @@ bug persists, PR a fix to barn rather than adding a `print-local.css`.
 |--------------------------------------------|----------------------------------------------------|--------------------------------------|
 | Deployed site 404s on /grainulation-print.css | Forgot the `sync-assets` step in pages.yml    | Add the step (see above).            |
 | `sync-assets: --target is not a directory` | Typo in path or the site/ dir doesn't exist yet    | Check `--target` value.              |
-| `MISSING grainulation-print.css (required source not found)` | Consumer installed wrong barn version | Bump `@grainulation/barn` to ^1.3.0. |
+| `MISSING grainulation-print.css (required source not found)` | Consumer installed wrong shared version | Bump `@grainulation/grainulator-shared` to ^1.3.0. |
 | CI fails with exit 1 in `--strict` mode    | Target file diverged from source                   | Remove the divergent file; let sync-assets re-copy. |
 
 ## Related

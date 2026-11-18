@@ -1,5 +1,5 @@
 /**
- * mill format: dot
+ * exports format: dot
  *
  * Converts compilation.json claims to Graphviz DOT format.
  * Claims grouped into type-based subgraph clusters, tag edges as dashed lines.

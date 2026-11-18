@@ -10,7 +10,7 @@ const REQUIRED_PATHS = [
   "package/lib/formats/markdown.mjs",
   "package/lib/exporters/pdf-worker.js",
   "package/lib/serve-mcp.js",
-  "package/bin/mill.js",
+  "package/bin/exports.js",
   "package/package.json",
   "package/LICENSE"
 ];

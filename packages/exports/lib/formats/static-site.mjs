@@ -1,5 +1,5 @@
 /**
- * mill format: static-site
+ * exports format: static-site
  *
  * Converts compilation.json to a Hugo-compatible static site manifest.
  * Outputs a JSON object describing the file tree (content pages, data, config).
@@ -72,7 +72,7 @@ export function convert(compilation) {
   files["data/meta.json"] = JSON.stringify(meta, null, 2);
 
   const manifest = {
-    generator: "mill",
+    generator: "exports",
     sprint: sprintName,
     claimCount: claims.length,
     files,
@@ -87,12 +87,12 @@ function buildConfig(sprintName, question) {
     `baseURL: "https://your-site.example.com/${sanitizeSlug(sprintName)}/"  # Update with your domain`,
   );
   lines.push(`title: "${escYaml(sprintName)}"`);
-  lines.push(`theme: "mill-default"`);
+  lines.push(`theme: "exports-default"`);
   lines.push('languageCode: "en-us"');
   lines.push("");
   lines.push("params:");
   lines.push(`  question: "${escYaml(question)}"`);
-  lines.push(`  generator: "mill"`);
+  lines.push(`  generator: "exports"`);
   return lines.join("\n") + "\n";
 }
 

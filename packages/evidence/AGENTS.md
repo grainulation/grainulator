@@ -1,17 +1,3 @@
-# Wheat — package source
+# Grainulator evidence implementation
 
-No sprint is active in this repo. Run `wheat init` to start one — this directory is the wheat
-package source, not a sprint directory.
-
-## Claims System
-
-All findings are tracked as typed claims in `claims.json`. Claim types: constraint, factual, estimate, risk, recommendation, feedback. Evidence tiers (low to high): stated, web, documented, tested, production.
-
-## Key Commands
-
-- `wheat init` — bootstrap a research sprint
-- `wheat compile` — validate and compile claims
-- `wheat status` — sprint health dashboard
-- `wheat search <query>` — search claims
-- `wheat add-claim` — add a new claim
-- `wheat resolve <id>` — resolve a conflicting claim
+Follow the root AGENTS.md and the active task sprint. This directory is implementation source, not a research sprint. Use the root Grainulator CLI and pass an explicit --dir for sprint operations.

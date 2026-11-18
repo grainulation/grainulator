@@ -17,9 +17,8 @@ export const DEFAULT_MEMORY_DIR = path.join(
 	".grainulator",
 	"memory",
 );
-export const DEFAULT_SILO_DIR = path.join(os.homedir(), ".silo");
 
-/** One resolver for CLI, MCP, and library callers. Existing legacy data stays usable. */
+/** One resolver for CLI, MCP, and library callers. No legacy locations are probed. */
 export function resolveMemoryDir(
 	explicit,
 	{ env = process.env, homeDir = os.homedir() } = {},
@@ -27,25 +26,17 @@ export function resolveMemoryDir(
 	if (explicit) return path.resolve(explicit);
 	if (env.GRAINULATOR_MEMORY_DIR)
 		return path.resolve(env.GRAINULATOR_MEMORY_DIR);
-	if (env.SILO_STORE) return path.resolve(env.SILO_STORE);
-	const canonical = path.join(homeDir, ".grainulator", "memory");
-	const legacy = path.join(homeDir, ".silo");
-	if (
-		!fs.existsSync(path.join(canonical, "index.json")) &&
-		fs.existsSync(path.join(legacy, "index.json"))
-	)
-		return legacy;
-	return canonical;
+	return path.join(homeDir, ".grainulator", "memory");
 }
 
 export class Store {
-	constructor(siloDir) {
-		siloDir = resolveMemoryDir(siloDir);
-		this.root = siloDir;
-		this.claimsDir = path.join(siloDir, "claims");
-		this.templatesDir = path.join(siloDir, "templates");
-		this.packsDir = path.join(siloDir, "packs");
-		this.indexPath = path.join(siloDir, "index.json");
+	constructor(memoryDir) {
+		memoryDir = resolveMemoryDir(memoryDir);
+		this.root = memoryDir;
+		this.claimsDir = path.join(memoryDir, "claims");
+		this.templatesDir = path.join(memoryDir, "templates");
+		this.packsDir = path.join(memoryDir, "packs");
+		this.indexPath = path.join(memoryDir, "index.json");
 	}
 
 	/** Create the store and its index under the same lock used by every writer. */

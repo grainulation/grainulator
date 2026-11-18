@@ -1,7 +1,7 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "https://github.com/grainulation/bean/schemas/result.schema.json",
-	"title": "bean-check result",
+	"$id": "urn:grainulator:runtime:result:1",
+	"title": "grainulator-runtime-check result",
 	"type": "object",
 	"required": [
 		"status",

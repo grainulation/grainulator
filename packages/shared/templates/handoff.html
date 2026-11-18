@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{TITLE}} — Handoff</title>
 <style>
-  /* barn/templates/handoff.html — knowledge transfer document
+  /* shared/templates/handoff.html — knowledge transfer document
      System font stack, no external dependencies, fully self-contained. */
 
   :root {
@@ -213,7 +213,7 @@
     color: var(--accent-light);
   }
 
-  .barn-footer {
+  .shared-footer {
     position: absolute;
     bottom: 24px; right: 40px;
     font-size: 9pt;
@@ -245,7 +245,7 @@
     .claim-table th, .claim-table td { padding: 8px 8px; }
     .claim-table th:nth-child(4), .claim-table td:nth-child(4) { display: none; }
     nav[aria-label="sections"] { display: none; }
-    .barn-footer { right: 20px; bottom: 16px; }
+    .shared-footer { right: 20px; bottom: 16px; }
   }
 
   @media print {
@@ -256,7 +256,7 @@
     h2 { color: #1a1a1a; }
     .context-block, .decision-card, .open-card, .next-steps-list li { background: #f5f5f5; border-color: #ddd; }
     .context-value, .decision-detail, .timeline-content { color: #333; }
-    nav[aria-label="sections"], .barn-footer { display: none; }
+    nav[aria-label="sections"], .shared-footer { display: none; }
   }
 
   /* Evidence documents keep their data prominent and controls quiet. */
@@ -307,7 +307,7 @@
       <div class="context-value">{{AUDIENCE}}</div>
     </div>
   </div>
-  <div class="barn-footer">Built with barn</div>
+  <div class="shared-footer">Built with shared</div>
 </section>
 
 <section id="timeline" aria-label="What You Need to Know">

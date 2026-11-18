@@ -1,5 +1,5 @@
 /**
- * mill format: csv
+ * exports format: csv
  *
  * Converts compilation.json claims to CSV.
  * Columns: id, type, topic, content, evidence_tier, evidence_source, confidence, status

@@ -88,7 +88,7 @@ export function flagList(name, argv = process.argv.slice(2)) {
  * `fallback` if the file is missing or malformed.
  *
  * Use this at read-only paths (config loading, cache reads). For write
- * paths, use @grainulation/barn/atomic.
+ * paths, use @grainulation/grainulator-shared/atomic.
  */
 export function loadJSON(filePath, fallback = null) {
   try {

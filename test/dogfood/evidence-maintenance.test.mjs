@@ -11,7 +11,7 @@ import {
 	writeReportPacket,
 } from "../../lib/report-packet.js";
 import { initializeSprint } from "../../lib/sprint-init.js";
-import { compile } from "../../packages/evidence/compiler/wheat-compiler.js";
+import { compile } from "../../packages/evidence/compiler/evidence-compiler.js";
 import { addClaim } from "../../packages/evidence/lib/claims-ops.js";
 import { compilationFreshness } from "../../packages/evidence/lib/freshness.js";
 import {

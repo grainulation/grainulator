@@ -2,9 +2,9 @@
 
 const formats = require("./formats.js");
 
-const name = "mill";
+const name = "exports";
 const version = require("../package.json").version;
-const description = "Turn wheat sprint artifacts into shareable formats";
+const description = "Turn evidence sprint artifacts into shareable formats";
 
 module.exports = {
   name,

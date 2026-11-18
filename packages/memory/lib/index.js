@@ -1,5 +1,5 @@
 /**
- * index.js — Unified entry point for @grainulation/silo
+ * index.js — Unified entry point for @grainulation/grainulator-memory
  *
  * Re-exports all public modules so consumers can import from a single path.
  */
@@ -8,7 +8,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-export { Store, DEFAULT_SILO_DIR, DEFAULT_MEMORY_DIR, resolveMemoryDir } from "./store.js";
+export { Store, DEFAULT_MEMORY_DIR, resolveMemoryDir } from "./store.js";
 export { Search } from "./search.js";
 export { Packs } from "./packs.js";
 export { ImportExport } from "./import-export.js";
@@ -25,6 +25,6 @@ const pkg = JSON.parse(
   readFileSync(join(__dirname, "..", "package.json"), "utf-8"),
 );
 
-export const name = "silo";
+export const name = "memory";
 export const version = pkg.version;
 export const description = pkg.description;

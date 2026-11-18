@@ -1,5 +1,5 @@
 /**
- * wheat stats — Local sprint statistics (self-inspection only)
+ * evidence stats — Local sprint statistics (self-inspection only)
  *
  * Scans the repo for all sprints (via detect-sprints logic) and prints
  * aggregate statistics: claim counts by phase/type/evidence, sprint count,
@@ -48,13 +48,14 @@ function findAllClaims(dir) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
-export async function run(dir, _args) {
+export async function run(dir, args) {
 	const sprintFiles = findAllClaims(dir);
 
 	if (sprintFiles.length === 0) {
+		if(args.includes("--json")){console.log(JSON.stringify({schema_version:"grainulator.stats.v1",sprints:[],total_claims:0}));return;}
 		console.log();
 		console.log("  No sprints found in this directory.");
-		console.log('  Run "wheat init" to start a research sprint.');
+		console.log('  Run "grainulator init" to start a research sprint.');
 		console.log();
 		process.exit(0);
 	}
@@ -111,10 +112,12 @@ export async function run(dir, _args) {
 		});
 	}
 
+	if(args.includes("--json")){console.log(JSON.stringify({schema_version:"grainulator.stats.v1",sprints:sprintSummaries,total_claims:totalClaims,by_phase:byPhase,by_type:byType,by_evidence:byEvidence}));return;}
+
 	// ─── Print ────────────────────────────────────────────────────────────────
 
 	console.log();
-	console.log("  \x1b[1mwheat stats\x1b[0m — local sprint statistics");
+	console.log("  \x1b[1mgrainulator stats\x1b[0m — local sprint statistics");
 	console.log(`  ${"─".repeat(50)}`);
 	console.log();
 

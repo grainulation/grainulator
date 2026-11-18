@@ -19,7 +19,7 @@ import {
 	COMPILER_VERSION,
 	generateCertificate,
 	passagesFingerprint,
-} from "../compiler/wheat-compiler.js";
+} from "../compiler/evidence-compiler.js";
 
 /**
  * @param {string} claimsPath path to claims.json

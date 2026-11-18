@@ -22,7 +22,7 @@ const COMPILER_PATH = path.resolve(
 	__dirname,
 	"..",
 	"compiler",
-	"wheat-compiler.js",
+	"evidence-compiler.js",
 );
 
 /** Build a minimal valid claims.json payload */

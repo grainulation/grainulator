@@ -49,8 +49,11 @@ test("orchestration workflow runs from a discovered nested configuration parent"
 	const configParent = path.join(dir, ".grainulator");
 	fs.mkdirSync(configParent);
 	fs.writeFileSync(
-		path.join(configParent, "orchard.json"),
-		JSON.stringify({ sprints: [], settings: { sync_interval: "manual" } }),
+		path.join(configParent, "grainulator.config.json"),
+		JSON.stringify({
+			schema_version: 1,
+			orchestration: { sprints: [], settings: { sync_interval: "manual" } },
+		}),
 	);
 	const source = fs.readFileSync(
 		path.join(root, "skills/orchestrate/SKILL.md"),

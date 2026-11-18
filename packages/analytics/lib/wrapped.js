@@ -1,18 +1,18 @@
 /**
- * Harvest Wrapped — Spotify-Wrapped-style report data for research sprints.
+ * Grainulator analytics Wrapped — Spotify-Wrapped-style report data for research sprints.
  *
- * Generates a "Harvest Report" with:
+ * Generates a "Grainulator analytics Report" with:
  *   1. Sprint count and velocity trends
  *   2. Claim type distribution and ratios
  *   3. Evidence tier progression (are you testing more over time?)
  *   4. "Research personality" type based on command usage patterns
  *   5. Key milestones and achievements
  *
- * Based on claims from harvest-in-grainulator and token-economics sprints:
+ * Based on claims from analytics-in-grainulator and token-economics sprints:
  *   - r628: Wrapped data points (sprint count, type ratios, personality)
  *   - r627: Spotify Wrapped viral design (personalization, identity, shareability)
  *   - r602: Behavioral science (make patterns feel like identity, not metrics)
- *   - d005: Harvest Reports = Spotify Wrapped for research
+ *   - d005: Grainulator analytics Reports = Spotify Wrapped for research
  */
 
 /**
@@ -79,7 +79,7 @@ export const ARCHETYPES = {
 };
 
 /**
- * Generate Harvest Wrapped report data.
+ * Generate Grainulator analytics Wrapped report data.
  *
  * @param {Array} sprints - Sprint objects (from loadSprintData)
  * @param {object} [opts] - Options

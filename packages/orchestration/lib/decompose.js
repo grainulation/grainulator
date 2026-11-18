@@ -1,3 +1,5 @@
+import { updatePortfolio } from "./project-config.js";
+import projectConfig from "../../shared/lib/project-config.cjs";
 import { atomicWrite } from "../../shared/lib/atomic.js";
 import { writeNewFile } from "../../shared/lib/fs-safe.cjs";
 import fs from "node:fs";
@@ -11,7 +13,7 @@ import path from "node:path";
  * dependency relationships.
  *
  * This is a deterministic, offline decomposition — no LLM required.
- * For richer decomposition, pipe through wheat's claim system.
+ * For richer decomposition, pipe through evidence's claim system.
  */
 
 /**
@@ -127,7 +129,7 @@ export function scoreFacets(question) {
 
 /**
  * Decompose a question into sub-sprints.
- * Returns an array of sprint configs ready to add to orchard.json.
+ * Returns an array of sprint configs ready to add to grainulator.config.json.
  *
  * Options:
  *   maxSprints: maximum number of sub-sprints (default 5)
@@ -183,9 +185,11 @@ export function decompose(question, opts = {}) {
 }
 
 /**
- * Apply decomposition: create directories and update orchard.json.
+ * Apply decomposition: create directories and update grainulator.config.json.
  */
 export function applyDecomposition(root, question, opts = {}) {
+  projectConfig.assertMigrationReady(root);
+  projectConfig.readProjectConfig(root);
   const sprints = decompose(question, opts);
 
   // Create sprint directories with initial claims.json
@@ -214,22 +218,11 @@ export function applyDecomposition(root, question, opts = {}) {
     }
   }
 
-  // Update orchard.json
-  const orchardPath = path.join(root, "orchard.json");
-  let config = { sprints: [] };
-  if (fs.existsSync(orchardPath)) {
-    config = JSON.parse(fs.readFileSync(orchardPath, "utf8"));
-  }
-  config.sprints = config.sprints || [];
-
-  const existingPaths = new Set(config.sprints.map((s) => s.path));
-  for (const sprint of sprints) {
-    if (!existingPaths.has(sprint.path)) {
-      config.sprints.push(sprint);
-    }
-  }
-
-  atomicWrite(orchardPath, JSON.stringify(config, null, 2) + "\n", "utf8");
+  updatePortfolio(root, current => {
+    const config=current||{sprints:[]};
+    const existingPaths=new Set((config.sprints||[]).map(s=>s.path));
+    return {...config,sprints:[...(config.sprints||[]),...sprints.filter(s=>!existingPaths.has(s.path))]};
+  },{create:true});
 
   return sprints;
 }
@@ -238,6 +231,8 @@ export function applyDecomposition(root, question, opts = {}) {
  * Print decomposition plan without applying it.
  */
 export function printDecomposition(question, opts = {}) {
+  projectConfig.assertMigrationReady(root);
+  projectConfig.readProjectConfig(root);
   const sprints = decompose(question, opts);
 
   console.log("");
@@ -255,6 +250,6 @@ export function printDecomposition(question, opts = {}) {
   }
 
   console.log("");
-  console.log('  Apply with: orchard decompose --apply "<question>"');
+  console.log('  Apply with: orchestration decompose --apply "<question>"');
   console.log("");
 }

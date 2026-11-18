@@ -1,0 +1,97 @@
+.TH GRAINULATOR 1
+.SH NAME
+grainulator \- evidence and execution tools
+.SH SYNOPSIS
+.B grainulator
+command [options]
+.SH COMMANDS
+.TP
+.B init
+Create an evidence sprint without changing host settings.
+.TP
+.B add
+Append a typed evidence claim.
+.TP
+.B import
+Import active document findings.
+.TP
+.B compile
+Validate and compile evidence.
+.TP
+.B status
+Inspect sprint health.
+.TP
+.B search
+Search recorded evidence.
+.TP
+.B resolve
+Resolve a claim conflict.
+.TP
+.B guard
+Check a proposed write against evidence requirements.
+.TP
+.B stats
+Inspect local sprint statistics.
+.TP
+.B maintain
+Maintain premises, observations, findings and acceptance.
+.TP
+.B report
+Freeze and check grounded report packets.
+.TP
+.B research
+Run or resume an exported research session.
+.TP
+.B memory
+Store, search and reuse local knowledge.
+.TP
+.B export
+Convert evidence into shareable artifacts.
+.TP
+.B analytics
+Inspect sprint metrics and retrospectives.
+.TP
+.B orchestrate
+Coordinate related sprints.
+.TP
+.B runtime
+Explicit native convergence operations and installation.
+.TP
+.B utils
+Shared asset and manifest utilities.
+.TP
+.B doctor
+Inspect the installed build and local configuration.
+.TP
+.B config
+Check and explain project configuration.
+.TP
+.B demo
+Run a synthetic offline repair and verifier example.
+.TP
+.B run
+Attach a command adapter to a bounded task loop.
+.TP
+.B setup
+Save a default native-host workspace binding.
+.TP
+.B connect
+Print an explicit MCP registration.
+.TP
+.B mcp
+Start the unified local MCP server.
+.TP
+.B preview
+Open the local research playground.
+.TP
+.B completion
+Print a static bash, zsh or fish completion script.
+.TP
+.B man
+Print the offline command reference.
+.SH EXIT STATUS
+Exit statuses are command-specific. The adapter run returns 0 for verified, 2 for an unverified terminal outcome, 3 for a soundness break and 1 for usage/configuration errors. Native runtime and Stop hook protocols have distinct statuses; see their command help.
+.SH DATA
+Project configuration is grainulator.config.json. Evidence claims.json and compilation.json remain generic filenames. User data is retained when the package is removed.
+.SH SEE ALSO
+Run grainulator command --help.

@@ -1,5 +1,5 @@
 /**
- * MCP JSON-RPC helpers — shared across wheat, mill, silo MCP servers.
+ * MCP JSON-RPC helpers — shared across evidence, exports, memory MCP servers.
  *
  * Implements the MCP protocol's JSON-RPC 2.0 envelope so each server doesn't
  * re-invent jsonRpcResponse / jsonRpcError.

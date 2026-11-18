@@ -1,6 +1,6 @@
-# Silo Knowledge Packs
+# Grainulator memory Knowledge Packs
 
-A knowledge pack is a JSON file containing curated claims on a specific domain. Packs ship with silo and can be pulled into any wheat sprint.
+A knowledge pack is a JSON file containing curated claims on a specific domain. Packs ship with memory and can be pulled into any evidence sprint.
 
 ## Pack Schema
 
@@ -62,7 +62,7 @@ Each pack is a JSON file with this structure:
 
 ## Built-in Packs
 
-Silo ships with 11 packs in the `packs/` directory:
+Grainulator memory ships with 11 packs in the `packs/` directory:
 
 | Pack               | Claims | Description                                                                |
 | ------------------ | ------ | -------------------------------------------------------------------------- |
@@ -83,7 +83,7 @@ Silo ships with 11 packs in the `packs/` directory:
 ### Pull a pack into your sprint
 
 ```bash
-silo pull <pack> --into <file>
+memory pull <pack> --into <file>
 ```
 
 Resolves the pack, re-prefixes claim IDs to avoid collisions, deduplicates against existing claims, and merges into your claims file.
@@ -91,7 +91,7 @@ Resolves the pack, re-prefixes claim IDs to avoid collisions, deduplicates again
 ### Publish a pack from stored collections
 
 ```bash
-silo publish <name> --collections <id1> <id2> ...
+memory publish <name> --collections <id1> <id2> ...
 ```
 
 Bundles one or more stored collections into a reusable pack.
@@ -99,7 +99,7 @@ Bundles one or more stored collections into a reusable pack.
 ### Install a pack from a file
 
 ```bash
-silo install <file>
+memory install <file>
 ```
 
-Installs a pack JSON file into silo's local storage for future use.
+Installs a pack JSON file into memory's local storage for future use.

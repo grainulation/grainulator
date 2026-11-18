@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Claude PreToolUse sends JSON on stdin. Exit 2 blocks; exit 1 does not.
-// Keep the legacy environment input for older callers. This guards Write/Edit,
+// Host context can be supplied on stdin or through CLAUDE_HOOK_CONTEXT. This guards Write/Edit,
 // not arbitrary shell commands or hosts that do not load the hook.
 "use strict";
 const fs = require("node:fs");

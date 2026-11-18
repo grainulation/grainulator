@@ -8,7 +8,7 @@ import { test } from "node:test";
 
 const REQUIRED_PATHS = [
   "package/templates/dashboard.html",
-  "package/bin/orchard.js",
+  "package/bin/orchestrate.js",
   "package/package.json",
   "package/README.md",
   "package/LICENSE"

@@ -1,7 +1,7 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "https://github.com/grainulation/bean/schemas/run.schema.json",
-	"title": "bean run contract (.bean/run.json)",
+	"$id": "urn:grainulator:runtime:run:1",
+	"title": "Grainulator runtime run contract (.grainulator/runtime/run.json)",
 	"description": "Only the fields the compiler reads. Effort/verifier policy stay doc rules, not config.",
 	"type": "object",
 	"additionalProperties": true,
@@ -48,11 +48,11 @@
 						"type": "array",
 						"minItems": 1,
 						"items": { "type": "string" },
-						"description": "argv array (shell:false), run by bean-verify; claim JSON is passed on stdin."
+						"description": "argv array (shell:false), run by grainulator-runtime-verify; claim JSON is passed on stdin."
 					},
 					"oracle_digest": {
 						"type": "string",
-						"description": "Optional pin; if set, bean-check treats a verdict from a different oracle_digest as stale."
+						"description": "Optional pin; if set, grainulator-runtime-check treats a verdict from a different oracle_digest as stale."
 					},
 					"inputs": {
 						"type": "array",
@@ -61,7 +61,7 @@
 					},
 					"trust": {
 						"enum": ["dev_oracle", "answer_key"],
-						"description": "Normative, not enforced: dev_oracle gates; answer_key is report-only. bean-check cannot PROVE legitimacy — see the spec."
+						"description": "Normative, not enforced: dev_oracle gates; answer_key is report-only. grainulator-runtime-check cannot PROVE legitimacy — see the spec."
 					},
 					"timeout_ms": { "type": "integer", "minimum": 1 }
 				}

@@ -1,6 +1,6 @@
 {
-  "name": "@grainulation/harvest",
-  "version": "1.1.5",
+  "name": "@grainulation/grainulator-analytics",
+  "version": "3.0.0",
   "description": "Analytics and retrospective layer for research sprints -- learn from every decision you've made",
   "type": "module",
   "main": "lib/analyzer.js",
@@ -13,15 +13,12 @@
     "./tokens": "./lib/tokens.js",
     "./token-tracker": "./lib/token-tracker.js",
     "./wrapped": "./lib/wrapped.js",
-    "./harvest-card": "./lib/harvest-card.js",
+    "./report-card": "./lib/report-card.js",
     "./package.json": "./package.json"
-  },
-  "bin": {
-    "harvest": "bin/harvest.js"
   },
   "scripts": {
     "test": "node --test test/basic.test.js test/report.test.js test/token-tracker.test.js test/wrapped.test.js test/tarball.test.js",
-    "start": "node bin/harvest.js",
+    "start": "node bin/analytics.js",
     "format": "npx prettier@3.3 --write .",
     "format:check": "npx prettier@3.3 --check ."
   },
@@ -47,21 +44,18 @@
     "CHANGELOG.md"
   ],
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/grainulation/harvest.git"
+    "url": "git+https://github.com/grainulation/grainulator.git"
   },
   "bugs": {
-    "url": "https://github.com/grainulation/harvest/issues"
+    "url": "https://github.com/grainulation/grainulator/issues"
   },
-  "homepage": "https://harvest.grainulation.com",
-  "publishConfig": {
-    "access": "public"
-  },
+  "homepage": "https://grainulator.dev",
   "dependencies": {
-    "@grainulation/barn": "^1.3.0"
+    "@grainulation/grainulator-shared": "3.0.0"
   },
   "private": true
 }

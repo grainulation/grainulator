@@ -1,5 +1,5 @@
 /**
- * Shared helpers for mill format converters.
+ * Shared helpers for exports format converters.
  *
  * Only genuinely-duplicated utilities live here. Format-specific escapers
  * (XML, SQL, YAML, CSV, BibTeX, DOT-id, etc.) intentionally remain co-located

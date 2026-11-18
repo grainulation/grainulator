@@ -10,7 +10,7 @@ const REQUIRED_PATHS = [
   "package/packs/adr.json",
   "package/lib/packs.js",
   "package/lib/serve-mcp.js",
-  "package/bin/silo.js",
+  "package/bin/memory.js",
   "package/package.json",
   "package/LICENSE"
 ];

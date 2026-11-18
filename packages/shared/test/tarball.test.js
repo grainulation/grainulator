@@ -8,7 +8,7 @@ import { test } from "node:test";
 
 const REQUIRED_PATHS = [
   "package/templates/dashboard.html",
-  "package/bin/barn.js",
+  "package/bin/shared.js",
   "package/package.json",
   "package/LICENSE"
 ];

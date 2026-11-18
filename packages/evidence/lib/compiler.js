@@ -1,5 +1,5 @@
 /**
- * grainulator compile — delegates to wheat-compiler.js via direct import
+ * grainulator compile — delegates to evidence-compiler.js via direct import
  *
  * Calls the compiler's exported compile() function directly instead of
  * spawning a subprocess. This eliminates a child_process dependency
@@ -8,20 +8,19 @@
  * Zero npm dependencies.
  */
 
+import projectConfig from "../../shared/lib/project-config.cjs";
 import fs from "fs";
 import nextActionsModule from "./next-actions.cjs";
 import path from "path";
-import { compile } from "../compiler/wheat-compiler.js";
+import { compile } from "../compiler/evidence-compiler.js";
 
 export async function run(dir, args) {
-	const claimsPath = path.join(dir, "claims.json");
-	const compilationPath = path.join(dir, "compilation.json");
+	const config=projectConfig.evidenceConfig(dir);
+	const claimsPath=path.resolve(config.origin,config.compiler.claims);
+	const compilationPath=path.resolve(config.origin,config.compiler.compilation);
 
 	if (!fs.existsSync(claimsPath)) {
-		console.error(
-			`Error: claims.json not found. Run "grainulator init" to start a sprint.`,
-		);
-		process.exit(1);
+		throw new Error('No evidence ledger found. Run grainulator init first.');
 	}
 
 	const summaryMode = args.includes("--summary");

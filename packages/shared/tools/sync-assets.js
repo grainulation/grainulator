@@ -6,16 +6,16 @@ import { writeNewFile } from "../lib/fs-safe.cjs";
  *
  * Why:
  *   All 8 grainulation sites ship a strict CSP (`default-src 'self'`). Cross-
- *   origin <link> loads from barn.grainulation.com are blocked by policy.
+ *   origin <link> loads from shared.grainulation.com are blocked by policy.
  *   Instead of loosening CSP, each site vendors the shared primitives from
- *   @grainulation/barn into its OWN origin at build time.
+ *   @grainulation/grainulator-shared into its OWN origin at build time.
  *
  * Usage:
  *   # From a consumer's GitHub Pages workflow (after actions/checkout):
- *   node node_modules/@grainulation/barn/tools/sync-assets.js --target ./site
+ *   node node_modules/@grainulation/grainulator-shared/tools/sync-assets.js --target ./site
  *
- *   # Or as a subcommand via the barn CLI:
- *   npx @grainulation/barn sync-assets --target ./site
+ *   # Or as a subcommand via the shared CLI:
+ *   npx @grainulation/grainulator-shared sync-assets --target ./site
  *
  * Flags:
  *   --target <dir>   Destination directory (typically the site/ dir). Required.
@@ -100,9 +100,9 @@ function parseArgs(argv) {
 function printHelp() {
   process.stdout.write(
     [
-      "Usage: barn sync-assets --target <dir> [options]",
+      "Usage: shared sync-assets --target <dir> [options]",
       "",
-      "Vendor shared grainulation primitives from @grainulation/barn into a site/ dir.",
+      "Vendor shared grainulation primitives from @grainulation/grainulator-shared into a site/ dir.",
       "",
       "Options:",
       "  --target <dir>  Destination directory (required). Typically ./site.",

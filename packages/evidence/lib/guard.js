@@ -1,5 +1,5 @@
 /**
- * wheat guard — PreToolUse hook for Claude Code
+ * evidence guard — PreToolUse hook for Claude Code
  *
  * Blocks writes to output/ unless compilation is fresh and ready.
  * Blocks malformed claims.json writes.
@@ -14,35 +14,21 @@
  * Zero npm dependencies.
  */
 
+import projectConfig from "../../shared/lib/project-config.cjs";
 import fs from "fs";
 import path from "path";
-import { COMPILER_VERSION } from "../compiler/wheat-compiler.js";
+import { COMPILER_VERSION } from "../compiler/evidence-compiler.js";
 import { compilationFreshness } from "./freshness.js";
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
-function loadConfig(dir) {
-	const configPath = path.join(dir, "wheat.config.json");
-	const defaults = {
-		dirs: { output: "output" },
-		compiler: { claims: "claims.json", compilation: "compilation.json" },
-	};
-	try {
-		const raw = fs.readFileSync(configPath, "utf8");
-		const config = JSON.parse(raw);
-		return {
-			dirs: { ...defaults.dirs, ...(config.dirs || {}) },
-			compiler: { ...defaults.compiler, ...(config.compiler || {}) },
-		};
-	} catch {
-		return defaults;
-	}
-}
+const loadConfig = projectConfig.evidenceConfig;
 
 // ─── Guard logic ─────────────────────────────────────────────────────────────
 
 export function guard(dir, toolInput) {
-	const config = loadConfig(dir);
+	let config;
+	try { projectConfig.assertMigrationReady(dir); config = loadConfig(dir); } catch (error) { return {allow:false,reason:`BLOCKED: ${error.message}`}; }
 
 	let input;
 	try {
@@ -57,7 +43,7 @@ export function guard(dir, toolInput) {
 	const rel = path.relative(path.resolve(dir), path.resolve(dir, filePath)).split(path.sep).join("/");
 
 	// Guard 1: Writes to output/ require fresh compilation
-	if (rel.startsWith(config.dirs.output + "/") && !rel.endsWith(".gitkeep")) {
+	if ((path.resolve(dir, filePath).startsWith(path.resolve(config.origin, config.dirs.output) + path.sep)) && !rel.endsWith(".gitkeep")) {
 		const compilationPath = path.join(dir, config.compiler.compilation);
 		const claimsPath = path.join(dir, config.compiler.claims);
 
@@ -106,7 +92,7 @@ export function guard(dir, toolInput) {
 	}
 
 	// Guard 2: claims.json writes must maintain meta fields
-	if (rel === config.compiler.claims && input.content) {
+	if (path.resolve(dir,filePath) === path.resolve(config.origin,config.compiler.claims) && input.content) {
 		try {
 			const newClaims = JSON.parse(input.content);
 			if (!newClaims.meta || !newClaims.meta.question) {

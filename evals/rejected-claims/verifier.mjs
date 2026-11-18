@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { compile } from "../../packages/evidence/compiler/wheat-compiler.js";
+import { compile } from "../../packages/evidence/compiler/evidence-compiler.js";
 import { addClaim } from "../../packages/evidence/lib/claims-ops.js";
 import { initializeSprint } from "../../lib/sprint-init.js";
 

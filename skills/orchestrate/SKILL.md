@@ -17,9 +17,9 @@ $ARGUMENTS
 
 ## Instructions
 
-### Step 1: Locate orchard.json
+### Step 1: Locate grainulator.config.json
 
-Search for `orchard.json` in these locations (in order):
+Search for `grainulator.config.json` in these locations (in order):
 
 1. Project root (current working directory)
 2. `.grainulator/` subdirectory
@@ -27,7 +27,7 @@ Search for `orchard.json` in these locations (in order):
 Use Glob to find it:
 
 ```
-**/orchard.json
+**/grainulator.config.json
 ```
 
 If found, read it and resolve its absolute parent directory as `<config-parent>`. Run every subsequent orchestration CLI call with its working directory set to `<config-parent>`, including when the file is under `.grainulator/`. The CLI searches the working directory and ancestors, not child directories; `--root` is not a directory override for `plan` or `next`. Sprint paths in the configuration are relative to this parent directory.
@@ -104,18 +104,18 @@ Manual
 - <action requiring the user, or None.>
 ```
 
-### Step 5: No orchard.json found
+### Step 5: No grainulator.config.json found
 
-If no `orchard.json` was found in Step 1, explain how to create one:
+If no `grainulator.config.json` was found in Step 1, explain how to create one:
 
 ```
-No orchard.json found. Grainulator coordinates multi-sprint research with dependency tracking.
+No grainulator.config.json found. Grainulator coordinates multi-sprint research with dependency tracking.
 
 To get started, run:
 
   grainulator orchestrate init --root <intended-config-parent>
 
-Or create orchard.json manually:
+Or create grainulator.config.json manually:
 
   {
     "sprints": [
@@ -151,7 +151,7 @@ Manual
 ### Rules
 
 - Always run `plan` before `next` so the user sees the full graph context.
-- Do NOT modify orchard.json -- this skill is read-only. Use `grainulator orchestrate sync` or manual edits to change state.
+- Do NOT modify grainulator.config.json -- this skill is read-only. Use `grainulator orchestrate sync` or manual edits to change state.
 - Forward any extra arguments the user provides (e.g., `--mermaid`, `--verbose`) to the underlying orchestration commands.
 - If `grainulator orchestrate` fails with a module-not-found error, suggest: `grainulator doctor` and use the local checkout CLI.
 

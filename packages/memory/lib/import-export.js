@@ -4,7 +4,7 @@ import { atomicWriteJSON } from "../../shared/lib/atomic.js";
 /**
  * import-export.js — Pull claims between sprints and silos
  *
- * Handles the core workflow: take claims from a silo collection
+ * Handles the core workflow: take claims from a memory collection
  * (or built-in pack) and merge them into a sprint's claims.json.
  */
 
@@ -33,7 +33,7 @@ export const VALID_EVIDENCE = [
 ];
 
 /**
- * Normalize a claim to wheat's canonical schema.
+ * Normalize a claim to evidence's canonical schema.
  * Handles legacy fields: tier -> evidence, text -> content.
  * Fills in missing required fields with sensible defaults.
  * Validates enums, sanitizes content, and ensures provenance.
@@ -41,7 +41,7 @@ export const VALID_EVIDENCE = [
 export function normalizeClaim(claim) {
   const normalized = { ...claim };
 
-  // Map legacy field names to wheat-canonical names
+  // Map legacy field names to evidence-canonical names
   if ("tier" in normalized && !("evidence" in normalized)) {
     normalized.evidence = normalized.tier;
   }
@@ -52,7 +52,7 @@ export function normalizeClaim(claim) {
   }
   delete normalized.text;
 
-  // Ensure all required wheat fields exist
+  // Ensure all required evidence fields exist
   normalized.id = normalized.id || null;
   normalized.type = normalized.type || "factual";
   normalized.topic = normalized.topic || "";
@@ -86,7 +86,7 @@ export function normalizeClaim(claim) {
       origin:
         typeof normalized.source === "string"
           ? normalized.source
-          : "silo-import",
+          : "memory-import",
       artifact: null,
       connector: null,
     };
@@ -94,7 +94,7 @@ export function normalizeClaim(claim) {
 
   // Ensure provenance: if source.origin is missing, set default
   if (!normalized.source.origin) {
-    normalized.source.origin = "silo-import";
+    normalized.source.origin = "memory-import";
   }
 
   return normalized;
@@ -106,7 +106,7 @@ export class ImportExport {
   }
 
   /**
-   * Pull claims from a silo collection into a target claims file.
+   * Pull claims from a memory collection into a target claims file.
    * New claims get re-prefixed to avoid ID collisions.
    *
    * @param {string} source - Collection name/id or built-in pack name
@@ -128,13 +128,13 @@ export class ImportExport {
   _pullLocked(source, targetPath, opts = {}, providedClaims) {
     const { prefix = "imp", types, ids, dryRun = false } = opts;
 
-    // Resolve source: try silo store first, then built-in packs
+    // Resolve source: try memory store first, then built-in packs
     let sourceClaims = providedClaims || this._resolveSource(source);
     if (!sourceClaims) {
       throw new Error(`Collection or pack "${source}" not found`);
     }
 
-    // Normalize all claims to wheat schema
+    // Normalize all claims to evidence schema
     sourceClaims = sourceClaims.map(normalizeClaim);
 
     // Filter by specific claim IDs if requested
@@ -198,7 +198,7 @@ export class ImportExport {
   }
 
   /**
-   * Export claims from a sprint's claims.json into the silo.
+   * Export claims from a sprint's claims.json into the memory.
    *
    * @param {string} sourcePath - Path to claims.json
    * @param {string} name - Name for the stored collection
@@ -217,7 +217,7 @@ export class ImportExport {
 
   /** Resolve a source name to an array of claims. */
   _resolveSource(source) {
-    // Try silo store
+    // Try memory store
     const stored = this.store.getClaims(source);
     if (stored) return stored.claims;
 

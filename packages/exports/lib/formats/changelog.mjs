@@ -1,6 +1,6 @@
 import { escapeMarkdownData } from "./_shared.mjs";
 /**
- * mill format: changelog
+ * exports format: changelog
  *
  * Converts compilation.json claims to a diff/changelog grouped by status.
  * Shows active, resolved, and conflict sections with counts.

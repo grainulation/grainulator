@@ -1,5 +1,5 @@
 /**
- * mill format: executive-summary
+ * exports format: executive-summary
  *
  * Single-page HTML showing only active risks, top recommendations,
  * and confidence-weighted findings. Filters out resolved/low-confidence noise.

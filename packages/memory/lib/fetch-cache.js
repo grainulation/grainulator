@@ -9,7 +9,7 @@ import { withFileTransaction } from "../../shared/lib/transaction.js";
  *
  * Caps: 100 entries OR 10MB, whichever first. 7-day TTL on read.
  * Eviction: LRU on write when caps exceeded.
- * Atomic writes: tmp + rename (same pattern as silo/lib/store.js).
+ * Atomic writes: tmp + rename (same pattern as memory/lib/store.js).
  *
  * Concurrency: two processes writing the same URL — last-writer-wins,
  * both files remain internally consistent because every write is atomic.
@@ -22,7 +22,7 @@ import os from "node:os";
 
 export const DEFAULT_CACHE_DIR = path.join(
   os.homedir(),
-  ".silo",
+  ".grainulator",
   "cache",
   "smart-fetch",
 );
@@ -32,7 +32,7 @@ const DEFAULT_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 export class FetchCache {
   constructor(options = {}) {
-    this.dir = options.dir || process.env.SILO_CACHE_DIR || DEFAULT_CACHE_DIR;
+    this.dir = options.dir || process.env.GRAINULATOR_FETCH_CACHE_DIR || DEFAULT_CACHE_DIR;
     // Guard against 0 or negative caps — fall back to defaults
     this.maxEntries =
       options.maxEntries && options.maxEntries > 0

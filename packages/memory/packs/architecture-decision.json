@@ -62,7 +62,7 @@
       "id": "adec-004",
       "type": "recommendation",
       "topic": "stakeholder communication",
-      "content": "ADR output should have two formats: (1) Technical brief — full evidence, conflict resolution, detailed trade-offs for engineering. (2) Executive summary — decision, cost impact, timeline, and top 3 risks for leadership. The wheat /brief command should produce both from the same claims.",
+      "content": "ADR output should have two formats: (1) Technical brief — full evidence, conflict resolution, detailed trade-offs for engineering. (2) Executive summary — decision, cost impact, timeline, and top 3 risks for leadership. The Grainulator /brief command should produce both from the same claims.",
       "source": {
         "origin": "best-practice",
         "artifact": null,
@@ -116,7 +116,7 @@
       "id": "adec-007",
       "type": "recommendation",
       "topic": "ADR review cadence",
-      "content": "Schedule quarterly ADR reviews: (1) Are accepted ADRs still valid? (2) Have any assumptions changed? (3) Are deprecated ADRs properly linked to replacements? (4) Do new team members know where to find ADRs? Use the wheat graph to find ADRs with stale evidence or unresolved conflicts.",
+      "content": "Schedule quarterly ADR reviews: (1) Are accepted ADRs still valid? (2) Have any assumptions changed? (3) Are deprecated ADRs properly linked to replacements? (4) Do new team members know where to find ADRs? Use the Grainulator graph to find ADRs with stale evidence or unresolved conflicts.",
       "source": {
         "origin": "best-practice",
         "artifact": null,

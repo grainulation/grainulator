@@ -261,7 +261,7 @@ function renderWrappedSection(wrapped) {
     .join(" ");
 
   return `<section class="report-section wrapped-section">
-  <h2>Harvest Wrapped${wrapped.period ? " -- " + escapeHtml(wrapped.period.label) : ""}</h2>
+  <h2>Grainulator analytics Wrapped${wrapped.period ? " -- " + escapeHtml(wrapped.period.label) : ""}</h2>
   <div class="personality-card">
     <h3>${escapeHtml(personality.label || "Researcher")}</h3>
     <p>${escapeHtml(personality.description || "")}</p>
@@ -282,7 +282,7 @@ function renderWrappedSection(wrapped) {
 function getDefaultTemplate() {
   // Fallback inline template if file not found
   return `<!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><title>Harvest Retrospective</title>
+<html lang="en"><head><meta charset="utf-8"><title>Grainulator analytics Retrospective</title>
 <style>body{background:#0f0f0f;color:#e5e5e5;font-family:system-ui;padding:2rem;max-width:900px;margin:0 auto}
 h1,h2{color:#f97316}.muted{color:#888}
 .report-section{margin-bottom:2rem;padding:1rem;background:#1a1a1a;border-radius:8px}
@@ -299,7 +299,7 @@ table{width:100%;border-collapse:collapse;margin:1rem 0}
 th,td{text-align:left;padding:0.4rem 0.6rem;border-bottom:1px solid #333}
 th{color:#f97316;font-size:0.8rem;text-transform:uppercase}
 </style></head>
-<body><h1>Harvest Retrospective</h1><p>Generated: {{GENERATED_DATE}}</p>
+<body><h1>Grainulator analytics Retrospective</h1><p>Generated: {{GENERATED_DATE}}</p>
 <p>{{SPRINT_COUNT}} sprints, {{CLAIM_COUNT}} claims</p>
 {{WRAPPED_SECTION}}
 {{TOKEN_COST_SECTION}}

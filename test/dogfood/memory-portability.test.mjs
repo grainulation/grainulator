@@ -153,16 +153,31 @@ test("CLI and MCP share configured memory and return source provenance when reus
 		0,
 	);
 	assert.equal((await call("memory_list")).count, 2);
+	const isolatedHome = path.join(dir, "no-legacy-fallback");
+	fs.mkdirSync(isolatedHome);
 	const legacyOnly = JSON.parse(
 		command([process.execPath, cli, "memory", "list", "--json"], {
 			cwd: sprint,
-			env: { GRAINULATOR_MEMORY_DIR: "", SILO_STORE: memory },
+			env: {
+				HOME: isolatedHome,
+				GRAINULATOR_MEMORY_DIR: "",
+				SILO_STORE: memory,
+			},
 		}),
 	);
-	assert.equal(legacyOnly.length, 2);
+	assert.equal(
+		legacyOnly.length,
+		0,
+		"A legacy environment variable must not reopen a v2 store",
+	);
+	assert.equal(
+		(await call("memory_list")).count,
+		2,
+		"The original store stays unchanged",
+	);
 });
 
-test("memory path precedence preserves existing legacy data without migration or startup writes", (t) => {
+test("memory path precedence never probes old roots or legacy environment settings", (t) => {
 	const dir = fixture(t);
 	const options = { homeDir: dir, env: {} };
 	const canonical = path.join(dir, ".grainulator", "memory");
@@ -171,7 +186,7 @@ test("memory path precedence preserves existing legacy data without migration or
 	assert.deepEqual(fs.readdirSync(dir), []);
 	fs.mkdirSync(legacy);
 	fs.writeFileSync(path.join(legacy, "index.json"), "{}");
-	assert.equal(resolveMemoryDir(undefined, options), legacy);
+	assert.equal(resolveMemoryDir(undefined, options), canonical);
 	assert.equal(fs.existsSync(canonical), false);
 	fs.mkdirSync(canonical, { recursive: true });
 	fs.writeFileSync(path.join(canonical, "index.json"), "{}");
@@ -190,6 +205,6 @@ test("memory path precedence preserves existing legacy data without migration or
 	);
 	assert.equal(
 		resolveMemoryDir(undefined, { ...options, env: { SILO_STORE: legacy } }),
-		legacy,
+		canonical,
 	);
 });

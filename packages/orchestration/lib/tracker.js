@@ -58,7 +58,7 @@ export function printStatus(config, root) {
   const sprints = config.sprints || [];
 
   if (sprints.length === 0) {
-    console.log("No sprints configured. Add sprints to orchard.json.");
+    console.log("No sprints configured. Add sprints to grainulator.config.json.");
     return;
   }
 

@@ -3,7 +3,7 @@
  *
  * Builds an in-memory graph linking claims across sprints and packs
  * by topic, tags, conflicts, and content similarity. Enables discovery
- * of related knowledge across the entire silo.
+ * of related knowledge across the entire memory.
  *
  * Zero npm dependencies — uses only built-in Node.js modules.
  */

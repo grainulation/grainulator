@@ -1,5 +1,5 @@
 /**
- * mill format: treemap
+ * exports format: treemap
  *
  * Converts compilation.json claims to nested JSON for D3 treemap.
  * Claims grouped by type, each with value = confidence (or 1).

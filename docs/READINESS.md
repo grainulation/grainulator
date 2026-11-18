@@ -12,7 +12,7 @@ The verification notes below retain the September 7–8, 2026 local checkpoints.
 - Exports cannot overwrite ledgers, compilation, host settings or their own source; CSV retains canonical claim fields. Memory metadata cannot corrupt collection identity or integrity. Path checks cover nonexistent descendants and symlink escapes.
 - Static product and organization artifacts use native clean playground routes. The public artifact supports configuration/import/export with explicit local execution instructions; it never probes a nonexistent API or asks for a key. Local previews retain model execution.
 - Dashboard app, connectors and notification hook removed. Native hosts own permissions and remote access. Original repositories remain untouched.
-- Node 24 is the public minimum; local tests use Node 25 by default. `.nvmrc`, `.node-version`, package engines and prepared CI agree. Global runtimes were not changed.
+- Node 24 is the public minimum; local tests use Node 24 by default. `.nvmrc`, `.node-version`, package engines and prepared CI agree. Global runtimes were not changed.
 
 ## Verification
 

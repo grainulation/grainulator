@@ -38,7 +38,7 @@ function installCrashHandlers(options = {}) {
   } = options;
   const includeTestHook =
     options.includeTestHook === undefined
-      ? Boolean(process.env.BARN_MCP_CRASH_TEST)
+      ? Boolean(process.env.GRAINULATOR_MCP_CRASH_TEST)
       : Boolean(options.includeTestHook);
 
   let crashHandlerRunning = false;
@@ -97,14 +97,14 @@ function installCrashHandlers(options = {}) {
     installed = true;
   }
 
-  if (includeTestHook && process.env.BARN_MCP_CRASH_TEST) {
-    const mode = process.env.BARN_MCP_CRASH_TEST;
+  if (includeTestHook && process.env.GRAINULATOR_MCP_CRASH_TEST) {
+    const mode = process.env.GRAINULATOR_MCP_CRASH_TEST;
     setTimeout(() => {
       if (mode === "uncaught") {
-        throw new Error("BARN_MCP_CRASH_TEST uncaught");
+        throw new Error("GRAINULATOR_MCP_CRASH_TEST uncaught");
       }
       if (mode === "unhandled") {
-        Promise.reject(new Error("BARN_MCP_CRASH_TEST unhandled"));
+        Promise.reject(new Error("GRAINULATOR_MCP_CRASH_TEST unhandled"));
       }
     }, 50);
   }

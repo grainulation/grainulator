@@ -1,3 +1,5 @@
+import projectConfig from "../../shared/lib/project-config.cjs";
+import { assertEvidenceTarget } from "./evidence-target.js";
 /**
  * Shared claims.json loader with schema migration
  *
@@ -9,7 +11,7 @@
 
 import fs from "fs";
 import path from "path";
-import { checkAndMigrateSchema } from "../compiler/wheat-compiler.js";
+import { checkAndMigrateSchema } from "../compiler/evidence-compiler.js";
 import { readBoundedRegularFile } from "./passages.js";
 
 /**
@@ -27,8 +29,9 @@ import { readBoundedRegularFile } from "./passages.js";
  *     are separate because UTF-8 decoding can consume an optional BOM.
  */
 export function loadClaims(dir, opts = {}) {
-	const filename = opts.filename || "claims.json";
-	const claimsPath = path.join(dir, filename);
+	const config=projectConfig.evidenceConfig(dir);
+	const filename = opts.filename || config.compiler.claims;
+	const claimsPath = path.resolve(config.origin, filename);
 
 	if (!fs.existsSync(claimsPath)) {
 		return { data: null, errors: [], path: claimsPath };
@@ -72,6 +75,8 @@ export function loadClaims(dir, opts = {}) {
 			path: claimsPath,
 		};
 	}
+
+	try { assertEvidenceTarget(dir, parsed); } catch (error) { return {data:null,errors:[{code:error.code,message:error.message}],path:claimsPath}; }
 
 	// Run schema migration
 	const result = checkAndMigrateSchema(parsed);

@@ -1,11 +1,11 @@
 /**
- * @grainulation/barn — public API surface
+ * @grainulation/grainulator-shared — public API surface
  *
  * Exports:
  *   name, version          — package metadata
  *   loadTemplates(dir)     — scan a directory for .html templates + .json sidecars
  *   detectSprints(root)    — git-based sprint detection (re-export)
- *   generateManifest(opts) — build wheat-manifest.json topic map (re-export)
+ *   generateManifest(opts) — build .grainulator/evidence/manifest.json topic map (re-export)
  */
 
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
@@ -109,7 +109,7 @@ export { detectSprints } from "../tools/detect-sprints.js";
 export { generateManifest } from "../tools/generate-manifest.js";
 
 // Shared utilities — absorbed from duplicated code across the ecosystem.
-// See claims r100–r117 in the dedup-barn-absorb sprint.
+// See claims r100–r117 in the dedup-shared-absorb sprint.
 export {
   jsonRpcResponse,
   jsonRpcError,

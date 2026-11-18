@@ -1,6 +1,6 @@
 import { escapeMarkdownData } from "./_shared.mjs";
 /**
- * mill format: obsidian
+ * exports format: obsidian
  *
  * Converts compilation.json claims to Obsidian-flavored markdown
  * with YAML front matter, wikilinks, and backlinks.
@@ -35,7 +35,7 @@ export function convert(compilation) {
   if (question) lines.push(`question: "${escapeFrontMatter(question)}"`);
   if (audience) lines.push(`audience: "${escapeFrontMatter(audience)}"`);
   lines.push(`claim_count: ${claims.length}`);
-  lines.push("tags: [wheat, sprint, export]");
+  lines.push("tags: [evidence, sprint, export]");
   lines.push("---");
   lines.push("");
 

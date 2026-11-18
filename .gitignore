@@ -1,13 +1,8 @@
 node_modules/
-.wheat/
 .DS_Store
 *.log
-.wheat-tips.md
-.wheat-compile.lock
 claims.json
 compilation.json
-orchard.json
-wheat-manifest.json
 output/
 test-results/
 playwright-report/
@@ -34,9 +29,14 @@ dist/
 
 # Shipped test fixtures; ordinary sprint ledgers stay ignored.
 !packages/exports/test/fixtures/claims.json
-!packages/runtime/test/fixtures/**/.bean/claims.json
 !examples/grounded-report-sprint/claims.json
 !examples/grounded-report-sprint/output/
 
 # Local npm pack artifacts.
 *.tgz
+
+# Only source-controlled native conformance fixtures; production state stays ignored.
+!packages/runtime/test/fixtures/**/.grainulator/
+!packages/runtime/test/fixtures/**/.grainulator/runtime/
+!packages/runtime/test/fixtures/**/.grainulator/runtime/claims.json
+!packages/runtime/test/fixtures/**/.grainulator/runtime/run.json

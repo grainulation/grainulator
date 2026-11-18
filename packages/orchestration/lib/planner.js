@@ -94,7 +94,7 @@ export function printDependencyGraph(config, root) {
   const sprints = config.sprints || [];
 
   if (sprints.length === 0) {
-    console.log("No sprints configured in orchard.json.");
+    console.log("No sprints configured in grainulator.config.json.");
     return;
   }
 

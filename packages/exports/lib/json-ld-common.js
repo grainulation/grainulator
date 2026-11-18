@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * json-ld-common.js — Shared JSON-LD vocabulary for mill
+ * json-ld-common.js — Shared JSON-LD vocabulary for exports
  *
  * Both the ESM format (formats/json-ld.js) and the CJS exporter
  * (exporters/json-ld.js) use the same schema.org/Report structure.
@@ -12,12 +12,12 @@
 
 const CONTEXT = {
   "@vocab": "https://schema.org/",
-  wheat: "https://grainulation.com/ns/wheat#",
-  claim: "wheat:Claim",
-  confidence: "wheat:confidence",
-  evidenceTier: "wheat:evidenceTier",
-  claimType: "wheat:claimType",
-  sprintId: "wheat:sprintId",
+  grainulator: "https://grainulator.dev/ns/evidence#",
+  claim: "grainulator:Claim",
+  confidence: "grainulator:confidence",
+  evidenceTier: "grainulator:evidenceTier",
+  claimType: "grainulator:claimType",
+  sprintId: "grainulator:sprintId",
 };
 
 function claimToJsonLd(claim) {
@@ -29,7 +29,7 @@ function claimToJsonLd(claim) {
 
   return {
     "@type": "claim",
-    "@id": `wheat:claim/${claim.id}`,
+    "@id": `grainulator:claim/${claim.id}`,
     identifier: claim.id,
     claimType: claim.type,
     text: body,
@@ -46,8 +46,8 @@ function buildReport(meta, claims, certificate) {
   return {
     "@context": CONTEXT,
     "@type": "Report",
-    "@id": `wheat:sprint/${meta.sprint || "unknown"}`,
-    name: meta.sprint || meta.question || "Wheat Sprint Report",
+    "@id": `grainulator:sprint/${meta.sprint || "unknown"}`,
+    name: meta.sprint || meta.question || "Grainulator Sprint Report",
     description: meta.question || "",
     dateCreated:
       (certificate && certificate.compiled_at) || new Date().toISOString(),

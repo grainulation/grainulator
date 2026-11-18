@@ -9,7 +9,7 @@ import { test } from "node:test";
 const REQUIRED_PATHS = [
   "package/templates/retrospective.html",
   "package/lib/report.js",
-  "package/bin/harvest.js",
+  "package/bin/analytics.js",
   "package/package.json",
   "package/README.md",
   "package/LICENSE"

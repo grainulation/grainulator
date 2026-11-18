@@ -4,16 +4,16 @@ For Claude Code or Codex, start with [agent setup](AGENT-SETUP.md). The steps be
 
 Already using 1.x? Start with the [upgrade checklist](UPGRADING.md). Updating source or a marketplace catalog does not update an installed plugin, its host scope, or a running conversation.
 
-## Obtain the v2.3.0 GitHub release
+## Build or inspect the v3 candidate
 
-Use Node.js 24 or later. Get the tagged source from the [v2.3.0 GitHub release](https://github.com/grainulation/grainulator/releases/tag/v2.3.0). This version is not published to npm, so an npm registry install will not give you this release. The [setup page](https://grainulator.dev/install.html) shows the same source and archive steps.
+Use Node.js 24 or later. Use the reviewed PR source or an exact identified candidate archive until release publication is separately authorized. Do not assume a v3 tag, public asset, npm package or Homebrew stable channel exists. The root package remains private. The [setup page](https://grainulator.dev/install.html) shows the same source and archive steps.
 
-Tagged releases and marketplace builds include `build-info.json`, an integrity manifest with an ID such as `release-2.3.0-<hash>`. Doctor checks its shipped-file checksums. A standard `npm pack --ignore-scripts` archive preserves that identity; `pack:local` below creates a distinct development build.
+Tagged releases and marketplace builds include `build-info.json`, an integrity manifest with an ID such as `release-3.0.0-<hash>`. Doctor checks its shipped-file checksums. A standard `npm pack --ignore-scripts` archive preserves that identity; `pack:local` below creates a distinct development build.
 
 Clone the release tag and install its source dependencies:
 
 ```sh
-git clone --branch v2.3.0 https://github.com/grainulation/grainulator.git
+git clone https://github.com/grainulation/grainulator.git
 cd grainulator
 npm ci --ignore-scripts
 node bin/grainulator.js doctor
@@ -30,7 +30,7 @@ From the full source checkout, create an archive with a build identity:
 npm run pack:local
 ```
 
-This creates a local version such as `2.3.0-local.<16-character-hash>` without publishing it. The command prints the archive path and build details. Copy the exact archive path it prints.
+This creates a local version such as `3.0.0-local.<16-character-hash>` without publishing it. The command prints the archive path and build details. Copy the exact archive path it prints.
 
 In a new, empty consumer directory, replace `<archive>` below with that exact printed path:
 
@@ -54,7 +54,7 @@ The source checkout, an npm consumer installation, and a host's plugin cache are
 
 For an existing local CLI installation, stop its preview or CLI process, install the newly printed archive path from that consumer directory, verify its build ID with doctor, and restart it. For a plugin, reinstall the intended local artifact through the host's local plugin mechanism, reload the plugin, and start a fresh test session. Verify the actual loaded cache, including skills, agents, and hooks; a direct MCP test does not exercise the full plugin.
 
-The bundled Claude marketplace entry does not pin your local artifact. Use the `v2.3.0` tagged checkout or an identified archive for release testing, and verify the loaded build. Follow the [fresh full-plugin acceptance guide](PLUGIN-TESTING.md) for the local installation and cache checks. Existing user sessions and global configuration are not automatically changed by packing or installing a CLI archive.
+The bundled Claude marketplace entry does not pin your local artifact. Use the `v3.0.0` tagged checkout or an identified archive for release testing, and verify the loaded build. Follow the [fresh full-plugin acceptance guide](PLUGIN-TESTING.md) for the local installation and cache checks. Existing user sessions and global configuration are not automatically changed by packing or installing a CLI archive.
 
 For an authenticated compatible endpoint, configure a local environment variable such as `MODEL_API_KEY` and append `--api-key-env MODEL_API_KEY` to the research command. Pass the variable name, never the secret itself. Custom endpoints do not inherit OpenAI or OpenRouter environment keys, and credential fields are excluded from exports. The playground shows this handoff note when Compatible endpoint is selected.
 
@@ -87,3 +87,11 @@ Register the printed command and arguments in the host's MCP configuration for t
 ## Check a local installation
 
 Run `node bin/grainulator.js doctor` from the release folder. If you built a local archive, run `doctor` from the installed copy so you check the files you will actually use. Maintainers can run `npm run test:install` for the full package test. See [release checks](READINESS.md) for test results and limits.
+
+## Homebrew candidates and stable registration
+
+The shared tap is `grainulation/homebrew`; follow the release candidate instructions for the exact tested assets. Public installation is advertised only after release assets and the formula have been published and independently tested. Homebrew owns package upgrades, not workspace enrollment or user memory. Its wrapper uses the tested Node 24 dependency and a stable `opt/bin/grainulator` launcher. `grainulator connect` uses that launcher when invoked through the explicit Homebrew wrapper; other channels can select `--launcher <absolute-path>` themselves. Register the printed literal command in the authorized host scope; connect changes no host settings.
+
+The portable base includes evidence, memory, exports, analytics, orchestration and the JS adapter runner. Native convergence requires a separate verified target asset; ordinary commands do not download it or fall back to Cargo or PATH. Run `grainulator runtime --help` for explicit installation and enrollment.
+
+`grainulator demo` writes to a new temporary workspace by default. Use `--dir` to retain a chosen writable demo workspace. It runs a synthetic offline protocol fixture, not a model-quality evaluation.

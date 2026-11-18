@@ -1,5 +1,5 @@
 /**
- * mill format: confluence-adf
+ * exports format: confluence-adf
  *
  * Converts compilation.json to Atlassian Document Format (ADF) JSON.
  * ADF is the native document format for Confluence Cloud REST API.

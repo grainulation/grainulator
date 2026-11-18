@@ -1,20 +1,21 @@
-// bean-check — bean's convergence compiler, Rust runtime (bean 2.0 north star).
+// grainulator-runtime-check — Grainulator's convergence compiler, Rust runtime (Grainulator runtime north star).
 //
-// Reconverges with the Bran core (already Rust): a single static binary with no install
-// dependency — the portability bean-check.js could not give, since Node is itself a dep.
+// Reconverges with the typed-claim core (already Rust): a single static binary with no install
+// dependency — the portability grainulator-runtime-check.js could not give, since Node is itself a dep.
 // Ports the static checks, the temporal checks (state.json / dry-round / budget), AND the 2.0
-// oracle gate (verification mode + verified_by + recorded verdicts, with bean-verify). Held to
+// oracle gate (verification mode + verified_by + recorded verdicts, with grainulator-runtime-verify). Held to
 // the JS reference by a differential conformance oracle (test/conformance.mjs) for static +
 // temporal, plus assertion-based behavioral checks for the oracle gate.
 //
-//   bean-check --dir <path> [--json] [--no-state]
+//   grainulator-runtime-check --dir <path> [--json] [--no-state]
 //
 // Exit: 0 = ready, 1 = blocked, 2 = budget-exceeded, 3 = usage/load error,
 //       4 = converged-with-residuals.
 
 use serde_json::Value;
 use sha2::{Digest, Sha256};
-use std::process::exit;
+mod runtime_lock;
+use runtime_lock::exit;
 
 const TIERS: [&str; 5] = ["stated", "web", "documented", "tested", "production"];
 const TYPES: [&str; 6] = [
@@ -42,7 +43,7 @@ fn sha_hex_bytes(b: &[u8]) -> String {
     h.finalize().iter().map(|x| format!("{:02x}", x)).collect()
 }
 fn die(code: i32, msg: &str) -> ! {
-    eprintln!("bean-check: {msg}");
+    eprintln!("grainulator-runtime-check: {msg}");
     exit(code);
 }
 
@@ -78,14 +79,14 @@ fn content_hash(c: &Value) -> String {
     let content = s(c, "content").unwrap_or("").trim().to_lowercase();
     sha_hex(&format!("{ty}|{topic}|{content}"))
 }
-// matches bean-verify: ids that can't escape the verdicts dir
+// matches grainulator-runtime-verify: ids that can't escape the verdicts dir
 fn safe_id(id: &str) -> bool {
     !id.is_empty()
         && id
             .chars()
             .all(|c| c.is_ascii_alphanumeric() || c == '.' || c == '_' || c == '-')
 }
-// matches bean-verify's inputs_hash exactly (so a recompute equals what was recorded).
+// matches grainulator-runtime-verify's inputs_hash exactly (so a recompute equals what was recorded).
 // Byte-based (not UTF-8) and RECURSIVE for directories, so a declared `inputs: ["src/"]`
 // actually detects changes inside the directory instead of collapsing to "absent".
 fn hash_path(p: &std::path::Path) -> String {
@@ -168,7 +169,7 @@ fn main() {
             "--no-state" => state_enabled = false,
             "--quiet" => {}
             "-h" | "--help" => {
-                println!("bean-check --dir <path> [--json] [--no-state]");
+                println!("grainulator-runtime-check --dir <path> [--json] [--no-state]");
                 exit(0);
             }
             other => die(3, &format!("unknown argument: {other}")),
@@ -176,12 +177,29 @@ fn main() {
         i += 1;
     }
 
-    let bean_dir = std::path::Path::new(&dir).join(".bean");
-    let claims_path = bean_dir.join("claims.json");
+    let runtime_dir = std::fs::canonicalize(&dir)
+        .unwrap_or_else(|e| die(3, &format!("invalid workspace: {e}")))
+        .join(".grainulator/runtime");
+    if state_enabled {
+        runtime_lock::acquire(&runtime_dir)
+            .unwrap_or_else(|e| die(3, &format!("runtime writer lock unavailable: {e}")));
+    } else {
+        runtime_lock::validate_tree(&runtime_dir)
+            .unwrap_or_else(|e| die(3, &format!("unsafe runtime tree: {e}")));
+    }
+    let claims_path = runtime_dir.join("claims.json");
     let raw = std::fs::read_to_string(&claims_path)
         .unwrap_or_else(|_| die(3, &format!("no claims ledger at {}", claims_path.display())));
     let parsed: Value = serde_json::from_str(&raw)
         .unwrap_or_else(|e| die(3, &format!("cannot parse claims.json: {e}")));
+    if parsed.get("schema").is_some()
+        && parsed.get("schema").and_then(|v| v.as_str()) != Some("grainulator.runtime.claims.v1")
+    {
+        die(
+            3,
+            "unsupported runtime claims envelope; use the separate converter",
+        );
+    }
     let claims: Vec<Value> = match &parsed {
         Value::Array(a) => a.clone(),
         Value::Object(o) => match o.get("claims") {
@@ -198,7 +216,7 @@ fn main() {
     let mut mode = "compat".to_string(); // 2.0 oracle gate: compat | advisory | strict
     let mut oracles = serde_json::Map::new();
     let mut sealed_expected = false;
-    if let Ok(rt) = std::fs::read_to_string(bean_dir.join("run.json")) {
+    if let Ok(rt) = std::fs::read_to_string(runtime_dir.join("run.json")) {
         // fail closed: an existing-but-invalid run.json must NOT silently fall back to compat
         // defaults (that would disable the strict gate). Treat it as a load error.
         let rj = serde_json::from_str::<Value>(&rt)
@@ -235,10 +253,10 @@ fn main() {
             sealed_expected = rj.get("sealed_expected").is_some();
         }
     }
-    // recorded verdicts: .bean/verdicts/<claim>.<verifier>.json, admitted only under their
+    // recorded verdicts: .grainulator/runtime/verdicts/<claim>.<verifier>.json, admitted only under their
     // canonical filename (no last-writer-wins / shadowing), sorted for determinism.
     let mut verdicts: std::collections::HashMap<String, Value> = std::collections::HashMap::new();
-    if let Ok(rd) = std::fs::read_dir(bean_dir.join("verdicts")) {
+    if let Ok(rd) = std::fs::read_dir(runtime_dir.join("verdicts")) {
         let mut files: Vec<_> = rd.filter_map(|e| e.ok().map(|e| e.path())).collect();
         files.sort();
         for p in files {
@@ -251,7 +269,9 @@ fn main() {
             {
                 let cl = a.get("claim").and_then(|v| v.as_str()).unwrap_or("");
                 let vf = a.get("verifier").and_then(|v| v.as_str()).unwrap_or("");
-                if safe_id(cl)
+                if a.get("schema").and_then(|v| v.as_str())
+                    == Some("grainulator.runtime.verdict.v1")
+                    && safe_id(cl)
                     && safe_id(vf)
                     && p.file_name().and_then(|n| n.to_str()) == Some(&format!("{cl}.{vf}.json"))
                 {
@@ -262,6 +282,12 @@ fn main() {
     }
 
     let mut blockers: Vec<Blocker> = vec![];
+    if runtime_lock::migration_reviewed(&runtime_dir).is_err() {
+        blockers.push(b("E_MIGRATION_REQUIRED", "runtime"));
+    }
+    if runtime_dir.join("pending-oracle.json").exists() {
+        blockers.push(b("E_EXECUTION_UNCERTAIN", "runtime"));
+    }
 
     // partition: well-formed, unique-id claims only (mirrors JS exactly)
     let mut valid: Vec<Value> = vec![];
@@ -450,7 +476,7 @@ fn main() {
     }
 
     // ---- 5. THE ORACLE GATE (2.0). compat=off; advisory=warn; strict=block. Gate on
-    // load-bearing STATUS (not tier). bean-check reads recorded verdicts; never runs an oracle.
+    // load-bearing STATUS (not tier). grainulator-runtime-check reads recorded verdicts; never runs an oracle.
     let mut residual_load_bearing: Vec<String> = vec![];
     let mut verified_info: std::collections::HashMap<String, Vec<String>> =
         std::collections::HashMap::new();
@@ -508,8 +534,10 @@ fn main() {
                             .cloned()
                             .unwrap_or_default();
                         let want_inputs = inputs_hash(base, &inputs);
-                        let stale = a.get("claim_binding").and_then(|v| v.as_str())
-                            != Some(content_hash(c).as_str())
+                        let stale = a.get("migration_stale").and_then(|v| v.as_bool())
+                            == Some(true)
+                            || a.get("claim_binding").and_then(|v| v.as_str())
+                                != Some(content_hash(c).as_str())
                             || a.get("oracle_digest").and_then(|v| v.as_str())
                                 != Some(want_digest.as_str())
                             || a.get("inputs_hash").and_then(|v| v.as_str())
@@ -651,7 +679,7 @@ fn main() {
     // prior state
     let mut prior: Option<Value> = None;
     if state_enabled {
-        if let Ok(t) = std::fs::read_to_string(bean_dir.join("state.json")) {
+        if let Ok(t) = std::fs::read_to_string(runtime_dir.join("state.json")) {
             // fail closed: a corrupt state.json must not silently reset temporal tracking
             prior = Some(
                 serde_json::from_str::<Value>(&t)
@@ -840,9 +868,9 @@ fn main() {
             "superseded_hashes": superseded,
             "claims_hash": claims_hash,
         });
-        std::fs::write(
-            bean_dir.join("state.json"),
-            serde_json::to_string_pretty(&next).unwrap() + "\n",
+        runtime_lock::atomic_write(
+            &runtime_dir.join("state.json"),
+            (serde_json::to_string_pretty(&next).unwrap() + "\n").as_bytes(),
         )
         .unwrap_or_else(|e| die(3, &format!("cannot write state.json: {e}")));
     }
@@ -871,7 +899,7 @@ fn main() {
         println!("{}", serde_json::to_string_pretty(&out).unwrap());
     } else {
         println!(
-            "bean-check: {} (cert {})",
+            "grainulator-runtime-check: {} (cert {})",
             status.to_uppercase(),
             certificate
         );

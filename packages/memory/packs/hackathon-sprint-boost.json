@@ -41,7 +41,7 @@
       "id": "hsb-001",
       "type": "constraint",
       "topic": "sprint boost format",
-      "content": "Sprint Boost is a business-aligned hackathon format. Each team picks a real task from their backlog or a strategic OKR key result, runs a wheat research sprint on it, and submits the compiled brief. The output is a sprint deliverable, not a side project.",
+      "content": "Sprint Boost is a business-aligned hackathon format. Each team picks a real task from their backlog or a strategic OKR key result, runs a Grainulator research sprint on it, and submits the compiled brief. The output is a sprint deliverable, not a side project.",
       "source": {
         "origin": "stakeholder",
         "artifact": null,

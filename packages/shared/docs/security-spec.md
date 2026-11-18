@@ -4,7 +4,7 @@
 
 ## Scope
 
-This spec applies to all 7 retained tools: wheat, barn, mill, silo, harvest, orchard, grainulation. Every tool that renders claim content, SSE event data, or user input into HTML must follow these rules.
+This spec applies to all 7 retained tools: evidence, shared, exports, memory, analytics, orchestration, grainulation. Every tool that renders claim content, SSE event data, or user input into HTML must follow these rules.
 
 ## 1. HTML Sanitization
 
@@ -93,7 +93,7 @@ playground has its own loopback origin checks; see the project's
 
 ## 4. Path Traversal Prevention
 
-### Existing pattern (wheat/barn servers)
+### Existing pattern (evidence/shared servers)
 
 The servers already normalize paths and reject traversal attempts. The pattern:
 
@@ -118,7 +118,7 @@ function safePath(base, requested) {
 
 - Static file serving in all tool UIs
 - Claim file loading (claims.json path)
-- Export/import file paths in mill and silo
+- Export/import file paths in exports and memory
 - Any endpoint that accepts a file path parameter
 
 ## 5. Authentication
@@ -126,7 +126,7 @@ function safePath(base, requested) {
 
 ### All other tools: local-only, no auth
 
-Wheat, barn, mill, silo, harvest, orchard, and grainulation bind to `127.0.0.1` (localhost) by default. Since they only accept local connections, no authentication is needed for v1.
+Grainulator, shared, exports, memory, analytics, orchestration, and grainulation bind to `127.0.0.1` (localhost) by default. Since they only accept local connections, no authentication is needed for v1.
 
 ### When to add auth to other tools
 
