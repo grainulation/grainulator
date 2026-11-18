@@ -254,6 +254,20 @@ test("invalid execution replacements are rejected before launching the command",
 	}
 });
 
+test("exhausted maintenance history rejects execution before launching the command", async (t) => {
+	const dir = fixture(t);
+	for (let i = 0; i < 1000; i++)
+		linkPremises(dir, { claim_id: "a", premises: [], reason: "reviewed current premises" });
+	const before = fs.readFileSync(path.join(dir, "claims.json"));
+	await assert.rejects(observeExecution(dir, {
+		claim_id: "a",
+		argv: [process.execPath, "-e", 'require("node:fs").writeFileSync("launched", "yes")'],
+		files: ["source.js"],
+	}), /maintenance history limit/);
+	assert.equal(fs.existsSync(path.join(dir, "launched")), false);
+	assert.deepEqual(fs.readFileSync(path.join(dir, "claims.json")), before);
+});
+
 test("source confinement rejects traversal, symlinks, binary files and invalid ranges", (t) => {
 	const dir = fixture(t);
 	fs.symlinkSync("source.js", path.join(dir, "link.js"));

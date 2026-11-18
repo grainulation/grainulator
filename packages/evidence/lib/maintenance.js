@@ -33,9 +33,14 @@ function transaction(dir, operation) {
     return { status: 'ok', ...result };
   });
 }
+function checkHistoryCapacity(claim) {
+  const entries = claim.maintenance_history ?? [];
+  if (!Array.isArray(entries)) throw new Error('Invalid claim maintenance history.');
+  if (entries.length >= 1000) throw new Error('Claim maintenance history limit reached; create a correction.');
+}
 function history(claim, action, details) {
+  checkHistoryCapacity(claim);
   claim.maintenance_history ??= [];
-  if (claim.maintenance_history.length >= 1000) throw new Error('Claim maintenance history limit reached; create a correction.');
   claim.maintenance_history.push({ action, at: stamp(), ...details });
 }
 
@@ -97,6 +102,7 @@ export function observeSource(dir, args) {
 export async function observeExecution(dir, args) {
   const before = load(dir);
   const beforeClaim = claimAt(before, args.claim_id);
+  checkHistoryCapacity(beforeClaim);
   if (!Array.isArray(args.argv) || !args.argv.length || args.argv.length > 100
     || args.argv.some(value => typeof value !== 'string' || !value || value.includes('\0') || value.length > 16384))
     throw new Error('argv must be a nonempty JSON array of executable and literal arguments.');
