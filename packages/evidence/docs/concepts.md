@@ -1,12 +1,12 @@
-# Wheat Concepts
+# Grainulator Concepts
 
-This guide explains the core ideas behind wheat. If you've run `npx @grainulation/wheat init` and are wondering "what does all this mean?" — start here.
+This guide explains the core ideas behind evidence. If you've run `grainulator init` and are wondering "what does all this mean?" — start here.
 
 ## The mental model
 
-If you've used CI/CD, you already understand wheat. The analogy:
+If you've used CI/CD, you already understand evidence. The analogy:
 
-| You know this  | Wheat equivalent                                      |
+| You know this  | Grainulator equivalent                                      |
 | -------------- | ----------------------------------------------------- |
 | Test assertion | Claim (typed finding about the decision space)        |
 | Test suite     | `claims.json` (all assertions for this investigation) |
@@ -16,11 +16,11 @@ If you've used CI/CD, you already understand wheat. The analogy:
 | Failing test   | Unresolved conflict (contradicting assertions)        |
 | Green build    | Clean compilation — safe to ship                      |
 
-Traditional planning tools (Notion docs, ADRs, tools like Obra) generate a big plan upfront, then you execute. That's waterfall planning — same problem as writing all your code then testing at the end. Wheat validates continuously: every finding is checked as it comes in, conflicts are caught immediately, and the compiler blocks output if your evidence doesn't hold up.
+Traditional planning tools (Notion docs, ADRs, tools like Obra) generate a big plan upfront, then you execute. That's waterfall planning — same problem as writing all your code then testing at the end. Grainulator validates continuously: every finding is checked as it comes in, conflicts are caught immediately, and the compiler blocks output if your evidence doesn't hold up.
 
 ## Claims (typed assertions)
 
-A claim is a typed assertion about the decision space. Every time you discover something — a hard constraint, a risk, a recommendation — wheat records it as a claim in `claims.json`.
+A claim is a typed assertion about the decision space. Every time you discover something — a hard constraint, a risk, a recommendation — evidence records it as a claim in `claims.json`.
 
 Think of claim types as assertion categories:
 
@@ -41,11 +41,11 @@ You never edit `claims.json` by hand. Slash commands create and update claims au
 
 ## Sprints (not Agile sprints)
 
-A wheat "sprint" is closer to a build than a Scrum sprint. It's a single investigation: one question, a set of assertions, and a compiled output. It takes 15 minutes to an hour, not two weeks. Think `make`, not Jira.
+A evidence "sprint" is closer to a build than a Scrum sprint. It's a single investigation: one question, a set of assertions, and a compiled output. It takes 15 minutes to an hour, not two weeks. Think `make`, not Jira.
 
 ## Phases
 
-A wheat sprint moves through phases. Each phase has commands that produce claims with matching ID prefixes:
+A evidence sprint moves through phases. Each phase has commands that produce claims with matching ID prefixes:
 
 | Phase         | What happens                                | Commands                         | Claim prefix                           |
 | ------------- | ------------------------------------------- | -------------------------------- | -------------------------------------- |
@@ -60,7 +60,7 @@ Phases are not strictly sequential. You can jump back to research after a protot
 
 ## Evidence Tiers (test coverage for research)
 
-Not all evidence is equal. Wheat grades every claim on a five-tier scale — think of it like test coverage for your assertions:
+Not all evidence is equal. Grainulator grades every claim on a five-tier scale — think of it like test coverage for your assertions:
 
 | Tier         | Meaning                                  | Analogy               | Example                                                    |
 | ------------ | ---------------------------------------- | --------------------- | ---------------------------------------------------------- |
@@ -74,10 +74,10 @@ The compiler uses evidence tiers to warn you. A recommendation backed only by `s
 
 ## The Compiler
 
-The compiler is what makes wheat more than a note-taking tool. Run it with:
+The compiler is what makes evidence more than a note-taking tool. Run it with:
 
 ```bash
-npx @grainulation/wheat compile --summary
+grainulator compile --summary
 ```
 
 It reads `claims.json` and runs a multi-pass validation pipeline:
@@ -96,7 +96,7 @@ If the compiler says "blocked" — you have unresolved conflicts that must be ad
 
 ## Guard Hooks
 
-Wheat installs two optional safeguards:
+Grainulator installs two optional safeguards:
 
 **Git pre-commit hook** — runs before every `git commit`. If `claims.json` is malformed or has structural errors, the commit is rejected. This prevents corrupted sprint data from entering your repo history.
 
@@ -106,7 +106,7 @@ Both hooks can be removed. They exist because the riskiest moment in a research 
 
 ## Slash Commands
 
-Wheat provides 20 slash commands inside Claude Code. Each command follows a pattern: investigate, record claims, compile, and suggest what to do next. See [commands.md](commands.md) for the full reference.
+Grainulator provides 20 slash commands inside Claude Code. Each command follows a pattern: investigate, record claims, compile, and suggest what to do next. See [commands.md](commands.md) for the full reference.
 
 ## How It All Fits Together
 
@@ -123,10 +123,10 @@ You ask a question
 /challenge, /blind-spot ----------> claims get stress-tested
     |
     v
-wheat compile ---------------------> compilation.json (validated snapshot)
+evidence compile ---------------------> compilation.json (validated snapshot)
     |
     v
 /brief, /present, /handoff -------> output artifacts (backed by evidence)
 ```
 
-The key insight: claims are the intermediate representation. Just like a compiler turns source code into machine code through an IR, wheat turns messy research into defensible decisions through typed, evidence-graded assertions. The compiler is the CI pipeline that keeps you honest — you can't ship with failing assertions, same as you can't merge with failing tests.
+The key insight: claims are the intermediate representation. Just like a compiler turns source code into machine code through an IR, evidence turns messy research into defensible decisions through typed, evidence-graded assertions. The compiler is the CI pipeline that keeps you honest — you can't ship with failing assertions, same as you can't merge with failing tests.

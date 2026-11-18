@@ -1,7 +1,7 @@
 /**
  * Integration test: wheat CLI entrypoint
  *
- * Verifies that `bin/wheat.js` responds correctly to:
+ * Verifies that `bin/evidence.js` responds correctly to:
  *   - --help (shows usage text)
  *   - --version (shows version string)
  *   - unknown command (exits non-zero)
@@ -21,7 +21,7 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const WHEAT_BIN = path.resolve(__dirname, "..", "bin", "wheat.js");
+const WHEAT_BIN = path.resolve(__dirname, "../../..", "bin", "grainulator.js");
 const PKG = JSON.parse(
 	readFileSync(path.resolve(__dirname, "..", "package.json"), "utf8"),
 );
@@ -34,7 +34,7 @@ describe("wheat CLI", () => {
 		});
 
 		assert.ok(output.includes("Grainulator"), "help should name Grainulator");
-		assert.ok(!output.includes("@grainulation/wheat"), "help should not advertise the legacy package");
+		assert.ok(!output.includes("@grainulation/grainulator-evidence"), "help should not advertise the legacy package");
 		assert.ok(output.includes("Usage:"), "help should include Usage section");
 		assert.ok(output.includes("init"), "help should list init command");
 		assert.ok(output.includes("compile"), "help should list compile command");
@@ -88,10 +88,9 @@ describe("wheat CLI", () => {
 		}, "unknown flag should exit non-zero");
 	});
 
-	it("legacy verb-less mode initializes only its isolated fixture", (t) => {
+	it("unknown words do not initialize a sprint", (t) => {
     const dir = mkdtempSync(path.join(os.tmpdir(), "grainulator-legacy-cli-"));
     t.after(() => rmSync(dir, {recursive: true, force: true}));
-    execFileSync(process.execPath, [WHEAT_BIN, "nonexistent", "--dir", dir], {cwd:dir, encoding:"utf8", timeout:5000, stdio:"pipe"});
-    assert.equal(JSON.parse(readFileSync(path.join(dir,"claims.json"),"utf8")).meta.question,"nonexistent");
+    assert.throws(()=>execFileSync(process.execPath, [WHEAT_BIN, "nonexistent", "--dir", dir], {cwd:dir, encoding:"utf8", timeout:5000, stdio:"pipe"}));
   });
 });

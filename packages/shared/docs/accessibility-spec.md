@@ -23,7 +23,7 @@ Every tool UI must define these landmark regions so screen readers can navigate 
 ```html
 <body>
   <header role="banner">
-    <h1>Wheat — Sprint Manager</h1>
+    <h1>Grainulator — Sprint Manager</h1>
     <nav role="navigation" aria-label="Main navigation">
       <!-- sidebar links or tab bar -->
     </nav>
@@ -137,12 +137,12 @@ The grainulation dark design system uses these tokens. Verify each meets the 4.5
 | `--text-primary`   | `#e2e8f0`     | `#0a0e1a`  | 14.53:1        | Yes     |
 | `--text-secondary` | `#94a3b8`     | `#0a0e1a`  | 6.98:1         | Yes     |
 | `--text-muted`     | `#64748b`     | `#0a0e1a`  | 3.76:1         | No\*    |
-| `--accent-wheat`   | `#fbbf24`     | `#0a0e1a`  | 10.74:1        | Yes     |
-| `--accent-barn`    | `#e11d48`     | `#0a0e1a`  | 3.97:1         | No\*\*  |
+| `--accent-evidence`   | `#fbbf24`     | `#0a0e1a`  | 10.74:1        | Yes     |
+| `--accent-shared`    | `#e11d48`     | `#0a0e1a`  | 3.97:1         | No\*\*  |
 
 \*`--text-muted` at 3.76:1 fails AA for normal text. Options: lighten to meet 4.5:1 or restrict use to large text / decorative elements only.
 
-\*\*`--accent-barn` at 3.97:1 fails AA for normal text. Use only for large text, icons, or decorative elements — or pair with a lighter text label for body copy.
+\*\*`--accent-shared` at 3.97:1 fails AA for normal text. Use only for large text, icons, or decorative elements — or pair with a lighter text label for body copy.
 
 ### Rules
 

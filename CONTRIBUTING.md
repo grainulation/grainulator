@@ -1,10 +1,10 @@
 # Contributing to Grainulator
 
-Grainulator provides evidence, memory, exports, and portable workflows through a CLI and one MCP server. Use it with any compatible host; Claude Code and Codex also have native plugin integrations. The v2.1.0 source is distributed through GitHub. The root npm package and component workspaces are private, so a GitHub release does not publish them to npm.
+Grainulator provides evidence, memory, exports, and portable workflows through a CLI and one MCP server. Use it with any compatible host; Claude Code and Codex also have native plugin integrations. Source and identified release archives are distributed through GitHub; publication follows the reviewed release workflow. The root npm package and component workspaces are private, so a GitHub release does not publish them to npm.
 
 ## Getting started
 
-Use Node.js 24 or later; Node 25 is the development default in `.nvmrc` and `.node-version`.
+Use Node.js 24 or 26 LTS; Node 24 is the development default in `.nvmrc` and `.node-version`.
 
 ```sh
 git clone https://github.com/grainulation/grainulator.git
@@ -38,23 +38,34 @@ For native Codex, install the intended local plugin through its marketplace mech
 
 ## Verification and CI
 
-CI runs `npm test`, `npm run check:package`, and `npm run test:install` on Node 24 and 25. Separate jobs run lint, Rust runtime conformance, and the Playwright local-playground check on Node 25. Browser tooling is a development dependency in this repository.
+CI runs `npm test`, `npm run check:package`, and `npm run test:install` on Node 24 and 26. Separate jobs run lint, Rust runtime conformance, and the Playwright local-playground check on Node 24. Browser tooling is a development dependency in this repository.
 
 ```sh
 npm run lint
 npm run test:install
 npm run test:runtime
 npx playwright install chromium
-npm run test:static
+npm run test:playground
+npm run test:distribution
+npm run check:surface
 ```
 
-Rust/Cargo is required for runtime conformance; Playwright Chromium is required for `npm run test:playground`. That command starts and stops its own isolated local preview and checks the runtime UI with synthetic provider responses. Marketing websites and their deployment tests live in [grainulation/infra](https://github.com/grainulation/infra). See [deployment and browser checks](docs/DEPLOYMENT.md). Paid-provider and native-host tests require the relevant credentials and are separate from CI's synthetic checks.
+Rust/Cargo is required for runtime conformance; Playwright Chromium is required for `npm run test:playground`. That command starts and stops its own isolated local preview and checks the runtime UI with synthetic provider responses. Public website deployments are maintained separately from this CLI and local playground. See [deployment and browser checks](docs/DEPLOYMENT.md). Paid-provider and native-host tests require the relevant credentials and are separate from CI's synthetic checks.
 
 ## Skills and shared templates
 
 Skills live in `skills/<name>/SKILL.md`, with YAML metadata and a portable Markdown workflow. Every directory under `skills/` must contain a real skill. Declare only needed tools; distinguish direct and host-prefixed MCP names where the host requires an allowlist.
 
 Shared artifact templates live in root `templates/`, outside skill discovery. Claude can resolve `${CLAUDE_PLUGIN_ROOT}/templates/<file>`; other hosts resolve templates relative to the installed plugin or checkout. Preserve the documented accessibility shell when customizing artifacts.
+
+## Distribution and migration checks
+
+The [release guide](docs/RELEASING.md) covers frozen base/native candidates, the
+separate offline converter, manifest trust and actual Homebrew recipe acceptance.
+The v3 normal archive exposes one product CLI; it does not preserve old component
+binaries or automatically convert user data. Keep signed history and source
+provenance intact. Use isolated fixtures for conversion, rollback and hook tests;
+never test a migration against a contributor's active data or host settings.
 
 ## Version preparation
 

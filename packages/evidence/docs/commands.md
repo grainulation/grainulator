@@ -1,6 +1,6 @@
-# Wheat Commands
+# Grainulator Commands
 
-Every command runs inside Claude Code. Type it in your conversation and wheat handles the rest.
+Every command runs inside Claude Code. Type it in your conversation and evidence handles the rest.
 
 ## Sprint Setup
 
@@ -206,11 +206,11 @@ Every command that modifies claims follows this sequence:
 
 1. Do the work (research, build, challenge)
 2. Append claims to `claims.json`
-3. Auto-commit: `wheat: /<command> <summary> -- added/updated <claim IDs>`
+3. Auto-commit: `evidence: /<command> <summary> -- added/updated <claim IDs>`
 4. Suggest 2-4 next steps based on sprint state
 
 Every command that produces output follows this sequence:
 
-1. Run `wheat compile`
+1. Run `evidence compile`
 2. If blocked, report what to fix (usually `/resolve`)
 3. If clear, generate the artifact from `compilation.json`

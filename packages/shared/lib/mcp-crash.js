@@ -1,5 +1,5 @@
 /**
- * MCP crash-safety handler — shared across wheat, mill, silo.
+ * MCP crash-safety handler — shared across evidence, exports, memory.
  *
  * Async errors OFF the request path (setTimeout, event emitters, stream
  * errors) bypass the per-request try/catch in an MCP stdio server and would
@@ -17,7 +17,7 @@
  *
  * Usage (ESM):
  *   import { installCrashHandlers } from "./mcp-crash.js";
- *   installCrashHandlers({ service: "wheat", version: pkg.version });
+ *   installCrashHandlers({ service: "evidence", version: pkg.version });
  *
  * Zero dependencies.
  */
@@ -34,7 +34,7 @@ export const CRASH_RECURSIVE_EXIT_CODE = 2;
  * Exported so unit tests can assert on shape without spawning a subprocess.
  *
  * @param {object} opts
- * @param {string} opts.service  e.g. "wheat"  -> "wheat-mcp" in the payload
+ * @param {string} opts.service  e.g. "evidence"  -> "evidence-mcp" in the payload
  * @param {string} [opts.version="unknown"]
  * @param {"uncaughtException"|"unhandledRejection"} opts.kind
  * @param {Error|unknown} opts.err
@@ -62,7 +62,7 @@ export function buildFatalPayload({ service, version, kind, err }) {
  * Install `uncaughtException` + `unhandledRejection` handlers on `process`.
  *
  * @param {object} [options]
- * @param {string} [options.service="mcp"]  Service label (e.g., "wheat", "mill").
+ * @param {string} [options.service="mcp"]  Service label (e.g., "evidence", "exports").
  * @param {string} [options.version="unknown"]
  * @param {() => void} [options.onExit]     Synchronous cleanup; errors swallowed.
  * @param {{ write(chunk: string): unknown }} [options.stderr=process.stderr]
@@ -71,7 +71,7 @@ export function buildFatalPayload({ service, version, kind, err }) {
  *        "noop" returns the same shape but does not attach listeners to `process`
  *        (for unit tests that want to invoke the listeners directly).
  * @param {boolean} [options.includeTestHook]
- *        If truthy and `process.env.BARN_MCP_CRASH_TEST` is set, schedules a
+ *        If truthy and `process.env.GRAINULATOR_MCP_CRASH_TEST` is set, schedules a
  *        deferred throw/rejection ~50ms after install so subprocess tests can
  *        exercise the real handlers. Defaults to true when the env var is
  *        present; set false to opt out explicitly.
@@ -94,7 +94,7 @@ export function installCrashHandlers(options = {}) {
   } = options;
   const includeTestHook =
     options.includeTestHook === undefined
-      ? Boolean(process.env.BARN_MCP_CRASH_TEST)
+      ? Boolean(process.env.GRAINULATOR_MCP_CRASH_TEST)
       : Boolean(options.includeTestHook);
 
   // Per-install recursive-crash guard. Scoped to the closure so multiple
@@ -161,18 +161,18 @@ export function installCrashHandlers(options = {}) {
     installed = true;
   }
 
-  // Test-only hook: when BARN_MCP_CRASH_TEST is set, schedule the
+  // Test-only hook: when GRAINULATOR_MCP_CRASH_TEST is set, schedule the
   // corresponding crash shortly after startup so the test suite can verify
   // the handlers above fire correctly. Never triggered in production unless
   // the env var is explicitly set.
-  if (includeTestHook && process.env.BARN_MCP_CRASH_TEST) {
-    const mode = process.env.BARN_MCP_CRASH_TEST;
+  if (includeTestHook && process.env.GRAINULATOR_MCP_CRASH_TEST) {
+    const mode = process.env.GRAINULATOR_MCP_CRASH_TEST;
     setTimeout(() => {
       if (mode === "uncaught") {
-        throw new Error("BARN_MCP_CRASH_TEST uncaught");
+        throw new Error("GRAINULATOR_MCP_CRASH_TEST uncaught");
       }
       if (mode === "unhandled") {
-        Promise.reject(new Error("BARN_MCP_CRASH_TEST unhandled"));
+        Promise.reject(new Error("GRAINULATOR_MCP_CRASH_TEST unhandled"));
       }
     }, 50);
   }

@@ -18,7 +18,7 @@ import path from "node:path";
 import os from "node:os";
 
 // Import the guard function directly for unit-style integration testing
-import { generateCertificate } from "../compiler/wheat-compiler.js";
+import { generateCertificate } from "../compiler/evidence-compiler.js";
 import { guard } from "../lib/guard.js";
 
 describe("wheat guard", () => {

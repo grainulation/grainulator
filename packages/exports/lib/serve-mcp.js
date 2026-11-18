@@ -1,32 +1,14 @@
-/**
- * mill serve-mcp — Local MCP server for Claude Code
- *
- * Exposes format conversion tools over stdio.
- * Zero npm dependencies.
- *
- * Tools:
- *   mill/convert  — Convert compilation/claims to any of 23+ formats
- *   mill/formats  — List all available export formats
- *   mill/preview  — Preview a conversion without writing to disk
- *
- * Resources:
- *   mill://formats — Full format catalog with descriptions and MIME types
- *
- * Install:
- *   claude mcp add mill -- npx @grainulation/mill serve-mcp
- */
+/** Private Grainulator exports MCP handlers; only the root server owns stdio/discovery. */
 
 const fs = require("fs");
 const path = require("path");
 const { pathToFileURL } = require("node:url");
-const readline = require("readline");
 const { jsonRpcError, jsonRpcResponse } = require("../../shared/lib/mcp.cjs");
 const { isInsideDir } = require("../../shared/lib/paths.cjs");
-const { installCrashHandlers } = require("../../shared/lib/mcp-crash.cjs");
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
-const SERVER_NAME = "mill";
+const SERVER_NAME = "grainulator";
 const SERVER_VERSION = require("../package.json").version;
 const { assertSafeOutput } = require("./output-safety.js");
 const { loadSource } = require("./source-data.js");
@@ -58,7 +40,7 @@ async function discoverFormats() {
           convert: mod.convert,
         });
       } catch (err) {
-        process.stderr.write(`mill: skipping ${file}: ${err.message}\n`);
+        process.stderr.write(`exports: skipping ${file}: ${err.message}\n`);
       }
     }
   } catch {}
@@ -145,7 +127,7 @@ async function toolConvert(dir, args) {
         dataPath,
         path.join(dir, "claims.json"),
         path.join(dir, "compilation.json"),
-      ]);
+      ],{workspace:args.workspace});
     } catch (error) {
       return { status: "error", message: error.message };
     }
@@ -228,7 +210,7 @@ async function toolPreview(dir, args) {
 
 const TOOLS = [
   {
-    name: "mill/convert",
+    name: "exports_convert",
     description:
       "Convert sprint compilation or claims to any supported format (csv, markdown, json-ld, yaml, sql, ndjson, html-report, executive-summary, slide-deck, jira-csv, github-issues, obsidian, graphml, dot, and more). Returns the converted output inline or writes to a file.",
     inputSchema: {
@@ -253,13 +235,13 @@ const TOOLS = [
     },
   },
   {
-    name: "mill/formats",
+    name: "exports_formats",
     description:
       "List all available export formats with descriptions, file extensions, and MIME types.",
     inputSchema: { type: "object", properties: {} },
   },
   {
-    name: "mill/preview",
+    name: "exports_preview",
     description:
       "Preview a format conversion — shows first N lines without writing to disk.",
     inputSchema: {
@@ -282,7 +264,7 @@ const TOOLS = [
 
 const RESOURCES = [
   {
-    uri: "mill://formats",
+    uri: "grainulator://exports/formats",
     name: "Format Catalog",
     description:
       "All available export formats with descriptions, extensions, and MIME types.",
@@ -313,13 +295,13 @@ async function handleRequest(dir, method, params, id) {
       let result;
 
       switch (toolName) {
-        case "mill/convert":
+        case "exports_convert":
           result = await toolConvert(dir, toolArgs);
           break;
-        case "mill/formats":
+        case "exports_formats":
           result = await toolFormats();
           break;
-        case "mill/preview":
+        case "exports_preview":
           result = await toolPreview(dir, toolArgs);
           break;
         default:
@@ -336,7 +318,7 @@ async function handleRequest(dir, method, params, id) {
       return jsonRpcResponse(id, { resources: RESOURCES });
 
     case "resources/read": {
-      if (params.uri === "mill://formats") {
+      if (params.uri === "grainulator://exports/formats") {
         const formats = await discoverFormats();
         const text = JSON.stringify(
           formats.map((f) => ({
@@ -367,66 +349,4 @@ async function handleRequest(dir, method, params, id) {
 
 // ─── Stdio transport ────────────────────────────────────────────────────────
 
-function startServer(dir) {
-  installCrashHandlers({ service: "mill", version: SERVER_VERSION });
-
-  const rl = readline.createInterface({
-    input: process.stdin,
-    terminal: false,
-  });
-
-  if (process.stdout._handle && process.stdout._handle.setBlocking) {
-    process.stdout._handle.setBlocking(true);
-  }
-
-  let pending = 0;
-  let closing = false;
-
-  function maybeDrain() {
-    if (closing && pending === 0) process.exit(0);
-  }
-
-  rl.on("line", async (line) => {
-    if (!line.trim()) return;
-    let msg;
-    try {
-      msg = JSON.parse(line);
-    } catch {
-      process.stdout.write(jsonRpcError(null, -32700, "Parse error") + "\n");
-      return;
-    }
-    pending++;
-    const response = await handleRequest(
-      dir,
-      msg.method,
-      msg.params || {},
-      msg.id,
-    );
-    if (response !== null) process.stdout.write(response + "\n");
-    pending--;
-    maybeDrain();
-  });
-
-  rl.on("close", () => {
-    closing = true;
-    maybeDrain();
-  });
-
-  process.stderr.write(`mill MCP server v${SERVER_VERSION} ready on stdio\n`);
-  process.stderr.write(`  Formats dir: ${FORMATS_DIR}\n`);
-  process.stderr.write(
-    `  Tools: ${TOOLS.length} | Resources: ${RESOURCES.length}\n`,
-  );
-}
-
-// ─── Entry point ────────────────────────────────────────────────────────────
-
-if (require.main === module) {
-  startServer(process.cwd());
-}
-
-async function run(dir) {
-  startServer(dir);
-}
-
-module.exports = { startServer, handleRequest, TOOLS, RESOURCES, run };
+module.exports = { handleRequest, TOOLS, RESOURCES };

@@ -1,7 +1,7 @@
 /*
  * grainulation-print.css  v1.1.0
  * Shared print stylesheet for grainulation ecosystem sites.
- * Home: barn. Vendored into each site via `barn sync-assets`.
+ * Home: shared. Vendored into each site via `shared sync-assets`.
  *
  * Usage (in each site's <head>, before </head>):
  *   <link rel="stylesheet" media="print" href="/grainulation-print.css">
@@ -16,8 +16,8 @@
  *     <link rel="stylesheet" media="print" href="/print-local.css">
  *
  *   Later source order wins on equal specificity. `print-local.css` is NOT
- *   synced by `barn sync-assets` — it is site-owned. Do NOT fork this file.
- *   If you need an upstream fix, send a PR to barn. See
+ *   synced by `shared sync-assets` — it is site-owned. Do NOT fork this file.
+ *   If you need an upstream fix, send a PR to shared. See
  *   docs/sync-assets.md → "Overriding a shared primitive per-site".
  *
  * Scope: applied only at print-time (media="print"). Has no effect on
@@ -222,7 +222,7 @@
     color: #000 !important;
   }
 
-  /* harvest: chart bars strip color at print without print-color-adjust.
+  /* analytics: chart bars strip color at print without print-color-adjust.
    * Force exact rendering on the accuracy-chart components. Include the
    * pre-spec `color-adjust` name for older engines. */
   .bar,
@@ -233,7 +233,7 @@
     print-color-adjust: exact !important;
   }
 
-  /* orchard: dep-graph nodes use dark-theme CSS variables — unreadable on
+  /* orchestration: dep-graph nodes use dark-theme CSS variables — unreadable on
    * white. Force transparent bg + neutral border + black text. */
   .dep-graph {
     display: block !important;
@@ -245,7 +245,7 @@
     color: #000 !important;
   }
 
-  /* mill: terminal-block chrome doesn't flatten under the generic rules.
+  /* exports: terminal-block chrome doesn't flatten under the generic rules.
    * Mirror the existing mobile single-column rule for `.before-after`. */
   .term-timeline,
   .term-step,
@@ -264,7 +264,7 @@
     grid-template-columns: 1fr !important;
   }
 
-  /* wheat: decorative "traffic light" pseudo-element in copy-wraps wastes
+  /* evidence: decorative "traffic light" pseudo-element in copy-wraps wastes
    * ~32px of print width and is purely ornamental. Hide it in print. */
   .copy-wrap::before {
     display: none !important;

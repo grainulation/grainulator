@@ -1,5 +1,5 @@
 /**
- * mill format: ndjson
+ * exports format: ndjson
  *
  * One JSON object per line (Newline Delimited JSON).
  * Each line is a claim with all fields preserved.

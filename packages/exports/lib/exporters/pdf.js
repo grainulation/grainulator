@@ -3,7 +3,7 @@ const { assertSafeOutput } = require("../output-safety.js");
 
 // NOTE: PDF is the one export format that requires external tools (md-to-pdf
 // for Markdown, puppeteer for HTML). These are fetched via npx on first run,
-// which needs network access. All other mill export formats are zero-dep.
+// which needs network access. All other exports export formats are zero-dep.
 
 const path = require("node:path");
 const { execFile, execFileSync } = require("node:child_process");
@@ -45,12 +45,12 @@ function npxToolError(toolName, originalError) {
     hint =
       `PDF export requires "${toolName}" which is fetched via npx on first run.\n` +
       `  To pre-install: npx ${toolName} --version\n` +
-      `  If you are offline or npx is unavailable, use: mill export --format markdown`;
+      `  If you are offline or npx is unavailable, use: exports export --format markdown`;
   } else {
     hint =
       `"${toolName}" exited with an error.\n` +
       `  Verify it works standalone: npx ${toolName} --version\n` +
-      `  Or fall back to: mill export --format markdown`;
+      `  Or fall back to: exports export --format markdown`;
   }
 
   return new Error(

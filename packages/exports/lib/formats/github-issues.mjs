@@ -1,6 +1,6 @@
 import { escapeMarkdownData } from "./_shared.mjs";
 /**
- * mill format: github-issues
+ * exports format: github-issues
  *
  * Converts compilation.json claims to a single markdown file
  * with each claim formatted as a GitHub issue template.

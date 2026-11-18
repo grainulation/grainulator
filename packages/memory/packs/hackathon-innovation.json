@@ -46,7 +46,7 @@
       "id": "hin-001",
       "type": "constraint",
       "topic": "innovation night format",
-      "content": "Innovation Night is an open-ended creative hackathon format. Teams choose from themed challenge packs or propose their own research question. Output is a 3-minute demo pitch backed by a compiled wheat brief. The format rewards divergent thinking and cross-domain synthesis.",
+      "content": "Innovation Night is an open-ended creative hackathon format. Teams choose from themed challenge packs or propose their own research question. Output is a 3-minute demo pitch backed by a compiled Grainulator brief. The format rewards divergent thinking and cross-domain synthesis.",
       "source": {
         "origin": "stakeholder",
         "artifact": null,
@@ -182,7 +182,7 @@
       "id": "hin-009",
       "type": "recommendation",
       "topic": "demo format",
-      "content": "Standard demo format: 3-minute pitch covering (1) the problem — why does this matter? (2) the approach — what creative angle did you take? (3) the findings — what did you discover? (4) the evidence — how do you know? Demo-first, slides optional. The compiled wheat brief is the supporting artifact.",
+      "content": "Standard demo format: 3-minute pitch covering (1) the problem — why does this matter? (2) the approach — what creative angle did you take? (3) the findings — what did you discover? (4) the evidence — how do you know? Demo-first, slides optional. The compiled Grainulator brief is the supporting artifact.",
       "source": { "origin": "research", "artifact": null, "connector": null },
       "evidence": "web",
       "status": "active",

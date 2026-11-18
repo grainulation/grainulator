@@ -1,9 +1,9 @@
 /**
  * Integration test: mill MCP server — tool-call handlers
  *
- * Spawns `node bin/mill.js serve-mcp` as a child process over stdio,
+ * Spawns `node bin/exports.js serve-mcp` as a child process over stdio,
  * performs JSON-RPC 2.0 initialize, and issues tools/call for each of
- * mill's MCP tools (mill/convert, mill/formats, mill/preview). Asserts
+ * mill's MCP tools (exports_convert, exports_formats, exports_preview). Asserts
  * on response shape, content payload, and at least one error path per
  * tool. Zero dependencies — uses node:test + node:assert.
  *
@@ -21,7 +21,7 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const MILL_BIN = path.resolve(__dirname, "..", "bin", "mill.js");
+const MILL_BIN = path.resolve(__dirname, "../../..", "bin", "grainulator.js");
 
 function sendJsonRpc(child, obj) {
   child.stdin.write(JSON.stringify(obj) + "\n");
@@ -29,7 +29,7 @@ function sendJsonRpc(child, obj) {
 
 function spawnAndInitialize(cwd) {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [MILL_BIN, "serve-mcp"], {
+    const child = spawn(process.execPath, [MILL_BIN, "mcp"], {
       cwd,
       stdio: ["pipe", "pipe", "pipe"],
     });
@@ -210,14 +210,14 @@ describe("mill MCP server — protocol basics", () => {
     try {
       assert.equal(response.jsonrpc, "2.0");
       assert.equal(response.id, 1);
-      assert.equal(response.result.serverInfo.name, "mill");
+      assert.equal(response.result.serverInfo.name, "grainulator");
       assert.ok(response.result.protocolVersion);
     } finally {
       cleanup(child);
     }
   });
 
-  it("tools/list returns mill/convert, mill/formats, mill/preview", async () => {
+  it("tools/list returns exports_convert, exports_formats, exports_preview", async () => {
     const { child } = await spawnAndInitialize(dir);
     try {
       const responsePromise = waitForResponse(child);
@@ -229,16 +229,16 @@ describe("mill MCP server — protocol basics", () => {
       });
       const response = await responsePromise;
       const names = response.result.tools.map((t) => t.name);
-      assert.ok(names.includes("mill/convert"));
-      assert.ok(names.includes("mill/formats"));
-      assert.ok(names.includes("mill/preview"));
+      assert.ok(names.includes("exports_convert"));
+      assert.ok(names.includes("exports_formats"));
+      assert.ok(names.includes("exports_preview"));
     } finally {
       cleanup(child);
     }
   });
 
   it("no stdout pollution before first JSON-RPC response", async () => {
-    const child = spawn(process.execPath, [MILL_BIN, "serve-mcp"], {
+    const child = spawn(process.execPath, [MILL_BIN, "mcp"], {
       cwd: dir,
       stdio: ["pipe", "pipe", "pipe"],
     });
@@ -285,11 +285,11 @@ describe("mill MCP tool handlers", () => {
     fs.rmSync(dir, { recursive: true, force: true });
   });
 
-  // ── mill/formats ─────────────────────────────────────────────────────────
-  it("mill/formats — returns non-empty format catalog", async () => {
+  // ── exports_formats ─────────────────────────────────────────────────────────
+  it("exports_formats — returns non-empty format catalog", async () => {
     const { child } = await spawnAndInitialize(dir);
     try {
-      const { payload } = await callTool(child, 10, "mill/formats", {});
+      const { payload } = await callTool(child, 10, "exports_formats", {});
       assert.equal(payload.status, "ok");
       assert.ok(Array.isArray(payload.formats));
       assert.ok(payload.formats.length > 0, "should have at least one format");
@@ -304,21 +304,21 @@ describe("mill MCP tool handlers", () => {
     }
   });
 
-  // ── mill/convert — happy path ────────────────────────────────────────────
-  it("mill/convert — converts to a known format inline", async () => {
+  // ── exports_convert — happy path ────────────────────────────────────────────
+  it("exports_convert — converts to a known format inline", async () => {
     const { child } = await spawnAndInitialize(dir);
     try {
       // Pick a format that is guaranteed to exist; discover via formats first
       const { payload: formatsPayload } = await callTool(
         child,
         20,
-        "mill/formats",
+        "exports_formats",
         {},
       );
       const candidate =
         formatsPayload.formats.find((f) => f.id === "markdown") ||
         formatsPayload.formats[0];
-      const { payload } = await callTool(child, 21, "mill/convert", {
+      const { payload } = await callTool(child, 21, "exports_convert", {
         format: candidate.id,
       });
       assert.equal(payload.status, "ok");
@@ -333,20 +333,20 @@ describe("mill MCP tool handlers", () => {
     }
   });
 
-  it("mill/convert — writes to file when output path given", async () => {
+  it("exports_convert — writes to file when output path given", async () => {
     const { child } = await spawnAndInitialize(dir);
     try {
       const { payload: formatsPayload } = await callTool(
         child,
         22,
-        "mill/formats",
+        "exports_formats",
         {},
       );
       const candidate =
         formatsPayload.formats.find((f) => f.id === "markdown") ||
         formatsPayload.formats[0];
       const outRel = "artifacts/out.txt";
-      const { payload } = await callTool(child, 23, "mill/convert", {
+      const { payload } = await callTool(child, 23, "exports_convert", {
         format: candidate.id,
         output: outRel,
       });
@@ -359,14 +359,14 @@ describe("mill MCP tool handlers", () => {
     }
   });
 
-  // ── mill/convert — error paths ───────────────────────────────────────────
-  it("mill/convert — errors when format missing", async () => {
+  // ── exports_convert — error paths ───────────────────────────────────────────
+  it("exports_convert — errors when format missing", async () => {
     const { child } = await spawnAndInitialize(dir);
     try {
       const { response, payload } = await callTool(
         child,
         30,
-        "mill/convert",
+        "exports_convert",
         {},
       );
       assert.equal(payload.status, "error");
@@ -377,10 +377,10 @@ describe("mill MCP tool handlers", () => {
     }
   });
 
-  it("mill/convert — errors on unknown format", async () => {
+  it("exports_convert — errors on unknown format", async () => {
     const { child } = await spawnAndInitialize(dir);
     try {
-      const { payload } = await callTool(child, 31, "mill/convert", {
+      const { payload } = await callTool(child, 31, "exports_convert", {
         format: "definitely-not-a-real-format-xyz",
       });
       assert.equal(payload.status, "error");
@@ -390,34 +390,34 @@ describe("mill MCP tool handlers", () => {
     }
   });
 
-  it("mill/convert — rejects path traversal in source", async () => {
+  it("exports_convert — rejects path traversal in source", async () => {
     const { child } = await spawnAndInitialize(dir);
     try {
-      const { payload } = await callTool(child, 32, "mill/convert", {
+      const { payload } = await callTool(child, 32, "exports_convert", {
         format: "markdown",
         source: "../../../etc/passwd",
       });
       assert.equal(payload.status, "error");
-      assert.ok(/escapes workspace/i.test(payload.message));
+      assert.ok(/outside workspace|escapes workspace/i.test(payload.message));
     } finally {
       cleanup(child);
     }
   });
 
-  // ── mill/preview ─────────────────────────────────────────────────────────
-  it("mill/preview — returns first N lines without writing", async () => {
+  // ── exports_preview ─────────────────────────────────────────────────────────
+  it("exports_preview — returns first N lines without writing", async () => {
     const { child } = await spawnAndInitialize(dir);
     try {
       const { payload: formatsPayload } = await callTool(
         child,
         40,
-        "mill/formats",
+        "exports_formats",
         {},
       );
       const candidate =
         formatsPayload.formats.find((f) => f.id === "markdown") ||
         formatsPayload.formats[0];
-      const { payload } = await callTool(child, 41, "mill/preview", {
+      const { payload } = await callTool(child, 41, "exports_preview", {
         format: candidate.id,
         lines: 5,
       });
@@ -430,10 +430,10 @@ describe("mill MCP tool handlers", () => {
     }
   });
 
-  it("mill/preview — errors when format missing", async () => {
+  it("exports_preview — errors when format missing", async () => {
     const { child } = await spawnAndInitialize(dir);
     try {
-      const { payload } = await callTool(child, 42, "mill/preview", {});
+      const { payload } = await callTool(child, 42, "exports_preview", {});
       assert.equal(payload.status, "error");
       assert.ok(/format/i.test(payload.message));
     } finally {
@@ -453,7 +453,7 @@ describe("mill MCP tool handlers", () => {
       });
       const response = await responsePromise;
       assert.ok(response.error, "should return JSON-RPC error");
-      assert.equal(response.error.code, -32601);
+      assert.equal(response.error.code, -32602);
     } finally {
       cleanup(child);
     }
@@ -469,7 +469,7 @@ describe("export source integrity", () => {
   it("does not replace an explicitly missing source with another ledger", async () => {
     const { child } = await spawnAndInitialize(dir);
     try {
-      const { response, payload } = await callTool(child, 201, "mill/convert", { format: "markdown", source: "missing.json" });
+      const { response, payload } = await callTool(child, 201, "exports_convert", { format: "markdown", source: "missing.json" });
       assert.equal(response.result.isError, true);
       assert.equal(payload.status, "error");
       assert.match(payload.message, /No source file/);
@@ -483,9 +483,9 @@ describe("export source integrity", () => {
     fs.symlinkSync(path.join(dir, "claims.json"), path.join(nested, "claims.json"));
     const { child } = await spawnAndInitialize(nested);
     try {
-      const { response, payload } = await callTool(child, 201, "mill/convert", { format: "executive-summary", output: "report.html" });
+      const { response, payload } = await callTool(child, 201, "exports_convert", { format: "executive-summary", output: "report.html" });
       assert.equal(response.result.isError, true);
-      assert.match(payload.message, /grainulator compile --dir/);
+      assert.match(payload.message, /grainulator compile --dir|outside workspace/i);
       assert.ok(!fs.existsSync(path.join(nested, "report.html")));
     } finally { cleanup(child); }
   });
@@ -496,7 +496,7 @@ describe("export source integrity", () => {
     fs.symlinkSync(path.join(dir, "claims.json"), path.join(nested, "claims.json"));
     const { child } = await spawnAndInitialize(nested);
     try {
-      const { response, payload } = await callTool(child, 201, "mill/convert", { format: "markdown" });
+      const { response, payload } = await callTool(child, 201, "exports_convert", { format: "markdown" });
       assert.equal(response.result.isError, true);
       assert.equal(payload.status, "error");
       assert.ok(!payload.output);

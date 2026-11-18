@@ -4,7 +4,7 @@
  *
  * In-process tests use `register: "noop"` + mocked stderr/exit so we never
  * touch the real process handlers. Subprocess tests use a small fixture that
- * imports the helper, sets BARN_MCP_CRASH_TEST, and crashes.
+ * imports the helper, sets GRAINULATOR_MCP_CRASH_TEST, and crashes.
  *
  * Zero dependencies — node:test only.
  */
@@ -284,7 +284,7 @@ setTimeout(() => { process.stderr.write("sentinel-normal\\n"); process.exit(0); 
 
   it("uncaught path: exit 1, JSON on stderr tagged uncaughtException", () => {
     const r = spawnSync(process.execPath, [fixturePath], {
-      env: { ...process.env, BARN_MCP_CRASH_TEST: "uncaught" },
+      env: { ...process.env, GRAINULATOR_MCP_CRASH_TEST: "uncaught" },
       encoding: "utf8",
       timeout: 8000,
     });
@@ -303,12 +303,12 @@ setTimeout(() => { process.stderr.write("sentinel-normal\\n"); process.exit(0); 
     assert.equal(payload.level, "fatal");
     assert.equal(payload.kind, "uncaughtException");
     assert.equal(payload.source, "wheat-mcp");
-    assert.match(payload.message, /BARN_MCP_CRASH_TEST uncaught/);
+    assert.match(payload.message, /GRAINULATOR_MCP_CRASH_TEST uncaught/);
   });
 
   it("unhandled path: exit 1, JSON on stderr tagged unhandledRejection", () => {
     const r = spawnSync(process.execPath, [fixturePath], {
-      env: { ...process.env, BARN_MCP_CRASH_TEST: "unhandled" },
+      env: { ...process.env, GRAINULATOR_MCP_CRASH_TEST: "unhandled" },
       encoding: "utf8",
       timeout: 8000,
     });
@@ -329,7 +329,7 @@ setTimeout(() => { process.stderr.write("sentinel-normal\\n"); process.exit(0); 
 
   it("normal path: no crash env -> exits 0 with sentinel", () => {
     const r = spawnSync(process.execPath, [fixturePath], {
-      env: { ...process.env, BARN_MCP_CRASH_TEST: "" },
+      env: { ...process.env, GRAINULATOR_MCP_CRASH_TEST: "" },
       encoding: "utf8",
       timeout: 8000,
     });

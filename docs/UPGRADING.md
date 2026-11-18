@@ -1,6 +1,8 @@
-# Upgrade from Grainulator 1.x to 2.x
+# Upgrade to Grainulator 3
 
-Version 2 consolidates the ecosystem into one package and one MCP server. Updating the plugin does not rewrite your host settings, active conversations, project instructions, or saved research. Follow this checklist in the copy and host scope you actually use.
+Version 3 retains the consolidated product and removes historical component identities. Updating the plugin does not rewrite your host settings, active conversations, project instructions, or saved research. Follow this checklist in the copy and host scope you actually use.
+
+Component browser dashboards and their `serve` commands are retired. Use the CLI or MCP tools for evidence, memory, exports and sprint analysis. Generated HTML reports still work offline, and `grainulator preview` still opens the local research playground. The separate migration artifact inventories historical state; v3 does not start or stop retired services.
 
 ## 1. Identify the installation
 
@@ -8,7 +10,7 @@ Use Node.js 24 or later. Keep the existing installation and research data until 
 
 Run `node /path/to/loaded/grainulator/bin/grainulator.js doctor --json` against the installed or cached copy, rather than a different checkout on your PATH. Compare its version and build identity with the intended release or local archive. Tagged releases and marketplace builds include a committed integrity manifest; local archives created with `npm run pack:local` also have a distinct verifiable identity. A development checkout without a manifest reports its source version and does not claim integrity verification. See [installation](INSTALLATION.md) for identified archives and [full-plugin checks](PLUGIN-TESTING.md) for loaded-cache verification.
 
-The 2.x releases are distributed through [GitHub releases](https://github.com/grainulation/grainulator/releases), not a new npm registry publication. `npm update` against the registry does not select this release.
+The 2.x and 3.x releases are distributed through [GitHub releases](https://github.com/grainulation/grainulator/releases), not a new npm registry publication. `npm update` against the registry does not select this release.
 
 ## 2. Update through your host
 
@@ -36,7 +38,7 @@ Host-managed security wrappers and approved MCP launch commands belong to the ho
 
 ## 3. Reconnect Grainulator
 
-Version 2 uses one server named `grainulator`. If you added a manual connection in 1.x, check it and update it to the new server. The plugin handles its own connection; only change custom tool lists or instructions that refer to old names. Keep unrelated connections as they are.
+Versions 2 and 3 use one server named `grainulator`. If you added a manual connection in 1.x, check it and update it to the new server. The plugin handles its own connection; only change custom tool lists or instructions that refer to old names. Keep unrelated connections as they are.
 
 Claude's plugin registers `grainulator` automatically. For a direct MCP installation, `node /path/to/grainulator/bin/grainulator.js connect --dir /absolute/project` prints the replacement configuration for review. Remove a retired manual registration only after confirming it belongs to this installation and the new connection works. Keep unrelated connectors intact.
 
@@ -58,7 +60,7 @@ The project must exist and contain the intended sprint directories. The plugin c
 
 Keep existing `claims.json`, `compilation.json`, session exports, and sprint directories in place. Do not initialize over an existing sprint to repair a connection. Test `status` against its explicit directory first.
 
-Check the memory store separately. The old Claude plugin selected `${CLAUDE_PLUGIN_DATA}/silo`; the new plugin selects `${CLAUDE_PLUGIN_DATA}/memory`. Changing the server registration does not copy that store. If `memory_list` appears empty, locate and back up the original store before selecting it through an authorized `GRAINULATOR_MEMORY_DIR` configuration or moving data. The resolver still accepts `SILO_STORE`, but an explicit `GRAINULATOR_MEMORY_DIR` takes precedence. Its `~/.silo` fallback does not migrate an old plugin-data directory. Do not merge stores or overwrite their indexes without reviewing both.
+Check the memory store separately. The old Claude plugin selected `${CLAUDE_PLUGIN_DATA}/memory`; the new plugin selects `${CLAUDE_PLUGIN_DATA}/memory`. Changing the server registration does not copy that store. If `memory_list` appears empty, locate and back up the original store before selecting it through an authorized `GRAINULATOR_MEMORY_DIR` configuration or moving data. The resolver still accepts `SILO_STORE`, but an explicit `GRAINULATOR_MEMORY_DIR` takes precedence. Its `~/.memory` fallback does not migrate an old plugin-data directory. Do not merge stores or overwrite their indexes without reviewing both.
 
 Review applicable `CLAUDE.md`, `AGENTS.md`, and custom agent instructions for setup steps from 1.x. Remove instructions for features that are no longer installed. Keep your own rules, active research folders, permission settings, and unrelated connections. Your agent still controls permissions and remote access.
 
@@ -71,3 +73,14 @@ Existing source/data files can retain historical names for compatibility. Do not
 - Invoke the bundled Grainulator workflow or agent if you use the full plugin. A successful direct MCP connection alone does not verify skills, agents, or hooks.
 
 If a check fails, keep the original data and previous archive available. Report the actual loaded path, host version, selected scope, and error without including credentials. [Full-plugin acceptance](PLUGIN-TESTING.md) describes the reproducible checks.
+
+## Grainulator 3
+
+Only the root Grainulator CLI/plugin is supported. Component binary/tool aliases and standalone MCP servers are removed. Use the separate offline migration artifact for explicit copy/verify/cutover/rollback; normal v3 commands do not read historical product paths or automatically migrate data. Original evidence and receipts remain unchanged. See [configuration](CONFIGURATION.md) and [data-preserving removal](UNINSTALL.md). Native `runtime` operations require a verified matching asset; root `run` remains the portable adapter loop.
+
+
+Native enrollment currently supports one workspace and one host settings scope. Foreign or duplicate canonical Stop hooks and cross-host/workspace receipts are refused before any backup or registration change. Keep an existing required gate active until a separately reviewed cohort handoff is available; missing metadata is never a declaration that the workspace is unmanaged.
+
+Confluence identity conversion is a separately selected remote step. Pending, ambiguous or incomplete inventory blocks normal publication/discovery throughout the project, including nested sprint layouts. Review an explicit stable `sourceId` for each old source/slug/role when previewing conversion. Confirmed receipts bind that full inventory and site/space/page ID. Updating a known migrated source requires its confirmed page ID; it cannot fall back to creating a page. After every mapped page is confirmed, `newSource` explicitly declares a genuinely new collection identity. Retain the returned page ID for later updates; never reuse that flag for a known source or retry an uncertain publication. Historical content bytes and unrelated labels are preserved by the converter.
+
+If historical remote inventory is ambiguous or has no page IDs, it stays blocked until explicit local review. The separate converter `resolveRemoteInventory` operation requires the inspected marker SHA-256, complete ownership coverage, stable source/role mappings to existing page IDs, and documentary evidence—or explicit documented not-configured dispositions for every owned source. It preserves the exact prior marker in immutable local history and makes no adapter or network call. Resolution alone never publishes; mapped pages still require remote preview, authorized compare-and-swap apply and confirmed receipts.

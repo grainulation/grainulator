@@ -129,8 +129,14 @@ test("root execution and connection help never starts work or creates files", (t
 				[cli, command, flag, "--dir", dir],
 				{ cwd: dir, encoding: "utf8", timeout: 5000 },
 			);
+			assert.equal(
+				result.error,
+				undefined,
+				`${command} ${flag} must exit without a timeout`,
+			);
 			assert.equal(result.status, 0, `${command} ${flag}: ${result.stderr}`);
 			assert.match(result.stdout, /grainulator|Usage:/i);
+			if (command === "preview") assert.doesNotMatch(result.stdout, /--dir/);
 			assert.deepEqual(
 				fs.readdirSync(dir),
 				[],
@@ -138,4 +144,20 @@ test("root execution and connection help never starts work or creates files", (t
 			);
 		}
 	}
+});
+
+test("preview rejects an ignored workspace argument before starting its server", (t) => {
+	const dir = fs.mkdtempSync(
+		path.join(os.tmpdir(), "grainulator-preview-argv-"),
+	);
+	t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+	const result = spawnSync(process.execPath, [cli, "preview", "--dir", dir], {
+		cwd: dir,
+		encoding: "utf8",
+		timeout: 5000,
+	});
+	assert.equal(result.error, undefined);
+	assert.equal(result.status, 1);
+	assert.match(result.stderr, /Unknown option: --dir/);
+	assert.deepEqual(fs.readdirSync(dir), []);
 });

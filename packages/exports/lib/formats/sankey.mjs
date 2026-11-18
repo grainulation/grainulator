@@ -1,5 +1,5 @@
 /**
- * mill format: sankey
+ * exports format: sankey
  *
  * Converts compilation.json claims to Sankey JSON for D3-sankey.
  * Three-column flow: type -> evidence_tier -> status.

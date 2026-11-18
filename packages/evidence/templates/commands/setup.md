@@ -1,6 +1,6 @@
 # /setup — Configure Grainulator
 
-Locate the installed checkout and run `node <checkout>/bin/grainulator.js doctor`. Node.js 24 or later is required; Node 25 is the local default. This checks local components without changing global host settings.
+Locate the installed checkout and run `node <checkout>/bin/grainulator.js doctor`. Node.js 24 or later is required; Node 24 is the local default. This checks local components without changing global host settings.
 
 Grainulator uses one local MCP server named `grainulator`. Check `grainulator.status` with the intended sprint directory, `grainulator.memory_list`, and `grainulator.exports_formats`. A missing sprint is not a broken connection. Report which capability failed and its actual error; continue independent local work through the CLI.
 

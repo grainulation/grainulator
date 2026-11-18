@@ -1,9 +1,10 @@
+import remoteMigration from "../../shared/lib/remote-migration.cjs";
 import { decodeEntities } from "../../shared/lib/html.cjs";
 /**
- * confluence.js — Confluence backend adapter for silo
+ * confluence.js — Confluence backend adapter for memory
  *
- * Publishes wheat compilation briefs and claim collections to Confluence pages,
- * and pulls existing Confluence pages into silo claims. Uses Confluence REST API v2
+ * Publishes evidence compilation briefs and claim collections to Confluence pages,
+ * and pulls existing Confluence pages into memory claims. Uses Confluence REST API v2
  * via node:https (zero npm deps).
  *
  * Configuration:
@@ -42,7 +43,7 @@ export class Confluence {
    * Publish a set of claims as a Confluence page.
    *
    * @param {string} title - Page title
-   * @param {object[]} claims - Array of wheat-canonical claims
+   * @param {object[]} claims - Array of evidence-canonical claims
    * @param {object} opts
    * @param {string} opts.spaceKey - Override default space key
    * @param {string} opts.parentId - Parent page ID (optional)
@@ -50,6 +51,7 @@ export class Confluence {
    * @returns {Promise<{id: string, url: string, title: string, version: number}>}
    */
   async publish(title, claims, opts = {}) {
+    remoteMigration.assertRemoteMigrationReady(opts.dir,{workspace:opts.workspace,sourceId:opts.sourceId,newSource:opts.newSource,destination:{site:this.baseUrl,space:opts.spaceKey||this.spaceKey,pageId:opts.pageId}});
     this._requireConfig();
     const spaceKey = opts.spaceKey || this.spaceKey;
     if (!spaceKey)
@@ -97,7 +99,7 @@ export class Confluence {
   }
 
   /**
-   * List pages in a space that look like silo claim collections.
+   * List pages in a space that look like memory claim collections.
    *
    * @param {object} opts
    * @param {string} opts.spaceKey - Space key
@@ -105,12 +107,13 @@ export class Confluence {
    * @returns {Promise<{pages: object[]}>}
    */
   async listPages(opts = {}) {
+    remoteMigration.assertRemoteMigrationReady(opts.dir,{workspace:opts.workspace});
     this._requireConfig();
     const spaceKey = opts.spaceKey || this.spaceKey;
     if (!spaceKey) throw new Error("Space key required");
 
     const cql = encodeURIComponent(
-      `space="${_cqlEscape(spaceKey)}" AND label="silo-claims" ORDER BY lastModified DESC`,
+      `space="${_cqlEscape(spaceKey)}" AND label="grainulator-claims" ORDER BY lastModified DESC`,
     );
     const data = await this._request(
       "GET",
@@ -154,8 +157,8 @@ export class Confluence {
 </tr></thead>
 <tbody>${rows.join("\n")}</tbody>
 </table>
-<p><em>Published from silo on ${new Date().toISOString()}</em></p>
-<!-- silo-meta: ${JSON.stringify({ claimCount: claims.length, exportedAt: new Date().toISOString() })} -->`;
+<p><em>Published from Grainulator on ${new Date().toISOString()}</em></p>
+<!-- grainulator-meta: ${JSON.stringify({ claimCount: claims.length, exportedAt: new Date().toISOString() })} -->`;
   }
 
   _parseStorageFormat(html) {
@@ -209,7 +212,7 @@ export class Confluence {
       title,
       space: { key: spaceKey },
       body: { storage: { value: body, representation: "storage" } },
-      metadata: { labels: [{ name: "silo-claims" }] },
+      metadata: { labels: [{ name: "grainulator-claims" }] },
     };
     if (parentId) {
       payload.ancestors = [{ id: parentId }];

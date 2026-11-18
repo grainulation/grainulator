@@ -1,5 +1,5 @@
 /**
- * mill format: html-report
+ * exports format: html-report
  *
  * Self-contained HTML report with inline CSS (dark theme).
  * Claims grouped by type with colored badges, filterable via CSS class toggles.

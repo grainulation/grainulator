@@ -1,18 +1,18 @@
-# Mill Export Formats
+# Grainulator exports Export Formats
 
-Mill converts sprint artifacts into distributable output formats. Every format is a module in `lib/formats/`.
+Grainulator exports converts sprint artifacts into distributable output formats. Every format is a module in `lib/formats/`.
 
 ## Usage
 
 ```bash
-mill export --format <format> <file> [-o <output>]
-mill convert --from <format> --to <format> <file> [-o <output>]
-mill publish --target <target> <dir> [-o <output>]
+exports export --format <format> <file> [-o <output>]
+exports convert --from <format> --to <format> <file> [-o <output>]
+exports publish --target <target> <dir> [-o <output>]
 ```
 
 ## CLI Flags
 
-### `mill export`
+### `exports export`
 
 | Flag                   | Description                     |
 | ---------------------- | ------------------------------- |
@@ -20,7 +20,7 @@ mill publish --target <target> <dir> [-o <output>]
 | `-o <path>`            | Output file path                |
 | `--json`               | Machine-readable JSON output    |
 
-### `mill convert`
+### `exports convert`
 
 | Flag           | Description                  |
 | -------------- | ---------------------------- |
@@ -29,7 +29,7 @@ mill publish --target <target> <dir> [-o <output>]
 | `-o <path>`    | Output file path             |
 | `--json`       | Machine-readable JSON output |
 
-### `mill publish`
+### `exports publish`
 
 | Flag                    | Description                  |
 | ----------------------- | ---------------------------- |
@@ -41,10 +41,9 @@ mill publish --target <target> <dir> [-o <output>]
 
 | Command                                     | Description                                          |
 | ------------------------------------------- | ---------------------------------------------------- |
-| `mill formats`                              | List available formats (`--json` for machine output) |
-| `mill serve [--port 9094] [--source <dir>]` | Start the export workbench UI                        |
-| `mill serve-mcp`                            | Start the MCP server on stdio                        |
-| `mill --version`, `-v`                      | Print version                                        |
+| `exports formats`                              | List available formats (`--json` for machine output) |
+| `exports serve-mcp`                            | Start the MCP server on stdio                        |
+| `exports --version`, `-v`                      | Print version                                        |
 
 ## Available Formats (24)
 

@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Only the latest published minor version of each package receives security
+Only the latest published minor version of Grainulator receives security
 fixes. Older versions may be patched at maintainer discretion.
 
 | Version | Supported |
@@ -12,7 +12,7 @@ fixes. Older versions may be patched at maintainer discretion.
 
 ## Reporting a vulnerability
 
-If you believe you have found a security vulnerability in this package,
+If you believe you have found a security vulnerability in Grainulator,
 please report it privately so we can fix it before it is disclosed.
 
 Preferred: open a **Private vulnerability report** via GitHub Security

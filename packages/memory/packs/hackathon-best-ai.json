@@ -161,7 +161,7 @@
       "id": "hai-010",
       "type": "factual",
       "topic": "HackEval precedent",
-      "content": "HackEval keeps AI as assistant, not decision-maker: structured rubrics with blind scoring to reduce bias, but final decisions remain human. AI Judge (Devpost) takes the opposite approach with full automation. The wheat hackathon model should be the middle ground.",
+      "content": "HackEval keeps AI as assistant, not decision-maker: structured rubrics with blind scoring to reduce bias, but final decisions remain human. AI Judge (Devpost) takes the opposite approach with full automation. The Grainulator hackathon model should be the middle ground.",
       "source": {
         "origin": "research",
         "artifact": "https://www.scribd.com/document/973181548/HackEval-Full-Pitch",

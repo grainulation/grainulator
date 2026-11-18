@@ -156,7 +156,9 @@ describe("status: happy path (--json)", () => {
 		const payload = JSON.parse(stdout);
 		assert.equal(payload.question, "Is SSE the right fit?");
 		assert.equal(payload.phase, "research");
-		assert.ok(payload.status === "ready" || payload.status === "blocked");
+		assert.equal(payload.status, "unknown", "inspection does not compile missing evidence");
+		assert.equal(fs.existsSync(path.join(dir,"compilation.json")),false);
+		assert.equal(fs.existsSync(path.join(dir,".grainulator")),false);
 		assert.equal(payload.claims.total, 3);
 		assert.equal(payload.claims.active, 2);
 		assert.equal(payload.claims.superseded, 1);

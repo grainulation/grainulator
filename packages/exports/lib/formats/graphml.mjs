@@ -1,5 +1,5 @@
 /**
- * mill format: graphml
+ * exports format: graphml
  *
  * Converts compilation.json claims to GraphML XML.
  * Claims become nodes, shared-tag relationships become edges.

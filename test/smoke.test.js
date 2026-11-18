@@ -252,11 +252,10 @@ describe("WCAG scroll-snap-deck template", () => {
 		assert.ok(/clip:\s*rect\(0/.test(html), "sr-only missing clip property");
 	});
 
-	it("has gradient text fallback", () => {
-		assert.ok(
-			html.includes("@supports not (-webkit-background-clip: text)"),
-			"missing gradient text fallback",
-		);
+	it("keeps heading text visible without background clipping", () => {
+		assert.doesNotMatch(html, /background-clip:\s*text/);
+		assert.doesNotMatch(html, /text-fill-color:\s*transparent/);
+		assert.match(html, /text-fill-color:\s*currentColor/);
 	});
 
 	it('has <footer> with role="contentinfo"', () => {
@@ -344,11 +343,10 @@ describe("WCAG sidebar-brief template", () => {
 		);
 	});
 
-	it("has gradient text fallback", () => {
-		assert.ok(
-			html.includes("@supports not (-webkit-background-clip: text)"),
-			"missing gradient text fallback",
-		);
+	it("keeps heading text visible without background clipping", () => {
+		assert.doesNotMatch(html, /background-clip:\s*text/);
+		assert.doesNotMatch(html, /text-fill-color:\s*transparent/);
+		assert.match(html, /text-fill-color:\s*currentColor/);
 	});
 });
 

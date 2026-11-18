@@ -6,7 +6,7 @@ import { findSprintFiles } from "../../shared/lib/sprints.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Re-export so existing callers of orchard's dashboard.findSprintFiles keep working.
+// Re-export so existing callers of orchestration's dashboard.findSprintFiles keep working.
 export { findSprintFiles };
 
 /**
@@ -234,14 +234,7 @@ export function buildHtml(graphData) {
 }
 
 /**
- * Return paths to all claims.json files for watching.
- */
-export function claimsPaths(targetDir) {
-  return findSprintFiles(targetDir).map((s) => s.file);
-}
-
-/**
- * Generate a self-contained HTML dashboard file (for `orchard dashboard` CLI command).
+ * Generate a self-contained HTML dashboard file (for `orchestration dashboard` CLI command).
  */
 export function generateDashboard(config, root, outPath) {
   const graphData = loadSprints(root);

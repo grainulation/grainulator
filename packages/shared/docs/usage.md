@@ -1,76 +1,51 @@
-# barn usage
+# shared usage
 
-Barn is the template browser and sprint toolkit for the grainulation ecosystem. It serves a two-column UI for browsing templates and detecting active sprints, with zero npm dependencies.
+The shared component provides sprint discovery, report assets, and template-loading utilities. Its browser UI is retired; use the CLI tools below or `grainulator preview` for the research playground.
 
 ## Installation
 
 ```
-npm install -g @grainulation/barn
+npm install -g @grainulation/grainulator-shared
 ```
 
 Or run without installing:
 
 ```
-npx @grainulation/barn <command>
+grainulator utils <command>
 ```
 
 Requires Node 20+.
 
 ## Commands
 
-### barn serve
-
-Start the template browser UI.
-
-```
-barn serve [--port 9093] [--root /path/to/repo] [--cors <origin>] [--verbose]
-```
-
-### barn detect-sprints
+### shared detect-sprints
 
 Find sprint directories in a repository.
 
 ```
-barn detect-sprints [--json] [--active]
+shared detect-sprints [--json] [--active]
 ```
 
-### barn generate-manifest
+### shared generate-manifest
 
-Build a `wheat-manifest.json` topic map from the current repo.
+Build a `.grainulator/evidence/manifest.json` topic map from the current repo.
 
 ```
-barn generate-manifest [--root /path/to/repo]
+shared generate-manifest [--root /path/to/repo]
 ```
 
-### barn build-pdf
+### shared build-pdf
 
 Convert a markdown file to PDF (delegates to `npx md-to-pdf`).
 
 ```
-barn build-pdf <file.md>
+shared build-pdf <file.md>
 ```
 
 ## CLI flags
 
-| Flag              | Default | Description                   |
-| ----------------- | ------- | ----------------------------- |
-| `--port`          | `9093`  | HTTP server port              |
-| `--root`          | `cwd`   | Repository root path          |
-| `--cors`          | none    | Allowed CORS origin           |
-| `--verbose`, `-v` | off     | Log to stderr with timestamps |
-
-## API endpoints
-
-All endpoints are served by `barn serve`.
-
-| Method | Path                        | Description                                                   |
-| ------ | --------------------------- | ------------------------------------------------------------- |
-| GET    | `/events`                   | SSE event stream for live updates                             |
-| GET    | `/api/state`                | Current state (templates, sprints, manifest)                  |
-| GET    | `/api/template?name=<name>` | Template content by name                                      |
-| GET    | `/api/search?q=<query>`     | Search templates by name, description, placeholders, features |
-| POST   | `/api/refresh`              | Refresh state from disk                                       |
-| GET    | `/api/docs`                 | API documentation page                                        |
+`--verbose` logs command activity to stderr. Repository tools accept `--root`
+where documented. Browser-server flags and HTTP endpoints have been retired.
 
 ## Template metadata
 
@@ -96,7 +71,7 @@ All fields are optional. Auto-detected features (CSS grid, charts, cards, slides
 
 ## Design tokens
 
-Barn hosts the shared design token stylesheet for the grainulation ecosystem. Import it in any HTML template:
+Grainulator shared hosts the shared design token stylesheet for the grainulation ecosystem. Import it in any HTML template:
 
 ```html
 <link rel="stylesheet" href="grainulation-tokens.css" />
@@ -105,7 +80,7 @@ Barn hosts the shared design token stylesheet for the grainulation ecosystem. Im
 Activate a tool-specific accent scale with the `data-tool` attribute:
 
 ```html
-<html data-tool="wheat"></html>
+<html data-tool="evidence"></html>
 ```
 
 Three-layer token architecture:
@@ -114,10 +89,10 @@ Three-layer token architecture:
 2. **Semantic** -- accent (mapped to active tool), status colors, feedback colors
 3. **Tool scales** -- per-tool 5-weight accent ramp (50/200/400/600/800)
 
-Available tool accents: `barn` (rose), `wheat` (amber), `grainulation` (neutral).
+Available tool accents: `shared` (rose), `evidence` (amber), `grainulation` (neutral).
 
 ## Links
 
-- Homepage: https://barn.grainulation.com
-- Repository: https://github.com/grainulation/barn
-- Issues: https://github.com/grainulation/barn/issues
+- Homepage: https://grainulator.dev
+- Repository: https://github.com/grainulation/grainulator
+- Issues: https://github.com/grainulation/grainulator/issues

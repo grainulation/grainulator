@@ -1,5 +1,5 @@
 {
-	"schema_version": "trace/v0",
+	"schema_version": "grainulator.runtime.trace.v1",
 	"run_id": "run-0002",
 	"goal": "g2",
 	"started_at": 1,

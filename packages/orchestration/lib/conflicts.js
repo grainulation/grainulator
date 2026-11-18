@@ -215,7 +215,7 @@ export function printConflicts(config, root, opts = {}) {
 
 /**
  * Scan for cross-sprint conflicts by scanning a directory tree for claims.json files.
- * Does not require orchard.json -- discovers sprints automatically.
+ * Does not require grainulator.config.json -- discovers sprints automatically.
  *
  * @param {string} rootDir - Root directory to scan for sprint subdirectories
  * @param {object} [opts] - Options

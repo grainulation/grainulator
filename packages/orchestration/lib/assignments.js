@@ -1,8 +1,9 @@
+import { updatePortfolio } from "./project-config.js";
 import fs from "node:fs";
 import path from "node:path";
 
 /**
- * Assign a person to a sprint. Updates orchard.json.
+ * Assign a person to a sprint. Updates grainulator.config.json.
  */
 export function assignSprint(config, root, sprintPath, person) {
   const sprint = (config.sprints || []).find((s) => s.path === sprintPath);
@@ -19,10 +20,7 @@ export function assignSprint(config, root, sprintPath, person) {
   const prev = sprint.assigned_to;
   sprint.assigned_to = person;
 
-  const configPath = path.join(root, "orchard.json");
-  const tmp = configPath + ".tmp." + process.pid;
-  fs.writeFileSync(tmp, JSON.stringify(config, null, 2) + "\n");
-  fs.renameSync(tmp, configPath);
+  updatePortfolio(root, fresh => ({...fresh, sprints:(fresh.sprints||[]).map(item=>item.path===sprintPath?{...item,assigned_to:person}:item)}));
 
   if (prev) {
     console.log(

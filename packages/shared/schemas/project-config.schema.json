@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:grainulator:project-config:1",
+  "title": "Grainulator project configuration",
+  "type": "object",
+  "required": [
+    "schema_version"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "evidence": {
+      "type": "object",
+      "properties": {
+        "dirs": {
+          "type": "object",
+          "properties": {
+            "output": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "research": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "prototypes": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "templates": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          }
+        },
+        "compiler": {
+          "type": "object",
+          "properties": {
+            "claims": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "compilation": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          }
+        }
+      }
+    },
+    "orchestration": {
+      "type": "object",
+      "properties": {
+        "sprints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "path"
+            ],
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "settings": {
+          "type": "object"
+        }
+      }
+    },
+    "runtime": {
+      "type": "object"
+    }
+  }
+}

@@ -6,8 +6,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-const bin = fileURLToPath(new URL("../bin/wheat.js", import.meta.url));
-const commands = ["init", "quickstart", "compile", "add", "search", "resolve", "guard", "status", "stats", "update", "serve", "mcp", "migrate"];
+const bin = fileURLToPath(new URL("../../../bin/grainulator.js", import.meta.url));
+const commands = ["init", "compile", "add", "search", "resolve", "guard", "status", "stats", "mcp"];
 
 function snapshot(dir) {
 	return fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name)).flatMap((entry) => {
@@ -55,6 +55,6 @@ test("unknown help requests cannot fall through to legacy verb-less initializati
 	t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
 	const result = spawnSync(process.execPath, [bin, "unknown-question", "--help", "--dir", dir], { cwd: dir, encoding: "utf8", timeout: 5000 });
 	assert.equal(result.status, 1);
-	assert.match(result.stderr, /unknown command/);
+	assert.match(result.stderr, /unknown command/i);
 	assert.deepEqual(fs.readdirSync(dir), []);
 });

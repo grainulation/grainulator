@@ -1,8 +1,8 @@
 {
 	"$schema": "http://json-schema.org/draft-07/schema#",
-	"$id": "https://github.com/grainulation/bean/schemas/trace.schema.json",
-	"title": "bean run trace artifact (v0)",
-	"description": "Stable post-run record emitted by bean-run to .bean/runs/<run_id>.json. v0 is an EMIT-ONLY artifact: it lets future tooling analyze runs without scraping transcripts. It does NOT make bean learn across tasks — no memory mutation, prompt rewriting, or cross-run optimization. The top-level shape is FIXED: unknown top-level keys are rejected; additive/experimental fields go under `metadata`.",
+	"$id": "urn:grainulator:runtime:trace:1",
+	"title": "Grainulator runtime trace (v1)",
+	"description": "Stable post-run record emitted by grainulator-runtime-run to .grainulator/runtime/runs/<run_id>.json. v0 is an EMIT-ONLY artifact: it lets future tooling analyze runs without scraping transcripts. It does NOT make Grainulator learn across tasks — no memory mutation, prompt rewriting, or cross-run optimization. The top-level shape is FIXED: unknown top-level keys are rejected; additive/experimental fields go under `metadata`.",
 	"type": "object",
 	"required": [
 		"schema_version",
@@ -23,7 +23,7 @@
 	],
 	"additionalProperties": false,
 	"properties": {
-		"schema_version": { "const": "trace/v0" },
+		"schema_version": { "const": "grainulator.runtime.trace.v1" },
 		"run_id": {
 			"type": "string",
 			"description": "Unique per run, e.g. run-<nanos-since-epoch>."
@@ -47,7 +47,7 @@
 		},
 		"certificate": {
 			"type": "string",
-			"description": "Final convergence certificate from bean-check."
+			"description": "Final convergence certificate from grainulator-runtime-check."
 		},
 		"rounds": {
 			"type": "integer",
@@ -77,7 +77,7 @@
 		},
 		"verifier_verdicts": {
 			"type": "array",
-			"description": "The scrubbed verdicts bean-verify deposited under .bean/verdicts/, embedded verbatim.",
+			"description": "The scrubbed verdicts grainulator-runtime-verify deposited under .grainulator/runtime/verdicts/, embedded verbatim.",
 			"items": { "type": "object" }
 		},
 		"residuals": {

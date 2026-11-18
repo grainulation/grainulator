@@ -1,6 +1,6 @@
 {
 	"name": "grainulator",
-	"version": "2.4.0",
+	"version": "3.0.0",
 	"description": "Evidence and verification for model-assisted work. Portable workflows, a unified MCP interface, and clear next actions.",
 	"author": {
 		"name": "Grainulation"
@@ -11,8 +11,8 @@
 	"mcpServers": "./.mcp.json",
 	"userConfig": {
 		"tips_level": {
-			"title": "Background Tips Level",
-			"description": "Background tips level: on (all tips), quiet (conflicts only), off (disabled)",
+			"title": "Next-action hints level",
+			"description": "Post-mutation next-action hints: on (all next steps), quiet (compiler blockers only), off (disabled)",
 			"type": "string",
 			"sensitive": false
 		}

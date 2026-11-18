@@ -16,7 +16,7 @@ allowed-tools:
 
 # /setup — Configure Grainulator
 
-Locate the installed checkout and run `node <checkout>/bin/grainulator.js doctor`. Node.js 24 or later is required; Node 25 is the local default. This checks local components without changing global host settings.
+Locate the installed checkout and run `node <checkout>/bin/grainulator.js doctor`. Node.js 24 or later is required; Node 24 is the local default. This checks local components without changing global host settings.
 
 For a 1.x upgrade or stale tools after an update, read `../../docs/UPGRADING.md`. Identify the actual loaded plugin/cache and installation scope before troubleshooting. A marketplace refresh, plugin update, and host restart are separate actions. Inspect pins and duplicate scopes; preserve host security wrappers and user configuration. Hidden old tool-name aliases work only on the new `grainulator` server, not the old server IDs or remote DeepWiki tool contract. Review stale generated Farmer instructions with the user’s scope in mind; do not rewrite unrelated `CLAUDE.md` rules or remove their research data.
 

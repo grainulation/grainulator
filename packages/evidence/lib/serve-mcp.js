@@ -1,48 +1,15 @@
 import { importClaims } from "./import-claims.js";
 import { withoutElements, htmlText } from "../../shared/lib/html.cjs";
-/**
- * wheat serve-mcp -- Local MCP server for Claude Code
- *
- * Exposes wheat compiler tools and resources over stdio transport
- * using the MCP JSON-RPC protocol. Zero npm dependencies.
- *
- * Tools:
- *   wheat/compile   -- Run the compiler, return status + warnings
- *   wheat/add-claim -- Append a typed claim to claims.json
- *   wheat/resolve   -- Adjudicate a specific conflict
- *   wheat/search    -- Query claims by topic, type, evidence tier
- *   wheat/status    -- Return compilation summary
- *   wheat/init      -- Initialize a new research sprint
- *   wheat/deepwiki  -- Fetch DeepWiki docs for a public GitHub repo
- *   wheat/sync-log  -- View sync/publish history
- *
- * Resources:
- *   wheat://compilation -- Current compilation.json
- *   wheat://claims      -- Current claims.json
- *   wheat://brief       -- Latest brief (output/brief.html)
- *   wheat://sync-log    -- Sync/publish history
- *
- * Protocol: MCP over stdio (JSON-RPC 2.0, newline-delimited)
- *
- * Install (recommended):
- *   claude mcp add wheat -- npx -y -p @grainulation/wheat wheat-mcp
- *
- * Legacy (still works, but routes through CLI dispatch):
- *   claude mcp add wheat -- npx @grainulation/wheat mcp
- *
- * Zero npm dependencies.
- */
+/** Private Grainulator evidence MCP handlers; only the root server owns stdio/discovery. */
 
-import { execFileSync } from "node:child_process";
+import { initializeSprint } from "../../../lib/sprint-init.js";
 import fs from "node:fs";
 import https from "node:https";
 import path from "node:path";
-import readline from "node:readline";
 import { fileURLToPath } from "node:url";
-import { installCrashHandlers } from "../../shared/lib/mcp-crash.js";
 import { jsonRpcError, jsonRpcResponse } from "../../shared/lib/mcp.js";
 import { isInsideDir } from "../../shared/lib/paths.js";
-import { compile } from "../compiler/wheat-compiler.js";
+import { compile } from "../compiler/evidence-compiler.js";
 import nextActionsModule from "./next-actions.cjs";
 import {
 	addClaim,
@@ -59,7 +26,7 @@ const __dirname = path.dirname(__filename);
 
 // --- Constants ---------------------------------------------------------------
 
-const SERVER_NAME = "wheat";
+const SERVER_NAME = "grainulator";
 const SERVER_VERSION = JSON.parse(
 	fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf8"),
 ).version;
@@ -114,58 +81,7 @@ function toolStatus(dir) {
 	return getStatus(dir);
 }
 
-function toolInit(dir, args) {
-	const paths = resolvePaths(dir);
-
-	if (!args.question) {
-		return { status: "error", message: "Required field: question" };
-	}
-
-	if (fs.existsSync(paths.claims) && !args.force) {
-		return {
-			status: "error",
-			message:
-				"Sprint already exists (claims.json found). Pass force: true to reinitialize.",
-		};
-	}
-
-	const initArgs = [
-		path.join(__dirname, "..", "bin", "wheat.js"),
-		"init",
-		"--headless",
-		"--question",
-		args.question,
-		"--audience",
-		args.audience || "self",
-		"--constraints",
-		args.constraints || "none",
-		"--done",
-		args.done || "A recommendation with evidence",
-		"--dir",
-		dir,
-	];
-
-	if (args.force) initArgs.push("--force");
-
-	try {
-		const output = execFileSync("node", initArgs, {
-			cwd: dir,
-			encoding: "utf8",
-			timeout: 15000,
-			stdio: ["pipe", "pipe", "pipe"],
-		});
-		return {
-			status: "ok",
-			message: "Sprint initialized.",
-			output: output.trim(),
-		};
-	} catch (err) {
-		return {
-			status: "error",
-			message: (err.stderr || err.stdout || err.message).trim(),
-		};
-	}
-}
+function toolInit(dir,args) { return initializeSprint(dir,args); }
 
 function toolDeepwiki(_dir, args) {
 	const repo = args.repo;
@@ -173,7 +89,7 @@ function toolDeepwiki(_dir, args) {
 		return {
 			status: "error",
 			message:
-				'Required: repo in "org/name" format (e.g., "grainulation/wheat")',
+				'Required: repo in "org/name" format (e.g., "grainulation/evidence")',
 		};
 	}
 
@@ -312,16 +228,16 @@ const DIR_PARAM = {
 
 const TOOLS = [
 	{
-		name: "wheat/compile",
+		name: "compile",
 		description:
-			"Run the wheat compiler on claims.json. Returns compilation status, warnings, errors, and next_actions grouped into auto and manual. For a next-steps request, the entire reply must be only Auto and Manual bullet lists, without preamble or status recap.",
+			"Run the evidence compiler on claims.json. Returns compilation status, warnings, errors, and next_actions grouped into auto and manual. For a next-steps request, the entire reply must be only Auto and Manual bullet lists, without preamble or status recap.",
 		inputSchema: {
 			type: "object",
 			properties: { dir: DIR_PARAM },
 		},
 	},
 	{
-		name: "wheat/add-claim",
+		name: "add_claim",
 		description:
 			"Append a typed claim to claims.json. Validates type, evidence tier, and checks for duplicate IDs.",
 		inputSchema: {
@@ -426,7 +342,7 @@ const TOOLS = [
 		},
 	},
 	{
-		name: "wheat/import-claims",
+		name: "import_claims",
 		description:
 			"Import active document findings atomically with stable source IDs; skip inactive records, preserve source provenance and use stated evidence. Repeated imports are idempotent; changed source records require review. Not a ledger restore.",
 		inputSchema: {
@@ -456,7 +372,7 @@ const TOOLS = [
 		},
 	},
 	{
-		name: "wheat/resolve",
+		name: "resolve",
 		description:
 			"Resolve a conflict between two claims. The winner stays active; the loser is superseded.",
 		inputSchema: {
@@ -474,7 +390,7 @@ const TOOLS = [
 		},
 	},
 	{
-		name: "wheat/search",
+		name: "search",
 		description:
 			"Search active claims by topic, type, evidence tier, or free-text query.",
 		inputSchema: {
@@ -512,7 +428,7 @@ const TOOLS = [
 		},
 	},
 	{
-		name: "wheat/status",
+		name: "status",
 		description:
 			"Get sprint status: question, phase, claim counts, topic count, compilation status.",
 		inputSchema: {
@@ -521,7 +437,7 @@ const TOOLS = [
 		},
 	},
 	{
-		name: "wheat/init",
+		name: "init",
 		description:
 			"Initialize a new research sprint. Creates claims.json, CLAUDE.md, and slash commands.",
 		inputSchema: {
@@ -554,7 +470,7 @@ const TOOLS = [
 		},
 	},
 	{
-		name: "wheat/deepwiki",
+		name: "deepwiki",
 		description:
 			"Fetch AI-generated documentation from DeepWiki for a public GitHub repo. Returns architecture overview, component descriptions, and section structure. Use with /pull to extract claims.",
 		inputSchema: {
@@ -564,14 +480,14 @@ const TOOLS = [
 				repo: {
 					type: "string",
 					description:
-						'GitHub repo in "org/name" format (e.g., "grainulation/wheat")',
+						'GitHub repo in "org/name" format (e.g., "grainulation/evidence")',
 				},
 			},
 			required: ["repo"],
 		},
 	},
 	{
-		name: "wheat/sync-log",
+		name: "sync_log",
 		description:
 			"View the sync history — records of when sprint artifacts were published to Confluence, Slack, or other targets.",
 		inputSchema: {
@@ -583,27 +499,27 @@ const TOOLS = [
 
 const RESOURCES = [
 	{
-		uri: "wheat://compilation",
+		uri: "grainulator://compilation",
 		name: "Compilation Output",
 		description:
-			"Current compilation.json -- the checked, certified output from the wheat compiler.",
+			"Current compilation.json -- the checked, certified output from the evidence compiler.",
 		mimeType: "application/json",
 	},
 	{
-		uri: "wheat://claims",
+		uri: "grainulator://claims",
 		name: "Claims Data",
 		description: "Current claims.json -- all typed claims in the sprint.",
 		mimeType: "application/json",
 	},
 	{
-		uri: "wheat://brief",
+		uri: "grainulator://brief",
 		name: "Decision Brief",
 		description:
 			"Latest compiled brief (output/brief.html) -- self-contained HTML.",
 		mimeType: "text/html",
 	},
 	{
-		uri: "wheat://sync-log",
+		uri: "grainulator://sync-log",
 		name: "Sync History",
 		description:
 			"Log of sprint artifact publishes to Confluence, Slack, Notion, etc.",
@@ -655,31 +571,31 @@ async function handleRequest(dir, method, params, id) {
 			let result;
 
 			switch (toolName) {
-				case "wheat/compile":
+				case "compile":
 					result = toolCompile(effectiveDir);
 					break;
-				case "wheat/import-claims":
+				case "import_claims":
 					result = importClaims(effectiveDir, toolArgs);
 					break;
-				case "wheat/add-claim":
+				case "add_claim":
 					result = toolAddClaim(effectiveDir, toolArgs);
 					break;
-				case "wheat/resolve":
+				case "resolve":
 					result = toolResolve(effectiveDir, toolArgs);
 					break;
-				case "wheat/search":
+				case "search":
 					result = toolSearch(effectiveDir, toolArgs);
 					break;
-				case "wheat/status":
+				case "status":
 					result = toolStatus(effectiveDir);
 					break;
-				case "wheat/init":
+				case "init":
 					result = toolInit(effectiveDir, toolArgs);
 					break;
-				case "wheat/deepwiki":
+				case "deepwiki":
 					result = await toolDeepwiki(effectiveDir, toolArgs);
 					break;
-				case "wheat/sync-log":
+				case "sync_log":
 					result = toolSyncLog(effectiveDir);
 					break;
 				default:
@@ -702,19 +618,19 @@ async function handleRequest(dir, method, params, id) {
 			let filePath, mimeType;
 
 			switch (uri) {
-				case "wheat://compilation":
+				case "grainulator://compilation":
 					filePath = paths.compilation;
 					mimeType = "application/json";
 					break;
-				case "wheat://claims":
+				case "grainulator://claims":
 					filePath = paths.claims;
 					mimeType = "application/json";
 					break;
-				case "wheat://brief":
+				case "grainulator://brief":
 					filePath = paths.brief;
 					mimeType = "text/html";
 					break;
-				case "wheat://sync-log":
+				case "grainulator://sync-log":
 					filePath = path.join(dir, "output", "sync-log.json");
 					mimeType = "application/json";
 					break;
@@ -757,109 +673,4 @@ async function handleRequest(dir, method, params, id) {
 
 // --- Stdio transport ---------------------------------------------------------
 
-function startServer(dir) {
-	const rl = readline.createInterface({
-		input: process.stdin,
-		terminal: false,
-	});
-
-	// Disable output buffering on stdout
-	if (process.stdout._handle && process.stdout._handle.setBlocking) {
-		process.stdout._handle.setBlocking(true);
-	}
-
-	// --- Top-level crash handlers -------------------------------------------
-	// Async errors OFF the request path (setTimeout, event emitters, stream
-	// errors) bypass the per-request try/catch. Delegate to barn's shared
-	// mcp-crash helper so every Grainulation MCP server has identical
-	// crash-logging semantics (structured JSON on stderr, exit 1, test hook
-	// via BARN_MCP_CRASH_TEST). Registered inside startServer (not at module
-	// top) because this file is also exported as a library (@grainulation/
-	// wheat/mcp); library consumers should not inherit our exit semantics.
-	installCrashHandlers({ service: "wheat", version: SERVER_VERSION });
-
-	rl.on("line", async (line) => {
-		if (!line.trim()) return;
-
-		let msg;
-		try {
-			msg = JSON.parse(line);
-		} catch {
-			const resp = jsonRpcError(null, -32700, "Parse error");
-			process.stdout.write(resp + "\n");
-			return;
-		}
-
-		try {
-			const response = await handleRequest(
-				dir,
-				msg.method,
-				msg.params || {},
-				msg.id,
-			);
-
-			// Notifications don't get responses
-			if (response !== null) {
-				process.stdout.write(response + "\n");
-			}
-		} catch (err) {
-			const resp = jsonRpcError(
-				msg.id ?? null,
-				-32603,
-				`Internal error: ${err.message}`,
-			);
-			process.stdout.write(resp + "\n");
-		}
-	});
-
-	// Keep the server alive — don't exit on stdin close.
-	// Claude Code's plugin transport may briefly close/reopen stdin.
-	process.stdin.on("end", () => {
-		process.exit(0);
-	});
-
-	// Log to stderr (stdout is reserved for JSON-RPC)
-	process.stderr.write(`wheat MCP server v${SERVER_VERSION} ready on stdio\n`);
-	process.stderr.write(`  Target directory: ${dir}\n`);
-	process.stderr.write(
-		`  Tools: ${TOOLS.length} | Resources: ${RESOURCES.length}\n`,
-	);
-}
-
-// --- CLI handler -------------------------------------------------------------
-
-export async function run(dir, args) {
-	if (args.includes("--help") || args.includes("-h")) {
-		console.log(`wheat mcp -- Local MCP server for Claude Code
-
-Usage:
-  wheat-mcp [--dir <path>]      (recommended)
-  wheat mcp [--dir <path>]      (legacy, still works)
-
-Install in Claude Code:
-  claude mcp add wheat -- npx -y -p @grainulation/wheat wheat-mcp
-
-Tools exposed:
-  wheat/compile     Run the compiler
-  wheat/add-claim   Append a typed claim
-  wheat/resolve     Resolve a conflict
-  wheat/search      Search claims
-  wheat/status      Sprint status
-  wheat/init        Initialize a new sprint
-  wheat/deepwiki    Fetch DeepWiki docs for a GitHub repo
-  wheat/sync-log    View sync/publish history
-
-Resources exposed:
-  wheat://compilation   compilation.json
-  wheat://claims        claims.json
-  wheat://brief         output/brief.html
-  wheat://sync-log      output/sync-log.json
-
-Protocol: MCP over stdio (JSON-RPC 2.0, newline-delimited)`);
-		return;
-	}
-
-	startServer(dir);
-}
-
-export { handleRequest, RESOURCES, startServer, TOOLS };
+export { handleRequest, RESOURCES, TOOLS };

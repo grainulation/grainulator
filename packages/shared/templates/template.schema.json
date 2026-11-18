@@ -26,16 +26,16 @@
           "format": { "type": "string" }
         }
       },
-      "description": "Mill export presets — defines how this template can be exported (consumed by mill)"
+      "description": "Grainulator exports export presets — defines how this template can be exported (consumed by exports)"
     },
     "seedPacks": {
       "type": "array",
       "items": { "type": "string" },
-      "description": "Silo knowledge packs to pre-load when instantiating this template (consumed by silo)"
+      "description": "Grainulator memory knowledge packs to pre-load when instantiating this template (consumed by memory)"
     },
     "scaffoldConfig": {
       "type": "object",
-      "description": "Orchard scaffold configuration — how to bootstrap a new sprint from this template (consumed by orchard)"
+      "description": "Grainulator orchestration scaffold configuration — how to bootstrap a new sprint from this template (consumed by orchestration)"
     }
   }
 }

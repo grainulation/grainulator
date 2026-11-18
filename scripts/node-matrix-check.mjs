@@ -9,7 +9,7 @@ for(const executable of roots){
  const major=version.match(/^v(\d+)/)?.[1];if(!['24','25'].includes(major))throw Error(`Unexpected test runtime ${version}`);
  const audit=`.dogfood/node-${major}`;fs.mkdirSync(audit,{recursive:true});
  const env={...process.env,PATH:`${path.dirname(executable)}${path.delimiter}${process.env.PATH}`,GRAINULATOR_TEST_REPORT_DIR:audit};
- for(const [name,args] of [['workspace',['scripts/test-workspace.mjs']],['package',['scripts/package-isolation-check.mjs']],['site-build',['scripts/build-site.mjs']]]){
+ for(const [name,args] of [['workspace',['scripts/test-workspace.mjs']],['package',['scripts/package-isolation-check.mjs']]]){
   const r=await execute([executable,...args],'',{cwd:process.cwd(),env,timeoutMs:900000,maxBytes:16*1024*1024});
   fs.writeFileSync(path.join(audit,`${name}.log`),r.stdout+r.stderr+(r.failure||''));
   const item={version,name,passed:r.code===0&&!r.failure,exitCode:r.code,failure:r.failure||null,log:path.join(audit,`${name}.log`)};

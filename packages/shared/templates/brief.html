@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{TITLE}} — Decision Brief</title>
 <style>
-  /* barn/templates/brief.html — one-page decision document
+  /* shared/templates/brief.html — one-page decision document
      System font stack, no external dependencies, fully self-contained. */
 
   :root {
-    --bg: #0a0e1a;
-    --bg2: #111827;
-    --bg3: #1e293b;
+    --bg: #141415;
+    --bg2: #19191b;
+    --bg3: #232325;
     --accent: #3b82f6;
     --accent-light: #60a5fa;
     --green: #22c55e;
@@ -19,14 +19,14 @@
     --red: #e11d48;
     --purple: #a78bfa;
     --pink: #f472b6;
-    --text: #f1f5f9;
-    --text-muted: #94a3b8;
-    --text-dim: #64748b;
+    --text: #ededed;
+    --text-muted: #a1a1a6;
+    --text-dim: #85858b;
     --border: rgba(255,255,255,0.06);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { height: 100%; scroll-behavior: smooth; scroll-snap-type: y mandatory; overflow-y: scroll; }
+  html { height: 100%; scroll-behavior: smooth; scroll-snap-type: none; overflow-y: scroll; }
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
@@ -38,58 +38,49 @@
   }
 
   section {
-    min-height: 100vh;
+    min-height: auto;
     padding: 60px 80px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     scroll-snap-align: start;
     position: relative;
   }
 
-  section::before {
-    content: '';
-    position: absolute;
-    top: 0; right: 0;
-    width: 40%; height: 100%;
-    background: radial-gradient(ellipse at top right, rgba(59,130,246,0.06) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
   h1 {
     font-size: 36pt;
-    font-weight: 800;
-    letter-spacing: -0.03em;
+    font-weight: 500;
+    letter-spacing: 0;
     line-height: 1.1;
     margin-bottom: 12px;
-    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    background: none; color: inherit;
+
+    -webkit-text-fill-color: currentColor;
   }
 
   h2 {
     font-size: 24pt;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    font-weight: 600;
+    letter-spacing: 0;
     margin-bottom: 20px;
     color: #fff;
   }
 
-  .section-label {
+  .section-label { align-self: flex-start;
     display: inline-block;
     font-size: 9pt;
     font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--accent-light);
-    background: rgba(59,130,246,0.12);
-    padding: 4px 12px;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--text-muted);
+    background: none;
+    padding: 0;
     border-radius: 4px;
     margin-bottom: 16px;
   }
 
-  .subtitle { font-size: 16pt; color: var(--text-muted); font-weight: 300; max-width: 70%; margin-bottom: 24px; }
-  .sprint-meta { display: flex; gap: 24px; color: var(--text-dim); font-size: 10pt; margin-top: 12px; }
+  .subtitle { font-size: 16pt; color: var(--text-muted); font-weight: 400; max-width: 70%; margin-bottom: 24px; }
+  .sprint-meta { display: flex; gap: 24px; color: var(--text-dim); font-size: 11pt; margin-top: 12px; }
   .sprint-meta strong { color: var(--text-muted); }
 
   .question-block {
@@ -115,9 +106,9 @@
 
   .claim-group-header {
     font-size: 9pt;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
     margin-bottom: 12px;
     padding-bottom: 8px;
     border-bottom: 1px solid var(--border);
@@ -133,13 +124,13 @@
   .claim-item {
     padding: 8px 0;
     border-bottom: 1px solid var(--border);
-    font-size: 10pt;
+    font-size: 11pt;
     color: var(--text-muted);
     line-height: 1.4;
   }
 
   .claim-item:last-child { border-bottom: none; }
-  .claim-item code { font-size: 8pt; color: var(--text-dim); margin-right: 6px; }
+  .claim-item code { font-size: 9pt; color: var(--text-dim); margin-right: 8px; }
 
   .evidence-track {
     display: flex;
@@ -153,22 +144,22 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 8pt;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    font-size: 9pt;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
     color: rgba(255,255,255,0.9);
     min-width: 40px;
   }
 
-  .evidence-segment.production { background: linear-gradient(90deg, #22c55e, #16a34a); }
-  .evidence-segment.tested { background: linear-gradient(90deg, #3b82f6, #2563eb); }
-  .evidence-segment.documented { background: linear-gradient(90deg, #a78bfa, #7c3aed); }
-  .evidence-segment.web { background: linear-gradient(90deg, #f59e0b, #d97706); }
-  .evidence-segment.stated { background: linear-gradient(90deg, #64748b, #475569); }
+  .evidence-segment.production { background: #15803d; }
+  .evidence-segment.tested { background: #2563eb; }
+  .evidence-segment.documented { background: #7c3aed; }
+  .evidence-segment.web { background: #92400e; }
+  .evidence-segment.stated { background: #475569; }
 
   .legend { display: flex; gap: 20px; flex-wrap: wrap; }
-  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 9pt; color: var(--text-dim); }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 9pt; color: var(--text-dim); }
   .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
 
   .recommendation-card {
@@ -183,8 +174,8 @@
 
   .confidence-bar { display: flex; align-items: center; gap: 12px; margin-top: 20px; }
   .confidence-track { flex: 1; height: 8px; background: var(--bg3); border-radius: 4px; overflow: hidden; max-width: 300px; }
-  .confidence-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--green)); }
-  .confidence-label { font-size: 10pt; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .confidence-fill { height: 100%; border-radius: 4px; background: var(--accent); }
+  .confidence-label { font-size: 11pt; font-weight: 600; color: var(--text-muted); text-transform: none; letter-spacing: 0; }
 
   .brief-footer {
     display: flex;
@@ -197,7 +188,7 @@
     color: var(--text-dim);
   }
 
-  .brief-footer .hash { font-family: monospace; font-size: 8pt; }
+  .brief-footer .hash { font-family: monospace; font-size: 9pt; }
 
   nav[aria-label="sections"] {
     position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
@@ -206,10 +197,10 @@
 
   nav[aria-label="sections"] a {
     width: 8px; height: 8px; border-radius: 50%;
-    background: var(--text-dim); display: block; transition: all 0.2s;
+    background: var(--text-dim); display: block; transition: color 160ms ease-out, background-color 160ms ease-out;
   }
 
-  nav[aria-label="sections"] a:hover { background: var(--accent); transform: scale(1.5); }
+  nav[aria-label="sections"] a:hover { background: var(--accent);  }
 
   @media (max-width: 768px) {
     section { padding: 32px 20px; height: auto; }
@@ -233,6 +224,25 @@
     .claim-group, .recommendation-card { background: #f5f5f5; border-color: #ddd; }
     nav[aria-label="sections"] { display: none; }
   }
+
+  /* Evidence documents keep their data prominent and controls quiet. */
+  body { font-variant-numeric: tabular-nums; }
+  strong, b { font-weight: 600; }
+  :focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+  @media (prefers-reduced-motion: reduce) {
+    html, body { scroll-behavior: auto; scroll-snap-type: none; }
+  }
+
+  @media print {
+    :root {
+      --bg: #fff; --bg-dark: #fff; --bg2: #f5f5f5; --bg3: #e5e5e5;
+      --bg-card: #f5f5f5; --bg-card-alt: #ededed; --bg-card-hover: #e5e5e5;
+      --text: #171717; --text-muted: #404040; --text-dim: #525252;
+      --accent: #1d4ed8; --accent-light: #1d4ed8; --border: #d4d4d4;
+      --green: #166534; --red: #b91c1c; --orange: #92400e; --purple: #6d28d9; --pink: #9d174d;
+    }
+    h1, h2, h3, h4 { color: #171717; -webkit-text-fill-color: currentColor; }
+  }
 </style>
 </head>
 <body>
@@ -245,7 +255,7 @@
 </nav>
 
 <section id="executive" aria-label="Executive Summary">
-  <span class="section-label">Decision Brief</span>
+  <span class="section-label">Decision brief</span>
   <h1>{{TITLE}}</h1>
   <p class="subtitle">{{SUBTITLE}}</p>
   <div class="sprint-meta">
@@ -255,16 +265,16 @@
 </section>
 
 <section id="findings" aria-label="Key Findings">
-  <span class="section-label">Key Findings</span>
-  <h2>Claims by Type</h2>
+  <span class="section-label">Key findings</span>
+  <h2>Claims by type</h2>
   <div class="claims-grid">
     {{CLAIMS_BY_TYPE}}
   </div>
 </section>
 
 <section id="evidence" aria-label="Evidence Coverage">
-  <span class="section-label">Evidence Coverage</span>
-  <h2>Tier Distribution</h2>
+  <span class="section-label">Evidence coverage</span>
+  <h2>Tier distribution</h2>
   <div class="evidence-track">
     {{EVIDENCE_SUMMARY}}
   </div>
@@ -273,13 +283,13 @@
     <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div> Tested</div>
     <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div> Documented</div>
     <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div> Web</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#64748b"></div> Stated</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#85858b"></div> Stated</div>
   </div>
 </section>
 
 <section id="recommendation" aria-label="Recommendation">
   <span class="section-label">Recommendation</span>
-  <h2>What We Recommend</h2>
+  <h2>Recommendation</h2>
   <div class="recommendation-card">
     <p>{{RECOMMENDATION}}</p>
     <div class="confidence-bar">

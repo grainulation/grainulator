@@ -1,7 +1,7 @@
 /**
  * Prediction vs outcome scoring.
  *
- * Compares estimate claims against calibrate claims (from wheat's /calibrate).
+ * Compares estimate claims against calibrate claims (from evidence's /calibrate).
  * Answers: "How often were our estimates right?"
  *
  * Scoring:

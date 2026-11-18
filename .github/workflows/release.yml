@@ -1,78 +1,52 @@
 name: Release
-
-# Auto-create a GitHub Release whenever a v* tag is pushed.
-# Pulls release notes from the matching CHANGELOG.md section.
-
+# Pushing a v3 tag is the separately authorized publication action.
+# Candidate jobs test frozen bytes before this job attaches those same bytes.
 on:
   push:
-    tags:
-      - "v*"
-
+    tags: ["v3.*"]
 permissions:
   contents: read
-
 jobs:
   verify:
     uses: ./.github/workflows/ci.yml
     permissions:
       contents: read
       security-events: write
-  release:
-    needs: verify
-    runs-on: ubuntu-latest
+  candidates:
+    uses: ./.github/workflows/candidates.yml
+  publish:
+    name: Publish exact passing candidate assets
+    needs: [verify, candidates]
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          fetch-depth: 1
-          ref: ${{ github.ref }}
-
-      - name: Extract changelog section for this tag
-        id: changelog
-        run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          # CHANGELOG uses Keep a Changelog format: "## [X.Y.Z] - YYYY-MM-DD"
-          # Extract the section between that header and the next "## " header.
-          awk -v ver="$VERSION" '
-            BEGIN { found = 0 }
-            /^## / {
-              if (found) exit
-              # Match "## [X.Y.Z]" or "## X.Y.Z"
-              if ($0 ~ ("^## \\[?" ver "\\]?") ) { found = 1; next }
-            }
-            found { print }
-          ' CHANGELOG.md > release-notes.md
-          # Trim leading/trailing blank lines
-          sed -i '/./,$!d' release-notes.md || true
-          if [ -s release-notes.md ]; then
-            echo "has_notes=true" >> "$GITHUB_OUTPUT"
-            echo "--- release notes for $VERSION ---"
-            cat release-notes.md
-          else
-            echo "has_notes=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::No CHANGELOG entry found for $VERSION — using auto-generated notes"
-          fi
-
-      - name: Create GitHub Release
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-candidate
+          path: release-input
+      - name: Verify tag, commit and independently carried manifest pin
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HAS_NOTES: ${{ steps.changelog.outputs.has_notes }}
+          EXPECTED_MANIFEST_SHA256: ${{ needs.candidates.outputs.manifest_sha256 }}
+        run: node scripts/homebrew-verify-release.mjs --directory release-input/release --manifest-sha256 "$EXPECTED_MANIFEST_SHA256" --version "${GITHUB_REF_NAME#v}" --source-commit "$GITHUB_SHA"
+      - name: Publish without replacing an existing release or asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_MANIFEST_SHA256: ${{ needs.candidates.outputs.manifest_sha256 }}
         run: |
-          if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
-            echo "Release ${GITHUB_REF_NAME} already exists; updating notes."
-            if [ "$HAS_NOTES" = "true" ]; then
-              gh release edit "${GITHUB_REF_NAME}" \
-                --title "${GITHUB_REF_NAME}" \
-                --notes-file release-notes.md
-            fi
-          elif [ "$HAS_NOTES" = "true" ]; then
-            gh release create "${GITHUB_REF_NAME}" \
-              --title "${GITHUB_REF_NAME}" \
-              --notes-file release-notes.md
-          else
-            gh release create "${GITHUB_REF_NAME}" \
-              --title "${GITHUB_REF_NAME}" \
-              --generate-notes
-          fi
+          node --input-type=module <<'JS'
+          import {spawnSync} from 'node:child_process';
+          import {verifyRelease} from './scripts/homebrew-verify-release.mjs';
+          const tag=process.env.GITHUB_REF_NAME;
+          const verified=verifyRelease({directory:'release-input/release',manifestSha256:process.env.EXPECTED_MANIFEST_SHA256,version:tag.slice(1),sourceCommit:process.env.GITHUB_SHA});
+          if(spawnSync('gh',['release','view',tag],{stdio:'ignore'}).status===0)throw Error('Release already exists; refusing overwrite or rebuild');
+          const result=spawnSync('gh',['release','create',tag,...verified.files,'--verify-tag','--title',tag,'--generate-notes'],{stdio:'inherit'});
+          if(result.error||result.status!==0)throw Error('Release creation failed or outcome unknown; reconcile before retry');
+          JS

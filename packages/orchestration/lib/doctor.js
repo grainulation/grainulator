@@ -1,23 +1,24 @@
+import { loadPortfolio } from "./project-config.js";
 import fs from "node:fs";
 import path from "node:path";
 import { detectCycles } from "./planner.js";
 
 /**
- * Run all doctor checks against the orchard root directory.
+ * Run all doctor checks against the orchestration root directory.
  * Returns { checks: [...], ok: boolean }
  */
 export function runChecks(root) {
   const checks = [];
 
-  // 1. orchard.json present and parseable
-  const configPath = path.join(root, "orchard.json");
+  // 1. grainulator.config.json present and parseable
+  const configPath = path.join(root, "grainulator.config.json");
   const configExists = fs.existsSync(configPath);
   checks.push({
-    name: "orchard.json exists",
+    name: "grainulator.config.json exists",
     ok: configExists,
     detail: configExists
       ? configPath
-      : 'Not found. Run "orchard init" to create one.',
+      : 'Not found. Run "orchestration init" to create one.',
   });
 
   if (!configExists) {
@@ -26,11 +27,12 @@ export function runChecks(root) {
 
   let config;
   try {
-    config = JSON.parse(fs.readFileSync(configPath, "utf8"));
-    checks.push({ name: "orchard.json is valid JSON", ok: true, detail: "" });
+    config = loadPortfolio(root);
+    if(!config)throw new Error("No orchestration section configured.");
+    checks.push({ name: "grainulator.config.json is valid JSON", ok: true, detail: "" });
   } catch (err) {
     checks.push({
-      name: "orchard.json is valid JSON",
+      name: "grainulator.config.json is valid JSON",
       ok: false,
       detail: err.message,
     });
@@ -44,7 +46,7 @@ export function runChecks(root) {
     detail:
       sprints.length > 0
         ? `${sprints.length} sprint(s) configured`
-        : "No sprints in orchard.json",
+        : "No sprints in grainulator.config.json",
   });
 
   // 2. Sprint directories reachable
@@ -123,7 +125,7 @@ export function runChecks(root) {
  */
 export function printReport(result) {
   console.log("");
-  console.log("  orchard doctor");
+  console.log("  orchestration doctor");
   console.log("  " + "=".repeat(40));
   console.log("");
 

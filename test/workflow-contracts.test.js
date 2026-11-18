@@ -93,7 +93,7 @@ test("shipped workflows expose the product namespace and retain portable next ac
 	}
 });
 
-test("mutation reminder covers canonical and plugin-prefixed names plus legacy callers only", () => {
+test("mutation reminder covers canonical/plugin-prefixed mutations and excludes removed aliases", () => {
 	const config = JSON.parse(read("hooks/hooks.json"));
 	const matcher = new RegExp(config.hooks.PostToolUse[0].matcher);
 	for (const name of [
@@ -101,14 +101,15 @@ test("mutation reminder covers canonical and plugin-prefixed names plus legacy c
 		"mcp__grainulator__resolve",
 		"mcp__grainulator__import_claims",
 		"mcp__plugin_grainulator_grainulator__add_claim",
-		"mcp__wheat__wheat_add_claim",
-		"mcp__plugin_grainulator_wheat__wheat_resolve",
 	]) {
 		assert.ok(matcher.test(name), name);
 	}
 	for (const name of [
 		"mcp__grainulator__memory_store",
 		"mcp__grainulator__status",
+		"mcp__wheat__wheat_add_claim",
+		"mcp__wheat__wheat_resolve",
+		"mcp__plugin_grainulator_wheat__wheat_resolve",
 		"mcp__grainulator__exports_convert",
 		"mcp__grainulator__resolve_extra",
 		"mcp__other__add_claim",

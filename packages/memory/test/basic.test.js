@@ -485,7 +485,7 @@ describe("Confluence", () => {
     ];
     const html = c._claimsToStorageFormat("Test Pack", claims);
     assert.ok(html.includes("Must use AES-256"));
-    assert.ok(html.includes("silo-meta"));
+    assert.ok(html.includes("grainulator-meta"));
 
     const parsed = c._parseStorageFormat(html);
     assert.equal(parsed.length, 2);
@@ -626,7 +626,7 @@ describe("Enterprise Packs", () => {
 });
 
 describe("CLI", () => {
-  const cli = path.join(__dirname, "..", "bin", "silo.js");
+  const cli = path.join(__dirname, "..", "bin", "memory.js");
 
   it("prints help with no args", () => {
     const output = execFileSync("node", [cli], { encoding: "utf-8" });

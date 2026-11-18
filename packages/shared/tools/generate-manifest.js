@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
- * generate-manifest.js — Build wheat-manifest.json topic map
+ * generate-manifest.js — Build .grainulator/evidence/manifest.json topic map
  *
  * Reads claims.json, compilation.json, and scans the repo directory structure
  * to produce a topic-map manifest. Zero npm dependencies.
  *
  * Usage:
- *   barn generate-manifest                        # Write wheat-manifest.json
- *   barn generate-manifest --root /path            # Target a specific repo
- *   barn generate-manifest --out custom-name.json  # Custom output path
+ *   shared generate-manifest                        # Write .grainulator/evidence/manifest.json
+ *   shared generate-manifest --root /path            # Target a specific repo
+ *   shared generate-manifest --out custom-name.json  # Custom output path
  */
 
 import {
@@ -17,6 +17,7 @@ import {
   readdirSync,
   statSync,
   existsSync,
+  mkdirSync,
 } from "node:fs";
 import { join, relative, resolve, basename, sep } from "node:path";
 import { execFileSync } from "node:child_process";
@@ -33,7 +34,7 @@ function arg(name, fallback) {
 }
 
 const ROOT = arg("root", process.cwd());
-const OUT_PATH = join(ROOT, arg("out", "wheat-manifest.json"));
+const OUT_PATH = join(ROOT, arg("out", ".grainulator/evidence/manifest.json"));
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -93,7 +94,7 @@ function highestEvidence(claims) {
 // ─── Exported function ───────────────────────────────────────────────────────
 
 /**
- * Generate a wheat-manifest object from a claims.json path.
+ * Generate a evidence-manifest object from a claims.json path.
  *
  * @param {string} claimsPath — absolute path to claims.json
  * @param {object} [opts] — optional overrides
@@ -226,7 +227,7 @@ export function generateManifest(claimsPath, opts = {}) {
   return {
     schema_version: "1.0",
     generated: new Date().toISOString(),
-    generator: "@grainulation/barn generate-manifest",
+    generator: "@grainulation/grainulator-shared generate-manifest",
     claims_hash: compilation?.claims_hash || null,
     topics: topicMap,
     sprints,
@@ -242,12 +243,12 @@ const isMain =
   resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isMain) {
   if (args.includes("--help") || args.includes("-h")) {
-    console.log(`generate-manifest — build wheat-manifest.json topic map
+    console.log(`generate-manifest — build .grainulator/evidence/manifest.json topic map
 
 Usage:
-  barn generate-manifest                         Write wheat-manifest.json
-  barn generate-manifest --root /path             Target a specific repo
-  barn generate-manifest --out custom-name.json   Custom output path
+  shared generate-manifest                         Write .grainulator/evidence/manifest.json
+  shared generate-manifest --root /path             Target a specific repo
+  shared generate-manifest --out custom-name.json   Custom output path
 
 Reads claims.json and scans the repo to produce a topic map manifest
 that gives AI tools a single file describing the sprint state.`);
@@ -257,7 +258,8 @@ that gives AI tools a single file describing the sprint state.`);
   const t0 = performance.now();
   const manifest = generateManifest(join(ROOT, "claims.json"), { root: ROOT });
 
-  writeFileSync(OUT_PATH, JSON.stringify(manifest, null, 2) + "\n");
+  mkdirSync(resolve(OUT_PATH, ".."), {recursive:true});
+writeFileSync(OUT_PATH, JSON.stringify(manifest, null, 2) + "\n");
   const elapsed = (performance.now() - t0).toFixed(1);
 
   const topicCount = Object.keys(manifest.topics).length;
@@ -265,7 +267,7 @@ that gives AI tools a single file describing the sprint state.`);
   const sprintCount = Object.keys(manifest.sprints).length;
   const sizeBytes = Buffer.byteLength(JSON.stringify(manifest, null, 2));
 
-  console.log(`wheat-manifest.json generated in ${elapsed}ms`);
+  console.log(`.grainulator/evidence/manifest.json generated in ${elapsed}ms`);
   console.log(
     `  Topics: ${topicCount}  |  Files: ${fileCount}  |  Sprints: ${sprintCount}  |  Size: ${(sizeBytes / 1024).toFixed(1)}KB`,
   );

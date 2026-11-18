@@ -1,9 +1,10 @@
+import { updatePortfolio } from "./project-config.js";
 import fs from "node:fs";
 import path from "node:path";
 import { readSprintState } from "./tracker.js";
 
 /**
- * Sync all sprint states from their directories into orchard.json.
+ * Sync all sprint states from their directories into grainulator.config.json.
  * Updates status based on what's actually on disk.
  */
 export function syncAll(config, root) {
@@ -39,12 +40,12 @@ export function syncAll(config, root) {
   }
 
   if (updated > 0) {
-    const configPath = path.join(root, "orchard.json");
-    const tmp = configPath + ".tmp." + process.pid;
-    fs.writeFileSync(tmp, JSON.stringify(config, null, 2) + "\n");
-    fs.renameSync(tmp, configPath);
+    updatePortfolio(root, fresh => ({...fresh, sprints:(fresh.sprints||[]).map(sprint=>{
+      const updated=config.sprints.find(item=>item.path===sprint.path);
+      return updated ? {...sprint,status:updated.status} : sprint;
+    })}));
     console.log("");
-    console.log(`  Updated ${updated} sprint(s) in orchard.json.`);
+    console.log(`  Updated ${updated} sprint(s) in grainulator.config.json.`);
   } else {
     console.log("");
     console.log("  All sprints up to date.");

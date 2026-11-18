@@ -4,7 +4,7 @@ This guide exercises the v2.0.0 GitHub release. The root npm package is private 
 
 ## Start here
 
-Use Node 24 or later; Node 25 is the local default. The following commands are for the full source checkout. For an installed archive, follow [INSTALLATION.md](INSTALLATION.md); use its installed CLI for `doctor`, `demo`, and `preview`. Source tests, development dependencies, and the sibling organization site are not included in that archive.
+Use Node 24 or later; Node 24 is the local default. The following commands are for the full source checkout. For an installed archive, follow [INSTALLATION.md](INSTALLATION.md); use its installed CLI for `doctor`, `demo`, and `preview`. Source tests, development dependencies, and the sibling organization site are not included in that archive.
 
 ```sh
 npm ci --ignore-scripts

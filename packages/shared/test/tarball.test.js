@@ -1,64 +1,42 @@
-// test/tarball.test.js — verify the published npm tarball contains everything
-// barn serve needs at runtime.
-// Prevents the drift class that caused wheat 1.0.1–1.1.7 and harvest/orchard
-// 1.1.4 dashboard 404s (files referenced at runtime but not in package.json#files).
-
-import { test } from "node:test";
+// Package inventory covers retained CLI/MCP/report resources and excludes retired apps.
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, existsSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { test } from "node:test";
 
 const REQUIRED_PATHS = [
-  "package/public/index.html",
-  "package/lib/server.js",
   "package/templates/dashboard.html",
-  "package/bin/barn.js",
+  "package/bin/shared.js",
   "package/package.json",
-  "package/LICENSE",
+  "package/LICENSE"
 ];
-
+const RETIRED_PATHS = ["public/index.html", "lib/server.js", "lib/server.mjs"];
 const PKG_ROOT = new URL("..", import.meta.url);
 
-test("npm pack --dry-run includes every load-bearing file", () => {
-  const out = execFileSync("npm", ["pack", "--dry-run", "--json"], {
-    cwd: PKG_ROOT,
-    encoding: "utf8",
-  });
-  const packed = JSON.parse(out)[0];
-  const files = new Set((packed.files || []).map((f) => f.path));
-  for (const req of REQUIRED_PATHS) {
-    const bare = req.startsWith("package/")
-      ? req.slice("package/".length)
-      : req;
-    assert.ok(
-      files.has(req) || files.has(bare),
-      `missing from tarball: ${req}`,
-    );
-  }
+test("npm pack includes retained runtime resources and excludes retired browser apps", () => {
+  const [packed] = JSON.parse(execFileSync("npm", ["pack", "--dry-run", "--json"], {
+    cwd: PKG_ROOT, encoding: "utf8",
+  }));
+  const files = new Set(packed.files.map(file => file.path.replace(/^package\//, "")));
+  for (const required of REQUIRED_PATHS)
+    assert.ok(files.has(required.replace(/^package\//, "")), `missing from tarball: ${required}`);
+  for (const retired of RETIRED_PATHS)
+    assert.equal(files.has(retired), false, `retired browser app shipped: ${retired}`);
+  assert.equal([...files].some(file => file.startsWith("site/")), false, "marketing sources belong to infra");
 });
 
-test("packed tarball's server.js can resolve public/index.html at runtime", () => {
-  const packDir = mkdtempSync(path.join(tmpdir(), "barn-pack-"));
-  const out = execFileSync(
-    "npm",
-    ["pack", "--pack-destination", packDir, "--silent"],
-    {
-      cwd: PKG_ROOT,
-      encoding: "utf8",
-    },
-  );
-  const tarball = path.join(packDir, out.trim());
-  assert.ok(existsSync(tarball), `tarball not produced: ${tarball}`);
-  const extractDir = path.join(packDir, "ext");
-  mkdirSync(extractDir, { recursive: true });
-  execFileSync("tar", ["xzf", tarball, "-C", extractDir]);
-  const serverJs = path.join(extractDir, "package/lib/server.js");
-  const publicIndex = path.join(extractDir, "package/public/index.html");
-  assert.ok(existsSync(serverJs), "server.js missing after tarball extract");
-  assert.ok(
-    existsSync(publicIndex),
-    "public/index.html missing after tarball extract — dashboard will 404",
-  );
+test("actual tarball preserves every retained entry without browser dashboard files", () => {
+  const packedDir = mkdtempSync(path.join(tmpdir(), "grainulator-component-pack-"));
+  const filename = execFileSync("npm", ["pack", "--pack-destination", packedDir, "--silent"], {
+    cwd: PKG_ROOT, encoding: "utf8",
+  }).trim();
+  const extracted = path.join(packedDir, "extracted");
+  mkdirSync(extracted);
+  execFileSync("tar", ["xzf", path.join(packedDir, filename), "-C", extracted]);
+  for (const required of REQUIRED_PATHS)
+    assert.ok(existsSync(path.join(extracted, required)), `missing extracted runtime resource: ${required}`);
+  for (const retired of RETIRED_PATHS)
+    assert.equal(existsSync(path.join(extracted, "package", retired)), false, `retired app present: ${retired}`);
 });

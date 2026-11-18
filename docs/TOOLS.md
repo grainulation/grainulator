@@ -38,6 +38,9 @@ The plugin config starts only this server. Its `deepwiki` tool fetches public re
 |---|---|
 | `init`, `add_claim`, `import_claims`, `compile`, `resolve`, `search`, `status` | Initialize a sprint, record evidence, compile findings, resolve conflicts, and inspect progress |
 | `deepwiki`, `sync_log` | Retrieve public repository documentation and inspect publication history |
+| `evidence_health`, `premise_links`, `correct_claim`, `observe_source` | Recheck current evidence, bind necessary premises, preserve corrections and capture source versions |
+| `findings`, `finding_action`, `duplicate_candidates` | Separate audit verdict/resolution and explicitly reconcile overlap candidates |
+| `acceptance_check`, `acceptance_set` | Identify material missing criteria or record explicit updates without a compulsory interview |
 | `memory_search`, `memory_list`, `memory_store`, `memory_pull` | Find and reuse evidence across sprints |
 | `memory_packs`, `memory_graph` | Browse knowledge packs and relationships |
 | `memory_smart_fetch`, `memory_confluence` | Fetch sources or use a configured Confluence connection |
@@ -45,7 +48,7 @@ The plugin config starts only this server. Its `deepwiki` tool fetches public re
 
 Every tool accepts an optional `dir`, resolved relative to the startup workspace. A directory override cannot escape that workspace. File inputs and outputs are also contained; symlinks cannot redirect them outside it. A configured memory store is separate from sprint directories and is shared only where you explicitly configure the same location.
 
-The CLI and MCP use the same memory location: `--memory-dir`, then `GRAINULATOR_MEMORY_DIR`, then legacy `SILO_STORE`. The default is `~/.grainulator/memory`; if its index does not exist and an existing `~/.silo/index.json` does, the existing legacy store is reused. Nothing is automatically moved or merged. The plugin uses its explicitly configured data directory. Starting the server or listing tools does not initialize a sprint or create a memory store. Memory operations create the store when needed.
+The CLI and MCP use the same memory location: `--memory-dir`, then `GRAINULATOR_MEMORY_DIR`, then legacy `SILO_STORE`. The default is `~/.grainulator/memory`; if its index does not exist and an existing `~/.memory/index.json` does, the existing legacy store is reused. Nothing is automatically moved or merged. The plugin uses its explicitly configured data directory. Starting the server or listing tools does not initialize a sprint or create a memory store. Memory operations create the store when needed.
 
 Shared local memory writers serialize index initialization, collection updates, and removal through the same filesystem lock. A crashed writer leaves a lock for inspection instead of permitting automatic lock stealing. Memory search returns source provenance alongside findings, so reuse retains the evidence reference.
 
@@ -77,7 +80,7 @@ After recording evidence, call `compile`. It returns the current compilation sta
 
 ## Compatibility
 
-Existing `wheat/*`, `silo/*`, and `mill/*` tool calls and resource URIs remain accepted as hidden aliases. They do not appear in the unified server's tool or resource lists. Original component CLI entry points remain available to read old projects. This preserves existing data and integrations without making new callers learn the former product names.
+Existing `evidence/*`, `memory/*`, and `exports/*` tool calls and resource URIs remain accepted as hidden aliases. They do not appear in the unified server's tool or resource lists. Original component CLI entry points remain available to read old projects. This preserves existing data and integrations without making new callers learn the former product names.
 
 These aliases apply inside the `grainulator` server. They do not recreate old MCP server IDs, host-generated prefixes, or the removed automatic remote DeepWiki connection. Update custom registrations and allowlists to the tools your host exposes. See the [1.x upgrade checklist](UPGRADING.md).
 

@@ -1,19 +1,19 @@
 {
-  "name": "@grainulation/barn",
-  "version": "1.3.1",
-  "description": "Template browser and sprint toolkit for the grainulation ecosystem",
+  "name": "@grainulation/grainulator-shared",
+  "version": "3.0.0",
+  "description": "Shared sprint utilities, filesystem safety, and reusable report assets",
   "license": "MIT",
   "author": "grainulation contributors",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/grainulation/barn.git"
+    "url": "git+https://github.com/grainulation/grainulator.git"
   },
-  "homepage": "https://barn.grainulation.com",
+  "homepage": "https://grainulator.dev",
   "bugs": {
-    "url": "https://github.com/grainulation/barn/issues"
+    "url": "https://github.com/grainulation/grainulator/issues"
   },
   "keywords": [
-    "wheat",
+    "evidence",
     "grainulation",
     "templates",
     "sprints",
@@ -25,7 +25,6 @@
   "exports": {
     ".": "./lib/index.js",
     "./package.json": "./package.json",
-    "./server": "./lib/server.js",
     "./detect-sprints": "./tools/detect-sprints.js",
     "./generate-manifest": "./tools/generate-manifest.js",
     "./build-pdf": "./tools/build-pdf.js",
@@ -62,11 +61,7 @@
     "./print-css": "./public/grainulation-print.css",
     "./llms-txt-template": "./public/llms.txt.template",
     "./sync-assets": "./tools/sync-assets.js",
-    "./llms-txt-lint": "./tools/seo/llms-txt-lint.js",
     "./transaction": "./lib/transaction.js"
-  },
-  "bin": {
-    "barn": "./bin/barn.js"
   },
   "files": [
     "bin/",
@@ -81,17 +76,13 @@
     "SECURITY.md"
   ],
   "scripts": {
-    "start": "node bin/barn.js serve",
-    "serve": "node bin/barn.js serve",
-    "test": "node test/basic.test.js && node --test test/shared-utils.test.js test/server.test.js test/ui-smoke.test.js test/mcp-crash.test.js test/llms-txt-lint.test.js test/tarball.test.js",
+    "start": "node bin/shared.js --help",
+    "test": "node test/basic.test.js && node --test test/shared-utils.test.js test/mcp-crash.test.js test/tarball.test.js && node --test test/dashboard-retirement.test.js",
     "format": "npx prettier@3.3 --write .",
     "format:check": "npx prettier@3.3 --check ."
   },
   "engines": {
-    "node": ">=20"
-  },
-  "publishConfig": {
-    "access": "public"
+    "node": ">=24"
   },
   "private": true
 }

@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-11-18
+
+### Changed
+
+- Consolidate evidence, memory, exports, analytics, orchestration and native verification under one Grainulator CLI/plugin and MCP surface. Component packages are private implementation workspaces; legacy command aliases and standalone MCP/plugin entrypoints are removed.
+- Use `grainulator.config.json` and canonical `.grainulator` data locations. Normal commands do not silently discover or convert historical product data. Follow the upgrade guide before switching an existing workspace or required hook.
+- Retire unused component dashboards, their servers and stale auxiliary artifacts. Retain the research playground, offline generated reports and reviewed report templates.
+
+### Added
+
+- Separately verified native runtime assets for macOS/Linux ARM64 and x86_64, explicit initialization and enrollment, and pinned user-cache hooks that survive package-manager cleanup. Enrollment currently covers one workspace and one host scope; unknown required roots block.
+- A separately distributed offline converter with inventory, copy/verify/cutover/resume/rollback journals and preserved history. Remote identity reconciliation uses reviewed existing page IDs and confirmed receipts; it never creates replacement pages.
+- Frozen base/native/converter release assembly, a pinned release manifest, literal Homebrew formula generation and installed Node24/26 plus actual Homebrew recipe checks.
+- Evidence maintenance for source-bound premises, observations and execution receipts, with explicit correction and re-verification rather than automatic repair of conclusions.
+
+### Fixed
+
+- Bind migration metadata parsing and hashing to bounded descriptor snapshots; preserve matching immutable history and serialize cooperative writers. Retain conservative lock recovery for uncertain remote writes.
+- Accept legitimate Cargo hardlinks only as copied native build inputs while keeping installed asset verification strict.
+- Print preview help without starting a listener, reject ignored preview arguments, and create the formula wrapper directory explicitly.
+- Clarify the existing post-mutation next-action setting and correct direct MCP setup/update instructions.
+
+### Distribution and migration
+
+- GitHub release archives; no npm publication. Native support, Homebrew support and full host-plugin discovery are separate verification scopes. Formula updates follow publication of the exact passing assets.
+- Existing user data, host registrations, security wrappers and required gates are not automatically rewritten by installation or upgrade. See the upgrade, configuration, runtime and uninstall guides.
+
 ## [2.4.0] - 2026-11-17
 
 ### Added

@@ -15,7 +15,7 @@ import {
 	SCHEMA_MIGRATIONS,
 	checkAndMigrateSchema,
 	_internals,
-} from "../compiler/wheat-compiler.js";
+} from "../compiler/evidence-compiler.js";
 
 const { compareVersions } = _internals;
 import { loadClaims } from "../lib/load-claims.js";

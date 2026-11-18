@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 // Differential conformance oracle — the bootstrap mechanic.
 //
-// The JS bean-check is the independent REFERENCE; the Rust port must MATCH it. For every
+// The JS grainulator-runtime-check is the independent REFERENCE; the Rust port must MATCH it. For every
 // static fixture we run both with --json --no-state and diff the behavior that the
 // certificate is built from: status, the set of blocker codes, and the certificate itself.
-// This is the oracle pattern applied to bean's own construction — independent vantage,
+// This is the oracle pattern applied to Grainulator's own construction — independent vantage,
 // spec-derived, fail-closed. It exits nonzero until Rust reproduces the reference.
 //
 //   node test/conformance.mjs            # build Rust (release) then diff every fixture
 //
-// Once this is green, Rust bean-check has earned the right to gate its own development
+// Once this is green, Rust grainulator-runtime-check has earned the right to gate its own development
 // (the self-hosting ratchet).
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -18,8 +18,8 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const JS = path.join(root, "bin", "bean-check.js");
-const RS = path.join(root, "rs", "target", "release", "bean-check");
+const JS = path.join(root, "bin", "runtime-check.js");
+const RS = path.join(root, "rs", "target", "release", "grainulator-runtime-check");
 const FIX = path.join(root, "test", "fixtures");
 
 // build the Rust binary (release) first
@@ -50,7 +50,7 @@ const shape = (r) => ({
 const fixtures = fs
 	.readdirSync(FIX, { withFileTypes: true })
 	.filter((e) => e.isDirectory())
-	// `traces/` holds trace/v0 sample files for bean-lessons, not bean-check claim fixtures.
+	// `traces/` holds grainulator.runtime.trace.v1 sample files for grainulator-runtime-lessons, not grainulator-runtime-check claim fixtures.
 	.filter((e) => e.name !== "traces")
 	.map((e) => e.name)
 	.sort();
@@ -84,12 +84,14 @@ console.log(`\n${pass}/${fixtures.length} static fixtures match the reference`);
 // Each engine runs in its OWN dir so they never read each other's state.json. We run the
 // scenario N times and compare the final result + the persisted state, parsed.
 import os from "node:os";
+import crypto from "node:crypto";
+import {reviewRuntimeMigration} from "../../../lib/runtime-enrollment.js";
 /** @param {string} bin @param {string[]} pre @param {Record<string,unknown>} files @param {number} times */
 const stateful = (pre, files, times) => {
-	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "bean-conf-"));
-	fs.mkdirSync(path.join(dir, ".bean"));
+	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-conf-"));
+	fs.mkdirSync(path.join(dir, ".grainulator/runtime"), {recursive:true});
 	for (const [n, body] of Object.entries(files))
-		fs.writeFileSync(path.join(dir, ".bean", n), JSON.stringify(body, null, 2));
+		fs.writeFileSync(path.join(dir, ".grainulator/runtime", n), JSON.stringify(body, null, 2));
 	let last;
 	for (let k = 0; k < times; k++) {
 		const r = spawnSync(pre[0], [...pre.slice(1), "--dir", dir, "--json"], {
@@ -98,7 +100,7 @@ const stateful = (pre, files, times) => {
 		last = { result: JSON.parse(r.stdout), exit: r.status };
 	}
 	const st = JSON.parse(
-		fs.readFileSync(path.join(dir, ".bean", "state.json"), "utf8"),
+		fs.readFileSync(path.join(dir, ".grainulator/runtime", "state.json"), "utf8"),
 	);
 	return { ...last, state: st };
 };
@@ -215,13 +217,13 @@ console.log(
 	`${tpass}/${SCENARIOS.length} temporal scenarios match the reference`,
 );
 
-// ---- driver smoke (bean-run): the coupling works, behaviorally ----
+// ---- driver smoke (grainulator-runtime-run): the coupling works, behaviorally ----
 // Not a differential (the JS driver lives on js-reference); a behavioral check that the Rust
 // driver drives an agent to convergence on the injected signal, and stops STUCK on no progress.
-const RUN = path.join(root, "rs", "target", "release", "bean-run");
+const RUN = path.join(root, "rs", "target", "release", "grainulator-runtime-run");
 const agentScript = (body) => {
 	const p = path.join(
-		fs.mkdtempSync(path.join(os.tmpdir(), "bean-agent-")),
+		fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-agent-")),
 		"a.js",
 	);
 	fs.writeFileSync(p, body);
@@ -243,11 +245,11 @@ const CHURN = agentScript(
 );
 /** @param {string} agent @param {string} claims */
 const drive = (agent, claims) => {
-	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "bean-drive-"));
-	fs.mkdirSync(path.join(dir, ".bean"));
-	fs.writeFileSync(path.join(dir, ".bean", "claims.json"), claims);
+	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-drive-"));
+	fs.mkdirSync(path.join(dir, ".grainulator/runtime"), {recursive:true});
+	fs.writeFileSync(path.join(dir, ".grainulator/runtime", "claims.json"), claims);
 	fs.writeFileSync(
-		path.join(dir, ".bean", "run.json"),
+		path.join(dir, ".grainulator/runtime", "run.json"),
 		JSON.stringify({ goal: "x" }),
 	);
 	const r = spawnSync(
@@ -317,10 +319,10 @@ for (const [name, agent, want, exit, minRounds, wantPivot] of [
 }
 console.log(`${dpass}/3 driver smoke checks pass`);
 
-// ---- trace artifact v0 (emit-only): a run leaves a stable .bean/runs/<run_id>.json ----
+// ---- trace artifact v0 (emit-only): a run leaves a stable .grainulator/runtime/runs/<run_id>.json ----
 {
 	const { report, dir } = drive(DISCHARGE, OPEN_RISK);
-	const runsDir = path.join(dir, ".bean", "runs");
+	const runsDir = path.join(dir, ".grainulator/runtime", "runs");
 	const files = fs.existsSync(runsDir)
 		? fs.readdirSync(runsDir).filter((f) => f.endsWith(".json"))
 		: [];
@@ -360,7 +362,7 @@ console.log(`${dpass}/3 driver smoke checks pass`);
 			new Set(bc).size === bc.length &&
 			bc.includes("E_OPEN_RISK");
 		const shapeOk =
-			t.schema_version === "trace/v0" &&
+			t.schema_version === "grainulator.runtime.trace.v1" &&
 			missing.length === 0 &&
 			unknown.length === 0 &&
 			files[0] === `${t.run_id}.json` &&
@@ -384,17 +386,17 @@ console.log(`${dpass}/3 driver smoke checks pass`);
 	}
 }
 
-// ---- oracle-gate behavior (bean-check 2.0 + bean-verify) ----
+// ---- oracle-gate behavior (grainulator-runtime-check 2.0 + grainulator-runtime-verify) ----
 // No JS reference for the gate on this branch, so these are assertion-based behavioral checks.
-const VERIFY = path.join(root, "rs", "target", "release", "bean-verify");
+const VERIFY = path.join(root, "rs", "target", "release", "grainulator-runtime-verify");
 const PASS_CMD = [process.execPath, "-e", "process.exit(0)"];
 const FAIL_CMD = [process.execPath, "-e", "process.exit(1)"];
 /** @param {Record<string,unknown>} files @param {{claim:string,verifier:string}[]} verifyFirst */
 const gate = (files, verifyFirst = []) => {
-	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "bean-gate-"));
-	fs.mkdirSync(path.join(dir, ".bean"));
+	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-gate-"));
+	fs.mkdirSync(path.join(dir, ".grainulator/runtime"), {recursive:true});
 	for (const [n, body] of Object.entries(files))
-		fs.writeFileSync(path.join(dir, ".bean", n), JSON.stringify(body, null, 2));
+		fs.writeFileSync(path.join(dir, ".grainulator/runtime", n), JSON.stringify(body, null, 2));
 	for (const v of verifyFirst)
 		spawnSync(
 			VERIFY,
@@ -529,16 +531,16 @@ for (const c of GATE_CASES) {
 		);
 	}
 }
-// bean-verify exit codes
+// grainulator-runtime-verify exit codes
 {
-	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "bean-vexit-"));
-	fs.mkdirSync(path.join(dir, ".bean"));
+	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-vexit-"));
+	fs.mkdirSync(path.join(dir, ".grainulator/runtime"), {recursive:true});
 	fs.writeFileSync(
-		path.join(dir, ".bean", "claims.json"),
+		path.join(dir, ".grainulator/runtime", "claims.json"),
 		JSON.stringify([lb("c1")]),
 	);
 	fs.writeFileSync(
-		path.join(dir, ".bean", "run.json"),
+		path.join(dir, ".grainulator/runtime", "run.json"),
 		JSON.stringify({ oracles: { p: { cmd: PASS_CMD }, f: { cmd: FAIL_CMD } } }),
 	);
 	const pe = spawnSync(VERIFY, [
@@ -559,25 +561,80 @@ for (const c of GATE_CASES) {
 	]).status;
 	if (pe === 0 && fe === 1) {
 		gpass++;
-		console.log("  ok    bean-verify exit codes (pass 0 / fail 1)");
+		console.log("  ok    grainulator-runtime-verify exit codes (pass 0 / fail 1)");
 	} else {
-		fails.push("bean-verify exit codes");
-		console.log(`  DIFF  bean-verify exit codes: pass=${pe} fail=${fe}`);
+		fails.push("grainulator-runtime-verify exit codes");
+		console.log(`  DIFF  grainulator-runtime-verify exit codes: pass=${pe} fail=${fe}`);
 	}
 }
 console.log(
 	`${gpass}/${GATE_CASES.length + 1} oracle-gate behavior checks pass`,
 );
 
-// ---- bean-lessons (trace analyzer, read-only) ----
-const LESSONS = path.join(root, "rs", "target", "release", "bean-lessons");
+// ---- v3 migration, confinement and execution uncertainty ----
+let v3pass = 0;
+const v3check = (name, fn) => {
+ try { fn();v3pass++;console.log(`  ok    ${name}`); }
+ catch(error) {fails.push(name);console.log(`  DIFF  ${name}: ${error.message}`);}
+};
+const nativeWorkspace = runContract => {
+ const directory=fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()),'grainulator-v3-'));
+ fs.mkdirSync(path.join(directory,'.grainulator/runtime'),{recursive:true});
+ fs.writeFileSync(path.join(directory,'.grainulator/runtime/claims.json'),JSON.stringify([lb('c1',{verified_by:{verifier:'unit'}})]));
+ fs.writeFileSync(path.join(directory,'.grainulator/runtime/run.json'),JSON.stringify(runContract));
+ return directory;
+};
+const nativeCheck=directory=>spawnSync(RS,['--dir',directory,'--json','--no-state'],{encoding:'utf8',timeout:5000});
+const nativeVerify=directory=>spawnSync(VERIFY,['--dir',directory,'--claim','c1','--verifier','unit'],{encoding:'utf8',timeout:5000});
+v3check('v3 migration review cannot execute or promote archived oracle results',()=>{
+ const directory=nativeWorkspace({verification:{mode:'strict'},oracles:{unit:{cmd:PASS_CMD}}});
+ const marker=path.join(directory,'.grainulator/runtime/migration-required.json');
+ fs.writeFileSync(marker,JSON.stringify({schema:'grainulator.runtime.migration.v1',state:'verification-required',oracle_bindings_requiring_review:['unit']}));
+ assert.ok(JSON.parse(nativeCheck(directory).stdout).blockers.some(b=>b.code==='E_MIGRATION_REQUIRED'));
+ assert.equal(nativeVerify(directory).status,3);
+ const pin=crypto.createHash('sha256').update(fs.readFileSync(marker)).digest('hex');
+ assert.equal(reviewRuntimeMigration(directory,pin).oracles_executed,false);
+ assert.equal(nativeCheck(directory).status,1);
+ assert.equal(nativeVerify(directory).status,0);
+ assert.equal(nativeCheck(directory).status,0);
+ fs.appendFileSync(path.join(directory,'.grainulator/runtime/run.json'),'\n');
+ assert.ok(JSON.parse(nativeCheck(directory).stdout).blockers.some(b=>b.code==='E_MIGRATION_REQUIRED'));
+});
+v3check('v3 native writers refuse symlinked runtime artifacts without changing the target',()=>{
+ const directory=nativeWorkspace({verification:{mode:'strict'},oracles:{unit:{cmd:PASS_CMD}}});
+ const claims=path.join(directory,'.grainulator/runtime/claims.json');
+ const outside=path.join(directory,'outside.json');fs.renameSync(claims,outside);fs.symlinkSync(outside,claims);
+ const before=fs.readFileSync(outside);
+ assert.equal(nativeCheck(directory).status,3);assert.equal(nativeVerify(directory).status,3);
+ assert.deepEqual(fs.readFileSync(outside),before);
+});
+v3check('v3 oracle pipes drain concurrently and declared deadlines fail without a pass',()=>{
+ const directory=nativeWorkspace({verification:{mode:'strict'},oracles:{unit:{cmd:[process.execPath,'-e',"process.stdout.write('x'.repeat(200000),()=>process.exit(0))"],timeout_ms:2000}}});
+ assert.equal(nativeVerify(directory).status,0);
+ fs.writeFileSync(path.join(directory,'.grainulator/runtime/run.json'),JSON.stringify({verification:{mode:'strict'},oracles:{unit:{cmd:[process.execPath,'-e','setInterval(()=>{},1000)'],timeout_ms:30}}}));
+ assert.equal(nativeVerify(directory).status,2);
+ assert.equal(JSON.parse(fs.readFileSync(path.join(directory,'.grainulator/runtime/verdicts/c1.unit.json'))).verdict,'error');
+ assert.equal(nativeCheck(directory).status,1);
+});
+v3check('v3 uncertain oracle receipt blocks completion and prohibits automatic replay',()=>{
+ const directory=nativeWorkspace({verification:{mode:'strict'},oracles:{unit:{cmd:PASS_CMD}}});
+ assert.equal(nativeVerify(directory).status,0);
+ const receipt=path.join(directory,'.grainulator/runtime/verdicts/c1.unit.json'),before=fs.readFileSync(receipt);
+ fs.writeFileSync(path.join(directory,'.grainulator/runtime/pending-oracle.json'),JSON.stringify({schema:'grainulator.runtime.pending-oracle.v1',claim:'c1',verifier:'unit'}));
+ assert.ok(JSON.parse(nativeCheck(directory).stdout).blockers.some(b=>b.code==='E_EXECUTION_UNCERTAIN'));
+ assert.equal(nativeVerify(directory).status,3);assert.deepEqual(fs.readFileSync(receipt),before);
+});
+console.log(`${v3pass}/4 v3 migration and uncertainty checks pass`);
+
+// ---- grainulator-runtime-lessons (trace analyzer, read-only) ----
+const LESSONS = path.join(root, "rs", "target", "release", "grainulator-runtime-lessons");
 const FIXTURE_TRACES = path.join(root, "test", "fixtures", "traces");
 /** @param {string[]} files */
 const lessonsDir = (files) => {
-	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "bean-lessons-"));
-	fs.mkdirSync(path.join(dir, ".bean", "runs"), { recursive: true });
+	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-runtime-lessons-"));
+	fs.mkdirSync(path.join(dir, ".grainulator/runtime", "runs"), { recursive: true });
 	for (const [name, body] of files)
-		fs.writeFileSync(path.join(dir, ".bean", "runs", name), body);
+		fs.writeFileSync(path.join(dir, ".grainulator/runtime", "runs", name), body);
 	return dir;
 };
 const fixtureCorpus = fs
@@ -597,7 +654,7 @@ const lcheck = (name, fn) => {
 };
 const runLessons = (dir) => {
 	const r = spawnSync(LESSONS, ["--dir", dir], { encoding: "utf8" });
-	const p = path.join(dir, ".bean", "lessons.json");
+	const p = path.join(dir, ".grainulator/runtime", "lessons.json");
 	return {
 		exit: r.status,
 		report: fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf8")) : null,
@@ -607,7 +664,7 @@ lcheck("lessons: ranks all 5 kinds from the fixture corpus", () => {
 	const dir = lessonsDir(fixtureCorpus);
 	const { exit, report } = runLessons(dir);
 	assert.equal(exit, 0, `exit ${exit}`);
-	assert.equal(report.schema_version, "bean.lessons.v0");
+	assert.equal(report.schema_version, "grainulator.runtime.lessons.v1");
 	assert.equal(report.source_run_count, 4);
 	const top = report.candidates[0];
 	assert.equal(top.kind, "blocker_code_frequency");
@@ -655,24 +712,24 @@ lcheck("lessons: foreign schema_version -> exit 3", () => {
 	assert.equal(exit, 3, `exit ${exit}`);
 });
 lcheck(
-	"lessons: trace/v0 missing required fields -> exit 3 (fail closed)",
+	"lessons: grainulator.runtime.trace.v1 missing required fields -> exit 3 (fail closed)",
 	() => {
 		// correct schema_version but a partial/copied trace must NOT be silently summarized.
 		const dir = lessonsDir([
 			[
 				"partial.json",
-				JSON.stringify({ schema_version: "trace/v0", run_id: "x" }),
+				JSON.stringify({ schema_version: "grainulator.runtime.trace.v1", run_id: "x" }),
 			],
 		]);
 		const { exit } = runLessons(dir);
 		assert.equal(exit, 3, `exit ${exit}`);
 	},
 );
-console.log(`${lpass}/6 bean-lessons checks pass`);
+console.log(`${lpass}/6 grainulator-runtime-lessons checks pass`);
 
-const total = pass + tpass + dpass + gpass + lpass;
+const total = pass + tpass + dpass + gpass + lpass + v3pass;
 const totalN =
-	fixtures.length + SCENARIOS.length + 3 + GATE_CASES.length + 1 + 6;
+	fixtures.length + SCENARIOS.length + 3 + GATE_CASES.length + 1 + 6 + 4;
 console.log(
 	`\n${total}/${totalN} conformance + driver + gate + lessons checks pass`,
 );

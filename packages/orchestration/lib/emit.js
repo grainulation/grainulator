@@ -8,8 +8,8 @@ import { findReady } from "./sync.js";
  * Reads findReady() output + each sprint's claims.json meta to build
  * a structured instruction per sprint: { dir, question, tools, model }.
  *
- * @param {object} config - Parsed orchard.json
- * @param {string} root   - Orchard root directory
+ * @param {object} config - Parsed grainulator.config.json
+ * @param {string} root   - Grainulator orchestration root directory
  * @returns {object[]} Array of grainulator instructions
  */
 export function emitInstructions(config, root) {
@@ -22,7 +22,7 @@ export function emitInstructions(config, root) {
 
     let question = sprint.question || null;
 
-    // Try to extract question from claims.json meta if not in orchard config
+    // Try to extract question from claims.json meta if not in orchestration config
     if (!question) {
       try {
         const raw = fs.readFileSync(claimsPath, "utf8");
@@ -63,7 +63,7 @@ export function printNext(config, root) {
 
   if (instructions.length === 0) {
     console.log(
-      "\n  No sprints are ready. Check dependencies with `orchard plan`.\n",
+      "\n  No sprints are ready. Check dependencies with `orchestration plan`.\n",
     );
     return instructions;
   }

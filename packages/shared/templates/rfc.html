@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RFC-{{RFC_NUMBER}}: {{TITLE}}</title>
 <style>
-  /* barn/templates/rfc.html — Request for Comments / design doc template
+  /* shared/templates/rfc.html — Request for Comments / design doc template
      Self-contained, no external dependencies. */
 
   :root {
-    --bg: #0a0e1a;
-    --bg2: #111827;
-    --bg3: #1e293b;
+    --bg: #141415;
+    --bg2: #19191b;
+    --bg3: #232325;
     --accent: #3b82f6;
     --accent-light: #60a5fa;
     --green: #22c55e;
@@ -22,9 +22,9 @@
     --red-dim: rgba(225,29,72,0.12);
     --purple: #a78bfa;
     --purple-dim: rgba(167,139,250,0.12);
-    --text: #f1f5f9;
-    --text-muted: #94a3b8;
-    --text-dim: #64748b;
+    --text: #ededed;
+    --text-muted: #a1a1a6;
+    --text-dim: #85858b;
     --border: rgba(255,255,255,0.08);
   }
 
@@ -45,15 +45,15 @@
   header { margin-bottom: 36px; border-bottom: 2px solid var(--accent); padding-bottom: 24px; }
 
   .rfc-id {
-    font-size: 10pt;
+    font-size: 11pt;
     font-weight: 600;
     color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    text-transform: none;
+    letter-spacing: 0;
     margin-bottom: 8px;
   }
 
-  h1 { font-size: 26pt; font-weight: 700; color: #fff; margin-bottom: 16px; line-height: 1.2; }
+  h1 { font-size: 26pt; font-weight: 600; color: #fff; margin-bottom: 16px; line-height: 1.2; }
   h2 {
     font-size: 16pt; font-weight: 600; color: #fff;
     margin: 36px 0 12px; padding-bottom: 8px;
@@ -62,25 +62,25 @@
   h3 { font-size: 13pt; font-weight: 600; color: var(--accent-light); margin: 20px 0 8px; }
   p { color: var(--text-muted); margin-bottom: 12px; }
   ul, ol { color: var(--text-muted); margin: 0 0 16px 20px; }
-  li { margin-bottom: 6px; }
+  li { margin-bottom: 8px; }
 
   .meta-table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 4px;
-    font-size: 10pt;
+    font-size: 11pt;
   }
 
   .meta-table td {
-    padding: 6px 12px;
+    padding: 8px 12px;
     border-bottom: 1px solid var(--border);
   }
 
   .meta-table td:first-child {
     color: var(--text-dim);
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+    text-transform: none;
+    letter-spacing: 0;
     width: 120px;
   }
 
@@ -89,10 +89,10 @@
   .status-badge {
     display: inline-block;
     font-size: 9pt;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    padding: 3px 12px;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
+    padding: 4px 12px;
     border-radius: 4px;
   }
 
@@ -103,22 +103,22 @@
 
   .section-block { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px; margin-bottom: 16px; }
   .alternative-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; margin-bottom: 12px; }
-  .alternative-card h4 { font-size: 12pt; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .alternative-card h4 { font-size: 12pt; font-weight: 600; color: var(--text); margin-bottom: 8px; }
   .trade-off { display: flex; gap: 16px; margin-top: 8px; }
-  .trade-off .pro { flex: 1; border-left: 3px solid var(--green); padding-left: 10px; font-size: 10pt; color: var(--text-muted); }
-  .trade-off .con { flex: 1; border-left: 3px solid var(--red); padding-left: 10px; font-size: 10pt; color: var(--text-muted); }
-  .open-question { background: var(--bg3); border-left: 3px solid var(--orange); padding: 10px 14px; margin-bottom: 10px; border-radius: 0 6px 6px 0; font-size: 10pt; color: var(--text-muted); }
-  .claim-appendix table { width: 100%; border-collapse: collapse; font-size: 10pt; margin-top: 12px; }
-  .claim-appendix th { text-align: left; padding: 8px 12px; background: var(--bg3); color: var(--accent-light); font-size: 9pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 2px solid rgba(59,130,246,0.3); }
+  .trade-off .pro { flex: 1; border-left: 3px solid var(--green); padding-left: 12px; font-size: 11pt; color: var(--text-muted); }
+  .trade-off .con { flex: 1; border-left: 3px solid var(--red); padding-left: 12px; font-size: 11pt; color: var(--text-muted); }
+  .open-question { background: var(--bg3); border-left: 3px solid var(--orange); padding: 12px 16px; margin-bottom: 12px; border-radius: 0 6px 6px 0; font-size: 11pt; color: var(--text-muted); }
+  .claim-appendix table { width: 100%; border-collapse: collapse; font-size: 11pt; margin-top: 12px; }
+  .claim-appendix th { text-align: left; padding: 8px 12px; background: var(--bg3); color: var(--accent-light); font-size: 9pt; font-weight: 600; text-transform: none; letter-spacing: 0; border-bottom: 2px solid rgba(59,130,246,0.3); }
   .claim-appendix td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: var(--text-muted); }
 
-  .claim-ref { font-size: 8pt; color: var(--text-dim); font-family: monospace; }
+  .claim-ref { font-size: 9pt; color: var(--text-dim); font-family: monospace; }
 
   footer {
     margin-top: 40px;
     padding-top: 16px;
     border-top: 1px solid var(--border);
-    font-size: 8pt;
+    font-size: 9pt;
     color: var(--text-dim);
   }
 
@@ -142,10 +142,29 @@
     body { padding: 24px 16px; }
     h1 { font-size: 20pt; }
     h2 { font-size: 14pt; }
-    .section-block { padding: 14px 16px; }
-    .alternative-card { padding: 12px 14px; }
+    .section-block { padding: 16px 16px; }
+    .alternative-card { padding: 12px 16px; }
     .trade-off { flex-direction: column; gap: 8px; }
     .meta-table td:first-child { width: 90px; }
+  }
+
+  /* Evidence documents keep their data prominent and controls quiet. */
+  body { font-variant-numeric: tabular-nums; }
+  strong, b { font-weight: 600; }
+  :focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+  @media (prefers-reduced-motion: reduce) {
+    html, body { scroll-behavior: auto; scroll-snap-type: none; }
+  }
+
+  @media print {
+    :root {
+      --bg: #fff; --bg-dark: #fff; --bg2: #f5f5f5; --bg3: #e5e5e5;
+      --bg-card: #f5f5f5; --bg-card-alt: #ededed; --bg-card-hover: #e5e5e5;
+      --text: #171717; --text-muted: #404040; --text-dim: #525252;
+      --accent: #1d4ed8; --accent-light: #1d4ed8; --border: #d4d4d4;
+      --green: #166534; --red: #b91c1c; --orange: #92400e; --purple: #6d28d9; --pink: #9d174d;
+    }
+    h1, h2, h3, h4 { color: #171717; -webkit-text-fill-color: currentColor; }
   }
 </style>
 </head>
@@ -163,36 +182,36 @@
   </header>
 
   <section aria-label="Problem statement">
-    <h2>Problem Statement</h2>
+    <h2>Problem statement</h2>
     {{PROBLEM}}
   </section>
 
   <section aria-label="Proposed solution">
-    <h2>Proposed Solution</h2>
+    <h2>Proposed solution</h2>
     {{PROPOSAL}}
   </section>
 
   <section aria-label="Alternatives considered">
-    <h2>Alternatives Considered</h2>
+    <h2>Alternatives considered</h2>
     {{ALTERNATIVES}}
   </section>
 
   <section aria-label="Open questions">
-    <h2>Open Questions</h2>
+    <h2>Open questions</h2>
     {{OPEN_QUESTIONS}}
   </section>
 
   <section aria-label="Rollout plan">
-    <h2>Rollout Plan</h2>
+    <h2>Rollout plan</h2>
     {{ROLLOUT}}
   </section>
 
   <section class="claim-appendix" aria-label="Claim appendix">
-    <h2>Appendix: Claim Inventory</h2>
+    <h2>Appendix: Claim inventory</h2>
     {{CLAIM_APPENDIX}}
   </section>
 
-  <footer>Built with barn -- grainulation</footer>
+  <footer>Built with shared -- grainulation</footer>
 
 </article>
 </body>

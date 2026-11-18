@@ -13,7 +13,7 @@
 
 import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { compile } from "../compiler/wheat-compiler.js";
+import { compile } from "../compiler/evidence-compiler.js";
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
@@ -91,7 +91,7 @@ describe("claims-ops: exports", () => {
 			path.join("/tmp/example", "compilation.json"),
 		);
 		assert.ok(paths.brief.endsWith(path.join("output", "brief.html")));
-		assert.ok(paths.compiler.endsWith("wheat-compiler.js"));
+		assert.ok(paths.compiler.endsWith("evidence-compiler.js"));
 	});
 });
 

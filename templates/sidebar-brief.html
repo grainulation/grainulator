@@ -28,7 +28,7 @@
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background: #0a0a0f;
+  background: #141415;
   color: #e0e0e0;
   line-height: 1.6;
 }
@@ -54,11 +54,11 @@ body {
   z-index: 1000;
   padding: 0.75rem 1.5rem;
   background: #4ecdc4;
-  color: #0a0a0f;
-  font-weight: 700;
+  color: #141415;
+  font-weight: 600;
   text-decoration: none;
   border-radius: 0 0 0.5rem 0.5rem;
-  transition: top 0.2s;
+
 }
 .skip-nav:focus {
   top: 0;
@@ -84,7 +84,7 @@ body {
   width: 260px;
   flex-shrink: 0;
   padding: 2rem 1rem;
-  background: #111118;
+  background: #19191b;
   border-right: 1px solid #222;
   position: sticky;
   top: 0;
@@ -93,14 +93,14 @@ body {
 }
 .sidebar a {
   display: block;
-  padding: 0.375rem 0.75rem;
+  padding: .5rem 0.75rem;
   color: #999;
   text-decoration: none;
   border-radius: 0.25rem;
   font-size: 0.875rem;
 }
 .sidebar a:hover,
-.sidebar a:focus-visible { color: #fff; background: #1a1a24; }
+.sidebar a:focus-visible { color: #fff; background: #232325; }
 .sidebar a[aria-current="page"] {
   color: #4ecdc4;
   background: rgba(78, 205, 196, 0.1);
@@ -117,13 +117,13 @@ body {
 /* -- Headings -- */
 h1 {
   font-size: 2rem;
-  font-weight: 800;
+  font-weight: 500;
   margin-bottom: 1.5rem;
   color: #fff;
 }
 h2 {
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: 600;
   margin: 2rem 0 1rem;
   color: #fff;
 }
@@ -134,15 +134,12 @@ h3 {
   color: #e0e0e0;
 }
 
-/* -- Gradient text with solid fallback -- */
-.gradient-text {
-  background: linear-gradient(135deg, #4ecdc4, #a78bfa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-@supports not (-webkit-background-clip: text) {
-  .gradient-text { color: #4ecdc4; }
+/* -- Document title -- */
+.title-text {
+  background: none; color: inherit;
+
+  -webkit-text-fill-color: currentColor;
+
 }
 
 /* -- Tables -- */
@@ -166,8 +163,8 @@ th {
   font-weight: 600;
   color: #aaa;
   font-size: 0.8125rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 /* -- Severity indicators (text + color, not color alone) -- */
@@ -214,7 +211,7 @@ th {
   .sidebar-mobile {
     display: block;
     padding: 1rem;
-    background: #111118;
+    background: #19191b;
     border-bottom: 1px solid #222;
   }
   .sidebar-mobile summary {
@@ -236,6 +233,24 @@ th {
 @media (min-width: 901px) {
   .sidebar-mobile { display: none; }
 }
+
+  /* Evidence documents keep their data prominent and controls quiet. */
+  body { font-variant-numeric: tabular-nums; }
+  strong, b { font-weight: 600; }
+  :focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+  @media (prefers-reduced-motion: reduce) {
+    html, body { scroll-behavior: auto; scroll-snap-type: none; }
+  }
+
+  @media print {
+    :root { --bg: #fff; --fg: #171717; --fg2: #404040; --fg3: #525252; --surface: #f5f5f5; --border: #d4d4d4; }
+    body { background: #fff; color: #171717; }
+    h1, h2, h3, caption, th, .tag, .sev { color: #171717; -webkit-text-fill-color: currentColor; }
+    .sidebar, .sidebar-mobile, .skip-nav { display: none; }
+    .layout { display: block; }
+    .content { max-width: none; padding: 0; }
+    section[aria-roledescription="slide"] { min-height: auto; break-after: page; }
+  }
 </style>
 </head>
 <body>
@@ -249,13 +264,13 @@ th {
 
 <!-- Mobile table of contents (disclosure widget) -->
 <details class="sidebar-mobile">
-  <summary>Table of Contents</summary>
+  <summary>Table of contents</summary>
   <nav aria-label="Table of contents">
-    <a href="#executive-summary">Executive Summary</a>
-    <a href="#findings">Key Findings</a>
+    <a href="#executive-summary">Executive summary</a>
+    <a href="#findings">Key findings</a>
     <a href="#risks">Risks</a>
     <a href="#recommendations">Recommendations</a>
-    <a href="#evidence">Evidence Appendix</a>
+    <a href="#evidence">Evidence appendix</a>
   </nav>
 </details>
 
@@ -264,25 +279,25 @@ th {
   <!-- Sidebar navigation -->
   <aside class="sidebar">
     <nav aria-label="Table of contents">
-      <a href="#executive-summary" aria-current="page">Executive Summary</a>
-      <a href="#findings">Key Findings</a>
+      <a href="#executive-summary" aria-current="page">Executive summary</a>
+      <a href="#findings">Key findings</a>
       <a href="#risks">Risks</a>
       <a href="#recommendations">Recommendations</a>
-      <a href="#evidence">Evidence Appendix</a>
+      <a href="#evidence">Evidence appendix</a>
     </nav>
   </aside>
 
   <main id="main-content" role="main" class="content">
 
-    <h1 class="gradient-text">{{title}}</h1>
+    <h1 class="title-text">{{title}}</h1>
 
     <section id="executive-summary">
-      <h2>Executive Summary</h2>
+      <h2>Executive summary</h2>
       <!-- content -->
     </section>
 
     <section id="findings">
-      <h2>Key Findings</h2>
+      <h2>Key findings</h2>
       <!-- h3 for sub-topics within findings -->
       <h3>{{topic}}</h3>
       <!-- content -->
@@ -321,7 +336,7 @@ th {
     </section>
 
     <section id="evidence">
-      <h2>Evidence Appendix</h2>
+      <h2>Evidence appendix</h2>
       <!-- content -->
     </section>
 

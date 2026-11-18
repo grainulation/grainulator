@@ -2,7 +2,7 @@
  * Sprint phase constants — single source of truth for claim-ID prefixes
  * and the corresponding phase labels.
  *
- * Wheat, harvest, orchard, grainulator all use the same ID scheme
+ * Grainulator, analytics, orchestration, grainulator all use the same ID scheme
  * (d001, r042, p003, etc.). This module centralizes the mapping so
  * consumers don't hardcode it or drift.
  *

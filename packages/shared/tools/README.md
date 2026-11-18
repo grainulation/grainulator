@@ -1,4 +1,4 @@
-# barn/tools
+# shared/tools
 
 Standalone utilities for structured research sprints. Each tool works independently and has zero npm dependencies.
 
@@ -15,13 +15,13 @@ Scans a repo for `claims.json` files and determines which sprint is active using
 **Programmatic use:**
 
 ```js
-import { detectSprints } from "@grainulation/barn/detect-sprints";
+import { detectSprints } from "@grainulation/grainulator-shared/detect-sprints";
 const { active, sprints } = detectSprints("/path/to/repo");
 ```
 
 ## generate-manifest.js
 
-Builds a `wheat-manifest.json` that maps topics to claims and files. Designed to give AI search tools a single entry point into a sprint repo instead of requiring full directory scans.
+Builds a `.grainulator/evidence/manifest.json` that maps topics to claims and files. Designed to give AI search tools a single entry point into a sprint repo instead of requiring full directory scans.
 
 The manifest includes:
 

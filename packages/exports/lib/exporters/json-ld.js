@@ -28,7 +28,7 @@ async function exportJsonLd(inputPath, outputPath) {
 
   const meta = data.meta || {
     sprint: "unknown",
-    question: "Wheat Sprint Claims",
+    question: "Grainulator Sprint Claims",
   };
   const certificate = data.certificate || {};
   const doc = buildReport(meta, claims, certificate);

@@ -1,5 +1,5 @@
 /**
- * mill format: json-ld
+ * exports format: json-ld
  *
  * Wraps compilation.json in JSON-LD using schema.org/Report vocabulary.
  * Zero dependencies — node built-in only.

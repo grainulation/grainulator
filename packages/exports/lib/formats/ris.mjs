@@ -1,5 +1,5 @@
 /**
- * mill format: ris
+ * exports format: ris
  *
  * Converts compilation.json claims to RIS tagged citation format.
  * Each claim becomes a TY-ER record block.
@@ -20,7 +20,7 @@ export const description =
 export function convert(compilation) {
   const claims = compilation.claims || [];
   const meta = compilation.meta || {};
-  const author = meta.sprint ? `wheat sprint: ${meta.sprint}` : "wheat sprint";
+  const author = meta.sprint ? `evidence sprint: ${meta.sprint}` : "evidence sprint";
   const year = new Date().getFullYear().toString();
 
   if (claims.length === 0) {

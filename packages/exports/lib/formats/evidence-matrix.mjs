@@ -1,5 +1,5 @@
 /**
- * mill format: evidence-matrix
+ * exports format: evidence-matrix
  *
  * Generates a pivot CSV with rows=claim types, columns=evidence tiers, cells=counts.
  * Useful for visualizing evidence coverage across claim categories.

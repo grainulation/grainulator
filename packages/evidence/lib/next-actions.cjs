@@ -38,6 +38,10 @@ function nextActions(compilation = {}) {
 	);
 	const unresolvedCount = (compilation.conflict_graph?.unresolved || []).length;
 	const errors = compilation.errors || [];
+	if (compilation.evidence_health?.needs_reverification?.length)
+		add('grainulator maintain inspect --json', 'Recheck changed premises and evidence',
+			'Inspect the affected paths, record current observations and explicitly revise necessary-premise links after re-verification.',
+			compilation.evidence_health.needs_reverification.map(item => item.claim_id));
 	if (conflicts.length) {
 		const ids = [
 			...new Set(

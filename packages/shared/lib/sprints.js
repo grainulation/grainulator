@@ -1,6 +1,6 @@
 /**
  * Sprint metadata helpers — complements detectSprints() with per-sprint
- * loaders that harvest, orchard, silo, and wheat all re-implement today.
+ * loaders that analytics, orchestration, memory, and evidence all re-implement today.
  *
  * Usage (ESM):
  *   import { detectSprints } from "./index.js";
@@ -36,7 +36,7 @@ export function loadSprintCompilation(sprintDir) {
 }
 
 /**
- * Quick summary for a sprint directory — the shape harvest/orchard typically
+ * Quick summary for a sprint directory — the shape analytics/orchestration typically
  * want: question, phase, active/total claim count, conflict count, last modified.
  *
  * Returns null if the sprint directory doesn't have claims.json.
@@ -86,7 +86,7 @@ export function summarize(sprintDirs) {
 
 /**
  * Scan a directory two levels deep for every claims.json file — the shape
- * harvest + orchard dashboards need for cross-sprint listings. Returns an
+ * analytics + orchestration dashboards need for cross-sprint listings. Returns an
  * array of `{ file, dir, name, cat }` where `cat` is one of:
  *   - "root"    — claims.json directly in targetDir
  *   - "archive" — a *.json file under targetDir/archive/

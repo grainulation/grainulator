@@ -90,7 +90,7 @@ export class Packs {
   }
 
   /**
-   * Bundle claims from the silo into a publishable pack.
+   * Bundle claims from the memory into a publishable pack.
    *
    * @param {string} name - Pack name
    * @param {string[]} collectionIds - Claim collection IDs to include
@@ -134,7 +134,7 @@ export class Packs {
   }
 
   /**
-   * Install a pack from a file path into the local silo.
+   * Install a pack from a file path into the local memory.
    *
    * @param {string} filePath - Path to the pack JSON file
    */

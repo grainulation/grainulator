@@ -6,14 +6,14 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Sprint Update — {{SPRINT_NAME}}</title>
 <!--
-  barn/templates/email-digest.html — email-safe sprint update
+  shared/templates/email-digest.html — email-safe sprint update
   Inline styles only. Table layout for Gmail/Outlook compatibility.
   No external dependencies, no style blocks, no classes.
 -->
 </head>
-<body style="margin:0; padding:0; background-color:#0a0e1a; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif; -webkit-font-smoothing:antialiased;">
+<body style="margin:0; padding:0; background-color:#141415; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif; -webkit-font-smoothing:antialiased; font-variant-numeric:tabular-nums;">
 
-<table role="presentation" aria-label="Sprint digest email" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0a0e1a;">
+<table role="presentation" aria-label="Sprint digest email" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#141415;">
   <tr>
     <td align="center" style="padding:24px 16px;">
 
@@ -25,12 +25,12 @@
           <td style="padding:24px 32px; border-bottom:1px solid rgba(255,255,255,0.06);">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
               <tr>
-                <td style="font-size:20pt; font-weight:800; color:#f1f5f9; letter-spacing:-0.02em; padding-bottom:8px;">
+                <td style="font-size:20pt; font-weight:500; color:#ededed; letter-spacing: 0; padding-bottom:8px;">
                   Sprint Update
                 </td>
               </tr>
               <tr>
-                <td style="font-size:10pt; color:#94a3b8; line-height:1.5;">
+                <td style="font-size:11pt; color:#a1a1a6; line-height:1.5;">
                   {{SPRINT_NAME}} -- {{DATE}} -- From: {{AUTHOR}}
                 </td>
               </tr>
@@ -43,7 +43,7 @@
           <td style="padding:24px 32px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
               <tr>
-                <td style="font-size:8pt; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#64748b; padding-bottom:10px;">
+                <td style="font-size:9pt; font-weight:600; text-transform: none; letter-spacing: 0; color:#85858b; padding-bottom:12px;">
                   Progress
                 </td>
               </tr>
@@ -53,10 +53,10 @@
                   <!-- Expected structure:
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                     <tr>
-                      <td style="background-color:#1a2332; border-radius:6px; padding:0;">
+                      <td style="background-color:#1f1f21; border-radius:6px; padding:0;">
                         <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:65%;">
                           <tr>
-                            <td style="background:linear-gradient(90deg,#3b82f6,#2563eb); border-radius:6px; height:24px; padding-left:10px; font-size:8pt; font-weight:700; color:rgba(255,255,255,0.9); text-transform:uppercase; letter-spacing:0.05em;">
+                            <td style="background:#2563eb; border-radius:6px; height:24px; padding-left:12px; font-size:9pt; font-weight:600; color:rgba(255,255,255,0.9); text-transform: none; letter-spacing: 0;">
                               65%
                             </td>
                           </tr>
@@ -74,25 +74,25 @@
         <!-- Key findings -->
         <tr>
           <td style="padding:0 32px 24px 32px;">
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#1e293b; border-radius:12px; border:1px solid rgba(255,255,255,0.06);">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#232325; border-radius:12px; border:1px solid rgba(255,255,255,0.06);">
               <tr>
                 <td style="padding:20px 24px;">
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                     <tr>
-                      <td style="font-size:8pt; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#64748b; padding-bottom:14px;">
+                      <td style="font-size:9pt; font-weight:600; text-transform: none; letter-spacing: 0; color:#85858b; padding-bottom:16px;">
                         Key Findings
                       </td>
                     </tr>
                     {{TOP_FINDINGS}}
                     <!-- Each finding follows this structure:
                     <tr>
-                      <td style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.06);">
+                      <td style="padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.06);">
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                           <tr>
-                            <td style="font-family:monospace; font-size:9pt; color:#60a5fa; font-weight:700; width:60px; vertical-align:top;">
+                            <td style="font-family:monospace; font-size:9pt; color:#60a5fa; font-weight:600; width:60px; vertical-align:top;">
                               r042
                             </td>
-                            <td style="font-size:10pt; color:#94a3b8; line-height:1.4;">
+                            <td style="font-size:11pt; color:#a1a1a6; line-height:1.4;">
                               SSE handles real-time updates across the ecosystem. Zero npm dependencies.
                             </td>
                           </tr>
@@ -110,19 +110,19 @@
         <!-- Blockers -->
         <tr>
           <td style="padding:0 32px 24px 32px;">
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#1e293b; border-radius:12px; border:1px solid rgba(255,255,255,0.06);">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#232325; border-radius:12px; border:1px solid rgba(255,255,255,0.06);">
               <tr>
                 <td style="padding:20px 24px;">
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                     <tr>
-                      <td style="font-size:8pt; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#e11d48; padding-bottom:14px;">
+                      <td style="font-size:9pt; font-weight:600; text-transform: none; letter-spacing: 0; color:#e11d48; padding-bottom:16px;">
                         Blockers and Risks
                       </td>
                     </tr>
                     {{BLOCKERS}}
                     <!-- Each blocker follows this structure:
                     <tr>
-                      <td style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:10pt; color:#94a3b8; line-height:1.4;">
+                      <td style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:11pt; color:#a1a1a6; line-height:1.4;">
                         -- Project hook leaks across repositories and blocks unrelated CLI work
                       </td>
                     </tr>
@@ -137,19 +137,19 @@
         <!-- Next steps -->
         <tr>
           <td style="padding:0 32px 24px 32px;">
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#1e293b; border-radius:12px; border:1px solid rgba(255,255,255,0.06);">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#232325; border-radius:12px; border:1px solid rgba(255,255,255,0.06);">
               <tr>
                 <td style="padding:20px 24px;">
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                     <tr>
-                      <td style="font-size:8pt; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#22c55e; padding-bottom:14px;">
+                      <td style="font-size:9pt; font-weight:600; text-transform: none; letter-spacing: 0; color:#22c55e; padding-bottom:16px;">
                         Next Steps
                       </td>
                     </tr>
                     {{NEXT_STEPS}}
                     <!-- Each step follows this structure:
                     <tr>
-                      <td style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:10pt; color:#94a3b8; line-height:1.4;">
+                      <td style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:11pt; color:#a1a1a6; line-height:1.4;">
                         1. Run /prototype to validate SSE approach
                       </td>
                     </tr>
@@ -163,8 +163,8 @@
 
         <!-- Footer -->
         <tr>
-          <td style="padding:16px 32px; font-size:8pt; color:#64748b; text-align:center; border-top:1px solid rgba(255,255,255,0.06);">
-            Compiled with barn -- {{CERTIFICATE_HASH}}
+          <td style="padding:16px 32px; font-size:9pt; color:#85858b; text-align:center; border-top:1px solid rgba(255,255,255,0.06);">
+            Compiled with shared -- {{CERTIFICATE_HASH}}
           </td>
         </tr>
 

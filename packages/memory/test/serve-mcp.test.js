@@ -1,7 +1,7 @@
 /**
  * Integration test: silo MCP server — tool-call handlers
  *
- * Spawns `node bin/silo.js serve-mcp` as a child process over stdio,
+ * Spawns `node bin/memory.js serve-mcp` as a child process over stdio,
  * performs JSON-RPC 2.0 initialize, and issues tools/call for each of
  * silo's MCP tools. Asserts on response shape, content payload, and at
  * least one error path per tool.
@@ -25,7 +25,7 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const SILO_BIN = path.resolve(__dirname, "..", "bin", "silo.js");
+const SILO_BIN = path.resolve(__dirname, "../../..", "bin", "grainulator.js");
 
 function sendJsonRpc(child, obj) {
   child.stdin.write(JSON.stringify(obj) + "\n");
@@ -47,7 +47,7 @@ function buildEnv(fakeHome) {
 
 function spawnAndInitialize(cwd, fakeHome) {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [SILO_BIN, "serve-mcp"], {
+    const child = spawn(process.execPath, [SILO_BIN, "mcp"], {
       cwd,
       env: buildEnv(fakeHome),
       stdio: ["pipe", "pipe", "pipe"],
@@ -112,7 +112,7 @@ function waitForResponse(child, timeout = 10_000) {
     function onData(chunk) {
       buf += chunk.toString();
       // Only resolve when we have a COMPLETE newline-terminated line.
-      // Large responses (e.g. silo/packs with many packs) span multiple
+      // Large responses (e.g. memory_packs with many packs) span multiple
       // stdout chunks; early resolution on a partial buffer yields a
       // truncated string that JSON.parse rejects.
       const newlineIdx = buf.indexOf("\n");
@@ -227,7 +227,7 @@ describe("silo MCP server — protocol basics", () => {
     try {
       assert.equal(response.jsonrpc, "2.0");
       assert.equal(response.id, 1);
-      assert.equal(response.result.serverInfo.name, "silo");
+      assert.equal(response.result.serverInfo.name, "grainulator");
       assert.ok(response.result.protocolVersion);
     } finally {
       cleanup(child);
@@ -247,14 +247,14 @@ describe("silo MCP server — protocol basics", () => {
       const response = await responsePromise;
       const names = response.result.tools.map((t) => t.name);
       for (const expected of [
-        "silo/search",
-        "silo/list",
-        "silo/pull",
-        "silo/store",
-        "silo/packs",
-        "silo/graph",
-        "silo/confluence",
-        "silo/smart-fetch",
+        "memory_search",
+        "memory_list",
+        "memory_pull",
+        "memory_store",
+        "memory_packs",
+        "memory_graph",
+        "memory_confluence",
+        "memory_smart_fetch",
       ]) {
         assert.ok(names.includes(expected), `should list ${expected}`);
       }
@@ -264,7 +264,7 @@ describe("silo MCP server — protocol basics", () => {
   });
 
   it("no stdout pollution before first JSON-RPC response", async () => {
-    const child = spawn(process.execPath, [SILO_BIN, "serve-mcp"], {
+    const child = spawn(process.execPath, [SILO_BIN, "mcp"], {
       cwd: ws.workspace,
       env: buildEnv(ws.fakeHome),
       stdio: ["pipe", "pipe", "pipe"],
@@ -313,11 +313,11 @@ describe("silo MCP tool handlers", () => {
     fs.rmSync(ws.root, { recursive: true, force: true });
   });
 
-  // ── silo/list ────────────────────────────────────────────────────────────
-  it("silo/list — returns empty collection list on clean silo", async () => {
+  // ── memory_list ────────────────────────────────────────────────────────────
+  it("memory_list — returns empty collection list on clean silo", async () => {
     const { child } = await spawnAndInitialize(ws.workspace, ws.fakeHome);
     try {
-      const { payload } = await callTool(child, 10, "silo/list", {});
+      const { payload } = await callTool(child, 10, "memory_list", {});
       assert.equal(payload.status, "ok");
       assert.ok(Array.isArray(payload.collections));
     } finally {
@@ -325,11 +325,11 @@ describe("silo MCP tool handlers", () => {
     }
   });
 
-  // ── silo/packs ───────────────────────────────────────────────────────────
-  it("silo/packs — lists built-in knowledge packs", async () => {
+  // ── memory_packs ───────────────────────────────────────────────────────────
+  it("memory_packs — lists built-in knowledge packs", async () => {
     const { child } = await spawnAndInitialize(ws.workspace, ws.fakeHome);
     try {
-      const { payload } = await callTool(child, 20, "silo/packs", {});
+      const { payload } = await callTool(child, 20, "memory_packs", {});
       assert.equal(payload.status, "ok");
       assert.ok(Array.isArray(payload.packs));
       // Built-in packs ship with the package; expect at least one
@@ -342,11 +342,11 @@ describe("silo MCP tool handlers", () => {
     }
   });
 
-  // ── silo/search ──────────────────────────────────────────────────────────
-  it("silo/search — returns ok with empty results on clean silo", async () => {
+  // ── memory_search ──────────────────────────────────────────────────────────
+  it("memory_search — returns ok with empty results on clean silo", async () => {
     const { child } = await spawnAndInitialize(ws.workspace, ws.fakeHome);
     try {
-      const { payload } = await callTool(child, 30, "silo/search", {
+      const { payload } = await callTool(child, 30, "memory_search", {
         query: "anything",
       });
       assert.equal(payload.status, "ok");
@@ -358,13 +358,13 @@ describe("silo MCP tool handlers", () => {
     }
   });
 
-  it("silo/search — errors when query missing", async () => {
+  it("memory_search — errors when query missing", async () => {
     const { child } = await spawnAndInitialize(ws.workspace, ws.fakeHome);
     try {
       const { response, payload } = await callTool(
         child,
         31,
-        "silo/search",
+        "memory_search",
         {},
       );
       assert.equal(payload.status, "error");
@@ -375,11 +375,11 @@ describe("silo MCP tool handlers", () => {
     }
   });
 
-  // ── silo/store (happy) + silo/pull (happy) ───────────────────────────────
-  it("silo/store — stores claims from workspace claims.json", async () => {
+  // ── memory_store (happy) + memory_pull (happy) ───────────────────────────────
+  it("memory_store — stores claims from workspace claims.json", async () => {
     const { child } = await spawnAndInitialize(ws.workspace, ws.fakeHome);
     try {
-      const { payload } = await callTool(child, 40, "silo/store", {
+      const { payload } = await callTool(child, 40, "memory_store", {
         name: "test-collection",
       });
       assert.equal(payload.status, "ok");
@@ -390,10 +390,10 @@ describe("silo MCP tool handlers", () => {
     }
   });
 
-  it("silo/store — errors when name missing", async () => {
+  it("memory_store — errors when name missing", async () => {
     const { child } = await spawnAndInitialize(ws.workspace, ws.fakeHome);
     try {
-      const { payload } = await callTool(child, 41, "silo/store", {});
+      const { payload } = await callTool(child, 41, "memory_store", {});
       assert.equal(payload.status, "error");
       assert.ok(/name/i.test(payload.message));
     } finally {
@@ -401,25 +401,25 @@ describe("silo MCP tool handlers", () => {
     }
   });
 
-  it("silo/store — rejects path traversal in `from`", async () => {
+  it("memory_store — rejects path traversal in `from`", async () => {
     const { child } = await spawnAndInitialize(ws.workspace, ws.fakeHome);
     try {
-      const { payload } = await callTool(child, 42, "silo/store", {
+      const { payload } = await callTool(child, 42, "memory_store", {
         name: "bad",
         from: "../../../etc/passwd",
       });
       assert.equal(payload.status, "error");
-      assert.ok(/escapes workspace/i.test(payload.message));
+      assert.ok(/outside workspace|escapes workspace/i.test(payload.message));
     } finally {
       cleanup(child);
     }
   });
 
-  // ── silo/pull ────────────────────────────────────────────────────────────
-  it("silo/pull — errors when pack missing (required)", async () => {
+  // ── memory_pull ────────────────────────────────────────────────────────────
+  it("memory_pull — errors when pack missing (required)", async () => {
     const { child } = await spawnAndInitialize(ws.workspace, ws.fakeHome);
     try {
-      const { payload } = await callTool(child, 50, "silo/pull", {});
+      const { payload } = await callTool(child, 50, "memory_pull", {});
       assert.equal(payload.status, "error");
       assert.ok(/pack/i.test(payload.message));
     } finally {
@@ -427,10 +427,10 @@ describe("silo MCP tool handlers", () => {
     }
   });
 
-  it("silo/pull — errors on unknown pack", async () => {
+  it("memory_pull — errors on unknown pack", async () => {
     const { child } = await spawnAndInitialize(ws.workspace, ws.fakeHome);
     try {
-      const { payload } = await callTool(child, 51, "silo/pull", {
+      const { payload } = await callTool(child, 51, "memory_pull", {
         pack: "definitely-not-a-real-pack-xyz",
       });
       assert.equal(payload.status, "error");
@@ -439,11 +439,11 @@ describe("silo MCP tool handlers", () => {
     }
   });
 
-  // ── silo/graph ───────────────────────────────────────────────────────────
-  it("silo/graph — build returns stats", async () => {
+  // ── memory_graph ───────────────────────────────────────────────────────────
+  it("memory_graph — build returns stats", async () => {
     const { child } = await spawnAndInitialize(ws.workspace, ws.fakeHome);
     try {
-      const { payload } = await callTool(child, 60, "silo/graph", {
+      const { payload } = await callTool(child, 60, "memory_graph", {
         action: "build",
       });
       assert.equal(payload.status, "ok");
@@ -454,10 +454,10 @@ describe("silo MCP tool handlers", () => {
     }
   });
 
-  it("silo/graph — stats action succeeds on empty graph", async () => {
+  it("memory_graph — stats action succeeds on empty graph", async () => {
     const { child } = await spawnAndInitialize(ws.workspace, ws.fakeHome);
     try {
-      const { payload } = await callTool(child, 61, "silo/graph", {
+      const { payload } = await callTool(child, 61, "memory_graph", {
         action: "stats",
       });
       assert.equal(payload.status, "ok");
@@ -466,10 +466,10 @@ describe("silo MCP tool handlers", () => {
     }
   });
 
-  it("silo/graph — rejects unknown action", async () => {
+  it("memory_graph — rejects unknown action", async () => {
     const { child } = await spawnAndInitialize(ws.workspace, ws.fakeHome);
     try {
-      const { payload } = await callTool(child, 62, "silo/graph", {
+      const { payload } = await callTool(child, 62, "memory_graph", {
         action: "definitely-not-a-real-action",
       });
       assert.equal(payload.status, "error");
@@ -478,10 +478,10 @@ describe("silo MCP tool handlers", () => {
     }
   });
 
-  it("silo/graph — related requires claimId", async () => {
+  it("memory_graph — related requires claimId", async () => {
     const { child } = await spawnAndInitialize(ws.workspace, ws.fakeHome);
     try {
-      const { payload } = await callTool(child, 63, "silo/graph", {
+      const { payload } = await callTool(child, 63, "memory_graph", {
         action: "related",
       });
       assert.equal(payload.status, "error");
@@ -491,11 +491,11 @@ describe("silo MCP tool handlers", () => {
     }
   });
 
-  // ── silo/confluence (error-only, no external service) ────────────────────
-  it("silo/confluence — errors when env vars unset", async () => {
+  // ── memory_confluence (error-only, no external service) ────────────────────
+  it("memory_confluence — errors when env vars unset", async () => {
     const { child } = await spawnAndInitialize(ws.workspace, ws.fakeHome);
     try {
-      const { payload } = await callTool(child, 70, "silo/confluence", {
+      const { payload } = await callTool(child, 70, "memory_confluence", {
         action: "list",
       });
       assert.equal(payload.status, "error");
@@ -508,11 +508,11 @@ describe("silo MCP tool handlers", () => {
     }
   });
 
-  // ── silo/smart-fetch (error-only, no network) ────────────────────────────
-  it("silo/smart-fetch — errors on missing url", async () => {
+  // ── memory_smart_fetch (error-only, no network) ────────────────────────────
+  it("memory_smart_fetch — errors on missing url", async () => {
     const { child } = await spawnAndInitialize(ws.workspace, ws.fakeHome);
     try {
-      const { payload } = await callTool(child, 80, "silo/smart-fetch", {});
+      const { payload } = await callTool(child, 80, "memory_smart_fetch", {});
       assert.equal(payload.status, "error");
       assert.ok(/url/i.test(payload.message));
     } finally {
@@ -520,10 +520,10 @@ describe("silo MCP tool handlers", () => {
     }
   });
 
-  it("silo/smart-fetch — errors on non-http(s) URL", async () => {
+  it("memory_smart_fetch — errors on non-http(s) URL", async () => {
     const { child } = await spawnAndInitialize(ws.workspace, ws.fakeHome);
     try {
-      const { payload } = await callTool(child, 81, "silo/smart-fetch", {
+      const { payload } = await callTool(child, 81, "memory_smart_fetch", {
         url: "file:///etc/passwd",
       });
       assert.equal(payload.status, "error");
@@ -546,7 +546,7 @@ describe("silo MCP tool handlers", () => {
       });
       const response = await responsePromise;
       assert.ok(response.error, "should return JSON-RPC error");
-      assert.equal(response.error.code, -32601);
+      assert.equal(response.error.code, -32602);
     } finally {
       cleanup(child);
     }

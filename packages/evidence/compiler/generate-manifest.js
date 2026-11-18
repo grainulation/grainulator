@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * wheat-manifest.json generator
+ * .grainulator/evidence/manifest.json generator
  *
  * Reads claims.json, compilation.json, and scans the repo directory structure
  * to produce a topic-map manifest. Zero npm dependencies.
  *
- * Usage:  node generate-manifest.js [--out wheat-manifest.json] [--dir <path>]
+ * Usage:  node generate-manifest.js [--out .grainulator/evidence/manifest.json] [--dir <path>]
  *
  * Based on research claims r011 (single machine-readable manifest) and
  * r017 (topic map structure over file tree).
@@ -93,9 +93,9 @@ export function highestEvidence(claims) {
  */
 function detectSprintsForManifest() {
 	// Check for cached sprint data from compiler (avoids re-running detectSprints)
-	if (env.WHEAT_SPRINTS_CACHE) {
+	if (env.GRAINULATOR_SPRINTS_CACHE) {
 		try {
-			const parsed = JSON.parse(env.WHEAT_SPRINTS_CACHE);
+			const parsed = JSON.parse(env.GRAINULATOR_SPRINTS_CACHE);
 			const sprints = {};
 			for (const s of parsed.sprints || []) {
 				sprints[s.name] = {
@@ -333,7 +333,8 @@ export function buildManifest(dir, opts = {}) {
 		files: topicFiles,
 	};
 
-	const outPath = path.join(rootDir, "wheat-manifest.json");
+	const outPath = path.join(rootDir, ".grainulator", "evidence", "manifest.json");
+	fs.mkdirSync(path.dirname(outPath), {recursive:true});
 	fs.writeFileSync(outPath, JSON.stringify(manifest, null, 2) + "\n");
 
 	return {
@@ -364,7 +365,7 @@ if (isMain) {
 
 	const elapsed = (performance.now() - t0).toFixed(1);
 	const sizeBytes = Buffer.byteLength(JSON.stringify(result.manifest, null, 2));
-	console.log(`wheat-manifest.json generated in ${elapsed}ms`);
+	console.log(`.grainulator/evidence/manifest.json generated in ${elapsed}ms`);
 	console.log(
 		`  Topics: ${result.topicCount}  |  Files: ${
 			result.fileCount

@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Conflict Map — {{TITLE}}</title>
 <style>
-  /* barn/templates/conflict-map.html — visual conflict resolution map
+  /* shared/templates/conflict-map.html — visual conflict resolution map
      System font stack, no external dependencies, fully self-contained. */
 
   :root {
-    --bg: #0a0e1a;
-    --bg-card: #1e293b;
-    --bg-card-alt: #1a2332;
+    --bg: #141415;
+    --bg-card: #232325;
+    --bg-card-alt: #1f1f21;
     --accent: #3b82f6;
     --accent-light: #60a5fa;
     --green: #22c55e;
@@ -21,9 +21,9 @@
     --red: #e11d48;
     --red-dim: rgba(225,29,72,0.15);
     --purple: #a78bfa;
-    --text: #f1f5f9;
-    --text-muted: #94a3b8;
-    --text-dim: #64748b;
+    --text: #ededed;
+    --text-muted: #a1a1a6;
+    --text-dim: #85858b;
     --border: rgba(255,255,255,0.06);
   }
 
@@ -33,7 +33,7 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
     background: var(--bg);
     color: var(--text);
-    font-size: 10pt;
+    font-size: 11pt;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     padding: 40px;
@@ -48,19 +48,19 @@
 
   .map-header h1 {
     font-size: 24pt;
-    font-weight: 800;
-    letter-spacing: -0.02em;
+    font-weight: 500;
+    letter-spacing: 0;
     margin-bottom: 8px;
-    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    background: none; color: inherit;
+
+    -webkit-text-fill-color: currentColor;
   }
 
   .map-header .meta {
     display: flex;
     gap: 24px;
     color: var(--text-muted);
-    font-size: 10pt;
+    font-size: 11pt;
   }
 
   .summary-bar {
@@ -74,10 +74,10 @@
   }
 
   .summary-stat { text-align: center; }
-  .summary-stat .stat-value { font-size: 20pt; font-weight: 800; display: block; }
+  .summary-stat .stat-value { font-size: 20pt; font-weight: 500; display: block; }
   .summary-stat .stat-label {
-    font-size: 8pt; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.1em; color: var(--text-dim);
+    font-size: 9pt; font-weight: 600; text-transform: none;
+    letter-spacing: 0; color: var(--text-dim);
   }
   .stat-value.total { color: var(--accent-light); }
   .stat-value.unresolved { color: var(--red); }
@@ -104,21 +104,21 @@
     border: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
   }
 
-  .claim-card .claim-id { font-family: monospace; font-size: 9pt; color: var(--accent-light); font-weight: 700; }
-  .claim-card .claim-content { font-size: 10pt; color: var(--text-muted); line-height: 1.5; flex: 1; }
+  .claim-card .claim-id { font-family: monospace; font-size: 9pt; color: var(--accent-light); font-weight: 600; }
+  .claim-card .claim-content { font-size: 11pt; color: var(--text-muted); line-height: 1.5; flex: 1; }
   .claim-card .claim-badges { display: flex; gap: 8px; flex-wrap: wrap; }
 
   .badge {
     display: inline-block;
     padding: 2px 8px;
     border-radius: 4px;
-    font-size: 8pt;
+    font-size: 9pt;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+    text-transform: none;
+    letter-spacing: 0;
   }
 
   .badge.factual { color: var(--accent-light); background: rgba(59,130,246,0.12); }
@@ -142,12 +142,12 @@
   .connector-icon {
     width: 40px; height: 40px; border-radius: 50%; display: flex;
     align-items: center; justify-content: center;
-    font-size: 10pt; font-weight: 800; flex-shrink: 0;
+    font-size: 11pt; font-weight: 500; flex-shrink: 0;
   }
   .connector-icon.unresolved { background: var(--red-dim); color: var(--red); border: 2px solid var(--red); }
   .connector-icon.resolved { background: var(--green-dim); color: var(--green); border: 2px solid var(--green); }
   .connector-icon.pending { background: var(--orange-dim); color: var(--orange); border: 2px solid var(--orange); }
-  .status-label { font-size: 7pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px; }
+  .status-label { font-size: 9pt; font-weight: 600; text-transform: none; letter-spacing: 0; margin-top: 4px; }
   .status-label.unresolved { color: var(--red); }
   .status-label.resolved { color: var(--green); }
   .status-label.pending { color: var(--orange); }
@@ -158,10 +158,10 @@
   }
 
   .conflict-summary .summary-title {
-    font-size: 9pt; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 12px;
+    font-size: 9pt; font-weight: 600; text-transform: none;
+    letter-spacing: 0; color: var(--text-dim); margin-bottom: 12px;
   }
-  .conflict-summary .summary-text { font-size: 10pt; color: var(--text-muted); line-height: 1.6; }
+  .conflict-summary .summary-text { font-size: 11pt; color: var(--text-muted); line-height: 1.6; }
 
   .compilation-bar {
     margin-top: 32px; padding: 16px 24px; background: var(--bg-card);
@@ -169,7 +169,7 @@
     justify-content: space-between; align-items: center;
     font-size: 9pt; color: var(--text-dim);
   }
-  .compilation-bar .certificate { font-family: monospace; font-size: 8pt; }
+  .compilation-bar .certificate { font-family: monospace; font-size: 9pt; }
 
   @media (max-width: 768px) {
     body { padding: 16px; }
@@ -206,6 +206,25 @@
     .badge { border: 1px solid #ccc; }
     .connector-icon { border-width: 2px; }
   }
+
+  /* Evidence documents keep their data prominent and controls quiet. */
+  body { font-variant-numeric: tabular-nums; }
+  strong, b { font-weight: 600; }
+  :focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+  @media (prefers-reduced-motion: reduce) {
+    html, body { scroll-behavior: auto; scroll-snap-type: none; }
+  }
+
+  @media print {
+    :root {
+      --bg: #fff; --bg-dark: #fff; --bg2: #f5f5f5; --bg3: #e5e5e5;
+      --bg-card: #f5f5f5; --bg-card-alt: #ededed; --bg-card-hover: #e5e5e5;
+      --text: #171717; --text-muted: #404040; --text-dim: #525252;
+      --accent: #1d4ed8; --accent-light: #1d4ed8; --border: #d4d4d4;
+      --green: #166534; --red: #b91c1c; --orange: #92400e; --purple: #6d28d9; --pink: #9d174d;
+    }
+    h1, h2, h3, h4 { color: #171717; -webkit-text-fill-color: currentColor; }
+  }
 </style>
 </head>
 <body>
@@ -232,7 +251,7 @@
 </section>
 
 <footer class="compilation-bar" role="contentinfo">
-  <div>Compiled with barn</div>
+  <div>Compiled with shared</div>
   <div class="certificate">{{CERTIFICATE_HASH}}</div>
 </footer>
 

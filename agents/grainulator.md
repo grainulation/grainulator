@@ -20,6 +20,15 @@ tools:
   - mcp__grainulator__resolve
   - mcp__grainulator__deepwiki
   - mcp__grainulator__sync_log
+  - mcp__grainulator__evidence_health
+  - mcp__grainulator__premise_links
+  - mcp__grainulator__correct_claim
+  - mcp__grainulator__observe_source
+  - mcp__grainulator__findings
+  - mcp__grainulator__finding_action
+  - mcp__grainulator__duplicate_candidates
+  - mcp__grainulator__acceptance_check
+  - mcp__grainulator__acceptance_set
   - mcp__grainulator__memory_search
   - mcp__grainulator__memory_list
   - mcp__grainulator__memory_pull
@@ -40,6 +49,15 @@ tools:
   - mcp__plugin_grainulator_grainulator__resolve
   - mcp__plugin_grainulator_grainulator__deepwiki
   - mcp__plugin_grainulator_grainulator__sync_log
+  - mcp__plugin_grainulator_grainulator__evidence_health
+  - mcp__plugin_grainulator_grainulator__premise_links
+  - mcp__plugin_grainulator_grainulator__correct_claim
+  - mcp__plugin_grainulator_grainulator__observe_source
+  - mcp__plugin_grainulator_grainulator__findings
+  - mcp__plugin_grainulator_grainulator__finding_action
+  - mcp__plugin_grainulator_grainulator__duplicate_candidates
+  - mcp__plugin_grainulator_grainulator__acceptance_check
+  - mcp__plugin_grainulator_grainulator__acceptance_set
   - mcp__plugin_grainulator_grainulator__memory_search
   - mcp__plugin_grainulator_grainulator__memory_list
   - mcp__plugin_grainulator_grainulator__memory_pull

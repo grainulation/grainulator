@@ -4,7 +4,7 @@
 
 ## Scope
 
-This spec applies to all 7 retained tools: wheat, barn, mill, silo, harvest, orchard, grainulation. Every tool that renders claim content, SSE event data, or user input into HTML must follow these rules.
+This spec applies to all 7 retained tools: evidence, shared, exports, memory, analytics, orchestration, grainulation. Every tool that renders claim content, SSE event data, or user input into HTML must follow these rules.
 
 ## 1. HTML Sanitization
 
@@ -84,41 +84,16 @@ eventSource.onmessage = (e) => {
 };
 ```
 
-## 3. CORS Policy
+## 3. Browser origins
 
-### Default: same-origin only
-
-All grainulation tool servers default to same-origin. No `Access-Control-Allow-Origin` header is sent unless explicitly configured.
-
-### Configurable via --cors flag
-
-Tools that support cross-origin access (e.g., barn serving shared assets to other tool UIs) accept a `--cors` flag:
-
-```bash
-# Allow specific origin
-npx @grainulation/barn serve --cors http://localhost:9092
-
-# Allow all origins (development only)
-npx @grainulation/barn serve --cors "*"
-```
-
-### Implementation pattern
-
-```javascript
-if (corsOrigin) {
-  res.setHeader("Access-Control-Allow-Origin", corsOrigin);
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-}
-```
-
-### v1 policy
-
-For v1, all tools run on localhost on different ports. Cross-origin requests between tools (e.g., wheat UI loading barn assets) use the `--cors` flag. Production deployments should restrict origins explicitly.
+Component browser dashboards and their HTTP APIs have been retired. They do not
+listen on legacy component ports or accept `--cors` flags. The local research
+playground has its own loopback origin checks; see the project's
+[deployment and local research guide](../../../docs/DEPLOYMENT.md).
 
 ## 4. Path Traversal Prevention
 
-### Existing pattern (wheat/barn servers)
+### Existing pattern (evidence/shared servers)
 
 The servers already normalize paths and reject traversal attempts. The pattern:
 
@@ -143,7 +118,7 @@ function safePath(base, requested) {
 
 - Static file serving in all tool UIs
 - Claim file loading (claims.json path)
-- Export/import file paths in mill and silo
+- Export/import file paths in exports and memory
 - Any endpoint that accepts a file path parameter
 
 ## 5. Authentication
@@ -151,7 +126,7 @@ function safePath(base, requested) {
 
 ### All other tools: local-only, no auth
 
-Wheat, barn, mill, silo, harvest, orchard, and grainulation bind to `127.0.0.1` (localhost) by default. Since they only accept local connections, no authentication is needed for v1.
+Grainulator, shared, exports, memory, analytics, orchestration, and grainulation bind to `127.0.0.1` (localhost) by default. Since they only accept local connections, no authentication is needed for v1.
 
 ### When to add auth to other tools
 

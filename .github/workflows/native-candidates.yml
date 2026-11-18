@@ -1,0 +1,64 @@
+name: Native runtime candidates
+on:
+  workflow_call:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  package:
+    name: Native archive / ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15
+            target: aarch64-apple-darwin
+          - os: macos-15-intel
+            target: x86_64-apple-darwin
+          - os: ubuntu-24.04
+            target: x86_64-unknown-linux-musl
+          - os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-musl
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: '1.93.0'
+          targets: ${{ matrix.target }}
+      - name: Install native musl linker
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes musl-tools
+      - name: Fetch locked build dependencies
+        run: cargo fetch --locked --manifest-path packages/runtime/rs/Cargo.toml
+      - name: Build canonical native runtime
+        env:
+          NATIVE_TARGET: ${{ matrix.target }}
+        run: |
+          if [ "$RUNNER_OS" = Linux ]; then export RUSTFLAGS='-C linker=musl-gcc'; fi
+          cargo build --offline --locked --release --target "$NATIVE_TARGET" --manifest-path packages/runtime/rs/Cargo.toml
+      - name: Package frozen source and execute installed archive
+        id: candidate
+        env:
+          NATIVE_TARGET: ${{ matrix.target }}
+        run: |
+          candidate_directory="$RUNNER_TEMP/native-candidate"
+          node scripts/package-native.mjs --bin-dir "packages/runtime/rs/target/$NATIVE_TARGET/release" --target "$NATIVE_TARGET" --source-commit "$GITHUB_SHA" --out "$candidate_directory"
+          node scripts/native-candidate-check.mjs --candidate-dir "$candidate_directory"
+          echo "directory=$candidate_directory" >> "$GITHUB_OUTPUT"
+      - name: Upload exact verified native bytes
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: native-${{ matrix.target }}
+          path: ${{ steps.candidate.outputs.directory }}/*
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0

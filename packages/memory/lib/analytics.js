@@ -1,58 +1,19 @@
 /**
- * silo -> harvest edge: cross-library analytics.
+ * memory -> analytics edge: cross-library analytics.
  *
- * Feeds silo's stored claim collections to harvest's analyzer
+ * Feeds memory's stored claim collections to analytics's analyzer
  * to surface patterns, evidence quality trends, and type distribution
- * across the entire knowledge base. Graceful fallback if harvest
- * is not available.
+ * across the entire knowledge base. Uses the bundled private analytics component.
  */
 
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const HARVEST_SIBLINGS = [
-  path.join(__dirname, "..", "..", "analytics"),
-  path.join(__dirname, "..", "..", "harvest"),
-  path.join(__dirname, "..", "..", "..", "harvest"),
-];
-
-/**
- * Try to load harvest's analyzer module from a sibling checkout.
- * Returns the analyze function or null.
- */
-export async function loadHarvestAnalyzer() {
-  for (const dir of HARVEST_SIBLINGS) {
-    const analyzerPath = path.join(dir, "lib", "analyzer.js");
-    if (fs.existsSync(analyzerPath)) {
-      try {
-        const mod = await import(pathToFileURL(analyzerPath).href);
-        if (typeof mod.analyze === "function") return mod.analyze;
-      } catch {
-        continue;
-      }
-    }
-  }
-  return null;
-}
+import { analyze } from "../../analytics/lib/analyzer.js";
 
 /**
  * Run cross-library analytics on all stored claim collections.
- * @param {import('./store').Store} store — an initialized silo Store instance
+ * @param {import('./store').Store} store — an initialized memory Store instance
  * @returns {Promise<{ available: boolean, analysis?: object, collectionCount?: number }>}
  */
 export async function analyzeLibrary(store) {
-  const analyze = await loadHarvestAnalyzer();
-  if (!analyze) {
-    return {
-      available: false,
-      reason: "bundled analytics component not found",
-    };
-  }
-
   const collections = store.list();
   if (collections.length === 0) {
     return {
@@ -63,7 +24,7 @@ export async function analyzeLibrary(store) {
     };
   }
 
-  // Convert silo collections into the sprint format harvest expects
+  // Convert memory collections into the sprint format analytics expects
   const sprints = [];
   for (const entry of collections) {
     const data = store.getClaims(entry.id);

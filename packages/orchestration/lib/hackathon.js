@@ -1,3 +1,4 @@
+import { loadPortfolio, updatePortfolio } from "./project-config.js";
 import { atomicWrite } from "../../shared/lib/atomic.js";
 import { writeNewFile } from "../../shared/lib/fs-safe.cjs";
 import fs from "node:fs";
@@ -6,7 +7,7 @@ import path from "node:path";
 /**
  * Hackathon coordinator mode.
  *
- * Uses existing orchard infrastructure to run time-boxed research hackathons.
+ * Uses existing orchestration infrastructure to run time-boxed research hackathons.
  * Teams get assigned sprints, a timer tracks the event, and a leaderboard
  * ranks teams by claim count, evidence quality, and compilation status.
  */
@@ -14,8 +15,8 @@ import path from "node:path";
 const HACKATHON_FILE = "hackathon.json";
 
 /**
- * Default hackathon configuration schema for orchard.json.
- * Users can add a "hackathon" section to orchard.json to preconfigure defaults.
+ * Default hackathon configuration schema for grainulator.config.json.
+ * Users can add a "hackathon" section to grainulator.config.json to preconfigure defaults.
  *
  *   {
  *     "sprints": [...],
@@ -43,33 +44,19 @@ export const DEFAULT_HACKATHON_CONFIG = {
 };
 
 /**
- * Load hackathon configuration from orchard.json.
+ * Load hackathon configuration from grainulator.config.json.
  * Merges with defaults for any missing fields.
  */
 export function loadHackathonConfig(root) {
-  const orchardPath = path.join(root, "orchard.json");
-  if (!fs.existsSync(orchardPath)) return { ...DEFAULT_HACKATHON_CONFIG };
-
-  try {
-    const config = JSON.parse(fs.readFileSync(orchardPath, "utf8"));
-    const hackConfig = config.hackathon || {};
-    return {
-      time_limit: hackConfig.time_limit || DEFAULT_HACKATHON_CONFIG.time_limit,
-      categories: hackConfig.categories || DEFAULT_HACKATHON_CONFIG.categories,
-      judging_weights: {
-        ...DEFAULT_HACKATHON_CONFIG.judging_weights,
-        ...(hackConfig.judging_weights || {}),
-      },
-    };
-  } catch {
-    return { ...DEFAULT_HACKATHON_CONFIG };
-  }
+  const config=loadPortfolio(root)||{};
+  const hackConfig=config.hackathon||{};
+  return {...DEFAULT_HACKATHON_CONFIG,...hackConfig,judging_weights:{...DEFAULT_HACKATHON_CONFIG.judging_weights,...hackConfig.judging_weights}};
 }
 
 /**
  * Initialize a hackathon event.
- * Creates hackathon.json alongside orchard.json.
- * Reads default config from orchard.json "hackathon" section if present.
+ * Creates hackathon.json alongside grainulator.config.json.
+ * Reads default config from grainulator.config.json "hackathon" section if present.
  */
 export function initHackathon(root, opts = {}) {
   const hackPath = path.join(root, HACKATHON_FILE);
@@ -79,7 +66,7 @@ export function initHackathon(root, opts = {}) {
     );
   }
 
-  // Load preconfigured defaults from orchard.json hackathon section
+  // Load preconfigured defaults from grainulator.config.json hackathon section
   const hackConfig = loadHackathonConfig(root);
 
   const durationMinutes = opts.duration || hackConfig.time_limit;
@@ -116,7 +103,7 @@ export function loadHackathon(root) {
 export function addTeam(root, teamName, question) {
   const hack = loadHackathon(root);
   if (!hack)
-    throw new Error("No active hackathon — run orchard hackathon init first");
+    throw new Error("No active hackathon — run orchestration hackathon init first");
   if (hack.status !== "active") throw new Error("Hackathon is not active");
 
   const sprintPath = path.join(
@@ -153,33 +140,17 @@ export function addTeam(root, teamName, question) {
   const hackPath = path.join(root, HACKATHON_FILE);
   atomicWrite(hackPath, JSON.stringify(hack, null, 2) + "\n", "utf8");
 
-  // Also add to orchard.json if it exists
-  const orchardPath = path.join(root, "orchard.json");
-  if (fs.existsSync(orchardPath)) {
-    const config = JSON.parse(fs.readFileSync(orchardPath, "utf8"));
-    const exists = (config.sprints || []).some((s) => s.path === sprintPath);
-    if (!exists) {
-      config.sprints = config.sprints || [];
-      config.sprints.push({
-        path: sprintPath,
-        name: `hackathon-${teamName}`,
-        question: question || `${teamName}'s hackathon research`,
-        assigned_to: teamName,
-      });
-      atomicWrite(
-        orchardPath,
-        JSON.stringify(config, null, 2) + "\n",
-        "utf8",
-      );
-    }
-  }
+  if (loadPortfolio(root)) updatePortfolio(root,config=>{
+    if((config.sprints||[]).some(s=>s.path===sprintPath))return config;
+    return {...config,sprints:[...(config.sprints||[]),{path:sprintPath,name:`hackathon-${teamName}`,question:question||`${teamName}'s hackathon research`,assigned_to:teamName}]};
+  });
 
   return { teamName, sprintPath };
 }
 
 /**
  * Build leaderboard from current sprint states.
- * Ranks teams by configurable judging_weights from orchard.json hackathon section.
+ * Ranks teams by configurable judging_weights from grainulator.config.json hackathon section.
  * Default: compilation (10pts), claim count (1pt each), evidence quality (1pt each).
  */
 export function leaderboard(root) {
@@ -298,7 +269,7 @@ export function printHackathon(root) {
   if (!timer) {
     console.log("");
     console.log(
-      "  No active hackathon. Start one with: orchard hackathon init",
+      "  No active hackathon. Start one with: orchestration hackathon init",
     );
     console.log("");
     return;

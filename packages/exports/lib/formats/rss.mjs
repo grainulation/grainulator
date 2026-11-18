@@ -1,5 +1,5 @@
 /**
- * mill format: rss
+ * exports format: rss
  *
  * Converts compilation.json claims to an Atom XML feed.
  * Each claim becomes a feed entry with category and content.
@@ -26,7 +26,7 @@ export function convert(compilation) {
   lines.push(`<?xml version="1.0" encoding="utf-8"?>`);
   lines.push(`<feed xmlns="http://www.w3.org/2005/Atom">`);
   lines.push(`  <title>${escapeXml(`Sprint: ${sprintName}`)}</title>`);
-  lines.push(`  <id>urn:wheat:sprint:${escapeXml(sprintName)}</id>`);
+  lines.push(`  <id>urn:evidence:sprint:${escapeXml(sprintName)}</id>`);
   lines.push(`  <updated>${updated}</updated>`);
 
   if (meta.question) {
@@ -66,7 +66,7 @@ function claimToEntry(claim) {
   const lines = [];
   lines.push(`  <entry>`);
   lines.push(`    <title>${escapeXml(`${id}: ${truncate(text, 80)}`)}</title>`);
-  lines.push(`    <id>urn:wheat:${escapeXml(id)}</id>`);
+  lines.push(`    <id>urn:evidence:${escapeXml(id)}</id>`);
   lines.push(`    <updated>${updated}</updated>`);
   lines.push(`    <content type="text">${escapeXml(text)}</content>`);
 

@@ -35,7 +35,7 @@ const expectedFiles = [
   "package.json",
   "README.md",
   "LICENSE",
-  "bin/barn.js",
+  "bin/shared.js",
   "tools/detect-sprints.js",
   "tools/generate-manifest.js",
   "tools/build-pdf.js",
@@ -53,10 +53,10 @@ console.log("\n--- package.json ---");
 
 const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"));
 
-assert(pkg.name === "@grainulation/barn", "name is @grainulation/barn");
+assert(pkg.name === "@grainulation/grainulator-shared", "name is @grainulation/grainulator-shared");
 assert(pkg.type === "module", "type is module (ESM)");
 assert(pkg.license === "MIT", "license is MIT");
-assert(pkg.bin?.barn === "./bin/barn.js", "bin points to barn.js");
+assert(pkg.bin === undefined, "private workspaces expose no standalone product binaries");
 assert(
   !pkg.dependencies || Object.keys(pkg.dependencies).length === 0,
   "zero runtime dependencies",
@@ -87,7 +87,7 @@ console.log("\n--- CLI ---");
 try {
   const helpOutput = execFileSync(
     process.execPath,
-    [join(ROOT, "bin/barn.js"), "help"],
+    [join(ROOT, "bin/shared.js"), "help"],
     {
       timeout: 5000,
       stdio: ["ignore", "pipe", "pipe"],
@@ -291,10 +291,10 @@ try {
       },
     );
     const manifest = JSON.parse(
-      readFileSync(join(tmp, "wheat-manifest.json"), "utf8"),
+      readFileSync(join(tmp, ".grainulator/evidence/manifest.json"), "utf8"),
     );
     assert(
-      manifest.generator === "@grainulation/barn generate-manifest",
+      manifest.generator === "@grainulation/grainulator-shared generate-manifest",
       "manifest has correct generator",
     );
     assert(
@@ -367,7 +367,7 @@ console.log("\n--- CLI edge cases ---");
   try {
     execFileSync(
       process.execPath,
-      [join(ROOT, "bin/barn.js"), "nonexistent-cmd"],
+      [join(ROOT, "bin/shared.js"), "nonexistent-cmd"],
       {
         timeout: 5000,
         stdio: ["ignore", "pipe", "pipe"],
@@ -384,7 +384,7 @@ console.log("\n--- CLI edge cases ---");
   try {
     const helpOutput = execFileSync(
       process.execPath,
-      [join(ROOT, "bin/barn.js"), "-h"],
+      [join(ROOT, "bin/shared.js"), "-h"],
       {
         timeout: 5000,
         stdio: ["ignore", "pipe", "pipe"],

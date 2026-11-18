@@ -1,9 +1,9 @@
 import { escapeMarkdownData } from "./_shared.mjs";
 /**
- * mill format: markdown
+ * exports format: markdown
  *
- * Converts compilation.json (wheat compiler output) to clean Markdown.
- * Used by the mill server for live preview and export.
+ * Converts compilation.json (evidence compiler output) to clean Markdown.
+ * Used by the exports server for live preview and export.
  * Zero dependencies — node built-in only.
  */
 

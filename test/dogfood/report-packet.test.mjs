@@ -9,7 +9,6 @@ import { fileURLToPath } from "node:url";
 import {
 	attestReportPacket,
 	buildReportPacket,
-	checkLimitationAndConflictSurvival,
 	checkReportPacket,
 	checkSourceProvenance,
 	checkUncitedFactualAssertions,
@@ -115,7 +114,7 @@ test("independent check detects stale ledger, tampered packet and changed passag
 		),
 	);
 	fs.writeFileSync(
-		path.join(dir, "evidence/passages", passageDigest + ".txt"),
+		path.join(dir, "evidence/passages", `${passageDigest}.txt`),
 		"Changed source",
 	);
 	assert.ok(
@@ -259,7 +258,7 @@ test("missing and unquoted passages stay explicit gaps; symlinked ledgers are re
 	ledger.claims[0].source.quote = "A quotation that is not in the passage.";
 	save();
 	assert.ok(buildReportPacket(dir).gaps.some((x) => x.code === "quote_absent"));
-	fs.unlinkSync(path.join(dir, "evidence/passages", passageDigest + ".txt"));
+	fs.unlinkSync(path.join(dir, "evidence/passages", `${passageDigest}.txt`));
 	assert.ok(
 		buildReportPacket(dir).gaps.some((x) => x.code === "passage_missing"),
 	);
@@ -314,7 +313,7 @@ test("different corrupt passage bytes invalidate a frozen observation while evid
 	const passageFile = path.join(
 		dir,
 		"evidence/passages",
-		passageDigest + ".txt",
+		`${passageDigest}.txt`,
 	);
 	fs.writeFileSync(passageFile, "Corrupt version one");
 	writeReportPacket(dir, "output/corrupt.json");
@@ -474,7 +473,7 @@ test("CLI add supports --challenged-claim and --source-role while preserving sha
 });
 
 test("grounding guard passes clean draft in strict mode and flags omitted risks, constraints, challenges, and conflicts", (t) => {
-	const { dir, ledger, save, passageDigest } = fixture(t);
+	const { dir, ledger, save } = fixture(t);
 	const baseSource = ledger.claims[0].source;
 	ledger.claims[1].type = "risk";
 	ledger.claims.push(
@@ -998,7 +997,7 @@ test("sidecar verify-semantics preserves packet boundary, classifies verdicts, s
 });
 
 test("blind order-swapped report compare evaluates A_then_B and B_then_A and detects judge order disagreement", async (t) => {
-	const { dir, ledger, save, passageDigest } = fixture(t);
+	const { dir, ledger, save } = fixture(t);
 	const secondaryPassage = "Survey notes 12 samples in passing.";
 	const secondaryDigest = storePassage(dir, secondaryPassage);
 	ledger.claims.push({

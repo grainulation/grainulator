@@ -1,5 +1,5 @@
 /**
- * mill format: jira-csv
+ * exports format: jira-csv
  *
  * Converts compilation.json claims to CSV with Jira field names.
  * Columns: Summary, Description, Issue Type, Priority, Labels, Status
