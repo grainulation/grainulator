@@ -5,6 +5,8 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -14,3 +16,5 @@ updates:
       codeql:
         patterns:
           - "github/codeql-action*"
+    cooldown:
+      default-days: 7

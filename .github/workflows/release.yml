@@ -58,15 +58,16 @@ jobs:
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HAS_NOTES: ${{ steps.changelog.outputs.has_notes }}
         run: |
           if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
             echo "Release ${GITHUB_REF_NAME} already exists; updating notes."
-            if [ "${{ steps.changelog.outputs.has_notes }}" = "true" ]; then
+            if [ "$HAS_NOTES" = "true" ]; then
               gh release edit "${GITHUB_REF_NAME}" \
                 --title "${GITHUB_REF_NAME}" \
                 --notes-file release-notes.md
             fi
-          elif [ "${{ steps.changelog.outputs.has_notes }}" = "true" ]; then
+          elif [ "$HAS_NOTES" = "true" ]; then
             gh release create "${GITHUB_REF_NAME}" \
               --title "${GITHUB_REF_NAME}" \
               --notes-file release-notes.md
