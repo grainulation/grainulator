@@ -49,12 +49,25 @@ Grainulator works with Claude Code and Codex through plugins. It also provides a
 
 ## Quick start
 
+Install the CLI and matching native runtime through the shared Homebrew tap:
+
+```sh
+brew tap grainulation/homebrew https://github.com/grainulation/homebrew
+brew install grainulation/homebrew/grainulator
+grainulator doctor
+grainulator demo
+```
+
+Homebrew installs the Node 24 dependency. The demo is an offline synthetic example and uses a new temporary workspace. Native hooks use [explicit enrollment](docs/RUNTIME.md), and full plugins use [agent setup](docs/AGENT-SETUP.md). Installing the formula does not change host registration.
+
+For a tagged source checkout instead:
+
 Requires **Node.js 24 or later**; Node 24 and 26 LTS are the tested release lines. Node 24 is the development default.
 
 **Upgrading from an earlier version?** Follow the [migration checklist](docs/UPGRADING.md) to update the plugin and keep your existing research data.
 
 ```sh
-git clone https://github.com/grainulation/grainulator.git
+git clone --branch v3.0.0 https://github.com/grainulation/grainulator.git
 cd grainulator
 npm ci --ignore-scripts
 node bin/grainulator.js doctor

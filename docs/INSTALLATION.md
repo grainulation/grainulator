@@ -4,6 +4,19 @@ For Claude Code or Codex, start with [agent setup](AGENT-SETUP.md). The steps be
 
 Already using 1.x? Start with the [upgrade checklist](UPGRADING.md). Updating source or a marketplace catalog does not update an installed plugin, its host scope, or a running conversation.
 
+## Install the CLI with Homebrew
+
+The shared tap installs the portable CLI, its Node 24 dependency and the matching native runtime asset:
+
+```sh
+brew tap grainulation/homebrew https://github.com/grainulation/homebrew
+brew install grainulation/homebrew/grainulator
+grainulator doctor --json
+grainulator demo
+```
+
+Check the [tap version table](https://github.com/grainulation/homebrew#available-formulae) for the current stable version. Use `brew upgrade grainulation/homebrew/grainulator` to update the formula. Uninstall with `brew uninstall grainulator`; your project data and separately enrolled required hooks are retained. Formula installation does not enroll a workspace or install an agent plugin. Continue with [agent setup](AGENT-SETUP.md) or [native enrollment](RUNTIME.md) for those operations.
+
 ## Install from tagged source
 
 Use Node.js 24 or later. [GitHub releases](https://github.com/grainulation/grainulator/releases) distribute the portable CLI/plugin archive, separate native runtime archives and offline converter. The npm package and component workspaces remain private; do not use the npm registry to select this release. For Homebrew, check the [shared tap](https://github.com/grainulation/homebrew#available-formulae) for currently published formulas.
