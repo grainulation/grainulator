@@ -16,6 +16,19 @@ import {
 } from "./converter.mjs";
 
 const hash = (value) => crypto.createHash("sha256").update(value).digest("hex");
+function fixtureBytes(file, encoding) {
+	const fd = fs.openSync(
+		file,
+		fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW,
+		0o600,
+	);
+	try {
+		assert.ok(fs.fstatSync(fd).isFile());
+		return fs.readFileSync(fd, encoding);
+	} finally {
+		fs.closeSync(fd);
+	}
+}
 function fixture(t) {
 	const root = fs.realpathSync(
 		fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-migration-")),
@@ -488,22 +501,37 @@ test("rollback refuses externally missing destinations and corrupt or mode-chang
 	);
 	fs.renameSync(away, config);
 	const backup = path.join(result.transaction_directory, "backups/0"),
-		original = fs.readFileSync(backup),
-		mode = fs.statSync(backup).mode & 0o777;
-	fs.writeFileSync(backup, "tampered");
-	assert.throws(
-		() => rollbackMigration(result.transaction_directory, { quiesced: true }),
-		/changed/,
-	);
-	assert.equal(fs.existsSync(config), true);
-	fs.writeFileSync(backup, original);
-	fs.chmodSync(backup, mode ^ 0o040);
-	assert.throws(
-		() => rollbackMigration(result.transaction_directory, { quiesced: true }),
-		/changed/,
-	);
-	fs.chmodSync(backup, mode);
-	rollbackMigration(result.transaction_directory, { quiesced: true });
+		backupFD = fs.openSync(
+			backup,
+			fs.constants.O_RDWR | fs.constants.O_NOFOLLOW,
+			0o600,
+		),
+		original = fs.readFileSync(backupFD),
+		mode = fs.fstatSync(backupFD).mode & 0o777;
+	const replaceBackup = (data) => {
+		data = Buffer.from(data);
+		fs.ftruncateSync(backupFD, 0);
+		fs.writeSync(backupFD, data, 0, data.length, 0);
+		fs.fsyncSync(backupFD);
+	};
+	try {
+		replaceBackup("tampered");
+		assert.throws(
+			() => rollbackMigration(result.transaction_directory, { quiesced: true }),
+			/changed/,
+		);
+		assert.equal(fs.existsSync(config), true);
+		replaceBackup(original);
+		fs.fchmodSync(backupFD, mode ^ 0o040);
+		assert.throws(
+			() => rollbackMigration(result.transaction_directory, { quiesced: true }),
+			/changed/,
+		);
+		fs.fchmodSync(backupFD, mode);
+		rollbackMigration(result.transaction_directory, { quiesced: true });
+	} finally {
+		fs.closeSync(backupFD);
+	}
 });
 test("a destination appearing after staging is never overwritten, including an empty directory", (t) => {
 	const { project, put } = fixture(t);
@@ -1284,16 +1312,41 @@ for (let index = 0; index < 5; index++)
 			if (otherResult.status !== 0) assert.match(otherResult.stderr, /lock/i);
 			const binding = path.join(project, ".grainulator-migration.lock"),
 				args = ["apply", "--plan", planFile, "--quiesced"];
-			if (fs.existsSync(binding)) {
-				const owner = JSON.parse(fs.readFileSync(binding));
-				assert.equal(owner.project, project);
-				assert.equal(owner.plan_sha256, plan.plan_sha256);
-				assert.equal(fs.statSync(binding).nlink, 2);
-				assert.deepEqual(
-					fs.readFileSync(owner.owner_file),
-					fs.readFileSync(binding),
+			let bindingFD;
+			try {
+				bindingFD = fs.openSync(
+					binding,
+					fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW,
+					0o600,
 				);
-				args.push("--recover-transaction", owner.transaction);
+			} catch (error) {
+				if (error.code !== "ENOENT") throw error;
+			}
+			if (bindingFD !== undefined) {
+				try {
+					const bindingBytes = fs.readFileSync(bindingFD),
+						owner = JSON.parse(bindingBytes),
+						bindingStat = fs.fstatSync(bindingFD);
+					assert.equal(owner.project, project);
+					assert.equal(owner.plan_sha256, plan.plan_sha256);
+					assert.equal(bindingStat.nlink, 2);
+					const peerFD = fs.openSync(
+						owner.owner_file,
+						fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW,
+						0o600,
+					);
+					try {
+						const peerStat = fs.fstatSync(peerFD);
+						assert.equal(peerStat.ino, bindingStat.ino);
+						assert.equal(peerStat.dev, bindingStat.dev);
+						assert.deepEqual(fs.readFileSync(peerFD), bindingBytes);
+					} finally {
+						fs.closeSync(peerFD);
+					}
+					args.push("--recover-transaction", owner.transaction);
+				} finally {
+					fs.closeSync(bindingFD);
+				}
 			}
 			const recovered = child(args);
 			assert.equal(recovered.status, 0, recovered.stderr);
@@ -1310,3 +1363,138 @@ for (let index = 0; index < 5; index++)
 			});
 			rollbackMigration(result.transaction_directory, { quiesced: true });
 		});
+
+test("a leaf changed to a symbolic link between inventory and open is refused by the fd open", (t) => {
+	const { root, project, put } = fixture(t),
+		leaf = put(".wheat/data", "source bytes"),
+		saved = path.join(root, "saved-source"),
+		outside = path.join(root, "outside");
+	fs.writeFileSync(outside, "unrelated private bytes");
+	const open = fs.openSync;
+	let raced = false;
+	const mocked = t.mock.method(fs, "openSync", (file, ...args) => {
+		if (file === leaf && !raced) {
+			raced = true;
+			assert.ok(args[0] & fs.constants.O_NOFOLLOW);
+			fs.renameSync(leaf, saved);
+			fs.symlinkSync(outside, leaf);
+		}
+		return open(file, ...args);
+	});
+	try {
+		assert.throws(
+			() => inspectMigration({ project }),
+			/ELOOP|symbolic|ENOTDIR/,
+		);
+	} finally {
+		mocked.mock.restore();
+	}
+	assert.equal(raced, true);
+	assert.equal(fixtureBytes(saved, "utf8"), "source bytes");
+	assert.equal(fixtureBytes(outside, "utf8"), "unrelated private bytes");
+	assert.equal(fs.existsSync(path.join(project, ".grainulator")), false);
+});
+test("a regular-file replacement after lstat is rejected before any replacement bytes are read", (t) => {
+	const { root, project, put } = fixture(t),
+		leaf = put(".wheat/data", "source bytes"),
+		saved = path.join(root, "saved-source");
+	const open = fs.openSync,
+		read = fs.readSync;
+	let raced = false,
+		replacementInode,
+		replacementReads = 0;
+	const mockedOpen = t.mock.method(fs, "openSync", (file, ...args) => {
+		if (file === leaf && !raced) {
+			raced = true;
+			fs.renameSync(leaf, saved);
+			fs.writeFileSync(leaf, "foreign replacement");
+			replacementInode = fs.statSync(leaf).ino;
+		}
+		return open(file, ...args);
+	});
+	const mockedRead = t.mock.method(fs, "readSync", (fd, ...args) => {
+		if (fs.fstatSync(fd).ino === replacementInode) replacementReads++;
+		return read(fd, ...args);
+	});
+	try {
+		assert.throws(() => inspectMigration({ project }), /changed while opening/);
+	} finally {
+		mockedRead.mock.restore();
+		mockedOpen.mock.restore();
+	}
+	assert.equal(replacementReads, 0);
+	assert.equal(fixtureBytes(saved, "utf8"), "source bytes");
+	assert.equal(fixtureBytes(leaf, "utf8"), "foreign replacement");
+});
+test("path replacement during a config snapshot cannot substitute another referent", (t) => {
+	const { root, project, put } = fixture(t),
+		leaf = put("wheat.config.json", { dirs: {} }),
+		saved = path.join(root, "saved-config"),
+		inode = fs.statSync(leaf).ino;
+	const read = fs.readSync;
+	let raced = false;
+	const mocked = t.mock.method(fs, "readSync", (fd, ...args) => {
+		if (!raced && fs.fstatSync(fd).ino === inode) {
+			raced = true;
+			fs.renameSync(leaf, saved);
+			fs.writeFileSync(leaf, '{"foreign":"preserved"}');
+		}
+		return read(fd, ...args);
+	});
+	try {
+		assert.throws(
+			() => inspectMigration({ project }),
+			/changed during snapshot/,
+		);
+	} finally {
+		mocked.mock.restore();
+	}
+	assert.equal(raced, true);
+	assert.equal(fixtureBytes(leaf, "utf8"), '{"foreign":"preserved"}');
+	assert.deepEqual(JSON.parse(fixtureBytes(saved)), { dirs: {} });
+	assert.equal(fs.existsSync(path.join(project, ".grainulator")), false);
+});
+test("the shared temporary fence rejects permissive or symbolic directories and creates an owned private directory", (t) => {
+	const { root, project, put } = fixture(t);
+	put(".wheat/data", "source");
+	const temporary = path.join(root, "isolated-tmp"),
+		outside = path.join(root, "outside");
+	fs.mkdirSync(temporary);
+	fs.mkdirSync(outside);
+	fs.writeFileSync(path.join(outside, "sentinel"), "preserve");
+	const registry = path.join(
+		temporary,
+		"grainulator-offline-locks-" + process.getuid(),
+	);
+	fs.mkdirSync(registry, { mode: 0o755 });
+	const plan = inspectMigration({ project });
+	const mocked = t.mock.method(os, "tmpdir", () => temporary);
+	try {
+		assert.throws(
+			() => applyMigration(plan, { quiesced: true }),
+			/Unsafe shared lock registry/,
+		);
+		assert.equal(fs.existsSync(path.join(project, ".grainulator")), false);
+		fs.rmdirSync(registry);
+		fs.symlinkSync(outside, registry);
+		assert.throws(
+			() => applyMigration(plan, { quiesced: true }),
+			/ELOOP|ENOTDIR/,
+		);
+		assert.equal(
+			fixtureBytes(path.join(outside, "sentinel"), "utf8"),
+			"preserve",
+		);
+		fs.unlinkSync(registry);
+		const result = applyMigration(plan, { quiesced: true });
+		assert.equal(fs.statSync(registry).uid, process.getuid());
+		assert.equal(fs.statSync(registry).mode & 0o077, 0);
+		assert.equal(
+			verifyMigration(result.transaction_directory).status,
+			"verified",
+		);
+		rollbackMigration(result.transaction_directory, { quiesced: true });
+	} finally {
+		mocked.mock.restore();
+	}
+});

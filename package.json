@@ -155,7 +155,7 @@
 		"test:runtime": "npm run test:conformance --workspace @grainulation/grainulator-runtime",
 		"test:install": "node scripts/package-isolation-check.mjs",
 		"test:playground": "node scripts/run-playground-check.mjs",
-		"test:distribution": "node --test migration/*.test.mjs scripts/homebrew*.test.mjs",
+		"test:distribution": "node --test migration/*.test.mjs scripts/homebrew*.test.mjs scripts/package-native.test.mjs",
 		"check:surface": "node scripts/check-surface.mjs && node scripts/generate-reference.mjs --check"
 	},
 	"engines": {

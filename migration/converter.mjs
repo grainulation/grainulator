@@ -45,22 +45,104 @@ function safeAbsolute(input) {
 	}
 	return result;
 }
-function regular(file, peer) {
+const READ_FLAGS =
+	fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW | fs.constants.O_NONBLOCK;
+function identity(st) {
+	return [
+		st.dev,
+		st.ino,
+		st.uid,
+		st.gid,
+		st.mode,
+		st.nlink,
+		st.size,
+		st.mtimeMs,
+		st.ctimeMs,
+	];
+}
+function openRegular(
+	file,
+	{ peer, maximum = MAX_FILE, links = 1, expected } = {},
+) {
 	safeAbsolute(file);
-	const st = fs.lstatSync(file);
-	const ownedLink =
-		peer &&
-		exists(peer) &&
-		st.nlink === 2 &&
-		st.ino === fs.lstatSync(peer).ino &&
-		st.dev === fs.lstatSync(peer).dev;
-	if (!st.isFile() || (!ownedLink && st.nlink !== 1) || st.size > MAX_FILE)
-		fail("Expected bounded regular file without hard links: " + file);
-	return st;
+	// Pin the actual referent before inspecting it. NONBLOCK avoids waiting on a
+	// raced FIFO; NOFOLLOW refuses a raced symbolic link before it can be read.
+	const fd = fs.openSync(file, READ_FLAGS, 0o600);
+	try {
+		const stat = fs.fstatSync(fd);
+		if (!stat.isFile() || stat.size > maximum)
+			fail("Expected bounded regular file: " + file);
+		if (expected && !equal(identity(stat), identity(expected)))
+			fail("Source changed while opening: " + file);
+		if (stat.nlink !== links) {
+			if (!peer || stat.nlink !== 2)
+				fail("Expected regular file without hard links: " + file);
+			const other = fs.openSync(peer, READ_FLAGS, 0o600);
+			try {
+				const counterpart = fs.fstatSync(other);
+				if (
+					!counterpart.isFile() ||
+					counterpart.nlink !== 2 ||
+					counterpart.ino !== stat.ino ||
+					counterpart.dev !== stat.dev
+				)
+					fail("Owned hard-link peer changed");
+			} finally {
+				fs.closeSync(other);
+			}
+		}
+		return { fd, stat };
+	} catch (error) {
+		fs.closeSync(fd);
+		throw error;
+	}
+}
+function snapshot(file, options = {}) {
+	const opened = openRegular(file, options),
+		{ fd, stat } = opened;
+	try {
+		// A file growing during a read cannot cause an unbounded allocation. One
+		// extra byte distinguishes a stable EOF from growth beyond the pinned size.
+		const buffer = Buffer.alloc(stat.size + 1);
+		let length = 0;
+		while (length < buffer.length) {
+			const count = fs.readSync(
+				fd,
+				buffer,
+				length,
+				buffer.length - length,
+				length,
+			);
+			if (!count) break;
+			length += count;
+		}
+		if (
+			length !== stat.size ||
+			!equal(identity(fs.fstatSync(fd)), identity(stat))
+		)
+			fail("File changed during snapshot: " + file);
+		const current = fs.openSync(file, READ_FLAGS, 0o600);
+		try {
+			if (!equal(identity(fs.fstatSync(current)), identity(stat)))
+				fail("File path changed during snapshot: " + file);
+		} finally {
+			fs.closeSync(current);
+		}
+		return { data: buffer.subarray(0, length), stat };
+	} finally {
+		fs.closeSync(fd);
+	}
+}
+function regular(file, peer) {
+	const opened = openRegular(file, { peer });
+	try {
+		return opened.stat;
+	} finally {
+		fs.closeSync(opened.fd);
+	}
 }
 function bytes(file, peer) {
-	regular(file, peer);
-	return fs.readFileSync(file);
+	return snapshot(file, { peer }).data;
 }
 function jsonAny(file) {
 	return JSON.parse(bytes(file));
@@ -71,8 +153,14 @@ function json(file) {
 	return value;
 }
 function syncDir(dir) {
-	const fd = fs.openSync(dir, "r");
+	const fd = fs.openSync(
+		dir,
+		fs.constants.O_RDONLY | fs.constants.O_DIRECTORY | fs.constants.O_NOFOLLOW,
+		0o600,
+	);
 	try {
+		if (!fs.fstatSync(fd).isDirectory())
+			fail("Expected directory for durability fence");
 		fs.fsyncSync(fd);
 	} finally {
 		fs.closeSync(fd);
@@ -152,16 +240,19 @@ function scan(root, { exclude = [], peer, ignoreOwner = false } = {}) {
 				walk(path.join(file, name), rel, depth + 1);
 			}
 		} else {
-			regular(file, peer && path.join(peer, relative));
-			total += st.size;
+			const pinned = snapshot(file, {
+				peer: peer && path.join(peer, relative),
+				expected: st,
+			});
+			total += pinned.stat.size;
 			if (total > MAX_BYTES)
 				fail("Selected migration unit exceeds byte limits");
 			entries.push({
 				path: relative,
 				kind: "file",
-				mode: st.mode & 0o777,
-				bytes: st.size,
-				sha256: sha(fs.readFileSync(file)),
+				mode: pinned.stat.mode & 0o777,
+				bytes: pinned.stat.size,
+				sha256: sha(pinned.data),
 			});
 		}
 	}
@@ -954,8 +1045,8 @@ function lockRoots(plan) {
 	].sort();
 }
 function readLock(file, original = file) {
-	safeAbsolute(file);
-	const st = fs.lstatSync(file);
+	const pinned = snapshot(file, { links: 2, maximum: 8192 }),
+		st = pinned.stat;
 	if (
 		!st.isFile() ||
 		st.nlink !== 2 ||
@@ -964,7 +1055,7 @@ function readLock(file, original = file) {
 		(st.mode & 0o777) !== 0o600
 	)
 		fail("Unknown or uncertain writer lock: " + file);
-	const data = fs.readFileSync(file),
+	const data = pinned.data,
 		owner = JSON.parse(data);
 	if (
 		owner.schema !== "grainulator.offline-lock.v2" ||
@@ -979,12 +1070,9 @@ function readLock(file, original = file) {
 	)
 		fail("Unknown writer lock ownership");
 	const peer = original + ".owner-" + owner.transaction + "-" + owner.token;
-	if (
-		owner.owner_file !== peer ||
-		!exists(peer) ||
-		!sameInode(file, peer) ||
-		fs.lstatSync(peer).nlink !== 2
-	)
+	if (owner.owner_file !== peer) fail("Writer lock owner path changed");
+	const proof = snapshot(peer, { links: 2, maximum: 8192, expected: st });
+	if (!equal(identity(proof.stat), identity(st)) || !proof.data.equals(data))
 		fail("Writer lock owner proof changed");
 	return { owner, hash: sha(data) };
 }
@@ -1023,16 +1111,30 @@ function locks(plan, transaction, { recoverLocks = false } = {}) {
 		fs.realpathSync(os.tmpdir()),
 		"grainulator-offline-locks-" + process.getuid(),
 	);
-	if (!exists(registry))
-		try {
-			mkdir(registry);
-		} catch (e) {
-			if (e.code !== "EEXIST") throw e;
-		}
-	safeAbsolute(registry);
-	const st = fs.statSync(registry);
-	if (st.uid !== process.getuid() || (st.mode & 0o077) !== 0)
-		fail("Unsafe shared lock registry");
+	// Exclusive creation establishes the private shared fence, while EEXIST
+	// requires validating the existing directory through its no-follow fd.
+	try {
+		fs.mkdirSync(registry, { mode: 0o700 });
+		syncDir(path.dirname(registry));
+	} catch (e) {
+		if (e.code !== "EEXIST") throw e;
+	}
+	const registryFD = fs.openSync(
+		registry,
+		fs.constants.O_RDONLY | fs.constants.O_DIRECTORY | fs.constants.O_NOFOLLOW,
+		0o600,
+	);
+	try {
+		const st = fs.fstatSync(registryFD);
+		if (
+			!st.isDirectory() ||
+			st.uid !== process.getuid() ||
+			(st.mode & 0o077) !== 0
+		)
+			fail("Unsafe shared lock registry");
+	} finally {
+		fs.closeSync(registryFD);
+	}
 	// Publish a complete project/plan recovery binding FIRST, then acquire all
 	// shared fences in stable order. No global lock can outlive a missing binding.
 	const paths = [

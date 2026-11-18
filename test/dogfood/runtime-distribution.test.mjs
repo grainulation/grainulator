@@ -852,3 +852,59 @@ test("only an actually absent archived preimage permits removal of newly created
 		f.cleanup();
 	}
 });
+
+test("immutable runtime history reuses exact snapshots and rejects collisions, links and create errors before claims change", () => {
+	for (const kind of [
+		"matching",
+		"collision",
+		"symlink",
+		"hardlink",
+		"permission",
+	]) {
+		const f = fixture();
+		try {
+			initializeRuntime(f.workspace);
+			const directory = path.join(f.workspace, ".grainulator/runtime"),
+				file = path.join(directory, "claims.json"),
+				bytes = readRegular(file),
+				history = path.join(directory, "history");
+			fs.mkdirSync(history);
+			const backup = path.join(history, `claims-${sha256(bytes)}.json`),
+				peer = path.join(f.workspace, "peer-history.json");
+			if (kind === "matching") fs.writeFileSync(backup, bytes);
+			else if (kind === "collision") fs.writeFileSync(backup, "collision");
+			else if (kind === "symlink") {
+				fs.writeFileSync(peer, bytes);
+				fs.symlinkSync(peer, backup);
+			} else if (kind === "hardlink") {
+				fs.writeFileSync(peer, bytes);
+				fs.linkSync(peer, backup);
+			}
+			const open = fs.openSync;
+			if (kind === "permission")
+				fs.openSync = function (target, ...rest) {
+					if (target === backup) {
+						const error = new Error("Synthetic denied history creation");
+						error.code = "EACCES";
+						throw error;
+					}
+					return open.call(this, target, ...rest);
+				};
+			try {
+				if (kind === "matching") {
+					const result = mutateRuntimeClaim(f.workspace, "add", claim);
+					assert.deepEqual(readRegular(result.history), bytes);
+				} else {
+					assert.throws(() => mutateRuntimeClaim(f.workspace, "add", claim));
+					assert.deepEqual(readRegular(file), bytes);
+					if (kind === "collision")
+						assert.equal(fs.readFileSync(backup, "utf8"), "collision");
+				}
+			} finally {
+				fs.openSync = open;
+			}
+		} finally {
+			f.cleanup();
+		}
+	}
+});

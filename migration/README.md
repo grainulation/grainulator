@@ -109,6 +109,18 @@ page-creation API. It updates only reviewed metadata on the same page IDs with
 version/body checks and preserves body bytes and unrelated labels. A sent write
 with an uncertain outcome must be reconciled before another attempt.
 
+After abrupt process or host death, `<markerFile>.lock` or
+`<receiptFile>.lock` may remain. These are separate from the converter's
+transaction locks above. Quiesce every worker and client using this evidence
+directory, including other machines sharing the storage. If exclusive access
+cannot be established, leave the lock in place. Preserve the marker, receipt,
+immutable history and their current hashes. Once exclusive access is established,
+remove only the exact empty lock directory with `rmdir`, then re-inspect the
+marker and receipt. Resume the same reviewed local intent, or reconcile a sent
+or uncertain remote write before authorizing another attempt. Remote helpers do
+not automatically remove stale locks. Their local receipt retry regression
+covers a write error; it does not establish recovery from process or host death.
+
 Local apply never calls the remote module. A pending or contradictory remote
 identity prevents ordinary canonical publishing from creating duplicates.
 Uninstalling either application does not remove source data, transaction history

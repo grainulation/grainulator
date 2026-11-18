@@ -1,12 +1,102 @@
 /** Separately distributed remote identity converter. No transport, credentials or discovery. */
+
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import crypto from "node:crypto";
+
 const hash = (value) =>
 	crypto
 		.createHash("sha256")
-		.update(typeof value === "string" ? value : JSON.stringify(value))
+		.update(
+			typeof value === "string" || Buffer.isBuffer(value)
+				? value
+				: JSON.stringify(value),
+		)
 		.digest("hex");
+const MAX_LOCAL_BYTES = 16 * 1024 * 1024;
+/** Parse/hash the same bounded regular single-link descriptor snapshot. Never follow a leaf symlink or block on a FIFO. */
+function readSnapshot(file, max = MAX_LOCAL_BYTES) {
+	if (fs.constants.O_NOFOLLOW === undefined)
+		throw new Error(
+			"Safe local file snapshots are unavailable on this platform.",
+		);
+	const fd = fs.openSync(
+		file,
+		fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW | fs.constants.O_NONBLOCK,
+	);
+	try {
+		const before = fs.fstatSync(fd);
+		if (!before.isFile() || before.nlink !== 1 || before.size > max)
+			throw new Error(
+				"Expected a bounded, single-link regular remote metadata file.",
+			);
+		const chunks = [];
+		let length = 0;
+		for (;;) {
+			const chunk = Buffer.alloc(Math.min(64 * 1024, max + 1 - length));
+			const count = fs.readSync(fd, chunk, 0, chunk.length, null);
+			if (!count) break;
+			length += count;
+			if (length > max)
+				throw new Error("Remote metadata exceeded its byte limit.");
+			chunks.push(chunk.subarray(0, count));
+		}
+		const after = fs.fstatSync(fd);
+		if (
+			!after.isFile() ||
+			after.nlink !== 1 ||
+			after.size !== length ||
+			before.size !== after.size ||
+			before.mtimeMs !== after.mtimeMs ||
+			before.ctimeMs !== after.ctimeMs
+		)
+			throw new Error("Remote metadata changed while being read.");
+		const bytes = Buffer.concat(chunks, length);
+		return { bytes, sha256: hash(bytes) };
+	} finally {
+		fs.closeSync(fd);
+	}
+}
+// This cooperative writer protocol checks again immediately before rename; it is not a filesystem CAS against arbitrary external writers.
+function assertSnapshot(file, expected) {
+	if (readSnapshot(file).sha256 !== expected.sha256)
+		throw new Error(
+			"Inventory changed before the reviewed marker could commit.",
+		);
+}
+function withMarkerLock(file, operation) {
+	const lock = file + ".lock";
+	fs.mkdirSync(lock, { mode: 0o700 });
+	try {
+		return operation();
+	} finally {
+		fs.rmSync(lock, { recursive: true, force: true });
+	}
+}
+function createOrMatchHistory(file, bytes) {
+	let fd;
+	try {
+		fd = fs.openSync(
+			file,
+			fs.constants.O_WRONLY |
+				fs.constants.O_CREAT |
+				fs.constants.O_EXCL |
+				fs.constants.O_NOFOLLOW,
+			0o600,
+		);
+	} catch (error) {
+		if (error.code !== "EEXIST") throw error;
+		if (!readSnapshot(file).bytes.equals(bytes))
+			throw new Error("Historical inventory collision.");
+		return;
+	}
+	try {
+		fs.writeFileSync(fd, bytes);
+		fs.fsyncSync(fd);
+	} finally {
+		fs.closeSync(fd);
+	}
+}
 const labels = (value) => {
 	if (!Array.isArray(value) || value.some((v) => typeof v !== "string" || !v))
 		throw new Error("Page labels must be explicit strings.");
@@ -194,9 +284,15 @@ function validatePlan(plan) {
 		labels(entry.after.labels);
 	}
 }
-function receiptRead(file, plan) {
-	if (!fs.existsSync(file)) return null;
-	const receipt = JSON.parse(fs.readFileSync(file, "utf8"));
+function receiptRead(file, plan, withSnapshot = false) {
+	let snapshot;
+	try {
+		snapshot = readSnapshot(file);
+	} catch (error) {
+		if (error.code === "ENOENT") return null;
+		throw error;
+	}
+	const receipt = JSON.parse(snapshot.bytes);
 	if (
 		receipt.schema !== "grainulator.remote-receipt.v1" ||
 		receipt.plan_id !== plan.id ||
@@ -210,9 +306,9 @@ function receiptRead(file, plan) {
 		!Array.isArray(receipt.events)
 	)
 		throw new Error("Receipt does not belong to this plan.");
-	return receipt;
+	return withSnapshot ? { receipt, snapshot } : receipt;
 }
-function persist(file, receipt, create = false) {
+function persist(file, receipt, create = false, expectedSnapshot) {
 	const bytes = JSON.stringify(receipt, null, 2) + "\n";
 	const selected = create ? file : `${file}.${crypto.randomUUID()}.tmp`;
 	let fd,
@@ -224,7 +320,11 @@ function persist(file, receipt, create = false) {
 		fs.fsyncSync(fd);
 		fs.closeSync(fd);
 		fd = undefined;
-		if (!create) fs.renameSync(selected, file);
+		if (!create) {
+			if (expectedSnapshot) assertSnapshot(file, expectedSnapshot);
+			fs.renameSync(selected, file);
+			owned = false;
+		}
 		const parent = fs.openSync(path.dirname(file), "r");
 		try {
 			fs.fsyncSync(parent);
@@ -233,7 +333,12 @@ function persist(file, receipt, create = false) {
 		}
 	} finally {
 		if (fd !== undefined) fs.closeSync(fd);
-		if (!create && owned && fs.existsSync(selected)) fs.unlinkSync(selected);
+		if (!create && owned)
+			try {
+				fs.unlinkSync(selected);
+			} catch (error) {
+				if (error.code !== "ENOENT") throw error;
+			}
 	}
 }
 function transition(file, receipt, index, state) {
@@ -395,89 +500,91 @@ export function completeRemoteMigration({
 	markerFile,
 	expectedMarkerSha256,
 }) {
-	validatePlan(plan);
-	const receipt = receiptRead(receiptFile, plan);
-	if (!receipt || receipt.pages.some((page) => page.state !== "confirmed"))
-		throw new Error("Every page must be confirmed before finalization.");
-	const markerBytes = fs.readFileSync(markerFile);
-	if (
-		!expectedMarkerSha256 ||
-		hash(markerBytes.toString("utf8")) !== expectedMarkerSha256
-	)
-		throw new Error(
-			"Inspect the exact remote migration marker before finalization; its hash changed or is missing.",
-		);
-	const marker = JSON.parse(markerBytes);
-	if (
-		marker.schema !== "grainulator.remote-migration.v1" ||
-		marker.ambiguity ||
-		!Array.isArray(marker.pages) ||
-		!marker.pages.length
-	)
-		throw new Error(
-			"Ambiguous inventories require an explicit reviewed identity mapping.",
-		);
-	const state = fs.realpathSync(path.dirname(markerFile));
-	const relative = path.relative(state, fs.realpathSync(receiptFile));
-	if (
-		!relative ||
-		relative === ".." ||
-		relative.startsWith(`..${path.sep}`) ||
-		path.isAbsolute(relative)
-	)
-		throw new Error(
-			"Keep the receipt in the canonical evidence state directory.",
-		);
-	const bindings = [];
-	for (const page of marker.pages) {
-		const fingerprint = hash(page);
-		const match = plan.entries.filter(
-			(entry) =>
-				entry.inventory_sha256 === fingerprint &&
-				entry.destination.pageId === page.pageId &&
-				entry.format === page.format,
-		);
-		if (match.length !== 1)
+	return withMarkerLock(markerFile, () => {
+		validatePlan(plan);
+		const captured = receiptRead(receiptFile, plan, true);
+		const receipt = captured?.receipt;
+		if (!receipt || receipt.pages.some((page) => page.state !== "confirmed"))
+			throw new Error("Every page must be confirmed before finalization.");
+		const markerSnapshot = readSnapshot(markerFile);
+		const markerBytes = markerSnapshot.bytes;
+		if (!expectedMarkerSha256 || markerSnapshot.sha256 !== expectedMarkerSha256)
 			throw new Error(
-				"An inventory page/source/role association is not uniquely reconciled.",
+				"Inspect the exact remote migration marker before finalization; its hash changed or is missing.",
 			);
-		const entry = match[0];
+		const marker = JSON.parse(markerBytes);
 		if (
-			!receipt.pages.some(
-				(record) =>
-					record.state === "confirmed" &&
-					record.inventory_sha256 === fingerprint &&
-					record.sourceId === entry.sourceId &&
-					record.format === entry.format &&
-					same(record.destination, entry.destination),
-			)
+			marker.schema !== "grainulator.remote-migration.v1" ||
+			marker.ambiguity ||
+			!Array.isArray(marker.pages) ||
+			!marker.pages.length
 		)
-			throw new Error("Inventory association lacks a confirmed receipt.");
-		bindings.push({
-			inventory_sha256: fingerprint,
-			sourceId: entry.sourceId,
-			format: entry.format,
-			destination: entry.destination,
-		});
-	}
-	if (
-		new Set(bindings.map((binding) => binding.sourceId)).size !==
-		bindings.length
-	)
-		throw new Error(
-			"Each reviewed source/role needs a unique stable sourceId.",
-		);
-	const result = {
-		...marker,
-		state: "complete",
-		bindings,
-		receipt: {
-			file: relative,
-			sha256: hash(fs.readFileSync(receiptFile, "utf8")),
-		},
-	};
-	persist(markerFile, result);
-	return result;
+			throw new Error(
+				"Ambiguous inventories require an explicit reviewed identity mapping.",
+			);
+		const state = fs.realpathSync(path.dirname(markerFile));
+		const relative = path.relative(state, fs.realpathSync(receiptFile));
+		if (
+			!relative ||
+			relative === ".." ||
+			relative.startsWith(`..${path.sep}`) ||
+			path.isAbsolute(relative)
+		)
+			throw new Error(
+				"Keep the receipt in the canonical evidence state directory.",
+			);
+		const bindings = [];
+		for (const page of marker.pages) {
+			const fingerprint = hash(page);
+			const match = plan.entries.filter(
+				(entry) =>
+					entry.inventory_sha256 === fingerprint &&
+					entry.destination.pageId === page.pageId &&
+					entry.format === page.format,
+			);
+			if (match.length !== 1)
+				throw new Error(
+					"An inventory page/source/role association is not uniquely reconciled.",
+				);
+			const entry = match[0];
+			if (
+				!receipt.pages.some(
+					(record) =>
+						record.state === "confirmed" &&
+						record.inventory_sha256 === fingerprint &&
+						record.sourceId === entry.sourceId &&
+						record.format === entry.format &&
+						same(record.destination, entry.destination),
+				)
+			)
+				throw new Error("Inventory association lacks a confirmed receipt.");
+			bindings.push({
+				inventory_sha256: fingerprint,
+				sourceId: entry.sourceId,
+				format: entry.format,
+				destination: entry.destination,
+			});
+		}
+		if (
+			new Set(bindings.map((binding) => binding.sourceId)).size !==
+			bindings.length
+		)
+			throw new Error(
+				"Each reviewed source/role needs a unique stable sourceId.",
+			);
+		const result = {
+			...marker,
+			state: "complete",
+			bindings,
+			receipt: {
+				file: relative,
+				sha256: captured.snapshot.sha256,
+			},
+		};
+		assertSnapshot(receiptFile, captured.snapshot);
+		persist(markerFile, result, false, markerSnapshot);
+		return result;
+	});
 }
 
 /** Explicit local review of an ambiguous legacy inventory. No adapter or network is used. */
@@ -501,14 +608,10 @@ export function resolveRemoteInventory({
 		throw new Error(
 			"Complete reviewed inventory, reason and documentary evidence references are required.",
 		);
-	const lock = markerFile + ".lock";
-	fs.mkdirSync(lock, { mode: 0o700 });
-	try {
-		const stat = fs.lstatSync(markerFile);
-		if (!stat.isFile() || stat.isSymbolicLink() || stat.nlink !== 1)
-			throw new Error("Remote marker must be an unlinked regular file.");
-		const bytes = fs.readFileSync(markerFile),
-			before = hash(bytes.toString("utf8"));
+	return withMarkerLock(markerFile, () => {
+		const markerSnapshot = readSnapshot(markerFile),
+			bytes = markerSnapshot.bytes,
+			before = markerSnapshot.sha256;
 		if (!expectedMarkerSha256 || before !== expectedMarkerSha256)
 			throw new Error(
 				"Remote inventory changed; supply the inspected marker hash.",
@@ -710,24 +813,26 @@ export function resolveRemoteInventory({
 			);
 		const directory = path.dirname(markerFile),
 			history = path.join(directory, "remote-history");
-		if (fs.existsSync(history)) {
-			const stat = fs.lstatSync(history);
-			if (!stat.isDirectory() || stat.isSymbolicLink())
-				throw new Error("Remote history must be an owned directory.");
-		} else fs.mkdirSync(history, { mode: 0o700 });
-		const historical = path.join(history, `${before}.json`);
-		if (fs.existsSync(historical)) {
-			if (!fs.readFileSync(historical).equals(bytes))
-				throw new Error("Historical inventory collision.");
-		} else {
-			const fd = fs.openSync(historical, "wx", 0o600);
+		try {
+			fs.mkdirSync(history, { mode: 0o700 });
+		} catch (error) {
+			if (error.code !== "EEXIST") throw error;
+			const descriptor = fs.openSync(
+				history,
+				fs.constants.O_RDONLY |
+					fs.constants.O_DIRECTORY |
+					fs.constants.O_NOFOLLOW |
+					fs.constants.O_NONBLOCK,
+			);
 			try {
-				fs.writeFileSync(fd, bytes);
-				fs.fsyncSync(fd);
+				if (!fs.fstatSync(descriptor).isDirectory())
+					throw new Error("Remote history must be an owned directory.");
 			} finally {
-				fs.closeSync(fd);
+				fs.closeSync(descriptor);
 			}
 		}
+		const historical = path.join(history, `${before}.json`);
+		createOrMatchHistory(historical, bytes);
 		const resultHash = hash({ pages, dispositions });
 		const receipt = {
 			schema: "grainulator.remote-resolution.v1",
@@ -745,11 +850,29 @@ export function resolveRemoteInventory({
 			directory,
 			`remote-resolution-${before}.json`,
 		);
-		persist(receiptFile, receipt, true);
-		if (hash(fs.readFileSync(markerFile, "utf8")) !== before)
+		try {
+			persist(receiptFile, receipt, true);
+		} catch (error) {
+			if (error.code !== "EEXIST") throw error;
+		}
+		const resolutionSnapshot = readSnapshot(receiptFile),
+			savedReceipt = JSON.parse(resolutionSnapshot.bytes);
+		const stable = (value) => {
+			const intent = { ...value };
+			delete intent.at;
+			return intent;
+		};
+		if (
+			!same(stable(savedReceipt), stable(receipt)) ||
+			typeof savedReceipt.at !== "string" ||
+			!Number.isFinite(Date.parse(savedReceipt.at))
+		)
 			throw new Error(
-				"Inventory changed before reviewed resolution could commit.",
+				"Durable resolution receipt has conflicting intent; preserving it and the marker.",
 			);
+		if (!readSnapshot(historical).bytes.equals(bytes))
+			throw new Error("Historical inventory changed before resolution.");
+
 		const result = {
 			...marker,
 			state: pages.length ? "pending" : "complete",
@@ -758,12 +881,11 @@ export function resolveRemoteInventory({
 			reviewed_not_configured: dispositions,
 			local_resolution: {
 				file: path.basename(receiptFile),
-				sha256: hash(fs.readFileSync(receiptFile, "utf8")),
+				sha256: resolutionSnapshot.sha256,
 			},
 		};
-		persist(markerFile, result);
+		assertSnapshot(receiptFile, resolutionSnapshot);
+		persist(markerFile, result, false, markerSnapshot);
 		return result;
-	} finally {
-		fs.rmSync(lock, { recursive: true, force: true });
-	}
+	});
 }

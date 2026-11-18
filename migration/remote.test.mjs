@@ -1,13 +1,14 @@
-import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { test } from "node:test";
 import {
-	previewRemoteMigration,
 	applyRemoteMigration,
+	previewRemoteMigration,
 	reconcileRemoteMigration,
 } from "./remote.mjs";
+
 function fixture(t, format = "snapshot") {
 	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-remote-"));
 	t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
@@ -510,4 +511,224 @@ test("mixed ambiguous sources retain every known page/role and cannot be waived 
 	]);
 	assert.equal(result.state, "pending");
 	assert.equal(f.calls.length, 0);
+});
+
+function localReviewFixture(t) {
+	const f = fixture(t),
+		markerFile = path.join(
+			path.dirname(f.receiptFile),
+			"remote-migration.json",
+		);
+	const source = {
+		source_relative_path: "sync-state.json",
+		state: { pages: {} },
+	};
+	const bytes = Buffer.from(
+		JSON.stringify({
+			schema: "grainulator.remote-migration.v1",
+			state: "pending",
+			ambiguity: true,
+			pages: [],
+			sync_sources: [source],
+		}),
+	);
+	fs.writeFileSync(markerFile, bytes);
+	return { f, markerFile, bytes, source };
+}
+async function reviewArguments(t) {
+	const current = localReviewFixture(t),
+		crypto = await import("node:crypto"),
+		sha = (value) => crypto.createHash("sha256").update(value).digest("hex");
+	return {
+		...current,
+		sha,
+		args: {
+			markerFile: current.markerFile,
+			expectedMarkerSha256: sha(current.bytes),
+			completeInventory: true,
+			reason: "Reviewed complete owned source",
+			evidence: ["audit:tenant-inventory"],
+			notConfigured: [
+				{
+					source_sha256: sha(JSON.stringify(current.source)),
+					reason: "Confirmed not configured in owned scope",
+					evidence: ["audit:tenant-inventory"],
+				},
+			],
+		},
+	};
+}
+async function confirmedFixture(t) {
+	const f = fixture(t),
+		markerFile = path.join(
+			path.dirname(f.receiptFile),
+			"remote-migration.json",
+		);
+	const marker = {
+		schema: "grainulator.remote-migration.v1",
+		state: "pending",
+		ambiguity: false,
+		pages: [{ pageId: "42", format: "snapshot" }],
+	};
+	fs.writeFileSync(markerFile, JSON.stringify(marker));
+	const plan = await previewRemoteMigration({
+		...f,
+		pages: f.pages.map((page) => ({
+			...page,
+			inventory: marker.pages[0],
+			sourceId: "a:claims",
+		})),
+	});
+	await applyRemoteMigration({ ...f, plan, authorized: true });
+	const crypto = await import("node:crypto");
+	return {
+		f,
+		plan,
+		markerFile,
+		receiptFile: f.receiptFile,
+		expectedMarkerSha256: crypto
+			.createHash("sha256")
+			.update(fs.readFileSync(markerFile))
+			.digest("hex"),
+	};
+}
+test("matching immutable history is reused; colliding or unsafe history preserves the marker", async (t) => {
+	const { resolveRemoteInventory } = await import("./remote.mjs");
+	for (const kind of ["matching", "collision", "symlink", "hardlink"]) {
+		const x = await reviewArguments(t),
+			history = path.join(path.dirname(x.markerFile), "remote-history");
+		fs.mkdirSync(history);
+		const target = path.join(history, x.sha(x.bytes) + ".json"),
+			peer = path.join(path.dirname(x.markerFile), "peer.json");
+		if (kind === "symlink") {
+			fs.writeFileSync(peer, x.bytes);
+			fs.symlinkSync(peer, target);
+		} else if (kind === "hardlink") {
+			fs.writeFileSync(peer, x.bytes);
+			fs.linkSync(peer, target);
+		} else
+			fs.writeFileSync(target, kind === "matching" ? x.bytes : "collision");
+		if (kind === "matching") {
+			resolveRemoteInventory(x.args);
+			assert.deepEqual(fs.readFileSync(target), x.bytes);
+		} else {
+			assert.throws(() => resolveRemoteInventory(x.args));
+			assert.deepEqual(fs.readFileSync(x.markerFile), x.bytes);
+			if (kind === "collision")
+				assert.equal(fs.readFileSync(target, "utf8"), "collision");
+			else assert.deepEqual(fs.readFileSync(peer), x.bytes);
+		}
+	}
+});
+test("unsafe marker and confirmed receipt snapshots refuse finalization without marker commits", async (t) => {
+	const { resolveRemoteInventory, completeRemoteMigration } = await import(
+		"./remote.mjs"
+	);
+	for (const kind of ["symlink", "hardlink", "oversized"]) {
+		const x = await reviewArguments(t),
+			peer = path.join(path.dirname(x.markerFile), "original.json");
+		fs.renameSync(x.markerFile, peer);
+		if (kind === "symlink") fs.symlinkSync(peer, x.markerFile);
+		else if (kind === "hardlink") fs.linkSync(peer, x.markerFile);
+		else fs.writeFileSync(x.markerFile, Buffer.alloc(16 * 1024 * 1024 + 1));
+		assert.throws(() => resolveRemoteInventory(x.args));
+		assert.deepEqual(fs.readFileSync(peer), x.bytes);
+		assert.equal(x.f.calls.length, 0);
+		const c = await confirmedFixture(t),
+			original = fs.readFileSync(c.markerFile),
+			receiptPeer = c.receiptFile + ".original";
+		fs.renameSync(c.receiptFile, receiptPeer);
+		if (kind === "symlink") fs.symlinkSync(receiptPeer, c.receiptFile);
+		else if (kind === "hardlink") fs.linkSync(receiptPeer, c.receiptFile);
+		else fs.writeFileSync(c.receiptFile, Buffer.alloc(16 * 1024 * 1024 + 1));
+		assert.throws(() => completeRemoteMigration(c));
+		assert.deepEqual(fs.readFileSync(c.markerFile), original);
+	}
+});
+test("finalizer and resolver share the same writer lock and reject stale snapshots", async (t) => {
+	const { resolveRemoteInventory, completeRemoteMigration } = await import(
+		"./remote.mjs"
+	);
+	const x = await reviewArguments(t);
+	fs.mkdirSync(x.markerFile + ".lock");
+	assert.throws(() => resolveRemoteInventory(x.args), { code: "EEXIST" });
+	fs.rmdirSync(x.markerFile + ".lock");
+	for (const changed of ["marker", "receipt"]) {
+		const c = await confirmedFixture(t),
+			before = fs.readFileSync(c.markerFile),
+			realpath = fs.realpathSync;
+		let injected = false;
+		fs.realpathSync = function (file, ...rest) {
+			if (file === c.receiptFile && !injected) {
+				injected = true;
+				const target = changed === "marker" ? c.markerFile : c.receiptFile;
+				const value = JSON.parse(fs.readFileSync(target));
+				value.concurrent_change = true;
+				fs.writeFileSync(target, JSON.stringify(value));
+			}
+			return realpath.call(this, file, ...rest);
+		};
+		try {
+			assert.throws(() => completeRemoteMigration(c), /changed/);
+		} finally {
+			fs.realpathSync = realpath;
+		}
+		assert.equal(injected, true);
+		if (changed === "receipt")
+			assert.deepEqual(fs.readFileSync(c.markerFile), before);
+		else
+			assert.equal(JSON.parse(fs.readFileSync(c.markerFile)).state, "pending");
+		assert.equal(fs.existsSync(c.markerFile + ".lock"), false);
+	}
+	const c = await confirmedFixture(t);
+	fs.mkdirSync(c.markerFile + ".lock");
+	assert.throws(() => completeRemoteMigration(c), { code: "EEXIST" });
+	fs.rmdirSync(c.markerFile + ".lock");
+});
+test("a matching durable resolution receipt resumes after interrupted marker commit; conflicting intent never overwrites it", async (t) => {
+	const { resolveRemoteInventory } = await import("./remote.mjs");
+	for (const conflict of [false, true]) {
+		const x = await reviewArguments(t),
+			rename = fs.renameSync;
+		let interrupted = false;
+		fs.renameSync = function (from, to) {
+			if (to === x.markerFile && !interrupted) {
+				interrupted = true;
+				const error = new Error("Synthetic interrupted marker commit");
+				error.code = "EIO";
+				throw error;
+			}
+			return rename.call(this, from, to);
+		};
+		try {
+			assert.throws(() => resolveRemoteInventory(x.args), /interrupted/);
+		} finally {
+			fs.renameSync = rename;
+		}
+		const receiptFile = path.join(
+				path.dirname(x.markerFile),
+				"remote-resolution-" + x.sha(x.bytes) + ".json",
+			),
+			receiptBytes = fs.readFileSync(receiptFile),
+			receipt = JSON.parse(receiptBytes);
+		assert.deepEqual(fs.readFileSync(x.markerFile), x.bytes);
+		if (conflict) {
+			assert.throws(
+				() =>
+					resolveRemoteInventory({
+						...x.args,
+						reason: "Different reviewed intent",
+					}),
+				/conflicting intent/,
+			);
+			assert.deepEqual(fs.readFileSync(x.markerFile), x.bytes);
+		} else {
+			const result = resolveRemoteInventory(x.args);
+			assert.equal(result.state, "complete");
+			assert.equal(JSON.parse(fs.readFileSync(receiptFile)).at, receipt.at);
+			assert.equal(result.local_resolution.sha256, x.sha(receiptBytes));
+		}
+		assert.deepEqual(fs.readFileSync(receiptFile), receiptBytes);
+		assert.equal(x.f.calls.length, 0);
+	}
 });
