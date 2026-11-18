@@ -15,9 +15,9 @@ npm run dev
 
 `demo` deliberately produces a wrong answer, feeds an independent verifier's failure back to a deterministic adapter, and verifies its corrected answer. It is an offline protocol fixture, not evidence of model-quality improvement. Run traces appear under `.dogfood/demo/.grainulator/runs/`.
 
-The preview server prints http://127.0.0.1:4517 (Grainulator) and http://127.0.0.1:4518 (Grainulation). Grainulator has a refreshed homepage and a configurable research playground at `/playground`. The playground has a static background, a mascot/home header aligned with the homepage, and export/import of sessions that the CLI can actually resume. See [RESEARCH.md](RESEARCH.md) for models, credentials, configuration, and continuation. The rebuilt Grainulation organization site presents one flagship product, Grainulator, and links into the local product preview. Its layout, copy, and metadata replace the old standalone-tool catalog. The server binds to loopback; it serves assets plus a local research API. Stop it with Ctrl-C. The organization site defaults to the sibling `grainulation-dogfood/site`; override with `GRAINULATION_SITE_DIR`.
+The preview server prints http://127.0.0.1:4517 (override port with `GRAINULATOR_PORT`). Grainulator serves a configurable research playground at `/playground/`. The playground has a static background, mascot header, and export/import of sessions that the CLI can actually resume. See [RESEARCH.md](RESEARCH.md) for models, credentials, configuration, and continuation. The server binds to loopback; it serves assets plus a local research API. Stop it with Ctrl-C. Public marketing sites are maintained and deployed from [grainulation/infra](https://github.com/grainulation/infra).
 
-Use the homepage's three stage buttons to inspect an approval, a stale-evidence block, and a fresh compilation. These are recorded decisions from the actual local engine using synthetic release claims. Reproduce the artifact with `node scripts/record-handoff.mjs`. No model comparison or publication occurs.
+Reproduce handoff decision artifacts with `node scripts/record-handoff.mjs <output-path>`. No model comparison or publication occurs.
 
 ## Exercise real evidence operations
 

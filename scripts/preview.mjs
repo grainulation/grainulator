@@ -21,7 +21,11 @@ for (const [label, directory, port] of sites) {
     try {
       const requestURL = new URL(req.url, 'http://localhost');
       let pathname = decodeURIComponent(requestURL.pathname);
-      if (pathname === '/') { res.writeHead(302, { Location: '/playground/' + requestURL.search }); res.end(); return; }
+      if (pathname === '/' || pathname === '/research.html' || pathname === '/playground.html') {
+        res.writeHead(302, { Location: '/playground/' + requestURL.search });
+        res.end();
+        return;
+      }
       let candidate = path.resolve(realRoot, `.${pathname.endsWith('/') ? pathname + 'index.html' : pathname}`);
       if (fs.statSync(candidate).isDirectory()) {
         if (!pathname.endsWith('/')) { const previous = new URL(req.url, 'http://localhost'); res.writeHead(301, { Location: pathname + '/' + previous.search }); res.end(); return; }

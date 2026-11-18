@@ -383,6 +383,39 @@ const MIME = {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+function isLocalOrigin(origin) {
+  if (!origin) return false;
+  try {
+    const parsed = new URL(origin);
+    const host = parsed.hostname;
+    return host === 'localhost' || host === '127.0.0.1' || host === '::1' || host === '[::1]';
+  } catch {
+    return false;
+  }
+}
+
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+  if (isLocalOrigin(origin)) return true;
+  if (CORS_ORIGIN && origin === CORS_ORIGIN) return true;
+  return false;
+}
+
+function isAllowedMutationRequest(req) {
+  const origin = req.headers.origin;
+  if (origin && !isAllowedOrigin(origin)) {
+    return false;
+  }
+  const referer = req.headers.referer;
+  if (referer && !isAllowedOrigin(referer)) {
+    return false;
+  }
+  if (req.headers['sec-fetch-site'] === 'cross-site') {
+    return false;
+  }
+  return true;
+}
+
 function json(res, data, status = 200) {
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
   res.end(JSON.stringify(data));
@@ -418,6 +451,13 @@ const server = createServer(async (req, res) => {
   if (req.method === 'OPTIONS' && CORS_ORIGIN) {
     res.writeHead(204);
     res.end();
+    return;
+  }
+
+  // Protect mutation routes against cross-origin / cross-site requests
+  if (req.method === 'POST' && !isAllowedMutationRequest(req)) {
+    vlog('blocked cross-origin mutation', req.headers.origin || req.headers.referer || 'cross-site');
+    json(res, { ok: false, error: 'Forbidden: cross-origin mutation rejected' }, 403);
     return;
   }
 

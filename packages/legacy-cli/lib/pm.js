@@ -142,40 +142,34 @@ function startTool(toolName, extraArgs = []) {
 }
 
 /**
- * Find a process listening on a port by checking lsof (macOS/Linux).
- * Returns the PID or null.
+ * Verify that a running PID matches the expected tool package or command.
  */
-function findPidByPort(port) {
+function isOwnedToolProcess(pid, toolName) {
+  if (!pid || typeof pid !== 'number' || pid <= 0) return false;
   try {
-    const out = execFileSync('lsof', ['-ti', `:${port}`], {
+    const cmd = execFileSync('ps', ['-p', String(pid), '-o', 'command='], {
       timeout: 3000,
       stdio: ['ignore', 'pipe', 'pipe'],
-    });
-    const pids = out
-      .toString()
-      .trim()
-      .split('\n')
-      .map((s) => parseInt(s, 10))
-      .filter((n) => !Number.isNaN(n) && n > 0);
-    // Return the first PID that isn't our own process
-    return pids.find((p) => p !== process.pid) || null;
+      encoding: 'utf-8',
+    }).toLowerCase();
+    const shortName = toolName.toLowerCase();
+    return cmd.includes(shortName) || cmd.includes(`@grainulation/${shortName}`);
   } catch {
-    return null;
+    return false;
   }
 }
 
 /**
  * Stop a tool by killing its PID.
- * Falls back to finding the process by port if no PID file exists.
+ * Only stops verified owned processes tracked by PID file.
  */
 function stopTool(toolName) {
-  let pid = readPid(toolName);
+  const pid = readPid(toolName);
+  if (!pid) return { stopped: false, reason: 'not running' };
 
-  // Fallback: find process by port if no PID file
-  if (!pid) {
-    const tool = getByName(toolName);
-    if (tool) pid = findPidByPort(tool.port);
-    if (!pid) return { stopped: false, reason: 'not running' };
+  if (!isOwnedToolProcess(pid, toolName)) {
+    removePid(toolName);
+    return { stopped: false, reason: 'unmatched process' };
   }
 
   try {

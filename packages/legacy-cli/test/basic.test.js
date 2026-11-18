@@ -296,6 +296,35 @@ test('router overview mentions init command', () => {
   assert.ok(text.includes('status'));
 });
 
+// ── Process Manager security & bounds ────────────────────────────
+
+test('pm stopTool returns not running when no PID file exists', () => {
+  const pm = require('../lib/pm');
+  const res = pm.stopTool('nonexistent_tool_xyz');
+  assert.equal(res.stopped, false);
+  assert.equal(res.reason, 'not running');
+});
+
+test('pm stopTool refuses to kill unmatched process', () => {
+  const pm = require('../lib/pm');
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const os = require('node:os');
+  const pidDir = path.join(os.homedir(), '.grainulation', 'pids');
+  fs.mkdirSync(pidDir, { recursive: true });
+  const testPidFile = path.join(pidDir, 'wheat.pid');
+  // Write our own pid: our process is running basic.test.js, NOT @grainulation/wheat
+  fs.writeFileSync(testPidFile, String(process.pid));
+  try {
+    const res = pm.stopTool('wheat');
+    assert.equal(res.stopped, false);
+    assert.equal(res.reason, 'unmatched process');
+    assert.equal(fs.existsSync(testPidFile), false, 'pid file should have been cleaned up');
+  } finally {
+    if (fs.existsSync(testPidFile)) fs.unlinkSync(testPidFile);
+  }
+});
+
 // ── Summary ─────────────────────────────────────────────────────
 
 console.log('');

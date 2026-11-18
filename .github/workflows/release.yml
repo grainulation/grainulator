@@ -25,6 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 1
           ref: ${{ github.ref }}
 
@@ -58,7 +59,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [ "${{ steps.changelog.outputs.has_notes }}" = "true" ]; then
+          if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
+            echo "Release ${GITHUB_REF_NAME} already exists; updating notes."
+            if [ "${{ steps.changelog.outputs.has_notes }}" = "true" ]; then
+              gh release edit "${GITHUB_REF_NAME}" \
+                --title "${GITHUB_REF_NAME}" \
+                --notes-file release-notes.md
+            fi
+          elif [ "${{ steps.changelog.outputs.has_notes }}" = "true" ]; then
             gh release create "${GITHUB_REF_NAME}" \
               --title "${GITHUB_REF_NAME}" \
               --notes-file release-notes.md
