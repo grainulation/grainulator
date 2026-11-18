@@ -4,6 +4,7 @@ require "tmpdir"
 require "digest"
 require "json"
 require "open3"
+require "cleaner"
 Utils::GemSetup.install_bundler_gems!(groups: ["formula_test"], setup_path: false)
 require "formula_assertions"
 raise "expected eight arguments" unless ARGV.length == 8
@@ -51,6 +52,8 @@ Dir.mktmpdir("grainulator-recipe-") do |temporary|
   begin
     ENV.activate_extensions!(env: "std")
     Dir.chdir(source) { formula.install }
+    # Normal brew install cleans the keg after install; preserve this behavior in acceptance.
+    Cleaner.new(formula).clean
     wrapper = formula.bin/"grainulator"
     raise "missing wrapper" unless wrapper.executable?
     raise "wrapper does not select the keg asset" unless wrapper.read.include?("GRAINULATOR_RUNTIME_ASSET_DIR=#{(formula.libexec/"native").to_s.shellescape}")
