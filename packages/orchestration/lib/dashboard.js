@@ -234,13 +234,6 @@ export function buildHtml(graphData) {
 }
 
 /**
- * Return paths to all claims.json files for watching.
- */
-export function claimsPaths(targetDir) {
-  return findSprintFiles(targetDir).map((s) => s.file);
-}
-
-/**
  * Generate a self-contained HTML dashboard file (for `orchard dashboard` CLI command).
  */
 export function generateDashboard(config, root, outPath) {

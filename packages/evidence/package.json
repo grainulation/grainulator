@@ -29,7 +29,6 @@
   "exports": {
     ".": "./lib/index.js",
     "./compiler": "./lib/compiler.js",
-    "./server": "./lib/server.js",
     "./guard": "./lib/guard.js",
     "./mcp": "./lib/serve-mcp.js",
     "./load-claims": "./lib/load-claims.js"
@@ -42,7 +41,6 @@
     "bin/",
     "lib/",
     "compiler/",
-    "public/",
     "templates/",
     "README.md",
     "LICENSE",

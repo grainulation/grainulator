@@ -33,4 +33,4 @@ grainulator/
 └── package-lock.json
 ```
 
-The former permission dashboard is no longer part of Grainulator. Local build files, caches, and test reports are omitted from this map.
+The former permission dashboard and component browser apps are no longer part of Grainulator. Generated analytics/portfolio reports and reusable document templates remain supported. Local build files, caches, and test reports are omitted from this map.

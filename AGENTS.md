@@ -8,7 +8,7 @@ Source imports and local-edit provenance live in `docs/source-imports.json`. Do 
 
 Run `npm test` for component suites and dogfood regressions. Run `node test/conformance.mjs` from `packages/runtime` for Rust runtime conformance. Use `npm run dev` for the local research playground and `npm run test:playground` for responsive and keyboard checks. Public website code and deployment belong to grainulation/infra.
 
-The permission dashboard and its connectors have been removed at the maintainer’s request. Do not restore that application, its hooks, or its runtime dependencies. Native hosts own permissions and remote access. Generated evidence and analytics reports remain supported.
+The permission dashboard and component browser dashboards have been removed at the maintainer’s request. Do not restore their HTTP servers, browser apps, launch hooks, or runtime dependencies. Native hosts own permissions and remote access. The local research playground, generated evidence and analytics reports, and reusable report templates remain supported.
 
 ## Verification and reporting
 

@@ -17,3 +17,5 @@ The repeated `export` in the CLI example selects the module and then its compati
 Exports preserve source files, sprint ledgers, compilation, and host configuration. Write reports to an artifact path. Optional PDF conversion can require additional local tools or a dependency download; it is not required for evidence or MCP setup. Publishing and clipboard operations are explicit actions, not automatic steps in the research workflow.
 
 Mill names remain compatibility aliases. No standalone component install is needed. See the [dogfood guide](../../docs/DOGFOOD.md) for local validation.
+
+Component browser dashboards and `serve` commands are retired. Use the CLI and MCP tools; `grainulator preview` opens the local research playground. Generated HTML reports and reusable report templates remain supported.

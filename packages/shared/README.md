@@ -14,3 +14,5 @@ node bin/grainulator.js --help
 Filesystem locks coordinate cooperating local writers. They are not distributed locks or a sandbox. Path checks resolve existing ancestors and symlinks so missing output files can be created within the allowed workspace without allowing a path escape.
 
 Barn package and binary names are retained compatibility details. Optional legacy document-build helpers may require external tooling, but they are not part of current installation. Use the root [tool reference](../../docs/TOOLS.md) and [adapter contract](../../docs/ADAPTERS.md).
+
+Component browser dashboards and `serve` commands are retired. Use the CLI and MCP tools; `grainulator preview` opens the local research playground. Generated HTML reports and reusable report templates remain supported.

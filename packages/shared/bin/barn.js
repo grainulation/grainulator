@@ -21,13 +21,16 @@ import { fork } from "node:child_process";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const TOOLS_DIR = join(__dirname, "..", "tools");
 
-const LIB_DIR = join(__dirname, "..", "lib");
 
 // ── --version / -v ───────────────────────────────────────────────────────────
 import { readFileSync } from "node:fs";
 
 const args = process.argv.slice(2);
 const command = args[0];
+if (command === "serve") {
+  console.error("The component browser dashboard has been retired. Use the CLI or MCP tools; grainulator preview starts the local research playground.");
+  process.exit(1);
+}
 
 if (command === "--version" || command === "-v") {
   const pkg = JSON.parse(
@@ -67,7 +70,6 @@ Usage:
   barn <command> [options]
 
 Commands:
-  serve                        Start the template browser UI
   detect-sprints               Find sprint directories in a repo
   generate-manifest            Build wheat-manifest.json topic map
   build-pdf <file>             Convert markdown to PDF via npx md-to-pdf
@@ -76,7 +78,6 @@ Commands:
   help                         Show this help message
 
 Examples:
-  barn serve --port 9093 --root /path/to/repo
   barn detect-sprints --json
   barn detect-sprints --active
   barn generate-manifest --root /path/to/repo
@@ -92,14 +93,7 @@ Zero npm dependencies. Node built-in only.`);
   process.exit(0);
 }
 
-// ── serve command (lib/server.js) ──
-if (command === "serve") {
-  const serverPath = join(LIB_DIR, "server.js");
-  const child = fork(serverPath, args.slice(1), { stdio: "inherit" });
-  child.on("exit", (code) => process.exit(code ?? 0));
-  process.on("SIGTERM", () => child.kill("SIGTERM"));
-  process.on("SIGINT", () => child.kill("SIGINT"));
-} else if (commands[command]) {
+if (commands[command]) {
   const toolPath = join(TOOLS_DIR, commands[command]);
   const child = fork(toolPath, args.slice(1), { stdio: "inherit" });
   child.on("exit", (code) => process.exit(code ?? 0));

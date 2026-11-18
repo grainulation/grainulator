@@ -14,7 +14,6 @@ const TOOLS = [
     description: 'Research sprint engine. Ask a question, grow claims, compile a brief.',
     category: 'core',
     port: 9091,
-    serveCmd: ['serve'],
     entryPoint: true,
   },
   {
@@ -25,7 +24,6 @@ const TOOLS = [
     description: 'Public utilities. Claim schemas, HTML templates, shared validators.',
     category: 'foundation',
     port: 9093,
-    serveCmd: ['serve'],
     entryPoint: false,
   },
   {
@@ -36,7 +34,6 @@ const TOOLS = [
     description: 'Export and publish. Turn compiled research into PDFs, slides, wikis.',
     category: 'output',
     port: 9094,
-    serveCmd: ['serve'],
     entryPoint: false,
   },
   {
@@ -47,7 +44,6 @@ const TOOLS = [
     description: 'Reusable claim libraries. Share vetted claims across sprints and teams.',
     category: 'storage',
     port: 9095,
-    serveCmd: ['serve'],
     entryPoint: false,
   },
   {
@@ -58,7 +54,6 @@ const TOOLS = [
     description: 'Cross-sprint learning. Track prediction accuracy, find blind spots over time.',
     category: 'analytics',
     port: 9096,
-    serveCmd: ['serve'],
     entryPoint: false,
   },
   {
@@ -69,7 +64,6 @@ const TOOLS = [
     description: 'Multi-sprint coordination. Run parallel research tracks, merge results.',
     category: 'orchestration',
     port: 9097,
-    serveCmd: ['serve'],
     entryPoint: false,
   },
   {
@@ -77,10 +71,9 @@ const TOOLS = [
     package: '@grainulation/grainulation',
     icon: 'G',
     role: 'The machine',
-    description: 'Process manager and ecosystem hub. Start, stop, and monitor all tools.',
+    description: 'Compatibility CLI and cleanup for previously launched component processes.',
     category: 'meta',
     port: 9098,
-    serveCmd: ['serve'],
     entryPoint: false,
   },
 ];

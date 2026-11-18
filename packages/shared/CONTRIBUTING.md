@@ -50,9 +50,7 @@ Templates live in `templates/`. Each template is a pair: an HTML file and a JSON
 ```
 bin/barn.js           CLI entrypoint -- dispatches subcommands
 lib/index.js          Core library -- template resolution and rendering
-lib/server.js         Local preview server (SSE, zero deps)
 templates/            HTML + JSON schema pairs for each artifact type
-public/               Web UI -- two-column template nav + preview
 tools/                Utility scripts
 test/                 Node built-in test runner tests
 ```

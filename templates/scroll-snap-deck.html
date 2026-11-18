@@ -6,10 +6,10 @@
 <title>{{title}} — Grainulator Sprint</title>
 <style>
 :root {
-  --bg: #0a0e1a;
-  --fg: #e2e8f0;
-  --fg2: #94a3b8;
-  --fg3: #64748b;
+  --bg: #141415;
+  --fg: #ededed;
+  --fg2: #a1a1a6;
+  --fg3: #85858b;
   --accent: #4ecdc4;
   --surface: rgba(255,255,255,0.03);
   --border: rgba(255,255,255,0.07);
@@ -20,7 +20,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
 
 /* Skip nav */
 .skip-nav{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:1000}
-.skip-nav:focus{position:fixed;top:8px;left:8px;width:auto;height:auto;padding:12px 24px;background:var(--accent);color:#000;font-weight:700;font-size:.875rem;border-radius:8px;text-decoration:none;z-index:10000}
+.skip-nav:focus{position:fixed;top:8px;left:8px;width:auto;height:auto;padding:12px 24px;background:var(--accent);color:#000;font-weight:600;font-size:.875rem;border-radius:8px;text-decoration:none;z-index:10000}
 
 /* sr-only */
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border-width:0}
@@ -33,16 +33,13 @@ section[aria-roledescription="slide"]{min-height:100vh;scroll-snap-align:start;d
 section[aria-roledescription="slide"]:focus{outline:none}
 section[aria-roledescription="slide"]:focus-visible{outline:2px solid var(--accent);outline-offset:-4px}
 
-.slide-inner{max-width:900px;width:100%;text-align:center}
+.slide-inner{max-width:900px;width:100%;text-align:left}
 
-h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-bottom:16px}
-h2{font-size:clamp(1.5rem,3.5vw,2.4rem);font-weight:800;letter-spacing:-.02em;margin-bottom:16px}
-h3{font-size:1.1rem;font-weight:700;margin-bottom:8px}
+h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:500;letter-spacing: 0;line-height:1.1;margin-bottom:16px}
+h2{font-size:clamp(1.5rem,3.5vw,2.4rem);font-weight:500;letter-spacing: 0;margin-bottom:16px}
+h3{font-size:1.1rem;font-weight:600;margin-bottom:8px}
 
-.gradient-text{background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-@supports not (-webkit-background-clip: text) {
-  .gradient-text{color:#60a5fa}
-}
+.title-text{background: none; color: inherit;-webkit-text-fill-color: currentColor;}
 
 /* Cards */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px 24px;text-align:left}
@@ -66,6 +63,24 @@ h3{font-size:1.1rem;font-weight:700;margin-bottom:8px}
   html{scroll-snap-type:none;scroll-behavior:auto}
   *,*::before,*::after{animation-duration:0.01ms !important;transition-duration:0.01ms !important}
 }
+
+  /* Evidence documents keep their data prominent and controls quiet. */
+  body { font-variant-numeric: tabular-nums; }
+  strong, b { font-weight: 600; }
+  :focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+  @media (prefers-reduced-motion: reduce) {
+    html, body { scroll-behavior: auto; scroll-snap-type: none; }
+  }
+
+  @media print {
+    :root { --bg: #fff; --fg: #171717; --fg2: #404040; --fg3: #525252; --surface: #f5f5f5; --border: #d4d4d4; }
+    body { background: #fff; color: #171717; }
+    h1, h2, h3, caption, th, .tag, .sev { color: #171717; -webkit-text-fill-color: currentColor; }
+    .sidebar, .sidebar-mobile, .skip-nav { display: none; }
+    .layout { display: block; }
+    .content { max-width: none; padding: 0; }
+    section[aria-roledescription="slide"] { min-height: auto; break-after: page; }
+  }
 </style>
 </head>
 <body>
@@ -76,7 +91,7 @@ h3{font-size:1.1rem;font-weight:700;margin-bottom:8px}
 <!-- Slide 1: Title -->
 <section aria-roledescription="slide" aria-label="Slide 1 of 4: Title" tabindex="0">
   <div class="slide-inner">
-    <h1 class="gradient-text">{{title}}</h1>
+    <h1 class="title-text">{{title}}</h1>
     <p style="color:var(--fg2);font-size:1.1rem">{{subtitle}}</p>
   </div>
 </section>
@@ -84,7 +99,7 @@ h3{font-size:1.1rem;font-weight:700;margin-bottom:8px}
 <!-- Slide 2: Executive Summary -->
 <section aria-roledescription="slide" aria-label="Slide 2 of 4: Executive Summary" tabindex="0">
   <div class="slide-inner">
-    <h2>Executive Summary</h2>
+    <h2>Executive summary</h2>
     <p style="color:var(--fg2)">{{summary}}</p>
   </div>
 </section>
@@ -92,7 +107,7 @@ h3{font-size:1.1rem;font-weight:700;margin-bottom:8px}
 <!-- Slide 3: Findings -->
 <section aria-roledescription="slide" aria-label="Slide 3 of 4: Key Findings" tabindex="0">
   <div class="slide-inner">
-    <h2>Key Findings</h2>
+    <h2>Key findings</h2>
     <div class="card">
       <h3>{{finding_title}}</h3>
       <p>{{finding_detail}}</p>
@@ -103,7 +118,7 @@ h3{font-size:1.1rem;font-weight:700;margin-bottom:8px}
 <!-- Slide 4: Risks & Recommendations -->
 <section aria-roledescription="slide" aria-label="Slide 4 of 4: Risks and Recommendations" tabindex="0">
   <div class="slide-inner">
-    <h2>Risks &amp; Recommendations</h2>
+    <h2>Risks &amp; recommendations</h2>
     <p style="color:var(--fg2)">{{risks_and_recs}}</p>
   </div>
 </section>

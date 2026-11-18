@@ -6,17 +6,15 @@
   "main": "lib/index.js",
   "exports": {
     ".": "./lib/index.js",
-    "./server": "./lib/server.js",
     "./tokens": "./public/grainulation-tokens.css"
   },
   "bin": {
     "silo": "bin/silo.js"
   },
   "scripts": {
-    "test": "node test/basic.test.js && node --test test/smart-fetch.test.js test/fetch-cache.test.js test/smart-fetch.live.test.js test/server.test.js test/ui-smoke.test.js test/serve-mcp.test.js test/tarball.test.js",
+    "test": "node test/basic.test.js && node --test test/smart-fetch.test.js test/fetch-cache.test.js test/smart-fetch.live.test.js test/serve-mcp.test.js test/tarball.test.js",
     "test:live": "FETCH_LIVE=1 npm test",
-    "start": "node bin/silo.js serve",
-    "serve": "node bin/silo.js serve",
+    "start": "node bin/silo.js --help",
     "format": "npx prettier@3.3 --write .",
     "format:check": "npx prettier@3.3 --check ."
   },

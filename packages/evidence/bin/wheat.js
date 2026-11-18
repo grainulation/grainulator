@@ -48,6 +48,10 @@ export { verbose, vlog };
 
 const args = process.argv.slice(2);
 const subcommand = args[0];
+if (subcommand === "serve") {
+	console.error("The component browser dashboard has been retired. Use the CLI or MCP tools; grainulator preview starts the local research playground.");
+	process.exit(1);
+}
 
 vlog("startup", `subcommand=${subcommand || "(none)"}`, `cwd=${process.cwd()}`);
 
@@ -89,7 +93,7 @@ Commands:
   mcp        Start MCP server
 
 Legacy component-only commands:
-  quickstart, serve, stats, update
+  quickstart, stats, update
   Inspect usage with node packages/evidence/bin/wheat.js <command> --help.
   The direct component init command also creates legacy project scaffolding;
   grainulator init creates only sprint data.
@@ -152,7 +156,6 @@ if (subcommand === "mcp") {
 		status: "../lib/status.js",
 		stats: "../lib/stats.js",
 		update: "../lib/update.js",
-		serve: "../lib/server.js",
 		mcp: "../lib/serve-mcp.js",
 	};
 
@@ -224,9 +227,6 @@ if (subcommand === "mcp") {
 			break;
 		case "update":
 			handler = await import("../lib/update.js");
-			break;
-		case "serve":
-			handler = await import("../lib/server.js");
 			break;
 		case "mcp":
 			handler = await import("../lib/serve-mcp.js");

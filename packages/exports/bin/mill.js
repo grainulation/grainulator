@@ -5,7 +5,6 @@
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const { parseArgs } = require("node:util");
-const { fork } = require("node:child_process");
 
 const { loadSource } = require("../lib/source-data.js");
 const { assertSafeOutput } = require("../lib/output-safety.js");
@@ -47,7 +46,6 @@ const COMMANDS = {
     description: "Generate CI artifacts from compilation",
     handler: runCiArtifacts,
   },
-  serve: { description: "Start the export workbench UI", handler: runServe },
   "serve-mcp": { description: "Start the MCP server on stdio", handler: null },
 };
 
@@ -55,7 +53,6 @@ const USAGE = `
 grainulator export -- turn sprint evidence into shareable artifacts
 
 Usage:
-  grainulator export serve   [--port 9094] [--source <dir>]  Start the export workbench UI
   grainulator export serve-mcp                               Start the MCP server on stdio
   grainulator export export  --format <fmt> <file>           Export artifact to target format
   grainulator export publish --target <dest> <dir>           Publish sprint outputs
@@ -78,7 +75,6 @@ Publish targets:
   clipboard  Copy formatted output to system clipboard
 
 Examples:
-  grainulator export serve --port 9094 --source /path/to/sprint
   grainulator export export --format pdf output/brief.html
   grainulator export export --format executive-summary compilation.json -o brief.html --dir ./sprint
   grainulator export export --format csv claims.json
@@ -90,6 +86,10 @@ Examples:
 
 function main() {
   const args = process.argv.slice(2);
+  if (args[0] === "serve") {
+    console.error("The component browser dashboard has been retired. Use the CLI or MCP tools; grainulator preview starts the local research playground.");
+    process.exit(1);
+  }
 
   vlog("startup", `command=${args[0] || "(none)"}`, `cwd=${process.cwd()}`);
 
@@ -104,12 +104,6 @@ function main() {
   if (command === "help") {
     console.log(USAGE);
     process.exit(0);
-  }
-
-  // serve command forks the ESM server module
-  if (command === "serve") {
-    runServe(args.slice(1));
-    return;
   }
 
   // serve-mcp command starts the MCP server on stdio
@@ -489,19 +483,5 @@ async function runCiArtifacts(args) {
   }
 }
 
-function runServe(args) {
-  const fs = require("node:fs");
-  const serverPath = path.join(LIB_DIR, "server.js");
-  if (!fs.existsSync(serverPath)) {
-    console.error(
-      "grainulator export: bundled workbench server is missing. Run grainulator doctor to check this installation.",
-    );
-    process.exit(1);
-  }
-  const child = fork(serverPath, args, { stdio: "inherit" });
-  child.on("exit", (code) => process.exit(code ?? 0));
-  process.on("SIGTERM", () => child.kill("SIGTERM"));
-  process.on("SIGINT", () => child.kill("SIGINT"));
-}
 
 main();

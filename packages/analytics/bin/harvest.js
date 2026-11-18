@@ -40,7 +40,6 @@ Usage:
   grainulator analytics report <sprints-dir> [-o <output>]  Generate retrospective HTML
   grainulator analytics trends <sprints-dir>        All analyses in one pass
   grainulator analytics intelligence <sprints-dir>  Full intelligence report (all features)
-  grainulator analytics serve [--port 9096] [--root <sprints-dir>]  Start the analytics report UI
 
 Options:
   -o, --output <path>   Output file path (default: stdout or ./retrospective.html)
@@ -58,6 +57,11 @@ function parseArgs(argv) {
     json: false,
     days: 90,
   };
+
+  if (args[0] === "serve") {
+    console.error("The component browser dashboard has been retired. Use the CLI or MCP tools; grainulator preview starts the local research playground.");
+    process.exit(1);
+  }
 
   if (args.length === 0 || args.includes("-h") || args.includes("--help")) {
     console.log(USAGE);
@@ -317,35 +321,6 @@ async function main() {
     process.exit(0);
   }
 
-  if (opts.command === "serve") {
-    // Launch the ESM server module in-process via dynamic import.
-    // start() installs its own SIGTERM/SIGINT handlers and crash handlers.
-    const portIdx = process.argv.indexOf("--port");
-    const rootIdx = process.argv.indexOf("--root");
-    const corsIdx = process.argv.indexOf("--cors");
-    const port =
-      portIdx !== -1 && process.argv[portIdx + 1]
-        ? parseInt(process.argv[portIdx + 1], 10)
-        : 9096;
-    const root =
-      rootIdx !== -1 && process.argv[rootIdx + 1]
-        ? process.argv[rootIdx + 1]
-        : opts.dir || process.cwd();
-    const corsOrigin =
-      corsIdx !== -1 && process.argv[corsIdx + 1]
-        ? process.argv[corsIdx + 1]
-        : null;
-    try {
-      const { start } = await import("../lib/server.js");
-      start({ port, root, corsOrigin, verbose });
-    } catch (err) {
-      console.error(
-        `grainulator analytics: error starting server: ${err.message}`,
-      );
-      process.exit(1);
-    }
-    return;
-  }
 
   if (!commands[opts.command]) {
     console.error(`grainulator analytics: unknown command: ${opts.command}`);

@@ -45,8 +45,6 @@ lib/ecosystem.js          Ecosystem health checks and tool discovery
 lib/doctor.js             Diagnostic tool -- validates tool installations
 lib/setup.js              First-run setup and configuration
 lib/pm.js                 Package management for grainulation tools
-lib/server.mjs            Local server -- unified ecosystem dashboard (ESM)
-public/                   Web UI -- ecosystem overview and status
 Public websites are maintained in https://github.com/grainulation/infra.
 test/                     Node built-in test runner tests
 ```

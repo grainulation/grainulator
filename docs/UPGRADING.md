@@ -2,6 +2,8 @@
 
 Version 2 consolidates the ecosystem into one package and one MCP server. Updating the plugin does not rewrite your host settings, active conversations, project instructions, or saved research. Follow this checklist in the copy and host scope you actually use.
 
+Component browser dashboards and their `serve` commands are retired. Use the CLI or MCP tools for evidence, memory, exports and sprint analysis. Generated HTML reports still work offline, and `grainulator preview` still opens the local research playground. Legacy startup commands no longer launch component servers; historical process cleanup remains available.
+
 ## 1. Identify the installation
 
 Use Node.js 24 or later. Keep the existing installation and research data until the replacement works. A source checkout, an npm consumer installation, a marketplace checkout, a host's plugin cache, and a running host are separate copies; updating one does not update the others.

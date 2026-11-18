@@ -6,7 +6,6 @@
   "main": "lib/analyzer.js",
   "exports": {
     ".": "./lib/analyzer.js",
-    "./server": "./lib/server.js",
     "./calibration": "./lib/calibration.js",
     "./decay": "./lib/decay.js",
     "./patterns": "./lib/patterns.js",
@@ -21,7 +20,7 @@
     "harvest": "bin/harvest.js"
   },
   "scripts": {
-    "test": "node --test test/basic.test.js test/report.test.js test/server.test.js test/token-tracker.test.js test/wrapped.test.js test/tarball.test.js",
+    "test": "node --test test/basic.test.js test/report.test.js test/token-tracker.test.js test/wrapped.test.js test/tarball.test.js",
     "start": "node bin/harvest.js",
     "format": "npx prettier@3.3 --write .",
     "format:check": "npx prettier@3.3 --check ."
@@ -39,7 +38,6 @@
   "files": [
     "bin/",
     "lib/",
-    "public/",
     "templates/",
     "README.md",
     "LICENSE",

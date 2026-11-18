@@ -16,3 +16,5 @@ node bin/grainulator.js orchestrate status
 Run `init` in the project whose sprint dependencies you want to track. It creates `orchard.json`, a retained compatibility filename. Add sprint paths and dependency relationships to that file; `plan` displays the dependency graph and `status` inspects referenced sprints. The optional report command creates an HTML artifact, not a permission-management application.
 
 Existing Orchard data and the legacy binary remain supported. There is no separate package installation or background service required for this module. See the [tool reference](../../docs/TOOLS.md) for evidence operations and the [dogfood guide](../../docs/DOGFOOD.md) for the current product workflow.
+
+Component browser dashboards and `serve` commands are retired. Use the CLI and MCP tools; `grainulator preview` opens the local research playground. Generated HTML reports and reusable report templates remain supported.

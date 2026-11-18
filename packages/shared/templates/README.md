@@ -2,6 +2,8 @@
 
 Self-contained HTML templates for research sprint artifacts. No external dependencies -- all CSS is inlined, no JavaScript frameworks.
 
+Template design was reviewed with [unslop](https://github.com/heydamir/unslop) by Damir Sokolovsky (@heydamir), licensed under CC BY 4.0. Evidence, decisions and report data carry the emphasis; document chrome stays quiet.
+
 ## explainer.html
 
 Full-screen scroll-snap presentation template. Each `.slide` div fills the viewport and snaps into place on scroll.
@@ -16,12 +18,12 @@ Full-screen scroll-snap presentation template. Each `.slide` div fills the viewp
 - `.slide` -- full-screen section (scroll-snap aligned)
 - `.card` -- content card with colored left border (add `.green`, `.orange`, `.red`, `.purple`, `.pink`)
 - `.two-col` / `.three-col` -- column layouts
-- `.label` -- small uppercase badge (add color class for variants)
+- `.label` -- sentence-case metadata label (add color class for variants)
 - `.divider` -- accent-colored horizontal rule
 - `table` -- styled data table
 - `.claim-ref` -- monospace claim reference (e.g., `[r001]`)
 - `.slide-nav` -- fixed dot navigation on the right edge
-- `.fade-in` -- entrance animation
+- `.fade-in` -- retained compatibility class; content is static
 
 ## dashboard.html
 

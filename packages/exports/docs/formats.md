@@ -42,7 +42,6 @@ mill publish --target <target> <dir> [-o <output>]
 | Command                                     | Description                                          |
 | ------------------------------------------- | ---------------------------------------------------- |
 | `mill formats`                              | List available formats (`--json` for machine output) |
-| `mill serve [--port 9094] [--source <dir>]` | Start the export workbench UI                        |
 | `mill serve-mcp`                            | Start the MCP server on stdio                        |
 | `mill --version`, `-v`                      | Print version                                        |
 

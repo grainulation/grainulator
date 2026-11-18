@@ -45,11 +45,9 @@ lib/calibration.js        Prediction vs outcome scoring
 lib/decay.js              Claim staleness and evidence decay
 lib/patterns.js           Recurring pattern extraction
 lib/report.js             Report generation from analyzed data
-lib/server.js             Local preview server (SSE, zero deps)
 lib/templates.js          Template rendering for HTML output
 lib/velocity.js           Sprint velocity tracking
 templates/                HTML templates (retrospective, etc.)
-public/                   Web UI -- retrospective dashboard
 test/                     Node built-in test runner tests
 ```
 

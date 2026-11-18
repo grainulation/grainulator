@@ -50,9 +50,7 @@ lib/timeline.js           Timeline generation and critical path
 lib/sync.js               State synchronization across sprint repos
 lib/export.js             Export planner data to various formats
 lib/dashboard.js          Dashboard data aggregation
-lib/server.js             Local preview server (SSE, zero deps)
 templates/                HTML templates (orchard-dashboard, etc.)
-public/                   Web UI -- multi-sprint planning dashboard
 test/                     Node built-in test runner tests
 ```
 

@@ -1,12 +1,12 @@
 /**
- * wheat quickstart — zero-to-dashboard in under 90 seconds
+ * wheat quickstart — create and compile a sample research sprint
  *
  * Creates a demo sprint with pre-seeded research claims,
- * compiles them, and opens the dashboard. Designed to show
+ * compiles them, and prints CLI inspection commands. Designed to show
  * wheat's value in the shortest possible time.
  *
  * Usage:
- *   wheat quickstart [--dir <path>] [--no-open] [--port 9092]
+ *   wheat quickstart [--dir <path>] [--force]
  *
  * Zero npm dependencies.
  */
@@ -193,13 +193,6 @@ const DEMO_CLAIMS = [
 
 export async function run(dir, args) {
 	const startTime = Date.now();
-	const flags = {};
-	for (let i = 0; i < args.length; i++) {
-		if (args[i] === "--no-open") flags.noOpen = true;
-		else if (args[i] === "--port" && args[i + 1]) {
-			flags.port = args[++i];
-		}
-	}
 
 	const claimsPath = target(dir, "claims.json");
 	if (fs.existsSync(claimsPath) && !args.includes("--force")) {
@@ -210,7 +203,7 @@ export async function run(dir, args) {
 	}
 
 	console.log();
-	console.log("  \x1b[1m\x1b[33mwheat quickstart\x1b[0m — zero to dashboard");
+	console.log("  \x1b[1m\x1b[33mwheat quickstart\x1b[0m — sample research sprint");
 	console.log("  ─────────────────────────────────────────");
 	console.log();
 
@@ -288,68 +281,17 @@ export async function run(dir, args) {
 	// Step 5: Run the compiler
 	console.log();
 	console.log("  \x1b[1mCompiling...\x1b[0m");
-	try {
-		const compilationPath = path.join(dir, "compilation.json");
-		runCompiler(claimsPath, compilationPath, dir);
-	} catch (err) {
-		console.log(`  \x1b[33m!\x1b[0m Compilation skipped: ${err.message}`);
-	}
+	const compilationPath = path.join(dir, "compilation.json");
+	runCompiler(claimsPath, compilationPath, dir);
 
 	const elapsed5 = Date.now() - startTime;
 	console.log();
 	console.log(`  \x1b[32mCompiled in ${elapsed5}ms.\x1b[0m`);
 
-	// Step 6: Start the dashboard
-	const port = flags.port || "9092";
-	console.log();
-	console.log(`  \x1b[1mStarting dashboard on port ${port}...\x1b[0m`);
-
-	// Import and start the server
-	try {
-		const serverModule = await import(
-			path.join(packageRoot(), "lib", "server.js")
-		);
-		// The server module's run() starts listening — we call it and let it run
-		// It will keep the process alive
-		const serverArgs = ["--port", port, "--dir", dir];
-		if (flags.noOpen) serverArgs.push("--no-open");
-
-		console.log();
-		console.log("  ─────────────────────────────────────────");
-		const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
-		console.log(
-			`  \x1b[1m\x1b[33mQuickstart complete.\x1b[0m  ${totalTime}s total`,
-		);
-		console.log();
-		console.log(`  Sprint:     ${DEMO_QUESTION}`);
-		console.log(
-			`  Claims:     ${claimsData.claims.length} (${
-				DEMO_CLAIMS.filter((c) => c.id.startsWith("d")).length
-			} constraints + ${
-				DEMO_CLAIMS.filter((c) => c.id.startsWith("r")).length
-			} research + ${
-				DEMO_CLAIMS.filter((c) => c.id.startsWith("x")).length
-			} challenge)`,
-		);
-		console.log(`  Conflicts:  1 (r001 vs x001 — latency gain at scale)`);
-		console.log(`  Dashboard:  http://localhost:${port}`);
-		console.log();
-		console.log("  What to do now:");
-		console.log(
-			"    1. Explore the dashboard — click topics, claims, see the conflict",
-		);
-		console.log(
-			'    2. Open Claude Code here and try: /research "module boundary enforcement"',
-		);
-		console.log("    3. Or start YOUR sprint: wheat init");
-		console.log();
-
-		// Start server (this blocks — keeps process alive)
-		await serverModule.run(dir, serverArgs);
-	} catch (err) {
-		// If server fails, still show the summary
-		console.log(`  \x1b[33m!\x1b[0m Dashboard failed to start: ${err.message}`);
-		console.log(`  Run manually: wheat serve --dir ${dir}`);
-		console.log();
-	}
+	console.log("  Quickstart complete");
+	console.log(`  Sprint: ${DEMO_QUESTION}`);
+	console.log(`  Claims: ${claimsData.claims.length}`);
+	console.log(`  Inspect: grainulator status --dir ${dir}`);
+	console.log(`  Explore claims: grainulator search --dir ${dir}`);
+	console.log("  Start your own sprint: grainulator init --question \"Your question\"");
 }

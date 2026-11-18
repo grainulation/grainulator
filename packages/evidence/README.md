@@ -21,3 +21,5 @@ A successful compilation checks ledger structure and evidence rules. It does not
 Legacy Wheat binaries, tool aliases, and data filenames remain compatibility details. The old initializer can scaffold host instructions, and its explicit Git-hook option is legacy tooling; neither is required for current setup. Remove only a registration you intentionally added when disconnecting a host, preserving unrelated configuration.
 
 See [host integration](../../docs/HOSTS.md) and the [local dogfood guide](../../docs/DOGFOOD.md).
+
+Component browser dashboards and `serve` commands are retired. Use the CLI and MCP tools; `grainulator preview` opens the local research playground. Generated HTML reports and reusable report templates remain supported.

@@ -23,7 +23,7 @@ function overviewData() {
       category: tool.category,
       installed: isInstalled(tool.package),
     })),
-    commands: ['up', 'down', 'ps', 'init', 'status', 'doctor', '<tool>'],
+    commands: ['down', 'ps', 'init', 'status', 'doctor', '<tool>'],
   };
 }
 
@@ -47,7 +47,6 @@ function overview() {
 
   lines.push('');
   lines.push('  \x1b[2mProcess management:\x1b[0m');
-  lines.push('    grainulation up [tools]  Start tool servers (default: wheat)');
   lines.push('    grainulation down        Stop all running tools');
   lines.push('    grainulation ps          Show running tools, ports, health');
   lines.push('');
@@ -58,7 +57,7 @@ function overview() {
   lines.push('    grainulation <tool>      Delegate to a grainulation tool');
   lines.push('');
   lines.push('  \x1b[2mStart here:\x1b[0m');
-  lines.push('    grainulation up && grainulation init');
+  lines.push('    grainulation init');
   lines.push('');
 
   return lines.join('\n');
@@ -109,7 +108,15 @@ function findSourceBin(tool) {
   return null;
 }
 
-function delegate(toolName, args) {
+function delegate(toolName, args = []) {
+  // Reject before sibling discovery or registry fallback can revive an old app.
+  // serve-mcp remains a supported stdio operation; match only the retired verb.
+  if (args.filter((arg) => arg !== '--json')[0] === 'serve') {
+    console.error(
+      'The component browser dashboard has been retired. Use the CLI or MCP tools; grainulator preview starts the local research playground.',
+    );
+    process.exit(1);
+  }
   const tool = getByName(toolName);
   if (!tool) {
     console.error(`\x1b[31mgrainulation: unknown tool: ${toolName}\x1b[0m`);
@@ -391,7 +398,10 @@ function route(args, opts) {
 
   // Process management
   if (command === 'up') {
-    pmUp(rest, { json });
+    console.error(
+      'Component browser dashboards have been retired. Use grainulator preview for the local research playground.',
+    );
+    process.exit(1);
     return;
   }
   if (command === 'down') {
@@ -438,46 +448,6 @@ function route(args, opts) {
 }
 
 // --- Process management commands ---
-
-function pmUp(args, opts) {
-  const pm = require('./pm');
-  const toolNames = args.filter((a) => !a.startsWith('-'));
-  const results = pm.up(toolNames.length > 0 ? toolNames : undefined);
-
-  if (opts?.json) {
-    console.log(JSON.stringify(results));
-    return;
-  }
-
-  console.log('');
-  console.log('  \x1b[1;33mgrainulation up\x1b[0m');
-  console.log('');
-
-  for (const r of results) {
-    if (r.error) {
-      console.log(`    \x1b[31mx\x1b[0m ${r.name.padEnd(12)} ${r.error}`);
-    } else if (r.alreadyRunning) {
-      console.log(`    \x1b[33m~\x1b[0m ${r.name.padEnd(12)} already running (pid ${r.pid}, port ${r.port})`);
-    } else {
-      console.log(`    \x1b[32m+\x1b[0m ${r.name.padEnd(12)} started (pid ${r.pid}, port ${r.port})`);
-    }
-  }
-
-  console.log('');
-
-  // Wait a moment then probe health
-  setTimeout(async () => {
-    const statuses = await pm.ps();
-    const running = statuses.filter((s) => s.alive);
-    if (running.length > 0) {
-      console.log('  \x1b[2mHealth check:\x1b[0m');
-      for (const s of running) {
-        console.log(`    \x1b[32m+\x1b[0m ${s.name.padEnd(12)} :${s.port} (${s.latencyMs}ms)`);
-      }
-      console.log('');
-    }
-  }, 2000);
-}
 
 function pmDown(args, opts) {
   const pm = require('./pm');
@@ -545,7 +515,7 @@ async function pmPs(opts) {
   }
 
   if (running.length === 0) {
-    console.log('  \x1b[2mNo tools running. Start with: grainulation up\x1b[0m');
+    console.log('  \x1b[2mNo legacy component processes are running.\x1b[0m');
     console.log('');
   }
 }
@@ -559,7 +529,6 @@ module.exports = {
   init,
   status,
   statusData,
-  pmUp,
   pmDown,
   pmPs,
 };

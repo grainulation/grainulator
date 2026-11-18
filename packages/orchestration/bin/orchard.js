@@ -46,7 +46,6 @@ const COMMANDS = {
   decompose: "Auto-decompose a question into sub-sprints",
   hackathon: "Hackathon coordinator (init|team|status|end)",
   dashboard: "Generate unified HTML dashboard",
-  serve: "Start the portfolio dashboard web server",
   next: "Show sprints ready for grainulator execution",
   doctor: "Check health of orchestration setup",
   help: "Show this help message",
@@ -80,9 +79,6 @@ function printHelp() {
     console.log(`    ${cmd.padEnd(12)} ${desc}`);
   }
   console.log("");
-  console.log("  Serve options:");
-  console.log("    --port 9097    Port for the web server (default: 9097)");
-  console.log("    --root <dir>   Root directory to scan for sprints");
   console.log("");
   console.log("");
   console.log("  Config: orchard.json in project root");
@@ -107,34 +103,16 @@ async function main() {
     process.exit(0);
   }
 
+  if (command === "serve") {
+    console.error("The component browser dashboard has been retired. Use the CLI or MCP tools; grainulator preview starts the local research playground.");
+    process.exit(1);
+  }
+
   if (!COMMANDS[command]) {
     console.error(`grainulator orchestrate: unknown command: ${command}`);
     console.error(`Run "grainulator orchestrate help" to see available commands.`);
     process.exit(1);
   }
-
-  // Serve command — start the HTTP server in-process via ESM dynamic import.
-  // start() installs its own SIGTERM/SIGINT handlers and crash handlers.
-  if (command === "serve") {
-    const serveArgs = args.slice(1);
-    function argVal(name, fallback) {
-      const i = serveArgs.indexOf(`--${name}`);
-      return i !== -1 && serveArgs[i + 1] ? serveArgs[i + 1] : fallback;
-    }
-    const port = parseInt(argVal("port", "9097"), 10);
-    const root = argVal("root", process.cwd());
-    const corsOrigin = argVal("cors", null);
-    try {
-      const { start } = await import("../lib/server.js");
-      start({ port, root, corsOrigin, verbose });
-    } catch (err) {
-      console.error(`grainulator orchestrate: failed to start server: ${err.message}`);
-      process.exit(1);
-    }
-    return;
-  }
-
-
 
   if (command === "init") {
     const { parseArgs } = await import("node:util");

@@ -37,6 +37,7 @@ function forward(entry, argv) {
 try {
   if (['--version', '-v', 'version'].includes(command)) console.log(args.includes('--json') ? JSON.stringify({version, build: inspectBuild(root)}) : version);
   else if (commandHelp[command] && (args.includes('--help') || args.includes('-h'))) console.log(commandHelp[command]);
+  else if (command === 'serve') { console.error('Component browser dashboards are retired. Use the CLI or MCP tools; grainulator preview opens the local research playground.'); process.exitCode = 1; }
   else if (evidencePrefix && !evidenceCommands.has(command)) { console.error(`Unknown evidence command: ${command}. Run grainulator evidence --help.`); process.exitCode = 1; }
   else if (command === 'setup') {
     if (args.includes('--help') || args.includes('-h')) console.log('grainulator setup --dir <absolute-project> [--json]\nSave the default native Codex workspace in ~/.config/grainulator/workspace.json. Restart Codex after changing it. GRAINULATOR_WORKSPACE overrides the saved default. Changes no host settings.');

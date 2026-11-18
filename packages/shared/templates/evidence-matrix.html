@@ -6,9 +6,9 @@
 <title>{{TITLE}} -- {{SPRINT_NAME}}</title>
 <style>
   :root {
-    --bg: #0a0e1a;
-    --bg2: #111827;
-    --bg3: #1e293b;
+    --bg: #141415;
+    --bg2: #19191b;
+    --bg3: #232325;
     --accent: #3b82f6;
     --accent-light: #60a5fa;
     --green: #22c55e;
@@ -18,9 +18,9 @@
     --red: #e11d48;
     --red-dim: rgba(225,29,72,0.15);
     --purple: #a78bfa;
-    --text: #f1f5f9;
-    --text-muted: #94a3b8;
-    --text-dim: #64748b;
+    --text: #ededed;
+    --text-muted: #a1a1a6;
+    --text-dim: #85858b;
     --border: rgba(255,255,255,0.06);
     --heat-0: rgba(59,130,246,0.00);
     --heat-1: rgba(59,130,246,0.12);
@@ -31,45 +31,45 @@
     --gap-bg: rgba(225,29,72,0.08);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+  html { scroll-snap-type: none; scroll-behavior: smooth; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
     background: var(--bg);
     color: var(--text);
-    font-size: 10pt;
+    font-size: 11pt;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
   }
   section {
     scroll-snap-align: start;
-    min-height: 100vh;
+    min-height: auto;
     padding: 40px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
   }
-  .header-section { justify-content: flex-end; padding-bottom: 80px; }
+  .header-section { justify-content: flex-start; padding-bottom: 32px; }
   .header-section h1 {
     font-size: 28pt;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    font-weight: 500;
+    letter-spacing: 0;
+    background: none; color: inherit;
+
+    -webkit-text-fill-color: currentColor;
     margin-bottom: 12px;
   }
   .meta-row {
     display: flex;
     gap: 24px;
     color: var(--text-muted);
-    font-size: 10pt;
+    font-size: 11pt;
   }
   .coverage-badge {
     display: inline-block;
-    padding: 4px 14px;
+    padding: 4px 16px;
     border-radius: 6px;
     font-size: 14pt;
-    font-weight: 800;
+    font-weight: 500;
     color: var(--accent-light);
     background: rgba(59,130,246,0.12);
     margin-top: 16px;
@@ -82,9 +82,9 @@
   }
   .panel-title {
     font-size: 9pt;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
     color: var(--text-dim);
     margin-bottom: 16px;
   }
@@ -94,19 +94,19 @@
     font-size: 9pt;
   }
   .matrix-table th {
-    padding: 10px 12px;
+    padding: 12px 12px;
     text-align: center;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    font-size: 8pt;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 9pt;
     color: var(--text-dim);
     background: var(--bg3);
     border-bottom: 2px solid var(--border);
   }
   .matrix-table th:first-child { text-align: left; }
   .matrix-table td {
-    padding: 10px 12px;
+    padding: 12px 12px;
     text-align: center;
     border-bottom: 1px solid var(--border);
     color: var(--text-muted);
@@ -114,22 +114,22 @@
   }
   .matrix-table td:first-child {
     text-align: left;
-    font-weight: 700;
-    text-transform: uppercase;
-    font-size: 8pt;
-    letter-spacing: 0.06em;
+    font-weight: 600;
+    text-transform: none;
+    font-size: 9pt;
+    letter-spacing: 0;
     color: var(--text);
   }
   .matrix-table td.total-cell {
     color: var(--text);
-    font-weight: 800;
+    font-weight: 500;
     background: var(--bg3);
   }
   .matrix-table td.gap-cell {
     background: var(--gap-bg);
     color: var(--red);
-    font-style: italic;
-    font-size: 8pt;
+    font-style: normal;
+    font-size: 9pt;
   }
   .matrix-table td.heat-1 { background: var(--heat-1); }
   .matrix-table td.heat-2 { background: var(--heat-2); }
@@ -140,7 +140,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 0;
+    padding: 12px 0;
     border-bottom: 1px solid var(--border);
     font-size: 9pt;
     color: var(--text-muted);
@@ -168,8 +168,8 @@
     section { padding: 20px; min-height: auto; }
     .header-section h1 { font-size: 18pt; }
     .meta-row { flex-wrap: wrap; gap: 8px; }
-    .matrix-table { font-size: 8pt; }
-    .matrix-table th, .matrix-table td { padding: 6px 8px; }
+    .matrix-table { font-size: 9pt; }
+    .matrix-table th, .matrix-table td { padding: 8px 8px; }
     .panel { padding: 16px; overflow-x: auto; }
   }
   @media print {
@@ -179,6 +179,25 @@
     .panel { border-color: #ccc; background: #f9f9f9; }
     .matrix-table td.gap-cell { background: #fee; }
     .compilation-bar { background: #f9f9f9; border-color: #ccc; }
+  }
+
+  /* Evidence documents keep their data prominent and controls quiet. */
+  body { font-variant-numeric: tabular-nums; }
+  strong, b { font-weight: 600; }
+  :focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+  @media (prefers-reduced-motion: reduce) {
+    html, body { scroll-behavior: auto; scroll-snap-type: none; }
+  }
+
+  @media print {
+    :root {
+      --bg: #fff; --bg-dark: #fff; --bg2: #f5f5f5; --bg3: #e5e5e5;
+      --bg-card: #f5f5f5; --bg-card-alt: #ededed; --bg-card-hover: #e5e5e5;
+      --text: #171717; --text-muted: #404040; --text-dim: #525252;
+      --accent: #1d4ed8; --accent-light: #1d4ed8; --border: #d4d4d4;
+      --green: #166534; --red: #b91c1c; --orange: #92400e; --purple: #6d28d9; --pink: #9d174d;
+    }
+    h1, h2, h3, h4 { color: #171717; -webkit-text-fill-color: currentColor; }
   }
 </style>
 </head>
@@ -194,7 +213,7 @@
 
 <section aria-label="Evidence heatmap">
   <div class="panel">
-    <div class="panel-title">Claim Type / Evidence Tier Matrix</div>
+    <div class="panel-title">Claim type / evidence tier matrix</div>
     <table class="matrix-table" role="grid" aria-label="Evidence coverage heatmap">
       <thead>
         <tr>
@@ -216,7 +235,7 @@
 
 <section aria-label="Gap analysis">
   <div class="panel">
-    <div class="panel-title">Gap Analysis</div>
+    <div class="panel-title">Gap analysis</div>
     {{GAP_SUMMARY}}
   </div>
 </section>
@@ -224,7 +243,7 @@
 <section aria-label="Compilation footer">
   <div class="compilation-bar">
     <div>Compiled with barn</div>
-    <div style="font-family: monospace; font-size: 8pt;">{{CERTIFICATE_HASH}}</div>
+    <div style="font-family: monospace; font-size: 9pt;">{{CERTIFICATE_HASH}}</div>
   </div>
 </section>
 

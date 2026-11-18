@@ -11,7 +11,6 @@
  *   grainulator memory publish <name> --collections <ids...>  Bundle collections into a pack
  *   grainulator memory packs                         List available knowledge packs
  *   grainulator memory templates                     List available sprint templates
- *   grainulator memory serve [--port 9095]           Start the knowledge browser UI
  *   grainulator memory analyze                        Run cross-library analytics (uses the analytics component)
  *   grainulator memory serve-mcp                     Start the MCP server on stdio
  */
@@ -51,6 +50,10 @@ const memoryDirIndex = process.argv.indexOf("--memory-dir");
 const memoryDir = memoryDirIndex >= 0 ? process.argv[memoryDirIndex + 1] : undefined;
 if (memoryDirIndex >= 0 && (!memoryDir || memoryDir.startsWith("--"))) {
   console.error("grainulator memory: --memory-dir requires a path"); process.exit(1);
+}
+if (process.argv[2] === "serve") {
+  console.error("The component browser dashboard has been retired. Use the CLI or MCP tools; grainulator preview starts the local research playground.");
+  process.exit(1);
 }
 const store = new Store(memoryDir);
 const search = new Search(store);
@@ -104,7 +107,6 @@ Commands:
   install <file>                    Install a pack from a file
   graph [stats|related|topic|clusters|export]  Knowledge graph operations
   analyze                            Run cross-library analytics (uses the analytics component)
-  serve [--port 9095]               Start the knowledge browser UI
   serve-mcp                         Start the MCP server on stdio
   fetch <url> [--mode auto|concise|full|meta-only] [--no-cache] [--privacy]
                                     Size-efficient fetch with semantic extraction
@@ -115,7 +117,6 @@ Examples:
   grainulator memory pull compliance --into ./claims.json
   grainulator memory search "encryption" --type constraint
   grainulator memory store "my-findings" --from ./claims.json
-  grainulator memory serve --port 9095
   grainulator memory fetch https://example.com/article --mode concise
   grainulator memory cache stats
   grainulator memory packs
@@ -525,25 +526,6 @@ try {
           );
           process.exit(1);
       }
-      break;
-    }
-
-    case "serve": {
-      // Dynamic ESM import so the bin can load the server module lazily
-      // and call start() in-process (no child fork). The server's start()
-      // factory contains all the side-effecty code — this file picks up
-      // SIGTERM/SIGINT handlers itself, so we don't need to bridge them.
-      const port = parseInt(flag("port") || "9095", 10);
-      const root = flag("root") || process.cwd();
-      const corsOrigin = flag("cors") || null;
-      import("../lib/server.js")
-        .then(({ start }) => {
-          start({ port, root, corsOrigin, verbose });
-        })
-        .catch((err) => {
-          process.stderr.write(`grainulator memory: error starting server: ${err.message}\n`);
-          process.exit(1);
-        });
       break;
     }
 

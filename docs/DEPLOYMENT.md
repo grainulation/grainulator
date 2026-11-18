@@ -4,7 +4,18 @@ Public websites are maintained and deployed from [grainulation/infra](https://gi
 
 This repository ships the local research application in `public/`. Its shared session and evidence modules are used by both the CLI and the local browser UI; they are runtime assets, not a marketing website. Future changes to the public playground must be coordinated with the corresponding static copy in infra to preserve the session format.
 
-The imported component marketing sites under `packages/*/site/` and their site-only SEO scripts have also been removed. Component `public/` directories, generated-report templates, and general asset/export tools remain product runtime resources. Historical hashes in `docs/source-imports.json` describe the original imports; they are retained as provenance rather than a current file inventory.
+The imported component marketing sites and browser dashboards have been removed, along with their HTTP servers and `serve` commands. The local research playground, generated reports (including analytics retrospectives and offline portfolio dashboards), reusable report templates, and shared export assets remain supported. Historical hashes in `docs/source-imports.json` describe the original imports; they are retained as provenance rather than a current file inventory.
+
+## MCP container
+
+The Docker build checks the portable package inventory and integrity manifest, then copies only the extracted package into its runtime image. It needs no external runtime dependency installation. Both the package and the Docker context exclude local research state; rebuild the source identity with `npm run build:identity` after changing shipped files. An unexpected package member fails the build instead of entering the image.
+
+The image starts the MCP server on standard input/output. Mount the intended workspace and set the server directory explicitly, for example:
+
+```sh
+docker build -t grainulator .
+docker run --rm -i -v "$PWD:/workspace" grainulator mcp --dir /workspace
+```
 
 ## Local playground
 

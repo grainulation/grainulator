@@ -56,10 +56,8 @@ lib/analytics.js          Usage analytics and pack statistics
 lib/import-export.js      Bulk import/export of claim data
 lib/packs.js              Knowledge pack loading and validation
 lib/serve-mcp.js          MCP (Model Context Protocol) server
-lib/server.js             Local preview server (SSE, zero deps)
 lib/templates.js          Template rendering for HTML output
 packs/                    Built-in knowledge packs (JSON)
-public/                   Web UI -- search and browse interface
 test/                     Node built-in test runner tests
 ```
 

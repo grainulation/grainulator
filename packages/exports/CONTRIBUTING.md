@@ -56,8 +56,6 @@ lib/exporters/            Output target adapters (file, clipboard, etc.)
 lib/publishers/           Publishing integrations
 lib/json-ld-common.js     Shared JSON-LD vocabulary helpers
 lib/serve-mcp.js          MCP (Model Context Protocol) server
-lib/server.js             Local preview server (SSE, zero deps)
-public/                   Web UI -- format preview and conversion
 test/                     Node built-in test runner tests
 ```
 

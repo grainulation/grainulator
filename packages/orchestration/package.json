@@ -6,7 +6,6 @@
   "main": "lib/planner.js",
   "exports": {
     ".": "./lib/planner.js",
-    "./server": "./lib/server.js",
     "./sync": "./lib/sync.js",
     "./tracker": "./lib/tracker.js",
     "./conflicts": "./lib/conflicts.js",
@@ -22,7 +21,6 @@
   "files": [
     "bin/",
     "lib/",
-    "public/",
     "templates/",
     "README.md",
     "LICENSE",
@@ -34,7 +32,6 @@
   "scripts": {
     "test": "node test/basic.test.js && node --test test/emit.test.js test/tarball.test.js",
     "start": "node bin/orchard.js status",
-    "serve": "node lib/server.js",
     "format": "npx prettier@3.3 --write .",
     "format:check": "npx prettier@3.3 --check ."
   },

@@ -257,7 +257,7 @@ if (majorVersion(version) > majorVersion(CURRENT_VERSION)) {
 
 ### On tool startup
 
-Every tool's `serve` command should:
+Data-reading commands should:
 
 1. Read the claims/data file.
 2. Check `schema_version`.

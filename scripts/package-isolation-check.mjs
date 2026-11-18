@@ -23,6 +23,14 @@ try {
     for(const entry of ['apps','site','packages/legacy-cli/site','hooks/sprint-status-notifier.cjs','packages/evidence/lib/connect.js','packages/evidence/lib/disconnect.js','packages/analytics/lib/farmer.js','packages/orchestration/lib/farmer.js'])assert.equal(fs.existsSync(path.join(installed,entry)),false,entry);
     const manifest=JSON.parse(fs.readFileSync(path.join(installed,'package.json')));assert.equal(manifest.dependencies?.ws,undefined);
   });
+  check('retired component HTTP apps absent; report templates and export assets retained',()=>{
+    for(const component of ['analytics','evidence','exports','legacy-cli','memory','orchestration','shared']) {
+      const base=path.join(installed,'packages',component);
+      for(const entry of ['public/index.html','lib/server.js','lib/server.mjs']) assert.equal(fs.existsSync(path.join(base,entry)),false,`${component}/${entry}`);
+    }
+    for(const entry of ['packages/analytics/templates/retrospective.html','packages/analytics/lib/report.js','packages/orchestration/templates/dashboard.html','packages/shared/templates/brief.html','packages/shared/public/grainulation-print.css']) assert.equal(fs.existsSync(path.join(installed,entry)),true,entry);
+    for(const entry of ['packages/analytics/lib/dashboard.js','packages/analytics/templates/dashboard.html']) assert.equal(fs.existsSync(path.join(installed,entry)),false,entry);
+  });
   // Exercise the installed application without a sibling site checkout or source tree.
   const probe=net.createServer();probe.listen(0,'127.0.0.1');await once(probe,'listening');
   const port=probe.address().port;await new Promise(resolve=>probe.close(resolve));
@@ -46,6 +54,10 @@ try {
   } finally {preview.kill('SIGTERM');await stopped;}
   const cli=path.join(installed,'bin/grainulator.js');
   const run=(args,env={})=>command([process.execPath,cli,...args],{cwd:consumer,env});
+  for(const component of ['evidence','memory','export','analytics','orchestrate','legacy']) check(`retired component serve rejected: ${component}`,()=>{
+    const result=spawnSync(process.execPath,[cli,component,'serve'],{cwd:consumer,encoding:'utf8',timeout:10000});
+    assert.ifError(result.error);assert.equal(result.status,1,result.stdout+result.stderr);assert.match(result.stdout+result.stderr,/retired/i);
+  });
   for(const args of [['dashboard','--help'],['evidence','connect','farmer'],['evidence','disconnect','farmer'],['analytics','connect','farmer'],['orchestrate','connect','farmer'],['legacy','farmer','start']])check(`retired command rejected: ${args.join(' ')}`,()=>assert.throws(()=>run(args)));
   check('installed binary is not a workspace symlink',()=>assert.equal(fs.lstatSync(installed).isSymbolicLink(),false));
   check('installed onboarding documents have their local link targets',()=>{

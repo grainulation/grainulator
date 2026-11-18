@@ -84,37 +84,12 @@ eventSource.onmessage = (e) => {
 };
 ```
 
-## 3. CORS Policy
+## 3. Browser origins
 
-### Default: same-origin only
-
-All grainulation tool servers default to same-origin. No `Access-Control-Allow-Origin` header is sent unless explicitly configured.
-
-### Configurable via --cors flag
-
-Tools that support cross-origin access (e.g., barn serving shared assets to other tool UIs) accept a `--cors` flag:
-
-```bash
-# Allow specific origin
-npx @grainulation/barn serve --cors http://localhost:9092
-
-# Allow all origins (development only)
-npx @grainulation/barn serve --cors "*"
-```
-
-### Implementation pattern
-
-```javascript
-if (corsOrigin) {
-  res.setHeader("Access-Control-Allow-Origin", corsOrigin);
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-}
-```
-
-### v1 policy
-
-For v1, all tools run on localhost on different ports. Cross-origin requests between tools (e.g., wheat UI loading barn assets) use the `--cors` flag. Production deployments should restrict origins explicitly.
+Component browser dashboards and their HTTP APIs have been retired. They do not
+listen on legacy component ports or accept `--cors` flags. The local research
+playground has its own loopback origin checks; see the project's
+[deployment and local research guide](../../../docs/DEPLOYMENT.md).
 
 ## 4. Path Traversal Prevention
 

@@ -16,7 +16,6 @@
   "files": [
     "bin/",
     "lib/",
-    "public/",
     "CHANGELOG.md",
     "LICENSE",
     "CODE_OF_CONDUCT.md",

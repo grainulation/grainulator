@@ -10,18 +10,18 @@
      Self-contained, no external dependencies. */
 
   :root {
-    --bg: #0a0e1a;
-    --bg2: #111827;
-    --bg3: #1e293b;
+    --bg: #141415;
+    --bg2: #19191b;
+    --bg3: #232325;
     --accent: #3b82f6;
     --accent-light: #60a5fa;
     --green: #22c55e;
     --orange: #f59e0b;
     --red: #e11d48;
     --purple: #a78bfa;
-    --text: #f1f5f9;
-    --text-muted: #94a3b8;
-    --text-dim: #64748b;
+    --text: #ededed;
+    --text-muted: #a1a1a6;
+    --text-dim: #85858b;
     --border: rgba(255,255,255,0.08);
   }
 
@@ -40,12 +40,12 @@
   }
 
   header { margin-bottom: 32px; border-bottom: 2px solid var(--accent); padding-bottom: 24px; }
-  h1 { font-size: 28pt; font-weight: 700; color: #fff; margin-bottom: 8px; }
-  h2 { font-size: 18pt; font-weight: 600; color: #fff; margin: 32px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  h1 { font-size: 28pt; font-weight: 600; color: #fff; margin-bottom: 8px; }
+  h2 { font-size: 18pt; font-weight: 600; color: #fff; margin: 32px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
   h3 { font-size: 14pt; font-weight: 600; color: var(--accent-light); margin: 20px 0 8px; }
   p { color: var(--text-muted); margin-bottom: 12px; }
 
-  .meta { font-size: 10pt; color: var(--text-dim); margin-bottom: 4px; }
+  .meta { font-size: 11pt; color: var(--text-dim); margin-bottom: 4px; }
   .meta span { margin-right: 16px; }
 
   nav[aria-label="Table of contents"] {
@@ -58,13 +58,13 @@
 
   nav[aria-label="Table of contents"] h2 {
     font-size: 12pt; margin: 0 0 12px; border: none; padding: 0;
-    color: var(--accent-light); text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--accent-light); text-transform: none; letter-spacing: 0;
   }
 
   nav[aria-label="Table of contents"] ul { list-style: none; padding: 0; }
-  nav[aria-label="Table of contents"] li { margin-bottom: 6px; }
+  nav[aria-label="Table of contents"] li { margin-bottom: 8px; }
   nav[aria-label="Table of contents"] a {
-    color: var(--text-muted); text-decoration: none; font-size: 10pt;
+    color: var(--text-muted); text-decoration: none; font-size: 11pt;
   }
   nav[aria-label="Table of contents"] a:hover { color: var(--accent-light); }
 
@@ -98,7 +98,7 @@
   .claim-body {
     padding: 4px 16px 16px;
     color: var(--text-muted);
-    font-size: 10pt;
+    font-size: 11pt;
     border-top: 1px solid var(--border);
   }
 
@@ -118,16 +118,16 @@
     align-items: baseline;
     gap: 12px;
     padding: 4px 0;
-    font-size: 10pt;
+    font-size: 11pt;
     color: var(--text-muted);
   }
 
   .tier-badge {
     display: inline-block;
-    font-size: 8pt;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+    font-size: 9pt;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
     padding: 2px 8px;
     border-radius: 3px;
     min-width: 80px;
@@ -140,13 +140,13 @@
   .tier-tested { background: rgba(245,158,11,0.15); color: var(--orange); }
   .tier-production { background: rgba(34,197,94,0.15); color: var(--green); }
 
-  .claim-ref { font-size: 8pt; color: var(--text-dim); font-family: monospace; }
+  .claim-ref { font-size: 9pt; color: var(--text-dim); font-family: monospace; }
 
   footer {
     margin-top: 40px;
     padding-top: 16px;
     border-top: 1px solid var(--border);
-    font-size: 8pt;
+    font-size: 9pt;
     color: var(--text-dim);
   }
 
@@ -169,9 +169,28 @@
     body { padding: 20px 16px; }
     h1 { font-size: 20pt; }
     h2 { font-size: 15pt; }
-    nav[aria-label="Table of contents"] { padding: 14px 16px; }
-    details summary { padding: 10px 12px; }
+    nav[aria-label="Table of contents"] { padding: 16px 16px; }
+    details summary { padding: 12px 12px; }
     .claim-body { padding: 4px 12px 12px; }
+  }
+
+  /* Evidence documents keep their data prominent and controls quiet. */
+  body { font-variant-numeric: tabular-nums; }
+  strong, b { font-weight: 600; }
+  :focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+  @media (prefers-reduced-motion: reduce) {
+    html, body { scroll-behavior: auto; scroll-snap-type: none; }
+  }
+
+  @media print {
+    :root {
+      --bg: #fff; --bg-dark: #fff; --bg2: #f5f5f5; --bg3: #e5e5e5;
+      --bg-card: #f5f5f5; --bg-card-alt: #ededed; --bg-card-hover: #e5e5e5;
+      --text: #171717; --text-muted: #404040; --text-dim: #525252;
+      --accent: #1d4ed8; --accent-light: #1d4ed8; --border: #d4d4d4;
+      --green: #166534; --red: #b91c1c; --orange: #92400e; --purple: #6d28d9; --pink: #9d174d;
+    }
+    h1, h2, h3, h4 { color: #171717; -webkit-text-fill-color: currentColor; }
   }
 </style>
 </head>
@@ -204,7 +223,7 @@
 
   <section id="evidence" aria-label="Evidence tiers">
     <div class="evidence-legend">
-      <h3>Evidence Tiers</h3>
+      <h3>Evidence tiers</h3>
       <ul class="tier-list">
         <li><span class="tier-badge tier-stated">stated</span> Stakeholder assertion, not independently verified</li>
         <li><span class="tier-badge tier-web">web</span> Found online, not independently verified</li>

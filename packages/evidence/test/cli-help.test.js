@@ -7,7 +7,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const bin = fileURLToPath(new URL("../bin/wheat.js", import.meta.url));
-const commands = ["init", "quickstart", "compile", "add", "search", "resolve", "guard", "status", "stats", "update", "serve", "mcp", "migrate"];
+const commands = ["init", "quickstart", "compile", "add", "search", "resolve", "guard", "status", "stats", "update", "mcp", "migrate"];
 
 function snapshot(dir) {
 	return fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name)).flatMap((entry) => {

@@ -18,3 +18,5 @@ Point it at a sprint directory or a directory containing sprints. Analysis reads
 Calibration needs recorded predictions and outcomes. Missing history or outcomes cannot establish that decisions or models improved. Use the [evaluation results](../../docs/EVALUATION.md) for measured product evidence.
 
 The Harvest package name and binary are retained compatibility aliases, not additional setup requirements. Use the root CLI and [dogfood guide](../../docs/DOGFOOD.md).
+
+Component browser dashboards and `serve` commands are retired. Use the CLI and MCP tools; `grainulator preview` opens the local research playground. Generated HTML reports and reusable report templates remain supported.

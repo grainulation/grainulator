@@ -9,9 +9,9 @@
      System font stack, no external dependencies, fully self-contained. */
 
   :root {
-    --bg-dark: #0f172a;
-    --bg-card: #1e293b;
-    --bg-card-alt: #1a2332;
+    --bg-dark: #141415;
+    --bg-card: #232325;
+    --bg-card-alt: #1f1f21;
     --accent: #3b82f6;
     --accent-light: #60a5fa;
     --green: #22c55e;
@@ -21,9 +21,9 @@
     --red: #e11d48;
     --red-dim: rgba(225,29,72,0.15);
     --purple: #a78bfa;
-    --text: #f1f5f9;
-    --text-muted: #94a3b8;
-    --text-dim: #64748b;
+    --text: #ededed;
+    --text-muted: #a1a1a6;
+    --text-dim: #85858b;
     --border: rgba(255,255,255,0.06);
   }
 
@@ -33,7 +33,7 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
     background: var(--bg-dark);
     color: var(--text);
-    font-size: 10pt;
+    font-size: 11pt;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     padding: 40px;
@@ -48,24 +48,24 @@
 
   .dashboard-header h1 {
     font-size: 24pt;
-    font-weight: 800;
-    letter-spacing: -0.02em;
+    font-weight: 500;
+    letter-spacing: 0;
     margin-bottom: 8px;
-    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    background: none; color: inherit;
+
+    -webkit-text-fill-color: currentColor;
   }
 
   .dashboard-header .meta {
     display: flex;
     gap: 24px;
     color: var(--text-muted);
-    font-size: 10pt;
+    font-size: 11pt;
   }
 
   .dashboard-header .meta .status {
-    font-weight: 700;
-    padding: 2px 10px;
+    font-weight: 600;
+    padding: 2px 12px;
     border-radius: 4px;
   }
 
@@ -91,9 +91,9 @@
 
   .panel-title {
     font-size: 9pt;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
     color: var(--text-dim);
     margin-bottom: 16px;
   }
@@ -107,12 +107,12 @@
   .phase-step {
     flex: 1;
     text-align: center;
-    padding: 10px 8px;
+    padding: 12px 8px;
     border-radius: 8px;
     font-size: 9pt;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    text-transform: none;
+    letter-spacing: 0;
     background: var(--bg-card-alt);
     color: var(--text-dim);
     position: relative;
@@ -126,13 +126,13 @@
   .phase-step.current {
     background: rgba(59,130,246,0.15);
     color: var(--accent-light);
-    box-shadow: 0 0 0 2px var(--accent);
+
   }
 
   .phase-step .count {
     display: block;
     font-size: 16pt;
-    font-weight: 800;
+    font-weight: 500;
     margin-bottom: 2px;
   }
 
@@ -149,14 +149,14 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
 
   .evidence-row .topic {
     width: 140px;
     font-weight: 600;
     color: var(--text);
-    font-size: 10pt;
+    font-size: 11pt;
     flex-shrink: 0;
   }
 
@@ -175,19 +175,19 @@
     display: flex;
     align-items: center;
     padding-left: 8px;
-    font-size: 8pt;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    font-size: 9pt;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
     color: rgba(255,255,255,0.9);
-    transition: width 0.6s ease;
+
   }
 
-  .evidence-bar.production { background: linear-gradient(90deg, #22c55e, #16a34a); }
-  .evidence-bar.tested { background: linear-gradient(90deg, #3b82f6, #2563eb); }
-  .evidence-bar.documented { background: linear-gradient(90deg, #a78bfa, #7c3aed); }
-  .evidence-bar.web { background: linear-gradient(90deg, #f59e0b, #d97706); }
-  .evidence-bar.stated { background: linear-gradient(90deg, #64748b, #475569); }
+  .evidence-bar.production { background: #15803d; }
+  .evidence-bar.tested { background: #2563eb; }
+  .evidence-bar.documented { background: #7c3aed; }
+  .evidence-bar.web { background: #92400e; }
+  .evidence-bar.stated { background: #475569; }
 
   .evidence-row .tier-label {
     width: 80px;
@@ -219,10 +219,10 @@
   }
 
   .conflict-item .conflict-label {
-    font-size: 8pt;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    font-size: 9pt;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
     margin-bottom: 4px;
   }
 
@@ -230,13 +230,13 @@
   .conflict-item.resolved .conflict-label { color: var(--green); }
 
   .conflict-item .conflict-text {
-    font-size: 10pt;
+    font-size: 11pt;
     color: var(--text-muted);
     line-height: 1.4;
   }
 
   .conflict-item .claim-ids {
-    font-size: 8pt;
+    font-size: 9pt;
     color: var(--text-dim);
     font-family: monospace;
     margin-top: 4px;
@@ -245,10 +245,10 @@
   .connector-item {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     padding: 8px 0;
     border-bottom: 1px solid var(--border);
-    font-size: 10pt;
+    font-size: 11pt;
     color: var(--text-muted);
   }
 
@@ -267,7 +267,7 @@
   .activity-item {
     display: flex;
     gap: 12px;
-    padding: 6px 0;
+    padding: 8px 0;
     border-bottom: 1px solid var(--border);
     font-size: 9pt;
   }
@@ -294,10 +294,10 @@
     padding: 8px 12px;
     background: var(--bg-card-alt);
     color: var(--text-dim);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    font-size: 8pt;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 9pt;
     border-bottom: 2px solid var(--border);
   }
 
@@ -315,10 +315,10 @@
     display: inline-block;
     padding: 2px 8px;
     border-radius: 4px;
-    font-size: 8pt;
+    font-size: 9pt;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+    text-transform: none;
+    letter-spacing: 0;
   }
 
   .badge.factual { color: var(--accent-light); background: rgba(59,130,246,0.12); }
@@ -349,14 +349,14 @@
 
   .compilation-bar .certificate {
     font-family: monospace;
-    font-size: 8pt;
+    font-size: 9pt;
   }
 
   .empty-state {
     text-align: center;
     padding: 32px;
     color: var(--text-dim);
-    font-style: italic;
+    font-style: normal;
   }
 
   @media (max-width: 768px) {
@@ -366,15 +366,15 @@
     .grid, .grid.three { grid-template-columns: 1fr; gap: 16px; }
     .panel { padding: 16px; }
     .phase-track { flex-wrap: wrap; gap: 8px; }
-    .phase-step { flex: 0 0 calc(50% - 16px); padding: 8px 6px; font-size: 8pt; }
+    .phase-step { flex: 0 0 calc(50% - 16px); padding: 8px 8px; font-size: 9pt; }
     .phase-step .count { font-size: 14pt; }
     .phase-connector { display: none; }
     .evidence-row { flex-wrap: wrap; gap: 4px 8px; }
     .evidence-row .topic { width: 100%; font-size: 9pt; margin-bottom: -2px; }
     .evidence-bar-track { min-width: 0; }
-    .evidence-row .claim-count { width: 24px; font-size: 8pt; }
-    .claim-table { font-size: 8pt; }
-    .claim-table th, .claim-table td { padding: 6px 8px; }
+    .evidence-row .claim-count { width: 24px; font-size: 9pt; }
+    .claim-table { font-size: 9pt; }
+    .claim-table th, .claim-table td { padding: 8px 8px; }
     .claim-table th:nth-child(4), .claim-table td:nth-child(4) { display: none; }
     .compilation-bar { flex-direction: column; gap: 8px; text-align: center; }
   }
@@ -384,6 +384,25 @@
     .dashboard-header h1 { font-size: 14pt; }
     .phase-step { flex: 0 0 calc(50% - 8px); }
     .claim-table th:nth-child(3), .claim-table td:nth-child(3) { display: none; }
+  }
+
+  /* Evidence documents keep their data prominent and controls quiet. */
+  body { font-variant-numeric: tabular-nums; }
+  strong, b { font-weight: 600; }
+  :focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+  @media (prefers-reduced-motion: reduce) {
+    html, body { scroll-behavior: auto; scroll-snap-type: none; }
+  }
+
+  @media print {
+    :root {
+      --bg: #fff; --bg-dark: #fff; --bg2: #f5f5f5; --bg3: #e5e5e5;
+      --bg-card: #f5f5f5; --bg-card-alt: #ededed; --bg-card-hover: #e5e5e5;
+      --text: #171717; --text-muted: #404040; --text-dim: #525252;
+      --accent: #1d4ed8; --accent-light: #1d4ed8; --border: #d4d4d4;
+      --green: #166534; --red: #b91c1c; --orange: #92400e; --purple: #6d28d9; --pink: #9d174d;
+    }
+    h1, h2, h3, h4 { color: #171717; -webkit-text-fill-color: currentColor; }
   }
 </style>
 </head>
@@ -403,7 +422,7 @@
 
 <div class="grid full">
   <div class="panel">
-    <div class="panel-title">Phase Progress</div>
+    <div class="panel-title">Phase progress</div>
     <div class="phase-track">
       <div class="phase-step done">
         <span class="count">3</span>
@@ -435,7 +454,7 @@
 
 <div class="grid">
   <div class="panel">
-    <div class="panel-title">Evidence Strength by Topic</div>
+    <div class="panel-title">Evidence strength by topic</div>
     <div class="evidence-row">
       <div class="topic">{{TOPIC_NAME}}</div>
       <div class="evidence-bar-track">
@@ -462,7 +481,7 @@
 
 <div class="grid">
   <div class="panel">
-    <div class="panel-title">Connected Sources</div>
+    <div class="panel-title">Connected sources</div>
     <div class="connector-item">
       <div class="connector-icon">{{ICON}}</div>
       <div>{{CONNECTOR_TARGET}}</div>
@@ -470,7 +489,7 @@
   </div>
 
   <div class="panel">
-    <div class="panel-title">Recent Activity</div>
+    <div class="panel-title">Recent activity</div>
     <div class="activity-item">
       <div class="time">{{TIME}}</div>
       <div class="message">{{COMMIT_MESSAGE}}</div>
@@ -480,7 +499,7 @@
 
 <div class="grid full">
   <div class="panel">
-    <div class="panel-title">Claim Inventory</div>
+    <div class="panel-title">Claim inventory</div>
     <table class="claim-table">
       <thead>
         <tr>

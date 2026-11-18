@@ -1,34 +1,19 @@
 /**
- * Process Manager — start, stop, and monitor grainulation tools.
+ * Legacy process cleanup — stop and inspect previously launched tools.
  *
- * Each tool runs its own HTTP server on a known port.
- * This module spawns/kills them and probes ports for health.
+ * The component HTTP dashboards are retired. This module only inspects and
+ * stops historical processes; startup entry points report retirement.
  */
 
-const { spawn, execFileSync } = require('node:child_process');
-const { existsSync, readFileSync, writeFileSync, mkdirSync } = require('node:fs');
+const { execFileSync } = require('node:child_process');
+const { existsSync, readFileSync } = require('node:fs');
 const { join } = require('node:path');
 const http = require('node:http');
-const { getByName, getInstallable } = require('./ecosystem');
+const { getInstallable } = require('./ecosystem');
 
 // PID tracking directory
 const PM_DIR = join(require('node:os').homedir(), '.grainulation');
 const PID_DIR = join(PM_DIR, 'pids');
-const CONFIG_FILE = join(PM_DIR, 'config.json');
-
-function loadConfig() {
-  try {
-    return JSON.parse(readFileSync(CONFIG_FILE, 'utf8'));
-  } catch {
-    return {};
-  }
-}
-
-function ensureDirs() {
-  if (!existsSync(PM_DIR)) mkdirSync(PM_DIR, { recursive: true });
-  if (!existsSync(PID_DIR)) mkdirSync(PID_DIR, { recursive: true });
-}
-
 function pidFile(toolName) {
   return join(PID_DIR, `${toolName}.pid`);
 }
@@ -45,11 +30,6 @@ function readPid(toolName) {
   } catch {
     return null;
   }
-}
-
-function writePid(toolName, pid) {
-  ensureDirs();
-  writeFileSync(pidFile(toolName), String(pid));
 }
 
 function removePid(toolName) {
@@ -80,65 +60,11 @@ function probe(port, timeoutMs = 2000) {
   });
 }
 
-/**
- * Find the bin path for a tool — prefers source checkout, falls back to npx.
- */
-function findBin(tool) {
-  const shortName = tool.package.replace(/^@[^/]+\//, '');
-  const candidates = [join(__dirname, '..', '..', shortName), join(process.cwd(), '..', shortName)];
-  for (const dir of candidates) {
-    try {
-      const pkgPath = join(dir, 'package.json');
-      if (!existsSync(pkgPath)) continue;
-      const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
-      if (pkg.name !== tool.package) continue;
-      if (pkg.bin) {
-        const binFile = typeof pkg.bin === 'string' ? pkg.bin : Object.values(pkg.bin)[0];
-        if (binFile) {
-          const binPath = require('node:path').resolve(dir, binFile);
-          if (existsSync(binPath)) return { cmd: process.execPath, args: [binPath] };
-        }
-      }
-    } catch {}
-  }
-  return { cmd: 'npx', args: [tool.package] };
-}
-
-/**
- * Start a tool's server. Returns { pid, port } or throws.
- */
-function startTool(toolName, extraArgs = []) {
-  const tool = getByName(toolName);
-  if (!tool) throw new Error(`Unknown tool: ${toolName}`);
-  if (toolName === 'grainulation') throw new Error('Use "grainulation serve" directly');
-
-  // Check if already running
-  const existing = readPid(toolName);
-  if (existing) {
-    return { pid: existing, port: tool.port, alreadyRunning: true };
-  }
-
-  // Auto-inject --root and --dir from config if not explicitly provided
-  const hasRoot = extraArgs.includes('--root') || extraArgs.includes('--dir');
-  let rootArgs = [];
-  if (!hasRoot) {
-    const cfg = loadConfig();
-    if (cfg.sprintRoot) rootArgs = ['--root', cfg.sprintRoot, '--dir', cfg.sprintRoot];
-  }
-
-  const bin = findBin(tool);
-  const args = [...bin.args, ...tool.serveCmd, '--port', String(tool.port), ...rootArgs, ...extraArgs];
-
-  const child = spawn(bin.cmd, args, {
-    stdio: 'ignore',
-    detached: true,
-    shell: false,
-  });
-
-  child.unref();
-  writePid(toolName, child.pid);
-
-  return { pid: child.pid, port: tool.port, alreadyRunning: false };
+/** Retired browser apps cannot be relaunched. Historical PIDs remain inspectable. */
+function startTool() {
+  throw new Error(
+    'The component browser dashboard has been retired. Use the CLI or MCP tools; grainulator preview starts the local research playground.',
+  );
 }
 
 /**
@@ -206,8 +132,7 @@ async function ps() {
 }
 
 /**
- * Start multiple tools. Default set: wheat.
- * 'all' starts everything except grainulation itself.
+ * Report retirement for requested startup operations, without launching tools.
  */
 function up(toolNames, extraArgs = []) {
   const defaults = ['wheat'];

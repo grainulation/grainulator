@@ -10,7 +10,6 @@
  *   grainulation                  Show ecosystem overview
  *   grainulation doctor           Check which tools are installed
  *   grainulation setup            Interactive setup wizard
- *   grainulation serve            Start the ecosystem control center
  *   grainulation <tool> [args]    Delegate to a grainulation tool
  */
 
@@ -22,29 +21,15 @@ function vlog(...a) {
   process.stderr.write(`[${ts}] grainulation: ${a.join(' ')}\n`);
 }
 
-const command = process.argv[2];
+const args = process.argv.slice(2).filter((a) => a !== '--json');
+const command = args[0];
 vlog('startup', `command=${command || '(none)'}`, `cwd=${process.cwd()}`);
 
-// Serve command — start the HTTP server (ESM module)
-if (command === 'serve') {
-  const path = require('node:path');
-  const { spawn } = require('node:child_process');
-  const serverPath = path.join(__dirname, '..', 'lib', 'server.mjs');
-
-  // Forward remaining args to the server
-  const serverArgs = process.argv.slice(3);
-  const child = spawn(process.execPath, [serverPath, ...serverArgs], {
-    stdio: 'inherit',
-  });
-
-  child.on('close', (code) => process.exit(code ?? 0));
-  child.on('error', (err) => {
-    console.error(`grainulation: failed to start server: ${err.message}`);
-    process.exit(1);
-  });
-} else {
-  const { route } = require('../lib/router');
-  // Strip --json from args before routing (it's handled as a mode flag)
-  const args = process.argv.slice(2).filter((a) => a !== '--json');
-  route(args, { json: jsonMode });
+if (command === 'serve' || command === 'up') {
+  console.error(
+    'The component browser dashboard has been retired. Use the CLI or MCP tools; grainulator preview starts the local research playground.',
+  );
+  process.exit(1);
 }
+const { route } = require('../lib/router');
+route(args, { json: jsonMode });

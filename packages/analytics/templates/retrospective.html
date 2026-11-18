@@ -41,8 +41,8 @@
     header h1 {
       font-size: 1.8rem;
       color: var(--accent);
-      font-weight: 700;
-      letter-spacing: -0.02em;
+      font-weight: 600;
+      letter-spacing: 0;
     }
 
     header p {
@@ -68,13 +68,13 @@
     .meta-item .label {
       color: var(--text-muted);
       font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      text-transform: none;
+      letter-spacing: 0;
     }
 
     .meta-item .value {
       font-size: 1.5rem;
-      font-weight: 700;
+      font-weight: 600;
       color: var(--accent);
       margin-top: 0.25rem;
     }
@@ -106,14 +106,14 @@
       border-left: 3px solid var(--accent);
       padding: 0.75rem 1rem;
       margin: 1rem 0;
-      font-style: italic;
+      font-style: normal;
       color: var(--text-muted);
     }
 
     .bar-row {
       display: flex;
       align-items: center;
-      margin: 0.35rem 0;
+      margin: .5rem 0;
       gap: 0.75rem;
     }
 
@@ -124,9 +124,9 @@
     }
 
     .bar {
-      background: linear-gradient(90deg, var(--accent), var(--accent-dim));
+      background: var(--accent);
       color: var(--bg);
-      padding: 0.15rem 0.5rem;
+      padding: .25rem 0.5rem;
       border-radius: 3px;
       font-size: 0.8rem;
       font-weight: 600;
@@ -148,12 +148,12 @@
       padding: 0.5rem;
       border-bottom: 1px solid var(--border);
       font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      text-transform: none;
+      letter-spacing: 0;
     }
 
     td {
-      padding: 0.4rem 0.5rem;
+      padding: .5rem 0.5rem;
       border-bottom: 1px solid var(--surface-2);
       color: var(--text-muted);
     }
@@ -202,7 +202,15 @@
       .meta-item { min-width: 100px; padding: 0.75rem; }
       .meta-item .value { font-size: 1.2rem; }
     }
-  </style>
+
+  /* Evidence documents keep their data prominent and controls quiet. */
+  body { font-variant-numeric: tabular-nums; }
+  strong, b { font-weight: 600; }
+  :focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+  @media (prefers-reduced-motion: reduce) {
+    html, body { scroll-behavior: auto; scroll-snap-type: none; }
+  }
+</style>
 </head>
 <body>
   <header>
@@ -218,7 +226,7 @@
         <div class="value">{{CLAIM_COUNT}}</div>
       </div>
       <div class="meta-item">
-        <div class="label">Avg/Sprint</div>
+        <div class="label">Avg/sprint</div>
         <div class="value">{{AVG_CLAIMS}}</div>
       </div>
       <div class="meta-item">
@@ -249,27 +257,27 @@
   </section>
 
   <section>
-    <h2>Claim Analysis</h2>
-    <h3>By Type</h3>
+    <h2>Claim analysis</h2>
+    <h3>By type</h3>
     {{TYPE_DISTRIBUTION}}
-    <h3>By Evidence Tier</h3>
+    <h3>By evidence tier</h3>
     {{EVIDENCE_DISTRIBUTION}}
-    <h3>Weak Claims (low evidence)</h3>
+    <h3>Weak claims (low evidence)</h3>
     {{WEAK_CLAIMS_TABLE}}
   </section>
 
   <section>
-    <h2>Decision Patterns</h2>
+    <h2>Decision patterns</h2>
     <p>{{PATTERN_COUNT}} positive patterns, {{ANTI_PATTERN_COUNT}} anti-patterns detected.</p>
     <div class="insight">{{PATTERN_INSIGHT}}</div>
-    <h3>Good Patterns</h3>
+    <h3>Good patterns</h3>
     {{PATTERNS_LIST}}
-    <h3>Anti-Patterns</h3>
+    <h3>Anti-patterns</h3>
     {{ANTI_PATTERNS_LIST}}
   </section>
 
   <section>
-    <h2>Knowledge Decay</h2>
+    <h2>Knowledge decay</h2>
     <div class="meta" style="margin-bottom:1rem">
       <div class="meta-item">
         <div class="label">Stale</div>
@@ -292,11 +300,11 @@
     <h2>Velocity</h2>
     <div class="meta" style="margin-bottom:1rem">
       <div class="meta-item">
-        <div class="label">Avg Duration</div>
+        <div class="label">Avg duration</div>
         <div class="value">{{AVG_DURATION}}</div>
       </div>
       <div class="meta-item">
-        <div class="label">Claims/Day</div>
+        <div class="label">Claims/day</div>
         <div class="value">{{AVG_CLAIMS_PER_DAY}}</div>
       </div>
       <div class="meta-item">

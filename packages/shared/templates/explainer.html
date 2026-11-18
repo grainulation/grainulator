@@ -9,9 +9,9 @@
      System font stack, no external dependencies, fully self-contained. */
 
   :root {
-    --bg-dark: #0f172a;
-    --bg-card: #1e293b;
-    --bg-card-hover: #263548;
+    --bg-dark: #141415;
+    --bg-card: #232325;
+    --bg-card-hover: #2b2b2e;
     --accent: #3b82f6;
     --accent-light: #60a5fa;
     --green: #22c55e;
@@ -24,9 +24,9 @@
     --purple-dim: rgba(167,139,250,0.12);
     --pink: #f472b6;
     --pink-dim: rgba(244,114,182,0.12);
-    --text: #f1f5f9;
-    --text-muted: #94a3b8;
-    --text-dim: #64748b;
+    --text: #ededed;
+    --text-muted: #a1a1a6;
+    --text-dim: #85858b;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -55,42 +55,31 @@
 
   .slide {
     width: 100%;
-    height: 100vh;
+    height: auto; min-height: 100vh;
     padding: 60px 80px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
     scroll-snap-align: start;
-  }
-
-  .slide::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 40%;
-    height: 100%;
-    background: radial-gradient(ellipse at top right, rgba(59,130,246,0.08) 0%, transparent 70%);
-    pointer-events: none;
   }
 
   h1 {
     font-size: 42pt;
-    font-weight: 800;
-    letter-spacing: -0.03em;
+    font-weight: 500;
+    letter-spacing: 0;
     line-height: 1.1;
     margin-bottom: 16px;
-    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    background: none; color: inherit;
+
+    -webkit-text-fill-color: currentColor;
   }
 
   h2 {
     font-size: 32pt;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    font-weight: 600;
+    letter-spacing: 0;
     line-height: 1.15;
     margin-bottom: 24px;
     color: #fff;
@@ -101,8 +90,8 @@
     font-weight: 600;
     color: var(--accent-light);
     margin-bottom: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    text-transform: none;
+    letter-spacing: 0;
   }
 
   h4 {
@@ -125,19 +114,19 @@
   .subtitle {
     font-size: 18pt;
     color: var(--text-muted);
-    font-weight: 300;
+    font-weight: 400;
     max-width: 70%;
   }
 
-  .label {
+  .label { align-self: flex-start;
     display: inline-block;
     font-size: 9pt;
     font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--accent-light);
-    background: rgba(59,130,246,0.12);
-    padding: 4px 12px;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--text-muted);
+    background: none;
+    padding: 0;
     border-radius: 4px;
     margin-bottom: 16px;
   }
@@ -178,7 +167,7 @@
     padding: 32px;
     border: 1px solid rgba(255,255,255,0.06);
     position: relative;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .card::after {
@@ -201,8 +190,8 @@
   .card-label {
     font-size: 9pt;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    text-transform: none;
+    letter-spacing: 0;
     color: var(--accent-light);
     margin-bottom: 8px;
   }
@@ -235,18 +224,18 @@
 
   th {
     text-align: left;
-    padding: 10px 16px;
+    padding: 12px 16px;
     background: var(--bg-card);
     color: var(--accent-light);
     font-weight: 600;
     font-size: 9pt;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    text-transform: none;
+    letter-spacing: 0;
     border-bottom: 2px solid rgba(59,130,246,0.3);
   }
 
   td {
-    padding: 10px 16px;
+    padding: 12px 16px;
     border-bottom: 1px solid rgba(255,255,255,0.06);
     color: var(--text-muted);
   }
@@ -256,7 +245,7 @@
   }
 
   .claim-ref {
-    font-size: 8pt;
+    font-size: 9pt;
     color: var(--text-dim);
     font-family: monospace;
   }
@@ -278,35 +267,26 @@
     border-radius: 50%;
     background: var(--text-dim);
     display: block;
-    transition: all 0.2s;
+    transition: color 160ms ease-out, background-color 160ms ease-out;
   }
 
   .slide-nav a:hover,
   .slide-nav a.active {
     background: var(--accent);
-    transform: scale(1.5);
-  }
 
-  @keyframes fadeInUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-
-  .fade-in {
-    animation: fadeInUp 0.6s ease-out forwards;
   }
 
   .barn-footer {
     position: absolute;
     bottom: 24px;
     right: 40px;
-    font-size: 8pt;
+    font-size: 9pt;
     color: var(--text-dim);
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
   }
 
   @media (max-width: 768px) {
-    .slide { padding: 32px 20px; height: auto; min-height: 100vh; }
+    .slide { padding: 32px 20px; height: auto; min-height: auto; min-height: 100vh; }
     h1 { font-size: 24pt; }
     h2 { font-size: 20pt; }
     h3 { font-size: 12pt; }
@@ -318,7 +298,26 @@
     .slide-nav { display: none; }
     .barn-footer { right: 20px; bottom: 16px; }
     table { font-size: 9pt; }
-    th, td { padding: 6px 10px; }
+    th, td { padding: 8px 12px; }
+  }
+
+  /* Evidence documents keep their data prominent and controls quiet. */
+  body { font-variant-numeric: tabular-nums; }
+  strong, b { font-weight: 600; }
+  :focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+  @media (prefers-reduced-motion: reduce) {
+    html, body { scroll-behavior: auto; scroll-snap-type: none; }
+  }
+
+  @media print {
+    :root {
+      --bg: #fff; --bg-dark: #fff; --bg2: #f5f5f5; --bg3: #e5e5e5;
+      --bg-card: #f5f5f5; --bg-card-alt: #ededed; --bg-card-hover: #e5e5e5;
+      --text: #171717; --text-muted: #404040; --text-dim: #525252;
+      --accent: #1d4ed8; --accent-light: #1d4ed8; --border: #d4d4d4;
+      --green: #166534; --red: #b91c1c; --orange: #92400e; --purple: #6d28d9; --pink: #9d174d;
+    }
+    h1, h2, h3, h4 { color: #171717; -webkit-text-fill-color: currentColor; }
   }
 </style>
 </head>
@@ -328,7 +327,7 @@
 <!-- Each .slide div becomes a full-screen scroll-snap section -->
 
 <div class="slide">
-  <span class="label">Research Sprint</span>
+  <span class="label">Research sprint</span>
   <h1>{{TITLE}}</h1>
   <p class="subtitle">{{SUBTITLE}}</p>
   <div class="barn-footer">Built with barn</div>

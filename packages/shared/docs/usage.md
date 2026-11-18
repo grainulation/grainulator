@@ -1,6 +1,6 @@
 # barn usage
 
-Barn is the template browser and sprint toolkit for the grainulation ecosystem. It serves a two-column UI for browsing templates and detecting active sprints, with zero npm dependencies.
+The shared component provides sprint discovery, report assets, and template-loading utilities. Its browser UI is retired; use the CLI tools below or `grainulator preview` for the research playground.
 
 ## Installation
 
@@ -17,14 +17,6 @@ npx @grainulation/barn <command>
 Requires Node 20+.
 
 ## Commands
-
-### barn serve
-
-Start the template browser UI.
-
-```
-barn serve [--port 9093] [--root /path/to/repo] [--cors <origin>] [--verbose]
-```
 
 ### barn detect-sprints
 
@@ -52,25 +44,8 @@ barn build-pdf <file.md>
 
 ## CLI flags
 
-| Flag              | Default | Description                   |
-| ----------------- | ------- | ----------------------------- |
-| `--port`          | `9093`  | HTTP server port              |
-| `--root`          | `cwd`   | Repository root path          |
-| `--cors`          | none    | Allowed CORS origin           |
-| `--verbose`, `-v` | off     | Log to stderr with timestamps |
-
-## API endpoints
-
-All endpoints are served by `barn serve`.
-
-| Method | Path                        | Description                                                   |
-| ------ | --------------------------- | ------------------------------------------------------------- |
-| GET    | `/events`                   | SSE event stream for live updates                             |
-| GET    | `/api/state`                | Current state (templates, sprints, manifest)                  |
-| GET    | `/api/template?name=<name>` | Template content by name                                      |
-| GET    | `/api/search?q=<query>`     | Search templates by name, description, placeholders, features |
-| POST   | `/api/refresh`              | Refresh state from disk                                       |
-| GET    | `/api/docs`                 | API documentation page                                        |
+`--verbose` logs command activity to stderr. Repository tools accept `--root`
+where documented. Browser-server flags and HTTP endpoints have been retired.
 
 ## Template metadata
 

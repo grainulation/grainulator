@@ -18,3 +18,5 @@ CLI and MCP share storage configuration: explicit `--memory-dir`, then `GRAINULA
 Local writers use the same index transaction lock. A crashed writer's lock requires inspection; it is not automatically stolen. Pack contents are reusable starting points, not automatically verified facts for a new task.
 
 Silo names remain compatibility aliases. See the [tool reference](../../docs/TOOLS.md) for provenance, retrieval, and directory containment, and the [dogfood guide](../../docs/DOGFOOD.md) for the current workflow.
+
+Component browser dashboards and `serve` commands are retired. Use the CLI and MCP tools; `grainulator preview` opens the local research playground. Generated HTML reports and reusable report templates remain supported.

@@ -167,10 +167,10 @@ test('router overview mentions doctor command', () => {
   assert.ok(text.includes('doctor'));
 });
 
-test('router overview mentions process management commands', () => {
+test('router overview retains historical cleanup but offers no retired startup', () => {
   const { overview } = require('../lib/router');
   const text = overview();
-  assert.ok(text.includes('up'));
+  assert.ok(!text.includes('grainulation up'));
   assert.ok(text.includes('down'));
   assert.ok(text.includes('ps'));
 });
