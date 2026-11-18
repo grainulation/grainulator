@@ -5,7 +5,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
-import { createHash } from "node:crypto";
+import { createHash, generateKeyPairSync } from "node:crypto";
 import {
 	buildReportPacket,
 	writeReportPacket,
@@ -13,6 +13,11 @@ import {
 	checkLimitationAndConflictSurvival,
 	checkUncitedFactualAssertions,
 	checkSourceProvenance,
+	normalizeSourceIdentifiers,
+	verifyReportSemantics,
+	compareReportDrafts,
+	attestReportPacket,
+	verifyReportAttestation,
 } from "../../lib/report-packet.js";
 import { storePassage } from "../../packages/evidence/lib/passages.js";
 import { loadClaims } from "../../packages/evidence/lib/load-claims.js";
@@ -443,4 +448,289 @@ test("source provenance check flags secondary_citation on documented/tested clai
 	assert.equal(strictParsed.passed, false);
 	assert.equal(strictParsed.strict, true);
 	assert.equal(strictParsed.issues[0].code, "secondary_citation_for_strong_tier");
+});
+
+test("canonical DOI/arXiv normalization and source aliases merge matching sources while preserving pinned versions", (t) => {
+	const { dir, ledger, save, passageDigest } = fixture(t);
+	const normDoiUrl = normalizeSourceIdentifiers({ origin: "web", artifact: "https://doi.org/10.1234/ABC.5" });
+	assert.deepEqual(normDoiUrl.canonicalIds, ["doi:10.1234/abc.5"]);
+	const normArxiv = normalizeSourceIdentifiers({ origin: "preprint", url: "https://arxiv.org/abs/2502.10855v2" });
+	assert.deepEqual(normArxiv.canonicalIds, ["arxiv:2502.10855"]);
+	const normPinned = normalizeSourceIdentifiers({ origin: "preprint", url: "https://arxiv.org/abs/2502.10855v2", revision: "v2" });
+	assert.deepEqual(normPinned.canonicalIds, ["arxiv:2502.10855v2"]);
+
+	ledger.claims = [
+		{
+			...ledger.claims[0],
+			id: "c001",
+			source: {
+				origin: "journal",
+				artifact: "https://doi.org/10.1234/ABC.5",
+				title: "Canonical Paper",
+				passage_sha256: passageDigest,
+				quote: "The experiment used 12 samples.",
+			},
+		},
+		{
+			...ledger.claims[0],
+			id: "c002",
+			source: {
+				origin: "crossref",
+				doi: "doi:10.1234/abc.5",
+				aliases: ["arXiv:2502.10855"],
+				venue: "NeurIPS",
+				passage_sha256: passageDigest,
+				quote: "The experiment used 12 samples.",
+			},
+		},
+		{
+			...ledger.claims[0],
+			id: "c003",
+			source: {
+				origin: "preprint",
+				url: "https://arxiv.org/abs/2502.10855",
+				passage_sha256: passageDigest,
+				quote: "Its small size limits generalization.",
+			},
+		},
+		{
+			...ledger.claims[0],
+			id: "c004",
+			source: {
+				origin: "preprint",
+				artifact: "https://arxiv.org/abs/2502.10855v1",
+				revision: "v1",
+				passage_sha256: passageDigest,
+				quote: "The experiment used 12 samples.",
+			},
+		},
+		{
+			...ledger.claims[0],
+			id: "c005",
+			source: {
+				origin: "preprint",
+				artifact: "https://arxiv.org/abs/2502.10855v2",
+				revision: "v2",
+				passage_sha256: passageDigest,
+				quote: "The experiment used 12 samples.",
+			},
+		},
+	];
+	save();
+
+	const packet = buildReportPacket(dir);
+	assert.equal(packet.sources.length, 3, "unpinned DOI/arXiv aliases merge into 1 source while v1 and v2 stay distinct");
+	const relMap = new Map(packet.relations.map((r) => [r.claim_id, r]));
+	assert.equal(relMap.get("c001").source_id, relMap.get("c002").source_id);
+	assert.equal(relMap.get("c002").source_id, relMap.get("c003").source_id);
+	assert.notEqual(relMap.get("c004").source_id, relMap.get("c005").source_id);
+	assert.notEqual(relMap.get("c001").source_id, relMap.get("c004").source_id);
+
+	const mergedSource = packet.sources.find((s) => s.id === relMap.get("c001").source_id);
+	assert.deepEqual(mergedSource.canonical_ids, ["arxiv:2502.10855", "doi:10.1234/abc.5"]);
+	assert.equal(mergedSource.merged_metadata.length, 3);
+	assert.equal(mergedSource.metadata.title, "Canonical Paper");
+	assert.equal(mergedSource.metadata.venue, "NeurIPS");
+});
+
+test("sidecar verify-semantics preserves packet boundary, classifies verdicts, supports custom evaluator, and enforces --semantics", async (t) => {
+	const { dir, ledger, save, passageDigest } = fixture(t);
+	const negPassage = "Contrary to early hopes, the treatment did not reduce mortality across 50 patients.";
+	const negDigest = storePassage(dir, negPassage);
+	const extraPassage = "The benchmark achieved 94% accuracy on 200 items.";
+	const extraDigest = storePassage(dir, extraPassage);
+
+	ledger.claims = [
+		{
+			...ledger.claims[0],
+			id: "s001",
+			content: "The experiment used 12 samples.",
+			source: { ...ledger.claims[0].source, passage_sha256: passageDigest, quote: "The experiment used 12 samples." },
+		},
+		{
+			...ledger.claims[0],
+			id: "s002",
+			content: "The benchmark achieved 94% accuracy on 200 items in 2026.",
+			source: { origin: "review", artifact: "papers/survey.pdf", passage_sha256: extraDigest, quote: extraPassage, source_role: "secondary_citation" },
+		},
+		{
+			...ledger.claims[0],
+			id: "s003",
+			content: "The treatment reduced mortality across 50 patients.",
+			source: { origin: "trial", artifact: "trials/t1.json", passage_sha256: negDigest, quote: negPassage },
+		},
+		{
+			...ledger.claims[0],
+			id: "s004",
+			content: "Missing passage claim.",
+			source: { origin: "trial", artifact: "trials/missing.json", passage_sha256: "0".repeat(64), quote: "Absent quote" },
+		},
+	];
+	save();
+	writeReportPacket(dir, "output/packet.json");
+
+	const packetOnDisk = JSON.parse(fs.readFileSync(path.join(dir, "output/packet.json"), "utf8"));
+	assert.ok(packetOnDisk.relations.every((r) => r.semantic_support === "not_evaluated"));
+
+	const run = (...args) => spawnSync(process.execPath, [cli, "report", ...args], { encoding: "utf8" });
+	const semCli = run("verify-semantics", "--dir", dir, "--packet", "output/packet.json", "--out", "output/semantic-eval.json", "--json");
+	assert.equal(semCli.status, 0, semCli.stderr);
+	const semDoc = JSON.parse(fs.readFileSync(path.join(dir, "output/semantic-eval.json"), "utf8"));
+	assert.equal(semDoc.schema, "grainulator.semantic-eval/v1");
+	assert.equal(semDoc.packet_sha256, packetOnDisk.packet_sha256);
+	assert.equal(semDoc.ledger_sha256, packetOnDisk.ledger_sha256);
+	const verdicts = new Map(semDoc.evaluations.map((e) => [e.claim_id, e.verdict]));
+	assert.equal(verdicts.get("s001"), "supported");
+	assert.equal(verdicts.get("s002"), "partial");
+	assert.equal(verdicts.get("s003"), "contradicted");
+	assert.equal(verdicts.get("s004"), "unresolvable");
+
+	// Custom async evaluator adapter can override resolvable verdicts while unresolvable stays enforced
+	const customSem = await verifyReportSemantics(dir, "output/packet.json", "output/custom-sem.json", {
+		evaluator: async ({ claim }) => ({
+			verdict: claim.id === "s002" ? "supported" : "partial",
+			reason: "custom model adapter",
+		}),
+	});
+	const customVerdicts = new Map(customSem.evaluations.map((e) => [e.claim_id, e.verdict]));
+	assert.equal(customVerdicts.get("s002"), "supported");
+	assert.equal(customVerdicts.get("s004"), "unresolvable");
+
+	fs.writeFileSync(path.join(dir, "output/good-draft.md"), "Samples totaled 12 [[claim:s001]] and accuracy reached 94% [[claim:s002]].\n");
+	const checkOk = run("check", "--dir", dir, "--packet", "output/packet.json", "--draft", "output/good-draft.md", "--semantics", "output/semantic-eval.json", "--json");
+	assert.equal(checkOk.status, 0, checkOk.stderr);
+	assert.equal(JSON.parse(checkOk.stdout).semantic_support, "sidecar_evaluated");
+
+	fs.writeFileSync(path.join(dir, "output/bad-draft.md"), "Mortality fell [[claim:s003]].\n");
+	const checkContradicted = run("check", "--dir", dir, "--packet", "output/packet.json", "--draft", "output/bad-draft.md", "--semantics", "output/semantic-eval.json", "--json");
+	assert.equal(checkContradicted.status, 2);
+	const parsedBad = JSON.parse(checkContradicted.stdout);
+	assert.ok(parsedBad.issues.some((i) => i.code === "semantic_support_failed" && i.claim_id === "s003"));
+
+	// Stale semantic-eval fails when packet.json changes
+	ledger.claims[0].content = "The experiment used 12 samples (updated).";
+	save();
+	writeReportPacket(dir, "output/packet-v2.json");
+	const staleCheck = checkReportPacket(dir, "output/packet-v2.json", "output/good-draft.md", { semanticFile: "output/semantic-eval.json" });
+	assert.equal(staleCheck.passed, false);
+	assert.ok(staleCheck.issues.some((i) => i.code === "semantic_eval_stale_or_invalid"));
+});
+
+test("blind order-swapped report compare evaluates A_then_B and B_then_A and detects judge order disagreement", async (t) => {
+	const { dir, ledger, save, passageDigest } = fixture(t);
+	const secondaryPassage = "Survey notes 12 samples in passing.";
+	const secondaryDigest = storePassage(dir, secondaryPassage);
+	ledger.claims.push({
+		...ledger.claims[0],
+		id: "r003",
+		content: "Survey reference.",
+		source: { origin: "review", artifact: "papers/survey.pdf", passage_sha256: secondaryDigest, quote: secondaryPassage, source_role: "secondary_citation" },
+	});
+	save();
+	writeReportPacket(dir, "output/packet.json");
+
+	fs.writeFileSync(
+		path.join(dir, "output/draft-a.md"),
+		"The experiment used 12 samples [[claim:r001]], though its small size limits generalization [[claim:r002]].\n",
+	);
+	fs.writeFileSync(
+		path.join(dir, "output/draft-b.md"),
+		"A survey notes 12 samples [[claim:r003]], and measurements confirm 99% gains in 2026.\n",
+	);
+
+	const run = (...args) => spawnSync(process.execPath, [cli, "report", ...args], { encoding: "utf8" });
+	const cliCmp = run("compare", "--dir", dir, "--packet", "output/packet.json", "--draft-a", "output/draft-a.md", "--draft-b", "output/draft-b.md", "--json");
+	assert.equal(cliCmp.status, 0, cliCmp.stderr);
+	const compared = JSON.parse(cliCmp.stdout);
+	assert.equal(compared.schema, "grainulator.blind-compare/v1");
+	assert.equal(compared.order_consistent, true);
+	assert.equal(compared.order_disagreement, false);
+	assert.equal(compared.winner, "A");
+	assert.equal(compared.draft_a.effective_grounded_claims, 2);
+	assert.equal(compared.draft_a.primary_evidence_claims, 2);
+	assert.equal(compared.draft_b.effective_grounded_claims, 1);
+	assert.equal(compared.draft_b.primary_evidence_claims, 0);
+	assert.ok(compared.draft_b.grounding_warnings_count >= 1);
+
+	// Biased judge that always picks candidate_1 regardless of content must trigger order_disagreement
+	const seenLabels = [];
+	const biased = await compareReportDrafts(dir, "output/packet.json", "output/draft-a.md", "output/draft-b.md", {
+		judge: (first, second) => {
+			seenLabels.push([first.label, second.label]);
+			assert.equal("file" in first, false, "blinded candidate must not expose filename");
+			return { winner: "candidate_1", reason: "position bias" };
+		},
+	});
+	assert.deepEqual(seenLabels, [["candidate_1", "candidate_2"], ["candidate_1", "candidate_2"]]);
+	assert.equal(biased.order_consistent, false);
+	assert.equal(biased.order_disagreement, true);
+	assert.equal(biased.winner, "inconclusive");
+});
+
+test("DSSE in-toto attestation supports unsigned and Ed25519 signed envelopes and rejects tampering", (t) => {
+	const { dir } = fixture(t);
+	writeReportPacket(dir, "output/packet.json");
+	fs.writeFileSync(path.join(dir, "output/draft.md"), "The experiment used 12 samples [[claim:r001]].\n");
+
+	// Unsigned attestation + verification
+	const unsignedRes = attestReportPacket(dir, "output/packet.json", "output/unsigned.dsse.json", { draftFile: "output/draft.md" });
+	assert.equal(unsignedRes.signed, false);
+	const unsignedCheck = verifyReportAttestation(dir, "output/unsigned.dsse.json");
+	assert.equal(unsignedCheck.passed, true);
+	assert.equal(unsignedCheck.signed, false);
+	assert.equal(unsignedCheck.signature_verified, null);
+	assert.deepEqual(unsignedCheck.subjects_verified, ["output/packet.json", "output/draft.md"]);
+
+	// Ed25519 keypair outside sprint directory for CLI --key / --pubkey
+	const keyDir = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-keys-"));
+	t.after(() => fs.rmSync(keyDir, { recursive: true, force: true }));
+	const { privateKey, publicKey } = generateKeyPairSync("ed25519");
+	const privPem = privateKey.export({ type: "pkcs8", format: "pem" });
+	const pubPem = publicKey.export({ type: "spki", format: "pem" });
+	const privPath = path.join(keyDir, "signing.key.pem");
+	const pubPath = path.join(keyDir, "signing.pub.pem");
+	fs.writeFileSync(privPath, privPem);
+	fs.writeFileSync(pubPath, pubPem);
+
+	const run = (...args) => spawnSync(process.execPath, [cli, "report", ...args], { encoding: "utf8" });
+	const attestCli = run("attest", "--dir", dir, "--packet", "output/packet.json", "--draft", "output/draft.md", "--out", "output/packet.dsse.json", "--key", privPath, "--json");
+	assert.equal(attestCli.status, 0, attestCli.stderr);
+	const envelope = JSON.parse(fs.readFileSync(path.join(dir, "output/packet.dsse.json"), "utf8"));
+	assert.equal(envelope.payloadType, "application/vnd.in-toto+json");
+	assert.equal(envelope.signatures.length, 1);
+	const stmt = JSON.parse(Buffer.from(envelope.payload, "base64").toString("utf8"));
+	assert.equal(stmt._type, "https://in-toto.io/Statement/v1");
+	assert.equal(stmt.predicateType, "https://grainulation.com/attestation/report-packet/v1");
+	assert.equal(stmt.predicate.active_claims, 2);
+	assert.equal(stmt.predicate.intact_passages, 1);
+
+	const verifyCli = run("verify-attestation", "--dir", dir, "--attestation", "output/packet.dsse.json", "--pubkey", pubPath, "--json");
+	assert.equal(verifyCli.status, 0, verifyCli.stderr);
+	const verified = JSON.parse(verifyCli.stdout);
+	assert.equal(verified.passed, true);
+	assert.equal(verified.signed, true);
+	assert.equal(verified.signature_verified, true);
+
+	// Wrong public key must fail verification
+	const otherPair = generateKeyPairSync("ed25519");
+	const wrongVerify = verifyReportAttestation(dir, "output/packet.dsse.json", {
+		publicKeyPem: otherPair.publicKey.export({ type: "spki", format: "pem" }),
+	});
+	assert.equal(wrongVerify.passed, false);
+	assert.ok(wrongVerify.issues.some((i) => i.code === "attestation_signature_invalid"));
+
+	// Tampering draft.md must fail subject digest verification
+	fs.writeFileSync(path.join(dir, "output/draft.md"), "Tampered draft [[claim:r001]].\n");
+	const tamperedDraftVerify = run("verify-attestation", "--dir", dir, "--attestation", "output/packet.dsse.json", "--pubkey", pubPath, "--json");
+	assert.equal(tamperedDraftVerify.status, 2);
+	assert.ok(JSON.parse(tamperedDraftVerify.stdout).issues.some((i) => i.code === "attestation_subject_digest_mismatch"));
+
+	// Tampering packet.json must fail subject digest and packet verification
+	fs.writeFileSync(path.join(dir, "output/draft.md"), "The experiment used 12 samples [[claim:r001]].\n");
+	const pkt = JSON.parse(fs.readFileSync(path.join(dir, "output/packet.json"), "utf8"));
+	pkt.claims[0].content = "Tampered claim";
+	fs.writeFileSync(path.join(dir, "output/packet.json"), JSON.stringify(pkt));
+	const tamperedPktVerify = verifyReportAttestation(dir, "output/packet.dsse.json", { publicKeyPem: pubPem });
+	assert.equal(tamperedPktVerify.passed, false);
+	assert.ok(tamperedPktVerify.issues.some((i) => i.code === "attestation_subject_digest_mismatch"));
 });
