@@ -91,8 +91,8 @@ try {
   } else if(evidence.has(command))await forward('packages/evidence/bin/evidence.js',[command,...args]);
   else if(children[command])await forward(children[command],args);
   else if(command==='preview') {
-    validateOptions(['--dir']);
-    if(args.includes('--help')||args.includes('-h'))console.log('Usage:\n  grainulator preview [--dir <workspace>]\nServe the local research playground on loopback. GRAINULATOR_PORT selects the port (default 4517).');
+    validateOptions();
+    if(args.includes('--help')||args.includes('-h'))console.log('Usage:\n  grainulator preview\nServe the local research playground on loopback. GRAINULATOR_PORT selects the port (default 4517).');
     else await forward('scripts/preview.mjs',args);
   }
   else throw new Error(`Unknown command: ${command}. Run grainulator --help.`);

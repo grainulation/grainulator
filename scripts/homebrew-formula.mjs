@@ -108,6 +108,7 @@ export function renderFormula({
 			'",',
 		'                manifest: [manifest_bytes].pack("m0"), archive_sha256: asset.fetch("sha256") }',
 		'    (libexec/"native/.install-receipt.json").write JSON.generate(receipt) + "\\n"',
+		"    bin.mkpath",
 		'    (bin/"grainulator").write <<~SH, perm: 0755',
 		"      #!/bin/sh",
 		"      GRAINULATOR_INSTALL_ORIGIN=homebrew",

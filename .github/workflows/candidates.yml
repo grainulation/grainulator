@@ -93,7 +93,7 @@ jobs:
         shell: bash
         run: |
           arguments=()
-          while IFS= read -r record; do arguments+=(--asset-record "$record"); done < <(rg --files "$RUNNER_TEMP/candidate-inputs" -g asset-record.json)
+          while IFS= read -r record; do arguments+=(--asset-record "$record"); done < <(find "$RUNNER_TEMP/candidate-inputs" -type f -name asset-record.json)
           node scripts/homebrew-release.mjs --base-record "$RUNNER_TEMP/candidate-inputs/base-candidate/base/base-record.json" --migration-record "$RUNNER_TEMP/candidate-inputs/base-candidate/migration/migration-record.json" "${arguments[@]}" --out "$RUNNER_TEMP/release"
           node --input-type=module -e 'import fs from "node:fs";import crypto from "node:crypto";const pin=crypto.createHash("sha256").update(fs.readFileSync(process.env.RUNNER_TEMP+"/release/release-manifest.json")).digest("hex");fs.appendFileSync(process.env.GITHUB_OUTPUT,"manifest_sha256="+pin+"\n")'
       - name: Revalidate trusted manifest inventory before upload
