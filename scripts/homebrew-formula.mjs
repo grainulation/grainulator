@@ -60,6 +60,8 @@ export function renderFormula({
 		'  version "' + m.version + '"',
 		"  # v3 supports tested Node 24/26 LTS; pin the minimum supported LTS for this channel.",
 		'  depends_on "node@24"',
+		"  # The wrapper selects Node explicitly; preserve manifest-verified application bytes.",
+		'  skip_clean "libexec/app"',
 		"",
 		'  resource "release-manifest" do',
 		'    url "' + url + 'release-manifest.json"',
