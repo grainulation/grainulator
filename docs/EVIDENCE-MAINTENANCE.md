@@ -53,8 +53,8 @@ timeout/output limit and process-group cleanup on macOS/Linux. Native Windows
 uses direct-child termination. Compile, status, report and MCP inspection never
 run a command. Execution is an explicit CLI action; there is no arbitrary-command
 execution MCP tool.
-Invalid observation replacements, exhausted observation capacity and invalid
-premise graphs are rejected before launching a command.
+Invalid observation replacements, exhausted observation or history capacity and
+invalid premise graphs are rejected before launching a command.
 
 An observation that changes, disappears or fails makes the compiler block its
 claim and dependent conclusions. To recheck the same source/command binding,
