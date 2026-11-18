@@ -24,7 +24,10 @@ const pubKeyPath = path.join(keysDir, "ed25519_public.pem");
 let privKeyPem;
 let pubKeyPem;
 
-if (!fs.existsSync(privKeyPath) || !fs.existsSync(pubKeyPath)) {
+try {
+	privKeyPem = fs.readFileSync(privKeyPath, "utf8");
+	pubKeyPem = fs.readFileSync(pubKeyPath, "utf8");
+} catch {
 	const { privateKey, publicKey } = generateKeyPairSync("ed25519", {
 		publicKeyEncoding: { type: "spki", format: "pem" },
 		privateKeyEncoding: { type: "pkcs8", format: "pem" },
@@ -34,15 +37,11 @@ if (!fs.existsSync(privKeyPath) || !fs.existsSync(pubKeyPath)) {
 	fs.writeFileSync(privKeyPath, privKeyPem, { mode: 0o600 });
 	fs.writeFileSync(pubKeyPath, pubKeyPem, { mode: 0o644 });
 	console.log("Generated fresh Ed25519 keypair in keys/");
-} else {
-	privKeyPem = fs.readFileSync(privKeyPath, "utf8");
-	pubKeyPem = fs.readFileSync(pubKeyPath, "utf8");
 }
 
 // Clean old outputs because writeConfinedJSON refuses to overwrite
 for (const f of ["packet.json", "semantic-eval.json", "packet.dsse.json"]) {
-	const p = path.join(outDir, f);
-	if (fs.existsSync(p)) fs.unlinkSync(p);
+	fs.rmSync(path.join(outDir, f), { force: true });
 }
 
 // 2. Build and write canonical report packet

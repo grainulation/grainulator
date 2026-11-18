@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "id": "release-2.3.0-cf9a768e0caf62d8",
+  "id": "release-2.3.0-65423d260f11dffd",
   "version": "2.3.0",
-  "source_sha256": "cf9a768e0caf62d8eb5b078ad0caa9994afb74e814a781519a36db032e3d89d5",
+  "source_sha256": "65423d260f11dffd1b5909dbf20816d4791f395ce8e7571e7f13db2b9c1d41dc",
   "files": {
     ".claude-plugin/marketplace.json": "752699849a563d7d83a54f9a82474bbbdada83da46dba9a7ae116829f60ed587",
     ".claude-plugin/plugin.json": "89ca986827025604f17faf9cca9b468d05316b93844f899f4fe49692839a4e04",
@@ -47,7 +47,7 @@
     "lib/confluence-pull.js": "567a40b3471d07cba4ad7de2b79bd1ad7749078f9cd20c0b799b921d87dcb80e",
     "lib/confluence-sync.js": "d01d616974ceb8ac018295d50d42217cf97fd29e01c089e6f68e9d79141f9834",
     "lib/grainulator-mcp.js": "92b6ff88f0fe810726beece675e33eefce767db65664ae97522fc6997bb6c334",
-    "lib/report-packet.js": "bd8c449110a924c8ba02328128a3da8b288eb817d0608cef45f765cc2c81c6f5",
+    "lib/report-packet.js": "0436356f5da96ca59cf3096f5a69ed96e01bd16f206ad7e3b95a29c95b5c03b4",
     "lib/research-cli.js": "6f091fdd42732341cfa83c0b50c12a3c6094bbae009b446337c1c65aff1f8d43",
     "lib/research-http.js": "41caefbc590eb09344a5bcdd709e2f614ab057e383f437c4b9f022667f553757",
     "lib/research-provider.js": "32771fa6c38ca708a525fe1349fdad34e09e985e1e60a5aea8e9684bcb7edccd",
