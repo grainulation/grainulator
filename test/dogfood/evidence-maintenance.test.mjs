@@ -136,20 +136,49 @@ test("invalid graph/correction operations are atomic and leave ledger bytes inta
 
 test("compiler conflict resolution invalidates dependent premises in the same compilation", (t) => {
 	const dir = fixture(t);
-	linkPremises(dir, { claim_id: "b", premises: ["a"], reason: "necessary fact" });
-	linkPremises(dir, { claim_id: "c", premises: ["b"], reason: "derived result" });
-	assert.equal(addClaim(dir, {
-		id: "better-a", type: "factual", topic: "database", content: "Contradicts a",
-		evidence: "tested", conflicts_with: ["a"],
-	}).status, "ok");
+	linkPremises(dir, {
+		claim_id: "b",
+		premises: ["a"],
+		reason: "necessary fact",
+	});
+	linkPremises(dir, {
+		claim_id: "c",
+		premises: ["b"],
+		reason: "derived result",
+	});
+	assert.equal(
+		addClaim(dir, {
+			id: "better-a",
+			type: "factual",
+			topic: "database",
+			content: "Contradicts a",
+			evidence: "tested",
+			conflicts_with: ["a"],
+		}).status,
+		"ok",
+	);
 	const before = fs.readFileSync(path.join(dir, "claims.json"));
 	const compiled = compileDir(dir);
 	assert.equal(compiled.status, "blocked");
-	assert.deepEqual(compiled.evidence_health.needs_reverification.map(item => item.claim_id), ["b", "c"]);
-	assert.ok(compiled.errors.some(item => item.code === "E_REVERIFICATION_REQUIRED" && item.claims.includes("c")));
-	assert.deepEqual(compiled.evidence_health.needs_reverification[1].blockers[0].path, ["a", "b", "c"]);
+	assert.deepEqual(
+		compiled.evidence_health.needs_reverification.map((item) => item.claim_id),
+		["b", "c"],
+	);
+	assert.ok(
+		compiled.errors.some(
+			(item) =>
+				item.code === "E_REVERIFICATION_REQUIRED" && item.claims.includes("c"),
+		),
+	);
+	assert.deepEqual(
+		compiled.evidence_health.needs_reverification[1].blockers[0].path,
+		["a", "b", "c"],
+	);
 	assert.deepEqual(fs.readFileSync(path.join(dir, "claims.json")), before);
-	assert.equal(compilationFreshness(path.join(dir, "claims.json"), compiled).fresh, true);
+	assert.equal(
+		compilationFreshness(path.join(dir, "claims.json"), compiled).fresh,
+		true,
+	);
 });
 
 test("source edits invalidate compile freshness and report packets; explicit same-binding replacement preserves history", (t) => {
@@ -241,15 +270,29 @@ test("input mutation during a successful command cannot earn passing current sup
 
 test("invalid execution replacements are rejected before launching the command", async (t) => {
 	const dir = fixture(t);
-	const argv = [process.execPath, "-e", 'require("node:fs").writeFileSync("launched", "yes")'];
-	const source = observeSource(dir, { claim_id: "a", path: "source.js" }).observation;
+	const argv = [
+		process.execPath,
+		"-e",
+		'require("node:fs").writeFileSync("launched", "yes")',
+	];
+	const source = observeSource(dir, {
+		claim_id: "a",
+		path: "source.js",
+	}).observation;
 	const original = await observeExecution(dir, {
-		claim_id: "a", argv: [process.execPath, "-e", "process.exit(0)"], files: ["source.js"],
+		claim_id: "a",
+		argv: [process.execPath, "-e", "process.exit(0)"],
+		files: ["source.js"],
 	});
 	for (const supersedes of ["unknown", source.id, original.observation.id]) {
-		await assert.rejects(observeExecution(dir, {
-			claim_id: "a", argv, files: ["source.js"], supersedes,
-		}));
+		await assert.rejects(
+			observeExecution(dir, {
+				claim_id: "a",
+				argv,
+				files: ["source.js"],
+				supersedes,
+			}),
+		);
 		assert.equal(fs.existsSync(path.join(dir, "launched")), false);
 	}
 });
@@ -257,13 +300,24 @@ test("invalid execution replacements are rejected before launching the command",
 test("exhausted maintenance history rejects execution before launching the command", async (t) => {
 	const dir = fixture(t);
 	for (let i = 0; i < 1000; i++)
-		linkPremises(dir, { claim_id: "a", premises: [], reason: "reviewed current premises" });
+		linkPremises(dir, {
+			claim_id: "a",
+			premises: [],
+			reason: "reviewed current premises",
+		});
 	const before = fs.readFileSync(path.join(dir, "claims.json"));
-	await assert.rejects(observeExecution(dir, {
-		claim_id: "a",
-		argv: [process.execPath, "-e", 'require("node:fs").writeFileSync("launched", "yes")'],
-		files: ["source.js"],
-	}), /maintenance history limit/);
+	await assert.rejects(
+		observeExecution(dir, {
+			claim_id: "a",
+			argv: [
+				process.execPath,
+				"-e",
+				'require("node:fs").writeFileSync("launched", "yes")',
+			],
+			files: ["source.js"],
+		}),
+		/maintenance history limit/,
+	);
 	assert.equal(fs.existsSync(path.join(dir, "launched")), false);
 	assert.deepEqual(fs.readFileSync(path.join(dir, "claims.json")), before);
 });

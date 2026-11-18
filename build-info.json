@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "id": "release-2.4.0-d2e18d9eff77bebd",
+  "id": "release-2.4.0-e501d937f73e9d9c",
   "version": "2.4.0",
-  "source_sha256": "d2e18d9eff77bebd62c926d99b5784e522b2d7c7f064365fbfe376660bd28463",
+  "source_sha256": "e501d937f73e9d9ced49ac7591b76edce8af66e09d6234fb41f714d62df4b14e",
   "files": {
     ".claude-plugin/marketplace.json": "b4764a144fa74344ed6339c6a6686f024cccf2a970e9ad4501c5b6caef4d0137",
     ".claude-plugin/plugin.json": "468e97069d41a1edd1fce9a2ac78ca9a4d1b966027f531c5e7381cf36be24166",
@@ -50,7 +50,7 @@
     "lib/confluence-sync.js": "d01d616974ceb8ac018295d50d42217cf97fd29e01c089e6f68e9d79141f9834",
     "lib/grainulator-mcp.js": "4dbdc86dc17e53189d3cf6296a2b585a96a429cccbc53ec161ff7944d8cf31c0",
     "lib/maintenance-cli.js": "8260d137bbf98af119761261dd7dcf5d5cb02264bc9bc1005d0e8697cdf5ee43",
-    "lib/maintenance-mcp.js": "521e2686346d7176ac6e70ae615bf13f0aa0ffbb5485631824e7cb85219e34bb",
+    "lib/maintenance-mcp.js": "ebba07b2db582bfc00d1ec934db226659c0f4f745ecfdaa1bc337e17d0551f27",
     "lib/report-packet.js": "2a47ab1749d0a03c33fdaaa539379732b1f3ef62817a125767c6a3e8365d18d5",
     "lib/research-cli.js": "6f091fdd42732341cfa83c0b50c12a3c6094bbae009b446337c1c65aff1f8d43",
     "lib/research-http.js": "41caefbc590eb09344a5bcdd709e2f614ab057e383f437c4b9f022667f553757",
