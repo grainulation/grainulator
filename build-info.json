@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "id": "release-2.4.0-6f739b108aa84cce",
+  "id": "release-2.4.0-d2e18d9eff77bebd",
   "version": "2.4.0",
-  "source_sha256": "6f739b108aa84ccef6e65cebaabd40069c79dd2aa1ef1a9737a6e4aa47ac308e",
+  "source_sha256": "d2e18d9eff77bebd62c926d99b5784e522b2d7c7f064365fbfe376660bd28463",
   "files": {
     ".claude-plugin/marketplace.json": "b4764a144fa74344ed6339c6a6686f024cccf2a970e9ad4501c5b6caef4d0137",
     ".claude-plugin/plugin.json": "468e97069d41a1edd1fce9a2ac78ca9a4d1b966027f531c5e7381cf36be24166",
@@ -23,7 +23,7 @@
     "docs/DEPLOYMENT.md": "68401a7569141c9c524f2af119985a09e8613a0158af405d3e549da9edce898d",
     "docs/DOGFOOD.md": "7e7a1f72c8abe4d34fa00f239020a2e6d0ce3ded0a05dcf3a218926245f1fd96",
     "docs/EVALUATION.md": "c39b8799f9a9eab44fcd90e101394f8db9b48156ec26c34e92579f8132e35283",
-    "docs/EVIDENCE-MAINTENANCE.md": "6fddf7782c6ca06fa15c1e1ff3eebe65ee0013fbe572c3cab5c90d6bcde6929a",
+    "docs/EVIDENCE-MAINTENANCE.md": "297cca99038bcea19fe5bff3eedcefe090df529e08dc8d1bc4f382c4a916a8ad",
     "docs/GROUNDED-REPORTS.md": "bd75c09f4e460acb60fb4c150a646a54134d4c498b463fd410ef48ef1d992f54",
     "docs/HOSTS.md": "3fbf64c29d5c71e67714731b162af06dea3fa6ba5451ef9abd4728c31733d4ae",
     "docs/INSTALLATION.md": "a0da04e33c7bdfcce82210b0fa4010916e08d906d6ecace4ba4413b7e1701bac",
@@ -116,7 +116,7 @@
     "packages/evidence/lib/init.js": "52439a1db7e357a09238ee45b1eafaddf4109d6fca186e412e44f46e0f97a448",
     "packages/evidence/lib/install-prompt.js": "2c9aea19c7cb50f6cf38b36fd61feadf1cb4f2a1c9a5281054d5481311e0afd8",
     "packages/evidence/lib/load-claims.js": "93db3132e655508667866e5b3a7e6cf3b3cc493185cbc98858c96b0db97f133b",
-    "packages/evidence/lib/maintenance.js": "006f69c5ab8d477dd361c93e62018ede63499b00ba546da40eb2d34755bbc52c",
+    "packages/evidence/lib/maintenance.js": "bf64e3222d2f123e3aa9d7b489fd430fa89c8044244f9c06e276a463f27be4e3",
     "packages/evidence/lib/next-actions.cjs": "605cf3dd58ac3e3080a102f8ece992710b969235571814f3361b43b8fa023c83",
     "packages/evidence/lib/passages.js": "c551054e2e23e301937a8702ad0a37e86270618da2696b030d9669abd7d408bb",
     "packages/evidence/lib/quickstart.js": "f8c91876b593aebc5e58b6f229ccaae23d691ab72a047f46c60cd997fb0302f8",
