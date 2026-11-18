@@ -60,7 +60,7 @@ npm ci --ignore-scripts
 node bin/grainulator.js doctor
 ```
 
-To use Grainulator inside your agent, follow the **[Claude Code or Codex setup guide](docs/AGENT-SETUP.md)**. The [website](https://grainulator.dev/) shows a saved example of an evidence check. It does not send your question to a model.
+To use Grainulator inside your agent, follow the **[Claude Code or Codex setup guide](docs/AGENT-SETUP.md)**.
 
 The local research playground remains available through `node bin/grainulator.js preview`. It runs models using a provider account you configure locally.
 
