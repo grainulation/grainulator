@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "id": "release-3.0.0-1664acf6363048a2",
+  "id": "release-3.0.0-a3ba923f7ad34735",
   "version": "3.0.0",
-  "source_sha256": "1664acf6363048a20b98091137d11fb406b63f4d15c9952328705448d6bb5c75",
+  "source_sha256": "a3ba923f7ad347357dcb148b7cd4d405c1332af84a1661d2ec075f55b56c9c42",
   "files": {
     ".claude-plugin/marketplace.json": "97f35ae47ea7d3bc08cc35e8e357dac60089d1927a504261a53b985404a8172c",
     ".claude-plugin/plugin.json": "36e3a9fb8cd32ca1c2db0e8ad569ac38ca5c7f6987a712b73604238ae9d6307a",
@@ -90,7 +90,6 @@
     "packages/analytics/lib/wrapped.js": "6c12938c4d8942337a0684eb6ed2f040551d0fa4209815627972ab54c16aa590",
     "packages/analytics/package.json": "d804ba0a3eee11ae82251fa0dd87f8917b2a5c279ed7b38f0c5496c1fc332e1f",
     "packages/analytics/templates/retrospective.html": "52f500bd93d1a78ffa06b6b97cb251c147b58dc1d0799ac862b0abd673c1d488",
-    "packages/evidence/.mcp.json": "e1d2ffdc52766a05ee533f013768862a1379c88667d28d2c67b913f49e695b4e",
     "packages/evidence/CHANGELOG.md": "9b71a285c09a8a11c978abb9ce801115c6fc8f35fb00eae0697f4dd4a02f7dfc",
     "packages/evidence/CODE_OF_CONDUCT.md": "a0fb0d37e1483df77d811c1e3f4e0ea294c8747f97d57173c89c19ca23c2214f",
     "packages/evidence/CONTRIBUTING.md": "b3d887fe2976664639b67f165a61bf8b7d660864b75f46897966cf6d5f80da48",
