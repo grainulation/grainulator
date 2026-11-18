@@ -57,6 +57,14 @@ metadata, including explicit revision/version fields; they do not merge aliases
 such as a DOI and an arXiv URL. Multiple claims and passages can reference one
 source without losing their separate relationships.
 
+Witness and challenge targets are relation fields, not part of the source's
+identity. `ledger_sha256` hashes the exact bounded file bytes, including an
+optional UTF-8 BOM; parsing does not rewrite the ledger. For an unreadable or
+corrupt passage, the integrity gap remains explicit. When its bytes were read,
+the packet retains their `observed_sha256`, so replacing corrupt bytes with
+different corrupt bytes makes a frozen packet stale. If no bytes can be read,
+only the read failure can be recorded; their content cannot be fingerprinted.
+
 ## Scope of this local draft
 
 Packet generation and independent structural checking are implemented. Automatic

@@ -5,8 +5,11 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { createHash } from "node:crypto";
 import { buildReportPacket, writeReportPacket, checkReportPacket } from "../../lib/report-packet.js";
 import { storePassage } from "../../packages/evidence/lib/passages.js";
+import { loadClaims } from "../../packages/evidence/lib/load-claims.js";
+import { addClaim } from "../../packages/evidence/lib/claims-ops.js";
 
 const cli = fileURLToPath(new URL("../../bin/grainulator.js", import.meta.url));
 function fixture(t) {
@@ -130,4 +133,62 @@ test("missing and unquoted passages stay explicit gaps; symlinked ledgers are re
 	fs.renameSync(path.join(dir, "claims.json"), path.join(dir, "actual.json"));
 	fs.symlinkSync("actual.json", path.join(dir, "claims.json"));
 	assert.throws(() => buildReportPacket(dir), /symlink/);
+});
+
+test("normal challenge findings share source identity and retain their distinct challenge targets", (t) => {
+	const { dir, ledger } = fixture(t);
+	for (const [id, target] of [["x001", "r001"], ["x002", "r002"]]) {
+		const result = addClaim(dir, { id, type: "feedback", topic: "challenge", content: `Challenge ${target}`,
+			evidence: "documented", source: { ...ledger.claims[0].source, challenged_claim: target, relationship: "contradicts" } });
+		assert.equal(result.status, "ok", result.message);
+	}
+	const packet = buildReportPacket(dir);
+	const challenges = packet.relations.filter((relation) => relation.claim_id.startsWith("x"));
+	assert.equal(challenges.length, 2);
+	assert.equal(challenges[0].source_id, challenges[1].source_id);
+	assert.deepEqual(challenges.map((relation) => relation.challenged_claim), ["r001", "r002"]);
+	assert.deepEqual(challenges.map((relation) => relation.recorded_relationship), ["contradicts", "contradicts"]);
+	assert.equal(packet.sources.find((source) => source.id === challenges[0].source_id).metadata.challenged_claim, undefined);
+});
+
+test("different corrupt passage bytes invalidate a frozen observation while evidence remains unresolved", (t) => {
+	const { dir, passageDigest } = fixture(t);
+	const passageFile = path.join(dir, "evidence/passages", passageDigest + ".txt");
+	fs.writeFileSync(passageFile, "Corrupt version one");
+	writeReportPacket(dir, "output/corrupt.json");
+	const frozen = JSON.parse(fs.readFileSync(path.join(dir, "output/corrupt.json")));
+	assert.equal(frozen.passages[0].observed_sha256, createHash("sha256").update("Corrupt version one").digest("hex"));
+	assert.equal(frozen.passages[0].integrity, "hash_mismatch");
+	assert.equal(checkReportPacket(dir, "output/corrupt.json").passed, true, "same observed corruption remains a consistent unresolved snapshot");
+	fs.writeFileSync(path.join(dir, "output/draft.md"), "A claim [[claim:r001]].");
+	assert.ok(checkReportPacket(dir, "output/corrupt.json", "output/draft.md").issues.some((issue) => issue.code === "reference_without_intact_evidence"));
+	fs.writeFileSync(passageFile, "Different corrupt bytes");
+	const checked = checkReportPacket(dir, "output/corrupt.json", "output/draft.md");
+	assert.equal(checked.passed, false);
+	assert.ok(checked.issues.some((issue) => issue.code === "packet_stale_or_changed"));
+	assert.ok(checked.issues.some((issue) => issue.code === "reference_without_intact_evidence"));
+	assert.ok(checked.gaps.some((gap) => gap.code === "passage_hash_mismatch"));
+});
+
+test("ledger digest pins bounded disk bytes independently of BOM decoding and never rewrites the ledger", (t) => {
+	const { dir } = fixture(t);
+	const ledgerFile = path.join(dir, "claims.json");
+	const original = fs.readFileSync(ledgerFile);
+	writeReportPacket(dir, "output/plain.json");
+	const withBom = Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), original]);
+	fs.writeFileSync(ledgerFile, withBom);
+	const loaded = loadClaims(dir, { maxBytes: 1024 * 1024 });
+	assert.equal(loaded.errors.length, 0);
+	assert.deepEqual(loaded.raw_bytes, withBom);
+	assert.equal(loaded.raw, original.toString("utf8"));
+	const packet = buildReportPacket(dir);
+	assert.equal(packet.ledger_sha256, createHash("sha256").update(withBom).digest("hex"));
+	assert.notEqual(packet.ledger_sha256, createHash("sha256").update(original).digest("hex"));
+	assert.deepEqual(fs.readFileSync(ledgerFile), withBom, "bounded reads must not strip the BOM on disk");
+	assert.ok(checkReportPacket(dir, "output/plain.json").issues.some((issue) => issue.code === "packet_stale_or_changed"));
+	writeReportPacket(dir, "output/bom.json");
+	assert.equal(checkReportPacket(dir, "output/bom.json").passed, true);
+	fs.writeFileSync(ledgerFile, original);
+	assert.ok(checkReportPacket(dir, "output/bom.json").issues.some((issue) => issue.code === "packet_stale_or_changed"));
+	assert.deepEqual(fs.readFileSync(ledgerFile), original);
 });

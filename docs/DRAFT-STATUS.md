@@ -18,7 +18,7 @@ Recorded source identity, local byte integrity, quote presence and semantic supp
 
 ## Local validation
 
-- `node --test test/dogfood/report-packet.test.mjs`: eight focused packet/checker tests passed.
+- `node --test test/dogfood/report-packet.test.mjs`: 11 focused packet/checker tests passed.
 - `npm test`: root plugin, all eight component suites and dogfood integration passed.
 - `node scripts/check-package.mjs`: local package dry run and refreshed build identity passed.
 - An independent CLI fixture accepted a valid claim marker and rejected an invented claim marker with exit 2.
