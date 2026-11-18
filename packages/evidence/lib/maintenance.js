@@ -105,13 +105,19 @@ export async function observeExecution(dir, args) {
   const timeout = args.timeout_ms ?? 60000;
   if (!Number.isSafeInteger(timeout) || timeout < 1 || timeout > 300000) throw new Error('timeout_ms must be between 1 and 300000.');
   const inputs = args.files.map(file => captureSource(dir, file, 1, 1));
+  const pending = { id: randomUUID(), kind: 'execution', argv: args.argv, inputs,
+    ...(args.supersedes !== undefined ? { supersedes: args.supersedes } : {}) };
+  // Reject an inadmissible receipt before running a potentially effectful command.
+  // The transaction below still rechecks the claim after execution for races.
+  currentObservations({ ...beforeClaim, observations: [...(beforeClaim.observations || []), pending] });
+  const health = evidenceHealth(before, dir);
+  if (health.errors.length) throw new Error(health.errors.map(error => error.message).join(' '));
   const started = stamp(), startedMs = Date.now();
   const child = await observeCommand(args.argv, fs.realpathSync(dir), timeout);
   const output = Buffer.concat([Buffer.from(child.stdout || ''), Buffer.from('\0'), Buffer.from(child.stderr || '')]);
   let inputChanged = true;
   try { inputChanged = evidenceDigest(args.files.map(file => captureSource(dir, file, 1, 1))) !== evidenceDigest(inputs); } catch {}
-  const observation = { id: randomUUID(), kind: 'execution', started_at: started,
-    ...(args.supersedes ? { supersedes: args.supersedes } : {}),
+  const observation = { ...pending, started_at: started,
     duration_ms: Date.now() - startedMs, argv: args.argv, cwd: '.', inputs,
     inputs_sha256: evidenceDigest(inputs), input_changed: inputChanged,
     exit_code: child.code, signal: child.signal, failure: child.failure,

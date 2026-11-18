@@ -951,7 +951,9 @@ function compile(inputPath, outputPath, dir, opts = {}) {
 	// input statuses). Passages live beside claims.json.
 	const passages = auditPassages(claims, path.dirname(path.resolve(claimsPath)));
 	certificate.passages_hash = passages.fingerprint;
-	const health = evidenceHealth(claimsData, path.dirname(path.resolve(claimsPath)));
+	let health = evidenceHealth(claimsData, path.dirname(path.resolve(claimsPath)));
+	// Freshness binds the health of the input ledger. The emitted projection below
+	// must also account for premise statuses changed by compiler auto-resolution.
 	certificate.evidence_health_hash = healthFingerprint(health);
 	let conflictSupport = [];
 
@@ -991,6 +993,8 @@ function compile(inputPath, outputPath, dir, opts = {}) {
 		resolvedClaims = claims.filter(
 			(c) => c.status === "active" || c.status === "resolved",
 		);
+		if (conflictGraph.resolved.length || conflictGraph.unresolved.length)
+			health = evidenceHealth(claimsData, path.dirname(path.resolve(claimsPath)));
 	}
 
 	readiness.blockers.push(...health.errors, ...health.needs_reverification.map(item => ({

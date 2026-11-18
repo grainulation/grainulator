@@ -22,6 +22,8 @@ transitive paths as `E_REVERIFICATION_REQUIRED`. It does not mark every downstre
 claim superseded, rebind conclusions to the replacement or erase their evidence.
 After checking a conclusion, explicitly replace its necessary-premise links with
 the current versions and record why. This can invalidate its own dependents.
+Premises superseded by evidence-tier conflict resolution during compilation
+also invalidate their dependent conclusions in that same compilation.
 
 Witness/challenge/conflict links remain distinct from necessary premises. Unknown
 IDs, self-links, duplicate links and cycles are rejected. Correctness still
@@ -51,6 +53,8 @@ timeout/output limit and process-group cleanup on macOS/Linux. Native Windows
 uses direct-child termination. Compile, status, report and MCP inspection never
 run a command. Execution is an explicit CLI action; there is no arbitrary-command
 execution MCP tool.
+Invalid observation replacements, exhausted observation capacity and invalid
+premise graphs are rejected before launching a command.
 
 An observation that changes, disappears or fails makes the compiler block its
 claim and dependent conclusions. To recheck the same source/command binding,
