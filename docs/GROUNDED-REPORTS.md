@@ -33,7 +33,7 @@ review their research content before sharing them.
 
 ```sh
 node bin/grainulator.js report check --dir /path/to/sprint \
-  --packet output/packet.json --draft output/draft.md --json
+  --packet output/packet.json --draft output/draft.md [--strict] --json
 ```
 
 `consistent` means the packet matches the current ledger and passage observations.
@@ -42,13 +42,28 @@ recorded source locator, an intact passage, and a quotation found in that passag
 Unknown claims, unresolved references, a draft with no claim markers, tampered
 packets and stale packets fail the check (exit 2). Input/usage errors exit 1.
 
-The checker inspects explicit markers only. It cannot detect every uncited
-sentence, determine whether prose correctly interprets a passage, or certify
-that an external source exists. A packet can contain evidence gaps unrelated to
-the draft's markers; they remain in `gaps` even when the structural check passes.
-All relations retain `semantic_support: not_evaluated`, including existing
-witness relationship labels. A recorded `full_support` label is not promoted to
-independent proof.
+In addition to structural `issues`, `report check` returns heuristic grounding
+`warnings` (`warnings: [...]`, promoted into `issues` and exiting 2 when
+`--strict` or `{ strict: true }` is passed):
+
+- `omitted_active_risk_or_conflict`: flags active `risk` or `constraint` claims,
+  unresolved `contradicts`/`challenge` relations (`challenged_claim` or
+  `witnessed_claim` with `relationship: "contradicts"`), and partially cited
+  `conflicts_with` pairs omitted from `draft.md`'s `[[claim:...]]` citations.
+- `uncited_checkworthy_sentence`: scans `draft.md` prose sentences (skipping
+  headings, code fences, inline code, table separators, and URLs) for
+  quantitative/temporal/empirical assertions lacking a `[[claim:...]]` marker.
+- `secondary_citation_for_strong_tier`: flags active `documented` or `tested`
+  claims whose `source_role` is `"secondary_citation"` without an active
+  corroborating `"primary_evidence"` witness.
+
+The checker inspects explicit markers and heuristic prose/provenance signals
+only. It cannot detect every uncited sentence, determine whether prose correctly
+interprets a passage, or certify that an external source exists. A packet can
+contain evidence gaps unrelated to the draft's markers; they remain in `gaps`
+even when the structural check passes. All relations retain
+`semantic_support: not_evaluated`, including existing witness relationship
+labels. A recorded `full_support` label is not promoted to independent proof.
 
 The packet digest identifies its bytes; it is not a signature. Rebuilding and
 comparing against the sprint catches changed source data and recomputed packet
@@ -57,13 +72,15 @@ metadata, including explicit revision/version fields; they do not merge aliases
 such as a DOI and an arXiv URL. Multiple claims and passages can reference one
 source without losing their separate relationships.
 
-Witness and challenge targets are relation fields, not part of the source's
-identity. `ledger_sha256` hashes the exact bounded file bytes, including an
-optional UTF-8 BOM; parsing does not rewrite the ledger. For an unreadable or
-corrupt passage, the integrity gap remains explicit. When its bytes were read,
-the packet retains their `observed_sha256`, so replacing corrupt bytes with
-different corrupt bytes makes a frozen packet stale. If no bytes can be read,
-only the read failure can be recorded; their content cannot be fingerprinted.
+Witness targets (`--witnessed-claim`), challenge targets (`--challenged-claim`),
+relationships (`--relationship`), and citation roles (`--source-role`) are
+relation fields on `relations[]`, not part of the source's locator identity.
+`ledger_sha256` hashes the exact bounded file bytes, including an optional UTF-8
+BOM; parsing does not rewrite the ledger. For an unreadable or corrupt passage,
+the integrity gap remains explicit. When its bytes were read, the packet retains
+their `observed_sha256`, so replacing corrupt bytes with different corrupt bytes
+makes a frozen packet stale. If no bytes can be read, only the read failure can
+be recorded; their content cannot be fingerprinted.
 
 ## Scope of this local draft
 

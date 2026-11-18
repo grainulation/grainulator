@@ -372,6 +372,12 @@ const TOOLS = [
 							description:
 								"How the implementation, rule, or conclusion diverges from the cited source or preregistration.",
 						},
+						source_role: {
+							type: "string",
+							enum: ["primary_evidence", "secondary_citation"],
+							description:
+								"Whether the cited source is primary evidence or a secondary citation",
+						},
 						quote: {
 							type: "string",
 							description:

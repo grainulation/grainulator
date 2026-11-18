@@ -6,7 +6,14 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { createHash } from "node:crypto";
-import { buildReportPacket, writeReportPacket, checkReportPacket } from "../../lib/report-packet.js";
+import {
+	buildReportPacket,
+	writeReportPacket,
+	checkReportPacket,
+	checkLimitationAndConflictSurvival,
+	checkUncitedFactualAssertions,
+	checkSourceProvenance,
+} from "../../lib/report-packet.js";
 import { storePassage } from "../../packages/evidence/lib/passages.js";
 import { loadClaims } from "../../packages/evidence/lib/load-claims.js";
 import { addClaim } from "../../packages/evidence/lib/claims-ops.js";
@@ -191,4 +198,249 @@ test("ledger digest pins bounded disk bytes independently of BOM decoding and ne
 	fs.writeFileSync(ledgerFile, original);
 	assert.ok(checkReportPacket(dir, "output/bom.json").issues.some((issue) => issue.code === "packet_stale_or_changed"));
 	assert.deepEqual(fs.readFileSync(ledgerFile), original);
+});
+
+test("CLI add supports --challenged-claim and --source-role while preserving shared source identity", (t) => {
+	const { dir, passageDigest } = fixture(t);
+	const add = (...args) => spawnSync(process.execPath, [cli, "add", "--dir", dir, ...args], { encoding: "utf8" });
+
+	const challengeRes = add(
+		"--id", "x010",
+		"--type", "feedback",
+		"--topic", "study",
+		"--content", "Small sample size challenges generalizability.",
+		"--evidence", "documented",
+		"--source-origin", "experiment",
+		"--source-artifact", "results/study.json",
+		"--challenged-claim", "r001",
+		"--relationship", "contradicts",
+		"--source-role", "primary_evidence",
+		"--passage-sha256", passageDigest,
+		"--quote", "Its small size limits generalization.",
+		"--json",
+	);
+	assert.equal(challengeRes.status, 0, challengeRes.stderr);
+	const parsed = JSON.parse(challengeRes.stdout);
+	assert.equal(parsed.status, "ok");
+	assert.equal(parsed.claim.source.challenged_claim, "r001");
+	assert.equal(parsed.claim.source.relationship, "contradicts");
+	assert.equal(parsed.claim.source.source_role, "primary_evidence");
+
+	const invalidRole = add(
+		"--id", "x011",
+		"--type", "factual",
+		"--topic", "study",
+		"--content", "Invalid source role must fail.",
+		"--source-origin", "experiment",
+		"--source-role", "invented_role",
+		"--json",
+	);
+	assert.equal(invalidRole.status, 1);
+	assert.match(JSON.parse(invalidRole.stdout).message, /source\.source_role/);
+
+	const packet = buildReportPacket(dir);
+	const rel = packet.relations.find((r) => r.claim_id === "x010");
+	assert.equal(rel.challenged_claim, "r001");
+	assert.equal(rel.recorded_relationship, "contradicts");
+	assert.equal(rel.source_role, "primary_evidence");
+	assert.equal(packet.sources.find((s) => s.id === rel.source_id).metadata.source_role, undefined);
+});
+
+test("grounding guard passes clean draft in strict mode and flags omitted risks, constraints, challenges, and conflicts", (t) => {
+	const { dir, ledger, save, passageDigest } = fixture(t);
+	const baseSource = ledger.claims[0].source;
+	ledger.claims[1].type = "risk";
+	ledger.claims.push(
+		{
+			...ledger.claims[0],
+			id: "r003",
+			type: "constraint",
+			content: "Study is constrained to 12 samples.",
+			source: { ...baseSource, source_role: "primary_evidence" },
+		},
+		{
+			...ledger.claims[0],
+			id: "x001",
+			type: "feedback",
+			content: "Small sample size contradicts broad generalization.",
+			source: {
+				...baseSource,
+				quote: "Its small size limits generalization.",
+				challenged_claim: "r001",
+				relationship: "contradicts",
+				source_role: "primary_evidence",
+			},
+		},
+		{
+			...ledger.claims[0],
+			id: "r004",
+			type: "factual",
+			content: "Alternative interpretation conflicts with r001.",
+			conflicts_with: ["r001"],
+		},
+		{
+			...ledger.claims[1],
+			id: "old_risk",
+			type: "risk",
+			status: "superseded",
+		},
+	);
+	ledger.claims[0].conflicts_with = ["r004"];
+	save();
+	writeReportPacket(dir, "output/packet.json");
+
+	const cleanDraft = [
+		"# Evaluation Summary (2026-11-17, 12 samples)",
+		"",
+		"The experiment used 12 samples [[claim:r001]], though an alternative interpretation conflicts with this [[claim:r004]] and small sample size challenges broad claims [[claim:x001]].",
+		"",
+		"## Limitations",
+		"- Generalizability is limited [[claim:r002]].",
+		"- The protocol is constrained to 12 samples [[claim:r003]].",
+		"",
+		"```sh",
+		"# Ignored code fence: 99% benchmarks show 2026-11-17 improvement",
+		"echo 100ms",
+		"```",
+		"",
+		"Inline code like `85%` and links [the study](https://example.com/2026-11-17) remain quiet.",
+	].join("\n");
+	fs.writeFileSync(path.join(dir, "output/clean.md"), cleanDraft);
+
+	const cleanCheck = checkReportPacket(dir, "output/packet.json", "output/clean.md", { strict: true });
+	assert.equal(cleanCheck.passed, true, JSON.stringify(cleanCheck, null, 2));
+	assert.equal(cleanCheck.warnings.length, 0);
+	assert.equal(cleanCheck.issues.length, 0);
+
+	fs.writeFileSync(path.join(dir, "output/partial.md"), "The experiment used 12 samples [[claim:r001]].\n");
+	const defaultCheck = checkReportPacket(dir, "output/packet.json", "output/partial.md");
+	assert.equal(defaultCheck.passed, true, "warnings do not break default structural check");
+	assert.equal(defaultCheck.issues.length, 0);
+	const omittedIds = new Set(
+		defaultCheck.warnings
+			.filter((w) => w.code === "omitted_active_risk_or_conflict")
+			.map((w) => w.claim_id),
+	);
+	assert.deepEqual(omittedIds, new Set(["r002", "r003", "x001", "r004"]));
+	assert.equal(omittedIds.has("old_risk"), false);
+
+	const strictCheck = checkReportPacket(dir, "output/packet.json", "output/partial.md", { strict: true });
+	assert.equal(strictCheck.passed, false);
+	assert.equal(strictCheck.strict, true);
+	assert.deepEqual(strictCheck.issues, strictCheck.warnings);
+});
+
+test("uncited factual assertion pre-check catches check-worthy prose while skipping headings, code, URLs, and cited sentences", () => {
+	const draft = [
+		"# 2026 Benchmarks Show 99% Gains",
+		"",
+		"| Metric | Value |",
+		"| --- | --- |",
+		"",
+		"Our pipeline outperforms baselines and reduces latency by 42%.",
+		"Measurements confirm this held on 2026-11-17 across 50 runs.",
+		"The system uses `99%` memory efficiency, e.g. via streaming buffers at https://example.com/2026-11-17.",
+		"Properly grounded claim achieved 94.2% working links. [[claim:r001]]",
+		"- List item without citation proved 3x faster throughput.",
+		"",
+		"~~~python",
+		"benchmarks_show = '100% pass in 2026'",
+		"~~~",
+	].join("\n");
+
+	const issues = checkUncitedFactualAssertions(draft);
+	assert.equal(issues.length, 3, JSON.stringify(issues, null, 2));
+	assert.equal(issues[0].code, "uncited_checkworthy_sentence");
+	assert.equal(issues[0].line, 6);
+	assert.ok(issues[0].signals.includes("quantitative"));
+	assert.ok(issues[0].signals.includes("empirical_claim_verb"));
+	assert.equal(issues[1].line, 7);
+	assert.ok(issues[1].signals.includes("temporal_or_date"));
+	assert.equal(issues[2].line, 10);
+});
+
+test("source provenance check flags secondary_citation on documented/tested claims unless corroborated by primary witness", (t) => {
+	const { dir, ledger, save, passageDigest } = fixture(t);
+	const secondaryPassage = "As reviewed in Smith et al., the experiment used 12 samples.";
+	const secondaryDigest = storePassage(dir, secondaryPassage);
+
+	ledger.claims.push(
+		{
+			...ledger.claims[0],
+			id: "r010",
+			evidence: "documented",
+			content: "Secondary review claims 12 samples.",
+			source: {
+				origin: "review",
+				artifact: "papers/survey.pdf",
+				revision: "v1",
+				passage_sha256: secondaryDigest,
+				quote: secondaryPassage,
+				source_role: "secondary_citation",
+			},
+		},
+		{
+			...ledger.claims[0],
+			id: "r011",
+			evidence: "tested",
+			content: "Tested claim backed by secondary review AND primary witness.",
+			source: {
+				origin: "review",
+				artifact: "papers/survey.pdf",
+				revision: "v1",
+				passage_sha256: secondaryDigest,
+				quote: secondaryPassage,
+				source_role: "secondary_citation",
+			},
+		},
+		{
+			...ledger.claims[0],
+			id: "w011",
+			evidence: "tested",
+			content: "Primary witness for r011.",
+			source: {
+				...ledger.claims[0].source,
+				passage_sha256: passageDigest,
+				witnessed_claim: "r011",
+				relationship: "full_support",
+				source_role: "primary_evidence",
+			},
+		},
+		{
+			...ledger.claims[0],
+			id: "r012",
+			evidence: "web",
+			content: "Web-tier secondary citation is allowed without strong-tier warning.",
+			source: {
+				origin: "blog",
+				artifact: "https://example.com/post",
+				passage_sha256: secondaryDigest,
+				quote: secondaryPassage,
+				source_role: "secondary_citation",
+			},
+		},
+	);
+	save();
+	writeReportPacket(dir, "output/packet.json");
+
+	const packet = buildReportPacket(dir);
+	const provenanceWarnings = checkSourceProvenance(packet);
+	assert.equal(provenanceWarnings.length, 1, JSON.stringify(provenanceWarnings, null, 2));
+	assert.equal(provenanceWarnings[0].code, "secondary_citation_for_strong_tier");
+	assert.equal(provenanceWarnings[0].claim_id, "r010");
+
+	const run = (...args) => spawnSync(process.execPath, [cli, "report", ...args], { encoding: "utf8" });
+	const nonStrict = run("check", "--dir", dir, "--packet", "output/packet.json", "--json");
+	assert.equal(nonStrict.status, 0, nonStrict.stderr);
+	const nonStrictParsed = JSON.parse(nonStrict.stdout);
+	assert.equal(nonStrictParsed.passed, true);
+	assert.equal(nonStrictParsed.warnings.length, 1);
+	assert.equal(nonStrictParsed.warnings[0].code, "secondary_citation_for_strong_tier");
+
+	const strictRun = run("check", "--dir", dir, "--packet", "output/packet.json", "--strict", "--json");
+	assert.equal(strictRun.status, 2, strictRun.stderr);
+	const strictParsed = JSON.parse(strictRun.stdout);
+	assert.equal(strictParsed.passed, false);
+	assert.equal(strictParsed.strict, true);
+	assert.equal(strictParsed.issues[0].code, "secondary_citation_for_strong_tier");
 });

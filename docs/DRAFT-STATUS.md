@@ -11,17 +11,17 @@ See [grounded reports](GROUNDED-REPORTS.md) for commands, reference syntax, stat
 ```sh
 node bin/grainulator.js report packet --dir /path/to/sprint --out output/packet.json
 node bin/grainulator.js report check --dir /path/to/sprint --packet output/packet.json
-node bin/grainulator.js report check --dir /path/to/sprint --packet output/packet.json --draft output/draft.md --json
+node bin/grainulator.js report check --dir /path/to/sprint --packet output/packet.json --draft output/draft.md [--strict] --json
 ```
 
-Recorded source identity, local byte integrity, quote presence and semantic support are separate concepts. This draft reports semantic support as unevaluated. A successful structural check is not a factual-verification certificate, proof of source existence, or a check of every uncited sentence.
+Recorded source identity, local byte integrity, quote presence and semantic support are separate concepts. This draft reports semantic support as unevaluated, while surfacing grounding `warnings` (`omitted_active_risk_or_conflict`, `uncited_checkworthy_sentence`, and `secondary_citation_for_strong_tier`) that become blocking `issues` (exit 2) when `--strict` is set. CLI `grainulator add` also exposes `--challenged-claim` and `--source-role` alongside `--witnessed-claim` and `--relationship`. A successful structural check is not a factual-verification certificate, proof of source existence, or a check of every uncited sentence.
 
 ## Local validation
 
-- `node --test test/dogfood/report-packet.test.mjs`: 11 focused packet/checker tests passed.
+- `node --test test/dogfood/report-packet.test.mjs`: 15 focused packet/checker/grounding-guard tests passed.
 - `npm test`: root plugin, all eight component suites and dogfood integration passed.
 - `node scripts/check-package.mjs`: local package dry run and refreshed build identity passed.
-- An independent CLI fixture accepted a valid claim marker and rejected an invented claim marker with exit 2.
+- Independent CLI fixtures verified valid claim markers, invented claim markers (exit 2), `--challenged-claim` / `--source-role` provenance, and `--strict` grounding-guard enforcement.
 - Validation uses local fixtures and existing passages; no live source resolver or model evaluation is claimed.
 
 ## Remaining backlog
