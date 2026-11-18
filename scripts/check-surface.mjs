@@ -13,6 +13,12 @@ assert.deepEqual(TOOLS.map(t=>t.name).sort(),tools.sort());
 assert.equal(new Set(RESOURCES.map(r=>r.uri)).size,7);assert.ok(RESOURCES.every(r=>r.uri.startsWith('grainulator://')));
 for(const component of ['evidence','memory','exports','analytics','orchestration','shared','runtime']){const metadata=JSON.parse(fs.readFileSync(path.join(root,'packages',component,'package.json')));assert.equal(metadata.name,`@grainulation/grainulator-${component}`);assert.equal(metadata.version,pkg.version);assert.equal(metadata.private,true);assert.equal(metadata.bin,undefined);}
 assert.equal(fs.existsSync(path.join(root,'packages/legacy-cli')),false);
+for (const component of fs.readdirSync(path.join(root,'packages'))) {
+  for (const control of ['.mcp.json','mcp.json','mcp_config.json','.claude-plugin/plugin.json','.codex-plugin/plugin.json']) {
+    assert.equal(fs.existsSync(path.join(root,'packages',component,control)),false,component+': standalone discovery file '+control);
+  }
+}
+
 const [packed]=JSON.parse(execFileSync('npm',['pack','--dry-run','--json','--ignore-scripts'],{cwd:root,encoding:'utf8'}));
 const forbidden=[/@grainulation\/(?:wheat|bean|barn|silo|mill|harvest|orchard)(?=[\s/"'`]|$)/, /(?:wheat|silo|mill):\/\//, /["'`](?:wheat|silo|mill)\/[a-z_-]+["'`]/, /process\.env\.(?:WHEAT_|SILO_|BARN_)/, /["'`]\.(?:wheat|silo|bean|grainulation)(?:["'`/])/, /wheat\.config\.json|orchard\.json|wheat-manifest\.json/];
 const historical=new Set(['CHANGELOG.md']); // exact immutable release history, not executable fallback

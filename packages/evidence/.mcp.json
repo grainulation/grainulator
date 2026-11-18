@@ -1,8 +1,0 @@
-{
-	"mcpServers": {
-		"evidence": {
-			"command": "npx",
-			"args": ["-y", "@grainulation/grainulator-evidence", "mcp"]
-		}
-	}
-}
