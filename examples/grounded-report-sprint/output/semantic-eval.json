@@ -1,0 +1,52 @@
+{
+  "eval_sha256": "dffb759ddf055f8ca0ab6880e19dc20835662430cf771c45cf98208dc9e6831a",
+  "evaluations": [
+    {
+      "claim_id": "c001",
+      "passage_sha256": "dd222e4b741058f861446be29b8cd5246999d0a7b75036e07b0d2764e7d931d0",
+      "reason": "Intact passage quote covers key claim terms and numerical values.",
+      "recorded_relationship": null,
+      "source_id": "src-f1e75a6f8183dc6d0cf67bfcf6ee120e1060efc449be686c6baf31ee438bbe66",
+      "source_role": null,
+      "verdict": "supported"
+    },
+    {
+      "claim_id": "c002",
+      "passage_sha256": "0c7b6595962f498e8690109a76fa35c2e9cd1abdf9d6243705c04a62b004874b",
+      "reason": "Intact passage quote covers key claim terms and numerical values.",
+      "recorded_relationship": null,
+      "source_id": "src-afb3473398f4673f5cf5efc0da0b660580b6ec70b281e875b26d2ec4454085fd",
+      "source_role": "primary",
+      "verdict": "supported"
+    },
+    {
+      "claim_id": "c003",
+      "passage_sha256": "dd222e4b741058f861446be29b8cd5246999d0a7b75036e07b0d2764e7d931d0",
+      "reason": "Intact quote only partially overlaps claim terms or omits numerical values.",
+      "recorded_relationship": null,
+      "source_id": "src-7bb226fc6e698ede08acc87075e9f449a0d7d89f6a9abfe969e60bbb372a9f3b",
+      "source_role": "corroborating",
+      "verdict": "partial"
+    },
+    {
+      "claim_id": "c004",
+      "passage_sha256": "dd222e4b741058f861446be29b8cd5246999d0a7b75036e07b0d2764e7d931d0",
+      "reason": "Intact quote only partially overlaps claim terms or omits numerical values.",
+      "recorded_relationship": null,
+      "source_id": "src-7bb226fc6e698ede08acc87075e9f449a0d7d89f6a9abfe969e60bbb372a9f3b",
+      "source_role": "guidance",
+      "verdict": "partial"
+    }
+  ],
+  "evaluator": "deterministic-offline-v1",
+  "ledger_sha256": "1d17519ff539e25f3e0eeb8920d5dcba76a166b46bf99aa74742d6e319cc593a",
+  "packet_sha256": "fa84e9f7269e8afdedf89a49b06872e12fdb56dca600b6c2205fc8a45202f7d5",
+  "schema": "grainulator.semantic-eval/v1",
+  "summary": {
+    "contradicted": 0,
+    "partial": 2,
+    "supported": 2,
+    "total": 4,
+    "unresolvable": 0
+  }
+}

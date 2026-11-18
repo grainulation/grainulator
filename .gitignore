@@ -35,6 +35,8 @@ dist/
 # Shipped test fixtures; ordinary sprint ledgers stay ignored.
 !packages/exports/test/fixtures/claims.json
 !packages/runtime/test/fixtures/**/.bean/claims.json
+!examples/grounded-report-sprint/claims.json
+!examples/grounded-report-sprint/output/
 
 # Local npm pack artifacts.
 *.tgz
