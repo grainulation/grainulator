@@ -23,7 +23,7 @@ claude plugin install grainulator --marketplace grainulation/grainulator
 
 This adds the Grainulation marketplace and installs the plugin in one step. It is safe to run again. Then start a new Claude Code session.
 
-The install may print `1 userConfig option not yet set`. That option controls background tips and is optional. To change it, run `/plugin configure grainulator@grainulation-marketplace` in Claude Code.
+The optional `tips_level` setting controls post-mutation next-action hints: `on` shows next steps, `quiet` shows compiler blockers only, and `off` disables the hook. Configure it with `/plugin configure grainulator@grainulation-marketplace` in Claude Code.
 
 ## Codex
 
@@ -69,7 +69,7 @@ Any agent that supports MCP (Cursor, opencode, Claude Desktop and others) can ru
 }
 ```
 
-The first start downloads Grainulator and takes a few seconds; later starts are faster. Change `#v3.0.0` to move to a newer release.
+First install an identified [source checkout or archive](INSTALLATION.md), then point this command at that copy. This literal Node command uses existing local files; it does not download Grainulator.
 
 MCP gives your agent Grainulator's tools. The research skills, research agent and hooks come with the Claude Code, Codex and Antigravity plugins.
 
@@ -90,7 +90,7 @@ A working install answers with Grainulator's status. In a project without resear
 | Claude Code | `claude plugin update grainulator@grainulation-marketplace` | `claude plugin uninstall grainulator@grainulation-marketplace` |
 | Codex | `codex plugin marketplace upgrade grainulation-marketplace`, then `codex plugin add grainulator@grainulation-marketplace` | `codex plugin remove grainulator@grainulation-marketplace` |
 | Antigravity | Run the install command again | `agy plugin uninstall grainulator` |
-| Other agents | Change the `#v3.0.0` tag in your MCP settings | Delete the `grainulator` server from your MCP settings |
+| Other agents | Update the installation named by the command; rebind its absolute path if it changes | Delete the `grainulator` server from your MCP settings |
 
 Restart your agent after updating.
 

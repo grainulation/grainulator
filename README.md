@@ -64,7 +64,7 @@ To use Grainulator inside your agent, follow the **[Claude Code or Codex setup g
 
 The local research playground remains available through `node bin/grainulator.js preview`. It runs models using a provider account you configure locally.
 
-> **v3 candidate:** use the reviewed source or an identified local archive while release assets are being verified. No v3 tag, npm publication or public Homebrew installation is claimed. Follow [installation](docs/INSTALLATION.md), [release verification](docs/RELEASING.md), [configuration](docs/CONFIGURATION.md) and [data retention](docs/UNINSTALL.md).
+> **Grainulator 3:** one CLI/plugin with a unified configuration and separately verified native runtime assets. Follow [installation](docs/INSTALLATION.md), [upgrading](docs/UPGRADING.md), [configuration](docs/CONFIGURATION.md) and [data retention](docs/UNINSTALL.md). The [shared Homebrew tap](https://github.com/grainulation/homebrew#available-formulae) lists available stable formulas.
 
 ### Other agents: connect through MCP
 

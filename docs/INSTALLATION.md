@@ -4,16 +4,16 @@ For Claude Code or Codex, start with [agent setup](AGENT-SETUP.md). The steps be
 
 Already using 1.x? Start with the [upgrade checklist](UPGRADING.md). Updating source or a marketplace catalog does not update an installed plugin, its host scope, or a running conversation.
 
-## Build or inspect the v3 candidate
+## Install from tagged source
 
-Use Node.js 24 or later. Use the reviewed PR source or an exact identified candidate archive until release publication is separately authorized. Do not assume a v3 tag, public asset, npm package or Homebrew stable channel exists. The root package remains private. The [setup page](https://grainulator.dev/install.html) shows the same source and archive steps.
+Use Node.js 24 or later. [GitHub releases](https://github.com/grainulation/grainulator/releases) distribute the portable CLI/plugin archive, separate native runtime archives and offline converter. The npm package and component workspaces remain private; do not use the npm registry to select this release. For Homebrew, check the [shared tap](https://github.com/grainulation/homebrew#available-formulae) for currently published formulas.
 
 Tagged releases and marketplace builds include `build-info.json`, an integrity manifest with an ID such as `release-3.0.0-<hash>`. Doctor checks its shipped-file checksums. A standard `npm pack --ignore-scripts` archive preserves that identity; `pack:local` below creates a distinct development build.
 
 Clone the release tag and install its source dependencies:
 
 ```sh
-git clone https://github.com/grainulation/grainulator.git
+git clone --branch v3.0.0 https://github.com/grainulation/grainulator.git
 cd grainulator
 npm ci --ignore-scripts
 node bin/grainulator.js doctor
@@ -88,9 +88,9 @@ Register the printed command and arguments in the host's MCP configuration for t
 
 Run `node bin/grainulator.js doctor` from the release folder. If you built a local archive, run `doctor` from the installed copy so you check the files you will actually use. Maintainers can run `npm run test:install` for the full package test. See [release checks](READINESS.md) for test results and limits.
 
-## Homebrew candidates and stable registration
+## Homebrew and stable registration
 
-The shared tap is `grainulation/homebrew`; follow the release candidate instructions for the exact tested assets. Public installation is advertised only after release assets and the formula have been published and independently tested. Homebrew owns package upgrades, not workspace enrollment or user memory. Its wrapper uses the tested Node 24 dependency and a stable `opt/bin/grainulator` launcher. `grainulator connect` uses that launcher when invoked through the explicit Homebrew wrapper; other channels can select `--launcher <absolute-path>` themselves. Register the printed literal command in the authorized host scope; connect changes no host settings.
+The shared tap is `grainulation/homebrew`. Its [installation guide](https://github.com/grainulation/homebrew#install) and version table identify the formulas currently available. Use the explicit repository URL when adding this tap. Homebrew owns package upgrades, not workspace enrollment or user memory. Its wrapper uses the tested Node 24 dependency and a stable `opt/bin/grainulator` launcher. `grainulator connect` uses that launcher when invoked through the explicit Homebrew wrapper; other channels can select `--launcher <absolute-path>` themselves. Register the printed literal command in the authorized host scope; connect changes no host settings.
 
 The portable base includes evidence, memory, exports, analytics, orchestration and the JS adapter runner. Native convergence requires a separate verified target asset; ordinary commands do not download it or fall back to Cargo or PATH. Run `grainulator runtime --help` for explicit installation and enrollment.
 

@@ -2,8 +2,8 @@
 
 A v3 release consists of one portable CLI/plugin archive, four separately
 verified native runtime archives, a separately selected offline converter,
-a release manifest and checksums. The normal base archive remains private
-and is not published to the npm registry.
+a release manifest and checksums. The base archive is a public GitHub release asset. The root npm package and
+component workspaces remain private and are not published to the npm registry.
 
 The candidate workflow builds from one immutable Git commit. It exercises the
 same base archive on Node24 and26, runs each native archive on its own OS/CPU

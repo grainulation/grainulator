@@ -10,7 +10,7 @@ Use Node.js 24 or later. Keep the existing installation and research data until 
 
 Run `node /path/to/loaded/grainulator/bin/grainulator.js doctor --json` against the installed or cached copy, rather than a different checkout on your PATH. Compare its version and build identity with the intended release or local archive. Tagged releases and marketplace builds include a committed integrity manifest; local archives created with `npm run pack:local` also have a distinct verifiable identity. A development checkout without a manifest reports its source version and does not claim integrity verification. See [installation](INSTALLATION.md) for identified archives and [full-plugin checks](PLUGIN-TESTING.md) for loaded-cache verification.
 
-The 2.x releases are distributed through [GitHub releases](https://github.com/grainulation/grainulator/releases), not a new npm registry publication. `npm update` against the registry does not select this release.
+The 2.x and 3.x releases are distributed through [GitHub releases](https://github.com/grainulation/grainulator/releases), not a new npm registry publication. `npm update` against the registry does not select this release.
 
 ## 2. Update through your host
 
@@ -38,7 +38,7 @@ Host-managed security wrappers and approved MCP launch commands belong to the ho
 
 ## 3. Reconnect Grainulator
 
-Version 2 uses one server named `grainulator`. If you added a manual connection in 1.x, check it and update it to the new server. The plugin handles its own connection; only change custom tool lists or instructions that refer to old names. Keep unrelated connections as they are.
+Versions 2 and 3 use one server named `grainulator`. If you added a manual connection in 1.x, check it and update it to the new server. The plugin handles its own connection; only change custom tool lists or instructions that refer to old names. Keep unrelated connections as they are.
 
 Claude's plugin registers `grainulator` automatically. For a direct MCP installation, `node /path/to/grainulator/bin/grainulator.js connect --dir /absolute/project` prints the replacement configuration for review. Remove a retired manual registration only after confirming it belongs to this installation and the new connection works. Keep unrelated connectors intact.
 
