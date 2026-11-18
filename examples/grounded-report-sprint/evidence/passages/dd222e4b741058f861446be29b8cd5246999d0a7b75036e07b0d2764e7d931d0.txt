@@ -1,0 +1,1 @@
+The Department of Commerce selects surrogate country datasets based on economic comparability (GNI per capita), production comparability, and data specificity to the investigated merchandise. Under standard practice, broad multi-country baskets may be rejected in favor of narrow sets when broad baskets include distorted prices or non-comparable product classifications.

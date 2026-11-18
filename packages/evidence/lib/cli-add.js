@@ -50,8 +50,10 @@ Options:
   --source-artifact <ref>      Source URL or local evidence reference
   --source-connector <name>    Optional source connector
   --witnessed-claim <id>       Claim this finding corroborates or contradicts
+  --challenged-claim <id>      Claim this finding tests adversarially
   --relationship <kind>        full_support, partial_support or contradicts
   --what-differs <text>        How this implementation or finding diverges from the cited source
+  --source-role <role>         primary_evidence or secondary_citation
   --quote <text>               Exact sentence the finding relies on (needs a passage)
   --passage-file <path>        File holding the paragraph that contains the quote
   --passage-sha256 <hex>       Digest of a passage already stored in this sprint
@@ -83,8 +85,10 @@ Examples:
 	const artifact = parseFlag(args, "--source-artifact");
 	const connector = parseFlag(args, "--source-connector");
 	const witnessed_claim = parseFlag(args, "--witnessed-claim");
+	const challenged_claim = parseFlag(args, "--challenged-claim");
 	const relationship = parseFlag(args, "--relationship");
 	const what_differs = parseFlag(args, "--what-differs");
+	const source_role = parseFlag(args, "--source-role");
 	const quote = parseFlag(args, "--quote");
 	const passage_sha256 = parseFlag(args, "--passage-sha256");
 	const passageFile = parseFlag(args, "--passage-file");
@@ -101,8 +105,10 @@ Examples:
 	const optional = Object.fromEntries(
 		Object.entries({
 			witnessed_claim,
+			challenged_claim,
 			relationship,
 			what_differs,
+			source_role,
 			quote,
 			passage,
 			passage_sha256,

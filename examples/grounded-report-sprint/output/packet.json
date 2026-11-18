@@ -1,0 +1,216 @@
+{
+  "claims": [
+    {
+      "conflicts_with": [],
+      "content": "The Department of Commerce selects surrogate country datasets based on economic comparability, production comparability, and input data specificity.",
+      "evidence": "documented",
+      "id": "c001",
+      "resolved_by": null,
+      "source": {
+        "artifact": "19_usc_1677b.md",
+        "doi": "10.1000/trade-statute-surrogate-input",
+        "origin": "doc_statute",
+        "passage_sha256": "dd222e4b741058f861446be29b8cd5246999d0a7b75036e07b0d2764e7d931d0",
+        "quote": "The Department of Commerce selects surrogate country datasets based on economic comparability (GNI per capita), production comparability, and data specificity to the investigated merchandise.",
+        "revision": "rev2026"
+      },
+      "status": "active",
+      "tags": [
+        "doc",
+        "surrogate-country",
+        "statute"
+      ],
+      "timestamp": "2026-11-17T20:00:00Z",
+      "topic": "statutory_criteria",
+      "type": "factual"
+    },
+    {
+      "conflicts_with": [],
+      "content": "In Determination A-570-967, the Department of Commerce rejected a broad 12-country world market average input dataset in favor of a specific 2-country dataset.",
+      "evidence": "tested",
+      "id": "c002",
+      "resolved_by": null,
+      "source": {
+        "artifact": "determinations/A-570-967-final.md",
+        "origin": "ita_determination",
+        "passage_sha256": "0c7b6595962f498e8690109a76fa35c2e9cd1abdf9d6243705c04a62b004874b",
+        "quote": "In Final Determination A-570-967, the Department rejected a broad 12-country world market average input dataset after respondents demonstrated that only 2 surrogate countries provided tariff classifications specifically disaggregated to the input grade.",
+        "revision": "r1",
+        "source_role": "primary"
+      },
+      "status": "active",
+      "tags": [
+        "precedent",
+        "A-570-967",
+        "input-valuation"
+      ],
+      "timestamp": "2026-11-17T20:05:00Z",
+      "topic": "precedent_case",
+      "type": "factual"
+    },
+    {
+      "conflicts_with": [],
+      "content": "Selecting narrow surrogate datasets of 1-3 countries introduces elevated single-market price volatility and exchange rate distortion risk.",
+      "evidence": "documented",
+      "id": "c003",
+      "resolved_by": null,
+      "source": {
+        "artifact": "19_usc_1677b.md",
+        "origin": "doc_statute",
+        "passage_sha256": "dd222e4b741058f861446be29b8cd5246999d0a7b75036e07b0d2764e7d931d0",
+        "quote": "Under standard practice, broad multi-country baskets may be rejected in favor of narrow sets when broad baskets include distorted prices or non-comparable product classifications.",
+        "revision": "rev2026",
+        "source_role": "corroborating"
+      },
+      "status": "active",
+      "tags": [
+        "risk",
+        "volatility",
+        "methodology"
+      ],
+      "timestamp": "2026-11-17T20:10:00Z",
+      "topic": "volatility_risk",
+      "type": "risk"
+    },
+    {
+      "conflicts_with": [],
+      "content": "Enforce secondary citation cross-checks and strict grounding validation when fewer than three surrogate countries represent the input value basket.",
+      "evidence": "tested",
+      "id": "c004",
+      "resolved_by": null,
+      "source": {
+        "artifact": "19_usc_1677b.md",
+        "origin": "doc_statute",
+        "passage_sha256": "dd222e4b741058f861446be29b8cd5246999d0a7b75036e07b0d2764e7d931d0",
+        "quote": "Under standard practice, broad multi-country baskets may be rejected in favor of narrow sets when broad baskets include distorted prices or non-comparable product classifications.",
+        "revision": "rev2026",
+        "source_role": "guidance"
+      },
+      "status": "active",
+      "tags": [
+        "recommendation",
+        "grounding",
+        "verification"
+      ],
+      "timestamp": "2026-11-17T20:15:00Z",
+      "topic": "mitigation_policy",
+      "type": "recommendation"
+    }
+  ],
+  "gaps": [],
+  "historical_claims": [],
+  "ledger_sha256": "1d17519ff539e25f3e0eeb8920d5dcba76a166b46bf99aa74742d6e319cc593a",
+  "meta": {
+    "phase": "synthesis",
+    "question": "How does the Department of Commerce select surrogate country datasets for foreign input valuation in trade investigations?"
+  },
+  "packet_sha256": "fa84e9f7269e8afdedf89a49b06872e12fdb56dca600b6c2205fc8a45202f7d5",
+  "passages": [
+    {
+      "integrity": "intact",
+      "sha256": "0c7b6595962f498e8690109a76fa35c2e9cd1abdf9d6243705c04a62b004874b",
+      "text": "In Final Determination A-570-967, the Department rejected a broad 12-country world market average input dataset after respondents demonstrated that only 2 surrogate countries provided tariff classifications specifically disaggregated to the input grade. While narrow 1-3 country selections risk higher price volatility, specificity and comparability took statutory precedence."
+    },
+    {
+      "integrity": "intact",
+      "sha256": "dd222e4b741058f861446be29b8cd5246999d0a7b75036e07b0d2764e7d931d0",
+      "text": "The Department of Commerce selects surrogate country datasets based on economic comparability (GNI per capita), production comparability, and data specificity to the investigated merchandise. Under standard practice, broad multi-country baskets may be rejected in favor of narrow sets when broad baskets include distorted prices or non-comparable product classifications."
+    }
+  ],
+  "relations": [
+    {
+      "challenged_claim": null,
+      "claim_id": "c001",
+      "passage_integrity": "intact",
+      "passage_sha256": "dd222e4b741058f861446be29b8cd5246999d0a7b75036e07b0d2764e7d931d0",
+      "quote": "The Department of Commerce selects surrogate country datasets based on economic comparability (GNI per capita), production comparability, and data specificity to the investigated merchandise.",
+      "quote_integrity": "present",
+      "recorded_relationship": null,
+      "semantic_support": "not_evaluated",
+      "source_id": "src-f1e75a6f8183dc6d0cf67bfcf6ee120e1060efc449be686c6baf31ee438bbe66",
+      "source_role": null,
+      "witnessed_claim": null
+    },
+    {
+      "challenged_claim": null,
+      "claim_id": "c002",
+      "passage_integrity": "intact",
+      "passage_sha256": "0c7b6595962f498e8690109a76fa35c2e9cd1abdf9d6243705c04a62b004874b",
+      "quote": "In Final Determination A-570-967, the Department rejected a broad 12-country world market average input dataset after respondents demonstrated that only 2 surrogate countries provided tariff classifications specifically disaggregated to the input grade.",
+      "quote_integrity": "present",
+      "recorded_relationship": null,
+      "semantic_support": "not_evaluated",
+      "source_id": "src-afb3473398f4673f5cf5efc0da0b660580b6ec70b281e875b26d2ec4454085fd",
+      "source_role": "primary",
+      "witnessed_claim": null
+    },
+    {
+      "challenged_claim": null,
+      "claim_id": "c003",
+      "passage_integrity": "intact",
+      "passage_sha256": "dd222e4b741058f861446be29b8cd5246999d0a7b75036e07b0d2764e7d931d0",
+      "quote": "Under standard practice, broad multi-country baskets may be rejected in favor of narrow sets when broad baskets include distorted prices or non-comparable product classifications.",
+      "quote_integrity": "present",
+      "recorded_relationship": null,
+      "semantic_support": "not_evaluated",
+      "source_id": "src-7bb226fc6e698ede08acc87075e9f449a0d7d89f6a9abfe969e60bbb372a9f3b",
+      "source_role": "corroborating",
+      "witnessed_claim": null
+    },
+    {
+      "challenged_claim": null,
+      "claim_id": "c004",
+      "passage_integrity": "intact",
+      "passage_sha256": "dd222e4b741058f861446be29b8cd5246999d0a7b75036e07b0d2764e7d931d0",
+      "quote": "Under standard practice, broad multi-country baskets may be rejected in favor of narrow sets when broad baskets include distorted prices or non-comparable product classifications.",
+      "quote_integrity": "present",
+      "recorded_relationship": null,
+      "semantic_support": "not_evaluated",
+      "source_id": "src-7bb226fc6e698ede08acc87075e9f449a0d7d89f6a9abfe969e60bbb372a9f3b",
+      "source_role": "guidance",
+      "witnessed_claim": null
+    }
+  ],
+  "schema": "grainulator.report-packet/v1",
+  "selection": {
+    "active_records": 4,
+    "status": "active",
+    "total_records": 4
+  },
+  "sources": [
+    {
+      "canonical_ids": [],
+      "id": "src-7bb226fc6e698ede08acc87075e9f449a0d7d89f6a9abfe969e60bbb372a9f3b",
+      "identity": "recorded_locator_not_independently_resolved",
+      "metadata": {
+        "artifact": "19_usc_1677b.md",
+        "origin": "doc_statute",
+        "revision": "rev2026"
+      }
+    },
+    {
+      "canonical_ids": [],
+      "id": "src-afb3473398f4673f5cf5efc0da0b660580b6ec70b281e875b26d2ec4454085fd",
+      "identity": "recorded_locator_not_independently_resolved",
+      "metadata": {
+        "artifact": "determinations/A-570-967-final.md",
+        "origin": "ita_determination",
+        "revision": "r1"
+      }
+    },
+    {
+      "canonical_ids": [
+        "doi:10.1000/trade-statute-surrogate-input"
+      ],
+      "id": "src-f1e75a6f8183dc6d0cf67bfcf6ee120e1060efc449be686c6baf31ee438bbe66",
+      "identity": "recorded_locator_not_independently_resolved",
+      "metadata": {
+        "artifact": "19_usc_1677b.md",
+        "doi": "10.1000/trade-statute-surrogate-input",
+        "origin": "doc_statute",
+        "revision": "rev2026"
+      }
+    }
+  ],
+  "verification": "Recorded identity and local byte integrity only; semantic support requires independent review."
+}

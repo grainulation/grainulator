@@ -203,6 +203,18 @@ function addClaimUnlocked(dir, args) {
 				message:
 					"source.relationship must be full_support, partial_support, or contradicts.",
 			};
+		if (
+			args.source.source_role !== undefined &&
+			args.source.source_role !== null &&
+			!["primary_evidence", "secondary_citation"].includes(
+				args.source.source_role,
+			)
+		)
+			return {
+				status: "error",
+				message:
+					"source.source_role must be primary_evidence or secondary_citation.",
+			};
 	}
 
 	const { data, errors: loadErrors } = loadClaims(dir);
