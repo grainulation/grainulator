@@ -2,7 +2,7 @@
 	"hooks": {
 		"PostToolUse": [
 			{
-				"matcher": "^mcp__(?:.*_)?grainulator__(add_claim|import_claims|resolve)$|^mcp__.*__wheat_(add.claim|resolve)$",
+				"matcher": "^mcp__(?:.*_)?grainulator__(add_claim|import_claims|resolve|premise_links|correct_claim|observe_source|finding_action|acceptance_set)$|^mcp__.*__wheat_(add.claim|resolve)$",
 				"hooks": [
 					{
 						"type": "command",

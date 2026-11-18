@@ -95,6 +95,11 @@ which routes below this machine can run, and ask me before starting any model-ba
 
 ## Put it to work
 
+For necessary-premise links, current source checks, recorded verification runs,
+audit findings and missing acceptance criteria, see
+[evidence maintenance](docs/EVIDENCE-MAINTENANCE.md). Start with
+`node bin/grainulator.js maintain --help`; all operations use an explicit sprint.
+
 With Grainulator connected, give your agent the outcome you need:
 
 > Use Grainulator to investigate whether we should migrate this service. Record the evidence, challenge the assumptions, implement the agreed changes, and verify them. Keep the remaining next steps split into Auto and Manual.

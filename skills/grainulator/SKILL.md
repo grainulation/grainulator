@@ -13,6 +13,8 @@ Create a dedicated sprint directory with `grainulator init --dir <sprint> --ques
 
 Investigate the questions that determine implementation choices. Record constraints, findings, risks and verification results using `grainulator add`. Evidence tiers describe the supporting material: an agent's assertion is not a test result. Compile after a meaningful pass or change of direction; use the feedback to choose the next useful action.
 
+Use `grainulator maintain` (or the matching MCP tools) when conclusions depend on explicit necessary premises, when local source evidence needs a current byte check, or when audit findings need separate verdict/resolution state. A correction does not silently rebind downstream claims. Record actual command verification with the explicit CLI `maintain run`, supplying the relevant input files; read-only inspection never executes commands. Check missing acceptance criteria from existing sprint data and ask only about material returned gaps. See `docs/EVIDENCE-MAINTENANCE.md` for source bounds, receipts and re-verification.
+
 For implementation tasks, inspect repository instructions, preserve existing edits, make the changes, and run relevant checks. Record which checks actually ran and what they established. Continue useful work while optional preferences are pending; do not infer approval for a dependent action.
 
 Use the host's existing model and tools. CLI and MCP access provide evidence operations; they do not themselves give permission to intercept tool calls or enforce host completion. For a managed external command loop, consult `docs/ADAPTERS.md` in the checkout. Ordinary host use does not require that runner.

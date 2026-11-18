@@ -112,7 +112,7 @@ function sealPassage(dir, source) {
 
 // --- Operations --------------------------------------------------------------
 
-function addClaimUnlocked(dir, args) {
+function addClaimUnlocked(dir, args, prepared = {}) {
 	const paths = resolvePaths(dir);
 	if (!fs.existsSync(paths.claims)) {
 		return {
@@ -217,7 +217,7 @@ function addClaimUnlocked(dir, args) {
 			};
 	}
 
-	const { data, errors: loadErrors } = loadClaims(dir);
+		const { data, errors: loadErrors } = prepared.data ? { data: prepared.data, errors: [] } : loadClaims(dir);
 	if (!data) {
 		return {
 			status: "error",
@@ -284,7 +284,7 @@ function addClaimUnlocked(dir, args) {
 
 	(data.claims || (data.claims = [])).push(claim);
 	try {
-		atomicWriteJSON(paths.claims, data, 2);
+		if (prepared.persist !== false) atomicWriteJSON(paths.claims, data, 2);
 	} catch (err) {
 		return {
 			status: "error",
@@ -310,6 +310,10 @@ function mutate(dir, args, operation) {
 }
 function addClaim(dir, args) {
 	return mutate(dir, args, addClaimUnlocked);
+}
+// Used by correction transactions: reuse all admission checks, then persist once.
+function prepareClaim(dir, args, data) {
+	return addClaimUnlocked(dir, args, { data, persist: false });
 }
 function resolveClaim(dir, args) {
 	return mutate(dir, args, resolveClaimUnlocked);
@@ -520,6 +524,7 @@ function getStatus(dir) {
 }
 
 export {
+	prepareClaim,
 	addClaim,
 	getStatus,
 	resolveClaim,

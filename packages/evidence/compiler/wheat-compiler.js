@@ -23,6 +23,7 @@ import path from "path";
 
 import { fileURLToPath } from "url";
 import { maybeHint } from "../lib/hints.js";
+import { evidenceHealth, healthFingerprint } from "../lib/evidence-health.js";
 
 // Sprint detection — git-based, no config pointer needed (p013/f001)
 import { detectSprints } from "../../shared/tools/detect-sprints.js";
@@ -711,7 +712,7 @@ function canonicalJSON(obj) {
 }
 
 // ─── Compilation Certificate ─────────────────────────────────────────────────
-export const COMPILER_VERSION = "0.3.0";
+export const COMPILER_VERSION = "0.4.0";
 export function generateCertificate(claimsData, compilerVersion = COMPILER_VERSION) {
 	const hash = crypto
 		.createHash("sha256")
@@ -722,6 +723,10 @@ export function generateCertificate(claimsData, compilerVersion = COMPILER_VERSI
 		input_hash: `sha256:${hash}`,
 		compiler_version: compilerVersion,
 		deterministic: true,
+		// Without external observations this projection is entirely ledger-derived.
+		// Observed files are fingerprinted later by compile with its explicit root.
+		...(Array.isArray(claimsData.claims) && !claimsData.claims.some(claim => claim?.observations?.length)
+			? { evidence_health_hash: healthFingerprint(evidenceHealth(claimsData, '.')) } : {}),
 	};
 }
 
@@ -946,6 +951,8 @@ function compile(inputPath, outputPath, dir, opts = {}) {
 	// input statuses). Passages live beside claims.json.
 	const passages = auditPassages(claims, path.dirname(path.resolve(claimsPath)));
 	certificate.passages_hash = passages.fingerprint;
+	const health = evidenceHealth(claimsData, path.dirname(path.resolve(claimsPath)));
+	certificate.evidence_health_hash = healthFingerprint(health);
 	let conflictSupport = [];
 
 	if (allValidationErrors.length === 0) {
@@ -986,6 +993,10 @@ function compile(inputPath, outputPath, dir, opts = {}) {
 		);
 	}
 
+	readiness.blockers.push(...health.errors, ...health.needs_reverification.map(item => ({
+		code: 'E_REVERIFICATION_REQUIRED', claims: [item.claim_id],
+		message: `Claim ${item.claim_id} relies on changed premises or noncurrent observations. Inspect evidence health and re-verify explicitly.`,
+	})));
 	const phaseSummary = summarizePhases(claims);
 	// Determine overall status
 	const status = readiness.blockers.length > 0 ? "blocked" : "ready";
@@ -1025,6 +1036,7 @@ function compile(inputPath, outputPath, dir, opts = {}) {
 		status,
 		errors: readiness.blockers,
 		warnings: readiness.warnings,
+		evidence_health: health,
 		resolved_claims: resolvedClaims.map((c) => ({
 			id: c.id,
 			type: c.type,
@@ -1038,6 +1050,11 @@ function compile(inputPath, outputPath, dir, opts = {}) {
 			conflicts_with: c.conflicts_with,
 			resolved_by: c.resolved_by,
 			resolution: c.resolution,
+			premises: c.premises,
+			observations: c.observations,
+			audit: c.audit,
+			supersedes: c.supersedes,
+			maintenance_history: c.maintenance_history,
 			tags: c.tags,
 		})),
 		conflict_graph: conflictGraph,

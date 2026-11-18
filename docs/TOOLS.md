@@ -38,6 +38,9 @@ The plugin config starts only this server. Its `deepwiki` tool fetches public re
 |---|---|
 | `init`, `add_claim`, `import_claims`, `compile`, `resolve`, `search`, `status` | Initialize a sprint, record evidence, compile findings, resolve conflicts, and inspect progress |
 | `deepwiki`, `sync_log` | Retrieve public repository documentation and inspect publication history |
+| `evidence_health`, `premise_links`, `correct_claim`, `observe_source` | Recheck current evidence, bind necessary premises, preserve corrections and capture source versions |
+| `findings`, `finding_action`, `duplicate_candidates` | Separate audit verdict/resolution and explicitly reconcile overlap candidates |
+| `acceptance_check`, `acceptance_set` | Identify material missing criteria or record explicit updates without a compulsory interview |
 | `memory_search`, `memory_list`, `memory_store`, `memory_pull` | Find and reuse evidence across sprints |
 | `memory_packs`, `memory_graph` | Browse knowledge packs and relationships |
 | `memory_smart_fetch`, `memory_confluence` | Fetch sources or use a configured Confluence connection |

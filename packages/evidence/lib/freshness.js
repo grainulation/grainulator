@@ -14,6 +14,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { evidenceHealth, healthFingerprint } from './evidence-health.js';
 import {
 	COMPILER_VERSION,
 	generateCertificate,
@@ -42,5 +43,8 @@ export function compilationFreshness(claimsPath, compilation) {
 		certificate.passages_hash ?? passagesFingerprint({ claims: [] }, ".");
 	if (recorded !== current)
 		return { fresh: false, reason: "passages_changed" };
+	const health = evidenceHealth(claimsData, path.dirname(path.resolve(claimsPath)));
+	if (certificate.evidence_health_hash !== healthFingerprint(health))
+		return { fresh: false, reason: 'evidence_observations_changed' };
 	return { fresh: true, reason: "ok" };
 }
