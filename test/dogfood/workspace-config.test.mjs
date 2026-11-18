@@ -129,6 +129,11 @@ test("root execution and connection help never starts work or creates files", (t
 				[cli, command, flag, "--dir", dir],
 				{ cwd: dir, encoding: "utf8", timeout: 5000 },
 			);
+			assert.equal(
+				result.error,
+				undefined,
+				`${command} ${flag} must exit without a timeout`,
+			);
 			assert.equal(result.status, 0, `${command} ${flag}: ${result.stderr}`);
 			assert.match(result.stdout, /grainulator|Usage:/i);
 			assert.deepEqual(

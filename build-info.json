@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "id": "release-3.0.0-504641d02899c4cf",
+  "id": "release-3.0.0-fa0ff4ee8306afef",
   "version": "3.0.0",
-  "source_sha256": "504641d02899c4cfa16b8b5c9e0c071f3f9c5df222acfe19be56bd52c06b70f9",
+  "source_sha256": "fa0ff4ee8306afef76b2ceac131107e8d79cd8093c138f1ad40cb935a475f8ab",
   "files": {
     ".claude-plugin/marketplace.json": "97f35ae47ea7d3bc08cc35e8e357dac60089d1927a504261a53b985404a8172c",
     ".claude-plugin/plugin.json": "36e3a9fb8cd32ca1c2db0e8ad569ac38ca5c7f6987a712b73604238ae9d6307a",
@@ -16,7 +16,7 @@
     "SECURITY.md": "5b6c7babd5053b37d301fd5cc757ac743b875ae5ffd3b993a37fc6c9b6b662b7",
     "agents/grainulator.md": "77f5407cafd0bce3cacc99efdafa83b8d71f2eba69e3ffb183ee9e7473cb7f17",
     "bin/grainulator-plugin.js": "e9f0801d383139bd3c8eaf5e6ccadaa1b7b00fd66c795a128ab00ceaeefc5257",
-    "bin/grainulator.js": "db49ff99554ed53728d5ad5a4574f741448e86f965163fa2bfa4672a89fe5842",
+    "bin/grainulator.js": "25ffc70ac1d36b7fc0972556e3ab9ec2e3fea250ac4b6fa21a9bf71be0a7d7ba",
     "docs/ADAPTERS.md": "651acde2c668b59ea7b521fcefb64b902467eb8171195b4f32eee3b2d993ba79",
     "docs/AGENT-SETUP.md": "7a69e72f7b4b02fcf8561724e315e8b98e2aa9ef9303be9f563ef2527795b56d",
     "docs/BLIND-SPOTS.md": "1e765f56535d3534275c4e9b87d84842d9569569f1c13f03ae86446a8e8cfd34",
