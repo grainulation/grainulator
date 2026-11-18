@@ -34,6 +34,7 @@
 		"hooks/",
 		"lib/",
 		"bin/",
+		"docs/README.md",
 		"docs/ADAPTERS.md",
 		"docs/UPGRADING.md",
 		"docs/SECURITY-REVIEW.md",

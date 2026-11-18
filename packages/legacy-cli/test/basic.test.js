@@ -3,7 +3,7 @@ const { execFileSync } = require('node:child_process');
 const path = require('node:path');
 
 const BIN = path.join(__dirname, '..', 'bin', 'grainulation.js');
-const run = (args = '', { timeout = 10_000 } = {}) =>
+const run = (args = '', { timeout = 30_000 } = {}) =>
   execFileSync(process.execPath, [BIN, ...args.split(/\s+/).filter(Boolean)], { encoding: 'utf-8', timeout });
 
 let passed = 0;

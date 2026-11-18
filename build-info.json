@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "id": "release-2.4.0-b68e0f728c3fcb5c",
+  "id": "release-2.4.0-6b885702f2caa1d2",
   "version": "2.4.0",
-  "source_sha256": "b68e0f728c3fcb5c59c7bb0a46465504d06a702fd71830c650b870b29eb10c75",
+  "source_sha256": "6b885702f2caa1d2f1494668d589df09f9aef387079fda99fb88c5a11f8daba8",
   "files": {
     ".claude-plugin/marketplace.json": "b4764a144fa74344ed6339c6a6686f024cccf2a970e9ad4501c5b6caef4d0137",
     ".claude-plugin/plugin.json": "468e97069d41a1edd1fce9a2ac78ca9a4d1b966027f531c5e7381cf36be24166",
@@ -29,6 +29,7 @@
     "docs/NEXT-ACTIONS.md": "21db01b1808b0bbf309b3a15a77349214f7102d7715b3ff2c831d5b99b610f01",
     "docs/PLUGIN-TESTING.md": "d89b01aa9b6fd05724c36083675c0e718adc3126fd9db77684d1604b45cb489b",
     "docs/READINESS.md": "ed5c1f274f97223dceba1ecc5b87ceaf59b07eb7c97758558c59eb953a9c7b1f",
+    "docs/README.md": "01b192358ccfc99c7cb939b4fe78187de8a1e049803b87f089a8b8e90c73553a",
     "docs/RECOVERY.md": "75d6e8cc3e5a1f1ff86934865550e27425e8401b8f51e92f43f896b24d79116a",
     "docs/RESEARCH.md": "e34d61613111fb20690dbb05eae2e37648b5ee734d20bb489ee99db02b50b712",
     "docs/SECURITY-REVIEW.md": "717ec8ab15f2d05fc5139882234591303358c2ac67739ec106333f2ab76421b7",
@@ -58,7 +59,7 @@
     "lib/workspace-config.js": "91d039249c5639f1682ba7eb2f6aa21ab5a506e642dfd709a27b4ce7167ec2f0",
     "mcp.json": "2c8c556298b8ac787d67b68cae25417af81db0278b79cd71a8de3525259a4837",
     "mcp_config.json": "888de77653e80b71691aaeba63f1f99ddc519cfba6602a73f2a0872ca2762054",
-    "package.json": "f49310ad09fbdff37b27f4070e514e0d377f2e89a993a1ee9ecb2bf123f05f77",
+    "package.json": "152622f8582a55e2c22d9fa407b46cb93a6d18f4b391b135322db97e3f39d18c",
     "packages/analytics/CHANGELOG.md": "486e916c7d1778bb20a14a81efcbfee9c1330f640962fc287b4c5b6a8d426488",
     "packages/analytics/CODE_OF_CONDUCT.md": "90386f504766a8352d15c54f7d31ec87cbb141690fb209b73ba2c7dc24f2ba31",
     "packages/analytics/CONTRIBUTING.md": "22e54ba1721e3323b923bba5fbac07dce707fa47b8516cef2ce1ddb40149c58c",

@@ -15,7 +15,7 @@ Grainulator provides portable evidence, verifiable claims, and grounded reports 
 - [Grounded Reports](GROUNDED-REPORTS.md): Evidence bundles, DSSE in-toto Statement v1 attestation, and Grounding Guard.
 - [Next Actions](NEXT-ACTIONS.md): Automated Plan-Compile-Execute next-step resolution.
 - [Research Workflow](RESEARCH.md): Evidence-backed research sprints and passage tracking.
-- [Recovery](RECOVERY.md): Handling contradictory evidence, stale certificates, and resolution strategies.
+- [Session Recovery](RECOVERY.md): Resuming interrupted research sessions from atomic checkpoints after cancellations or crashes.
 
 ## Architecture & Integration
 
