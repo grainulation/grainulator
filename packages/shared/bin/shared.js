@@ -28,7 +28,7 @@ import { readFileSync } from "node:fs";
 const args = process.argv.slice(2);
 const command = args[0];
 if (command === "serve") {
-  console.error("The component browser dashboard has been retired. Use the CLI or MCP tools; grainulator preview starts the local research playground.");
+  console.error("The component browser dashboard has been retired. Use the CLI or MCP tools.");
   process.exit(1);
 }
 
@@ -52,7 +52,6 @@ const commands = {
   "detect-sprints": "detect-sprints.js",
   "generate-manifest": "generate-manifest.js",
   "build-pdf": "build-pdf.js",
-  "sync-assets": "sync-assets.js",
 };
 
 vlog("startup", `command=${command || "(none)"}`, `cwd=${process.cwd()}`);
@@ -72,7 +71,6 @@ Commands:
   detect-sprints               Find sprint directories in a repo
   generate-manifest            Build .grainulator/evidence/manifest.json topic map
   build-pdf <file>             Convert markdown to PDF via npx md-to-pdf
-  sync-assets --target <dir>   Vendor shared SEO/print primitives into a site/
   help                         Show this help message
 
 Examples:
@@ -80,7 +78,6 @@ Examples:
   grainulator utils detect-sprints --active
   grainulator utils generate-manifest --root /path/to/repo
   grainulator utils build-pdf output/brief.md
-  grainulator utils sync-assets --target ./site
 
 Options:
   --version, -v   Print version and exit

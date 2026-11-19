@@ -59,7 +59,7 @@ function parseArgs(argv) {
   };
 
   if (args[0] === "serve") {
-    console.error("The component browser dashboard has been retired. Use the CLI or MCP tools; grainulator preview starts the local research playground.");
+    console.error("The component browser dashboard has been retired. Use the CLI or MCP tools.");
     process.exit(1);
   }
 

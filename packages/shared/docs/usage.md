@@ -1,6 +1,6 @@
 # shared usage
 
-The shared component provides sprint discovery, report assets, and template-loading utilities. Its browser UI is retired; use the CLI tools below or `grainulator preview` for the research playground.
+The shared component provides sprint discovery, report assets, and template-loading utilities. Browser interfaces and website asset vendoring are retired; use the CLI tools below.
 
 ## Installation
 
@@ -69,27 +69,7 @@ Each template is an HTML file in `templates/`. An optional JSON sidecar provides
 
 All fields are optional. Auto-detected features (CSS grid, charts, cards, slides) are merged from the HTML content regardless of the sidecar.
 
-## Design tokens
-
-Grainulator shared hosts the shared design token stylesheet for the grainulation ecosystem. Import it in any HTML template:
-
-```html
-<link rel="stylesheet" href="grainulation-tokens.css" />
-```
-
-Activate a tool-specific accent scale with the `data-tool` attribute:
-
-```html
-<html data-tool="evidence"></html>
-```
-
-Three-layer token architecture:
-
-1. **Base** -- backgrounds, foregrounds, borders, spacing, type, radii
-2. **Semantic** -- accent (mapped to active tool), status colors, feedback colors
-3. **Tool scales** -- per-tool 5-weight accent ramp (50/200/400/600/800)
-
-Available tool accents: `shared` (rose), `evidence` (amber), `grainulation` (neutral).
+Report templates are self-contained. The product no longer exports a website token stylesheet or site-vendoring utility.
 
 ## Links
 

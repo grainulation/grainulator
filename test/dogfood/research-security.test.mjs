@@ -1,11 +1,8 @@
 import assert from "node:assert/strict";
-import { EventEmitter } from "node:events";
 import http from "node:http";
-import { Readable } from "node:stream";
 import test from "node:test";
-import { handleResearch } from "../../lib/research-http.js";
+import { DEFAULTS } from "../../lib/research/session.js";
 import { completeResearch } from "../../lib/research-provider.js";
-import { DEFAULTS } from "../../public/research/session.js";
 
 async function listen(t, listener) {
 	const server = http.createServer(listener);
@@ -16,21 +13,6 @@ async function listen(t, listener) {
 	});
 	return server;
 }
-function get(server, target, headers = {}) {
-	return new Promise((resolve, reject) => {
-		const req = http.get(
-			{ host: "127.0.0.1", port: server.address().port, path: target, headers },
-			(res) => {
-				let body = "";
-				res.on("data", (chunk) => {
-					body += chunk;
-				});
-				res.on("end", () => resolve({ status: res.statusCode, body }));
-			},
-		);
-		req.on("error", reject);
-	});
-}
 const custom = (server) => ({
 	...DEFAULTS,
 	provider: "custom",
@@ -40,61 +22,22 @@ const custom = (server) => ({
 	retries: 0,
 });
 
-test("malformed cross-origin request targets return 400 and leave the preview handler alive", {
-	timeout: 5000,
-}, async (t) => {
-	const server = await listen(t, async (req, res) => {
-		if (!(await handleResearch(req, res, server.address().port)))
-			res.end("static");
-	});
-	for (const target of ["//[", "http://["]) {
-		const response = await get(server, target, {
-			Origin: "https://untrusted.example",
-		});
-		assert.equal(response.status, 400);
-		assert.match(response.body, /Invalid request URL/);
-	}
-	assert.equal((await get(server, "/api/research/capabilities")).status, 200);
-});
-
-test("research endpoints reject forged hosts and cross-origin or opaque origins", async (t) => {
-	const server = await listen(t, async (req, res) => {
-		await handleResearch(req, res, server.address().port);
-	});
-	for (const headers of [
-		{ Host: `rebound.example:${server.address().port}` },
-		{ Origin: "https://untrusted.example" },
-		{ Origin: "null" },
-		{ Origin: `http://127.0.0.1:${server.address().port + 1}` },
-	])
-		assert.equal(
-			(await get(server, "/api/research/capabilities", headers)).status,
-			403,
-		);
-});
-
-test("oversized research uploads are rejected before provider access and release concurrency slots", async () => {
-	for (let i = 0; i < 6; i++) {
-		const req = Readable.from([Buffer.alloc(768 * 1024 + 1, "x")]);
-		req.url = "/api/research/pass";
-		req.method = "POST";
-		req.headers = {
-			host: "127.0.0.1:4517",
-			origin: "http://127.0.0.1:4517",
-			"content-type": "application/json",
-		};
-		const res = new EventEmitter();
-		let status, body;
-		res.writeHead = (value) => {
-			status = value;
-		};
-		res.end = (value) => {
-			body = value;
-		};
-		await handleResearch(req, res, 4517);
-		assert.equal(status, 400);
-		assert.match(body, /Invalid research request/);
-	}
+test("oversized research input is rejected before provider access", async () => {
+	let calls = 0;
+	await assert.rejects(
+		completeResearch({
+			config: DEFAULTS,
+			system: "s",
+			user: "x".repeat(450001),
+			apiKey: "fixture-key",
+			fetchImpl: async () => {
+				calls++;
+				throw Error("unexpected provider access");
+			},
+		}),
+		/input exceeds/,
+	);
+	assert.equal(calls, 0);
 });
 
 test("authenticated provider redirects are not followed and response errors do not expose credentials", async (t) => {

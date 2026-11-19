@@ -14,7 +14,6 @@ import { atomicWrite } from "../../packages/shared/lib/atomic.js";
 import {
 	appendRegularFile,
 	readRegularFile,
-	tryReadStaticFile,
 	writeNewFile,
 } from "../../packages/shared/lib/fs-safe.cjs";
 import {
@@ -120,24 +119,16 @@ test("new and append operations do not overwrite or follow existing links", (t) 
 	assert.equal(readRegularFile(file, "utf8"), "original appended");
 });
 
-test("static reads enforce real containment, type, and size while supporting internal links", (t) => {
+test("regular reads reject symlinks, nonregular files and oversized content", (t) => {
 	const dir = fixture(t),
-		root = path.join(dir, "public");
-	fs.mkdirSync(root);
-	const file = path.join(root, "ok.txt"),
-		secret = path.join(dir, "private.txt");
+		file = path.join(dir, "data"),
+		link = path.join(dir, "link");
 	fs.writeFileSync(file, "hello");
-	fs.writeFileSync(secret, "secret");
-	fs.symlinkSync(secret, path.join(root, "escape"));
-	fs.symlinkSync(file, path.join(root, "internal"));
-	assert.equal(tryReadStaticFile(root, path.join(root, "escape")), null);
-	assert.equal(
-		tryReadStaticFile(root, path.join(root, "internal")).toString(),
-		"hello",
-	);
-	assert.equal(tryReadStaticFile(root, root), null);
+	fs.symlinkSync(file, link);
+	assert.equal(readRegularFile(file, "utf8"), "hello");
 	assert.throws(() => readRegularFile(file, "utf8", 4), /size/);
-	assert.throws(() => readRegularFile(path.join(root, "internal")));
+	assert.throws(() => readRegularFile(link));
+	assert.throws(() => readRegularFile(dir));
 });
 
 test("transactions do not take an old lock from another writer or run unlocked", (t) => {

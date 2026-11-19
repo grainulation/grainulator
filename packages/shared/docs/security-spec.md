@@ -87,9 +87,8 @@ eventSource.onmessage = (e) => {
 ## 3. Browser origins
 
 Component browser dashboards and their HTTP APIs have been retired. They do not
-listen on legacy component ports or accept `--cors` flags. The local research
-playground has its own loopback origin checks; see the project's
-[deployment and local research guide](../../../docs/DEPLOYMENT.md).
+listen on legacy component ports or accept `--cors` flags. Research uses the portable CLI engine without a browser HTTP API; see
+[distribution boundaries](../../../docs/DEPLOYMENT.md).
 
 ## 4. Path Traversal Prevention
 

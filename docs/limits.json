@@ -9,23 +9,23 @@
 	{
 		"id": "L2",
 		"area": "Real usage acceptance",
-		"limit": "A paid-provider playground run needs a locally configured API key; native host fixture tests do not replace real host tasks",
+		"limit": "Paid-provider CLI research needs locally configured credentials; native host fixture tests do not replace real host tasks",
 		"status": "Deliberately bounded",
 		"mitigation": "Install the local build in the target host and exercise it on a real task before claiming host readiness"
 	},
 	{
 		"id": "L3",
-		"area": "Public execution",
-		"limit": "The static playground configures, imports, and exports only; model execution happens strictly locally",
+		"area": "Execution boundary",
+		"limit": "Model-backed research runs only through explicit local CLI or host operations; no browser app or hosted execution service is bundled",
 		"status": "Deliberately bounded",
-		"mitigation": "Run model-backed tasks through the local CLI, MCP server, or host plugins"
+		"mitigation": "Use headless preparation without provider access, then authorize the intended local provider or host run"
 	},
 	{
 		"id": "L4",
-		"area": "Organization source cleanup",
-		"limit": "Existing bin/, lib/, public/, tests, and legacy CLI metadata remain in grainulation-dogfood alongside the site",
-		"status": "Open",
-		"mitigation": "Retained explicitly for compatibility until website-only checkout separation is scheduled"
+		"area": "Product source separation",
+		"limit": "Website code and unused site assets are excluded; the product retains CLI/MCP, generated reports and documentation branding",
+		"status": "Resolved",
+		"mitigation": "Package absence gates reject public directories and retired web launchers while exercising installed CLI/MCP/report workflows"
 	},
 	{
 		"id": "L5",

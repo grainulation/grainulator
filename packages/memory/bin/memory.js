@@ -51,7 +51,7 @@ if (memoryDirIndex >= 0 && (!memoryDir || memoryDir.startsWith("--"))) {
   console.error("grainulator memory: --memory-dir requires a path"); process.exit(1);
 }
 if (process.argv[2] === "serve") {
-  console.error("The component browser dashboard has been retired. Use the CLI or MCP tools; grainulator preview starts the local research playground.");
+  console.error("The component browser dashboard has been retired. Use the CLI or MCP tools.");
   process.exit(1);
 }
 const store = new Store(memoryDir);

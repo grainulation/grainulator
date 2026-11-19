@@ -117,7 +117,6 @@ test("root execution and connection help never starts work or creates files", (t
 	for (const command of [
 		"demo",
 		"run",
-		"preview",
 		"connect",
 		"doctor",
 		"mcp",
@@ -136,7 +135,6 @@ test("root execution and connection help never starts work or creates files", (t
 			);
 			assert.equal(result.status, 0, `${command} ${flag}: ${result.stderr}`);
 			assert.match(result.stdout, /grainulator|Usage:/i);
-			if (command === "preview") assert.doesNotMatch(result.stdout, /--dir/);
 			assert.deepEqual(
 				fs.readdirSync(dir),
 				[],
@@ -146,18 +144,24 @@ test("root execution and connection help never starts work or creates files", (t
 	}
 });
 
-test("preview rejects an ignored workspace argument before starting its server", (t) => {
+test("retired browser and site-asset commands fail without output files", (t) => {
 	const dir = fs.mkdtempSync(
-		path.join(os.tmpdir(), "grainulator-preview-argv-"),
+		path.join(os.tmpdir(), "grainulator-retired-web-"),
 	);
 	t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
-	const result = spawnSync(process.execPath, [cli, "preview", "--dir", dir], {
-		cwd: dir,
-		encoding: "utf8",
-		timeout: 5000,
-	});
-	assert.equal(result.error, undefined);
-	assert.equal(result.status, 1);
-	assert.match(result.stderr, /Unknown option: --dir/);
-	assert.deepEqual(fs.readdirSync(dir), []);
+	for (const args of [
+		["preview"],
+		["preview", "--help"],
+		["utils", "sync-assets", "--target", dir],
+	]) {
+		const result = spawnSync(process.execPath, [cli, ...args], {
+			cwd: dir,
+			encoding: "utf8",
+			timeout: 5000,
+		});
+		assert.equal(result.error, undefined);
+		assert.equal(result.status, 1);
+		assert.match(result.stderr, /unknown command/i);
+		assert.deepEqual(fs.readdirSync(dir), []);
+	}
 });

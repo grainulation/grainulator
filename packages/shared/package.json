@@ -1,6 +1,6 @@
 {
   "name": "@grainulation/grainulator-shared",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Shared sprint utilities, filesystem safety, and reusable report assets",
   "license": "MIT",
   "author": "grainulation contributors",
@@ -56,17 +56,11 @@
       "import": "./lib/sprints.js",
       "require": "./lib/sprints.cjs"
     },
-    "./tokens": "./public/grainulation-tokens.css",
-    "./status-icons": "./public/status-icons.svg",
-    "./print-css": "./public/grainulation-print.css",
-    "./llms-txt-template": "./public/llms.txt.template",
-    "./sync-assets": "./tools/sync-assets.js",
     "./transaction": "./lib/transaction.js"
   },
   "files": [
     "bin/",
     "lib/",
-    "public/",
     "tools/",
     "templates/",
     "CHANGELOG.md",

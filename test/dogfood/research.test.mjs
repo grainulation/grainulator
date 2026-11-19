@@ -5,12 +5,6 @@ import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { handleResearch } from "../../lib/research-http.js";
-import {
-	completeResearch,
-	environmentKey,
-	providerRequest,
-} from "../../lib/research-provider.js";
 import {
 	cleanConfig,
 	createSession,
@@ -19,7 +13,13 @@ import {
 	importSession,
 	runResearch,
 	sessionBasis,
-} from "../../public/research/session.js";
+} from "../../lib/research/session.js";
+import { researchCLI } from "../../lib/research-cli.js";
+import {
+	completeResearch,
+	environmentKey,
+	providerRequest,
+} from "../../lib/research-provider.js";
 
 const session = () =>
 	createSession({
@@ -326,30 +326,9 @@ test("an exported session runs through the real CLI against a local compatible p
 	]);
 	assert.equal(again.code, 1);
 });
-test("local research proxy rejects cross-origin credential access", async () => {
-	const req = {
-		url: "/api/research/pass",
-		method: "POST",
-		headers: {
-			host: "127.0.0.1:4517",
-			origin: "https://untrusted.example",
-			"content-type": "application/json",
-		},
-	};
-	let status;
-	const res = {
-		writeHead(code) {
-			status = code;
-		},
-		end() {},
-	};
-	assert.equal(await handleResearch(req, res, 4517), true);
-	assert.equal(status, 403);
-});
-
 test("feature switches change executed passes and export without inventing evidence tiers", async () => {
 	const { claimsDocument, evidenceReport } = await import(
-		"../../public/research/evidence.js"
+		"../../lib/research/evidence.js"
 	);
 	const calls = [];
 	const s = createSession({
@@ -460,7 +439,7 @@ test("the evidence gate blocks synthesis, survives import, and can be disabled f
 
 test("ledger validation rejects malformed claims and does not checkpoint invalid model JSON", async () => {
 	const { readLedger, evidenceReport } = await import(
-		"../../public/research/evidence.js"
+		"../../lib/research/evidence.js"
 	);
 	assert.throws(() => readLedger("Not JSON"), /valid JSON/);
 	const c = {
@@ -607,4 +586,163 @@ test("a valid long Unicode session can be exported and reopened by the real CLI"
 	);
 	assert.equal(restored.steps[3].text, s.steps[3].text);
 	assert.equal(restored.status, "complete");
+});
+
+test("headless question sessions prepare without provider access and execute through the real CLI", async (t) => {
+	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-question-"));
+	t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+	const requests = [];
+	const key = "question-fixture-secret";
+	const server = http.createServer(async (req, res) => {
+		let body = "";
+		for await (const part of req) body += part;
+		assert.equal(req.headers.authorization, `Bearer ${key}`);
+		requests.push(JSON.parse(body));
+		res.writeHead(200, { "Content-Type": "application/json" });
+		res.end(
+			JSON.stringify({
+				model: "question-fixture",
+				choices: [
+					{
+						finish_reason: "stop",
+						message: { content: "Fixture findings require verification." },
+					},
+				],
+			}),
+		);
+	});
+	await new Promise((resolve, reject) => {
+		server.once("error", reject);
+		server.listen(0, "127.0.0.1", resolve);
+	});
+	t.after(() => {
+		server.closeAllConnections();
+		server.close();
+	});
+	const args = [
+		"bin/grainulator.js",
+		"research",
+		"--question",
+		"Can two tenants share this cache?",
+		"--context",
+		"Tenant keys must remain separate.",
+		"--provider",
+		"custom",
+		"--model",
+		"question-fixture",
+		"--base-url",
+		`http://127.0.0.1:${server.address().port}/v1`,
+		"--no-challenge",
+		"--api-key-env",
+		"QUESTION_FIXTURE_KEY",
+	];
+	const env = {
+		...process.env,
+		QUESTION_FIXTURE_KEY: key,
+		OPENAI_API_KEY: "unrelated-key-must-not-be-used",
+	};
+	const prepared = path.join(dir, "prepared");
+	const prepare = await child([...args, "--dir", prepared, "--prepare-only"], {
+		env,
+	});
+	assert.equal(prepare.code, 0, prepare.stderr);
+	assert.equal(
+		requests.length,
+		0,
+		"prepare-only must not contact the provider",
+	);
+	const draft = importSession(
+		JSON.parse(fs.readFileSync(path.join(prepared, "session.json"), "utf8")),
+	);
+	assert.equal(draft.schema, "grainulator.research.v1");
+	assert.equal(draft.question, "Can two tenants share this cache?");
+	assert.equal(draft.context, "Tenant keys must remain separate.");
+	assert.equal(draft.config.reasoning, "default");
+	assert.equal(draft.config.webSearch, false);
+	assert.deepEqual(draft.steps, []);
+	assert.match(
+		fs.readFileSync(path.join(prepared, "SESSION.md"), "utf8"),
+		/Tenant keys must remain separate/,
+	);
+	const executed = path.join(dir, "executed");
+	const run = await child([...args, "--dir", executed], { env });
+	assert.equal(run.code, 0, run.stderr);
+	assert.equal(requests.length, 2);
+	assert.match(
+		requests[0].messages[1].content,
+		/Tenant keys must remain separate/,
+	);
+	const final = importSession(
+		JSON.parse(fs.readFileSync(path.join(executed, "session.json"), "utf8")),
+	);
+	assert.equal(final.status, "complete");
+	assert.deepEqual(
+		final.steps.map((step) => step.pass),
+		["research", "synthesis"],
+	);
+	for (const destination of [prepared, executed])
+		for (const name of ["session.json", "SESSION.md"])
+			assert.ok(
+				!fs.readFileSync(path.join(destination, name), "utf8").includes(key),
+			);
+});
+
+test("ambiguous or invalid research arguments fail before writing a destination", async (t) => {
+	const dir = fs.mkdtempSync(
+		path.join(os.tmpdir(), "grainulator-question-args-"),
+	);
+	t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+	const source = path.join(dir, "legacy-session.json");
+	const original = exportSession(session());
+	fs.writeFileSync(source, original);
+	const cases = [
+		[],
+		["--question", "Q", "--session", source],
+		["--question", "Q", "--session", ""],
+		["--session", source, "--context", "changed"],
+		["--session", source, "--model", "changed"],
+		["--session", source, "--no-challenge"],
+		["--question", "Q", "--restart"],
+		["--question", "Q", "--question", "duplicate"],
+		["--question", "Q", "--unknown"],
+		["--question", "Q", "--model"],
+		["--question", "   "],
+		["--question", "Q", "--api-key-env", "invalid-key-name"],
+		["--question", "Q", "--base-url", "https://example.invalid/v1"],
+		[
+			"--question",
+			"Q",
+			"--provider",
+			"custom",
+			"--model",
+			"fixture",
+			"--base-url",
+			"https://user:secret@example.invalid/v1",
+		],
+	];
+	for (const [i, args] of cases.entries()) {
+		const destination = path.join(dir, `invalid-${i}`);
+		const result = await child([
+			"bin/grainulator.js",
+			"research",
+			"--dir",
+			destination,
+			"--prepare-only",
+			...args,
+		]);
+		assert.equal(result.code, 1, `case ${i}: ${result.stdout}`);
+		assert.equal(fs.existsSync(destination), false, `case ${i} wrote output`);
+	}
+	for (const [i, args] of [
+		["--question", "x".repeat(6001)],
+		["--question", "Q", "--context", "x".repeat(30001)],
+	].entries()) {
+		const destination = path.join(dir, `oversized-${i}`);
+		await assert.rejects(
+			researchCLI([...args, "--dir", destination, "--prepare-only"]),
+			/Invalid (question|context)/,
+		);
+		assert.equal(fs.existsSync(destination), false);
+	}
+	assert.equal(fs.readFileSync(source, "utf8"), original);
 });

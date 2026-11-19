@@ -1,6 +1,5 @@
 "use strict";
 const fs = require("node:fs");
-const path = require("node:path");
 // Pin the opened inode for type/size checks and the read. No final symlink or
 // FIFO is followed. Concurrent replacement of parent directories needs OS isolation.
 function readRegularFile(file, encoding, maxBytes = 64 * 1024 * 1024) {
@@ -22,19 +21,6 @@ function readRegularFile(file, encoding, maxBytes = 64 * 1024 * 1024) {
     return encoding ? result.toString(encoding) : result;
   } finally { fs.closeSync(fd); }
 }
-function readStaticFile(root, file) {
-  const base = fs.realpathSync(root), resolved = fs.realpathSync(file);
-  const relative = path.relative(base, resolved);
-  if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) throw new Error("Path outside static root");
-  return readRegularFile(resolved);
-}
-function tryReadStaticFile(root, file) {
-  try { return readStaticFile(root, file); }
-  catch (error) {
-    if (["ENOENT", "ENOTDIR", "EISDIR", "ELOOP", "EFBIG", "EACCES", "EPERM"].includes(error.code) || error.message === "Path outside static root") return null;
-    throw error;
-  }
-}
 function writeNewFile(file, data, encoding = "utf8") {
   const fd = fs.openSync(file, "wx", 0o600);
   try { fs.writeFileSync(fd, data, encoding); } finally { fs.closeSync(fd); }
@@ -46,4 +32,4 @@ function appendRegularFile(file, data) {
     fs.writeFileSync(fd, data);
   } finally { fs.closeSync(fd); }
 }
-module.exports = { readRegularFile, readStaticFile, tryReadStaticFile, writeNewFile, appendRegularFile };
+module.exports = { readRegularFile, writeNewFile, appendRegularFile };

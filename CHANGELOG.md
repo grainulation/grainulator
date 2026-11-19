@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.1] - 2026-11-18
+
+### Fixed
+
+- Remove accidentally retained browser payload: research playground, privacy pages, favicons, local preview server, browser scripts/tests and Playwright dependency. The source package provides CLI/MCP workflows and generated reports without a bundled website.
+- Move the portable research session and evidence engine into `lib/research`; preserve existing session JSON and continuation. Add headless session preparation with `research --question ... --prepare-only`.
+- Remove unused component site CSS/icons/templates and the website-only `utils sync-assets` route. Keep report templates, offline exports, the static-site output format and the documentation mascot.
+- Preserve manifest-verified application bytes through Homebrew cleanup and exercise the actual Cleaner in candidate acceptance. Published 3.0.0 tags/archives remain immutable.
+
 ## [3.0.0] - 2026-11-18
 
 ### Changed

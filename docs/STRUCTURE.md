@@ -24,7 +24,6 @@ grainulator/
 │   ├── runtime/         Managed execution and verification
 │   └── shared/          Shared utilities and assets
 ├── scripts/             Previews, audits and acceptance checks
-├── public/              Local research playground runtime assets
 ├── skills/              Portable and host workflow instructions
 ├── templates/           Shared accessible artifact templates
 ├── test/                Plugin and regression tests

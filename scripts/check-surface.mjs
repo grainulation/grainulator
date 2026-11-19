@@ -20,6 +20,8 @@ for (const component of fs.readdirSync(path.join(root,'packages'))) {
 }
 
 const [packed]=JSON.parse(execFileSync('npm',['pack','--dry-run','--json','--ignore-scripts'],{cwd:root,encoding:'utf8'}));
+assert.ok(packed.files.every(entry=>!entry.path.split('/').includes('public')),'Retired public browser/site assets must not ship');
+for(const entry of ['scripts/preview.mjs','lib/research-http.js','packages/shared/tools/sync-assets.js']) assert.equal(packed.files.some(file=>file.path===entry),false,entry);
 const forbidden=[/@grainulation\/(?:wheat|bean|barn|silo|mill|harvest|orchard)(?=[\s/"'`]|$)/, /(?:wheat|silo|mill):\/\//, /["'`](?:wheat|silo|mill)\/[a-z_-]+["'`]/, /process\.env\.(?:WHEAT_|SILO_|BARN_)/, /["'`]\.(?:wheat|silo|bean|grainulation)(?:["'`/])/, /wheat\.config\.json|orchard\.json|wheat-manifest\.json/];
 const historical=new Set(['CHANGELOG.md']); // exact immutable release history, not executable fallback
 const failures=[];

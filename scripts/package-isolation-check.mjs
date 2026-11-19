@@ -3,11 +3,9 @@ import os from 'node:os';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import {fileURLToPath} from 'node:url';
-import {spawn,spawnSync} from 'node:child_process';
-import {once} from 'node:events';
-import net from 'node:net';
+import {spawnSync} from 'node:child_process';
 import {command,mcp,toolJSON} from './lib/local-checks.mjs';
-import {createSession,exportSession} from '../public/research/session.js';
+import {createSession,exportSession} from '../lib/research/session.js';
 const root=fileURLToPath(new URL('../',import.meta.url));
 const dir=fs.mkdtempSync(path.join(os.tmpdir(),'grainulator-install-'));
 const report={at:new Date().toISOString(),passed:false,directory:dir,checks:[]};
@@ -28,30 +26,12 @@ try {
       const base=path.join(installed,'packages',component);
       for(const entry of ['public/index.html','lib/server.js','lib/server.mjs']) assert.equal(fs.existsSync(path.join(base,entry)),false,`${component}/${entry}`);
     }
-    for(const entry of ['packages/analytics/templates/retrospective.html','packages/analytics/lib/report.js','packages/orchestration/templates/dashboard.html','packages/shared/templates/brief.html','packages/shared/public/grainulation-print.css']) assert.equal(fs.existsSync(path.join(installed,entry)),true,entry);
+    for(const entry of ['packages/analytics/templates/retrospective.html','packages/analytics/lib/report.js','packages/orchestration/templates/dashboard.html','packages/shared/templates/brief.html']) assert.equal(fs.existsSync(path.join(installed,entry)),true,entry);
     for(const entry of ['packages/analytics/lib/dashboard.js','packages/analytics/templates/dashboard.html']) assert.equal(fs.existsSync(path.join(installed,entry)),false,entry);
   });
-  // Exercise the installed application without a sibling site checkout or source tree.
-  const probe=net.createServer();probe.listen(0,'127.0.0.1');await once(probe,'listening');
-  const port=probe.address().port;await new Promise(resolve=>probe.close(resolve));
-  const baseURL=`http://127.0.0.1:${port}`;
-  const preview=spawn(process.execPath,[path.join(installed,'scripts/preview.mjs')],{cwd:consumer,env:{...process.env,GRAINULATOR_PORT:String(port)},stdio:['ignore','pipe','pipe']});
-  const stopped=once(preview,'exit');
-  try {
-    await new Promise((resolve,reject)=>{
-      const timer=setTimeout(()=>reject(new Error('Installed playground did not start')),10000);
-      preview.stdout.on('data',bytes=>{if(bytes.toString().includes(baseURL)){clearTimeout(timer);resolve();}});
-      preview.once('error',error=>{clearTimeout(timer);reject(error);});
-      preview.once('exit',code=>{clearTimeout(timer);reject(new Error(`Installed playground exited (${code})`));});
-    });
-    const home=await fetch(baseURL,{redirect:'manual'});assert.equal(home.status,302);assert.equal(home.headers.get('location'),'/playground/');
-    const query='?question=cache%20isolation&source=handoff';
-    const handoff=await fetch(baseURL+'/'+query,{redirect:'manual'});assert.equal(handoff.status,302);assert.equal(handoff.headers.get('location'),'/playground/'+query);
-    for(const asset of ['/playground/','/research/playground.js','/research/session.js','/research/evidence.js','/research/features.js','/research/render-text.js','/research/playground.css','/workbench.css','/privacy.html','/privacy.css','/favicon-32.png','/glitchy-56.png'])assert.equal((await fetch(baseURL+asset)).status,200,asset);
-    const page=await(await fetch(baseURL+'/playground/')).text();assert.match(page,/name="research-mode" content="local"/);
-    assert.equal((await fetch(baseURL+'/install.html')).status,404,'marketing pages must not be shipped');
-    report.checks.push('installed playground root redirect and runtime assets work without marketing sources');
-  } finally {preview.kill('SIGTERM');await stopped;}
+  check('browser payload and asset vendoring are absent from the installed product',()=>{
+    for(const entry of ['public','packages/shared/public','packages/memory/public','packages/exports/public','scripts/preview.mjs','lib/research-http.js','packages/shared/tools/sync-assets.js']) assert.equal(fs.existsSync(path.join(installed,entry)),false,entry);
+  });
   const cli=path.join(installed,'bin/grainulator.js');
   const run=(args,env={})=>command([process.execPath,cli,...args],{cwd:consumer,env});
   for(const component of ['evidence','memory','export','analytics','orchestrate','legacy']) check(`retired component serve rejected: ${component}`,()=>{
@@ -117,6 +97,7 @@ try {
     }
     if(withSummary)assert.equal(fs.readFileSync(summaryFile,'utf8'),fs.readFileSync(result.artifacts[0].file,'utf8')+'\n');
   });
+  check('headless research starts a new portable session without provider access',()=>{const destination=path.join(dir,'new-headless-research');run(['research','--question','Can CLI research start without a browser?','--context','Offline preparation only.','--dir',destination,'--prepare-only']);const session=JSON.parse(fs.readFileSync(path.join(destination,'session.json')));assert.equal(session.question,'Can CLI research start without a browser?');});
   const sessionFile=path.join(dir,'session.json');fs.writeFileSync(sessionFile,exportSession(createSession({question:'Test session portability',context:'Fixture only.',config:{webSearch:false}})));
   check('research preparation from exported session',()=>run(['research','--session',sessionFile,'--dir',path.join(dir,'research'),'--prepare-only']));
   const client=mcp([process.execPath,cli,'mcp','--dir',sprint],{cwd:sprint,env:{GRAINULATOR_MEMORY_DIR:path.join(dir,'memory')}});

@@ -53,8 +53,6 @@ Out of scope:
   access or to have modified package files directly.
 - Denial of service via obviously expensive inputs (please do file
   performance issues on the public tracker).
-- Missing security headers on local-only HTTP servers that are
-  intended for a single-user loopback workflow.
 
 ## Credit
 
