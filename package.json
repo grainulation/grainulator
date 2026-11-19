@@ -1,6 +1,6 @@
 {
 	"name": "@grainulation/grainulator",
-	"version": "3.0.0",
+	"version": "3.0.1",
 	"description": "Portable evidence and execution tools for model-assisted work",
 	"type": "module",
 	"license": "MIT",
@@ -43,7 +43,6 @@
 		"packages/memory/bin",
 		"packages/memory/lib",
 		"packages/memory/packs",
-		"packages/memory/public",
 		"packages/memory/CHANGELOG.md",
 		"packages/memory/LICENSE",
 		"packages/memory/CODE_OF_CONDUCT.md",
@@ -67,7 +66,6 @@
 		"packages/shared/package.json",
 		"packages/shared/bin",
 		"packages/shared/lib",
-		"packages/shared/public",
 		"packages/shared/tools",
 		"packages/shared/templates",
 		"packages/shared/CHANGELOG.md",
@@ -78,7 +76,6 @@
 		"packages/exports/package.json",
 		"packages/exports/bin",
 		"packages/exports/lib",
-		"packages/exports/public",
 		"packages/exports/CHANGELOG.md",
 		"packages/exports/LICENSE",
 		"packages/exports/CODE_OF_CONDUCT.md",
@@ -104,7 +101,6 @@
 		"packages/analytics/CONTRIBUTING.md",
 		"packages/analytics/SECURITY.md",
 		"packages/analytics/CHANGELOG.md",
-		"scripts/preview.mjs",
 		"evals/fixtures/",
 		"evals/rejected-claims/",
 		"scripts/record-handoff.mjs",
@@ -123,7 +119,6 @@
 		"docs/BLIND-SPOTS.md",
 		"docs/limits.json",
 		"docs/source-imports.json",
-		"public/",
 		"docs/GROUNDED-REPORTS.md",
 		"docs/EVIDENCE-MAINTENANCE.md",
 		"packages/shared/schemas",
@@ -132,7 +127,8 @@
 		"docs/RUNTIME.md",
 		"share/",
 		"docs/RELEASING.md",
-		"packages/runtime/EXAMPLE.md"
+		"packages/runtime/EXAMPLE.md",
+		"docs/mascot.png"
 	],
 	"author": "grainulation contributors",
 	"bugs": {
@@ -140,23 +136,22 @@
 	},
 	"scripts": {
 		"test": "node scripts/test-workspace.mjs",
-		"test:e2e": "npm run test:playground",
-		"test:all": "npm test && npm run test:runtime && npm run test:playground && npm run test:install",
+		"test:e2e": "npm run test:install",
+		"test:all": "npm test && npm run test:runtime && npm run test:reports && npm run test:install",
 		"build:identity": "node scripts/build-identity.mjs",
 		"sync-version": "node scripts/sync-version.js",
 		"version": "node scripts/sync-version.js && npx --yes @biomejs/biome format --write .claude-plugin/ .codex-plugin/ plugin.json && git add .claude-plugin/plugin.json .claude-plugin/marketplace.json .codex-plugin/plugin.json plugin.json",
 		"test:plugin": "node --test test/*.test.js",
 		"test:core": "node --test test/dogfood/*.test.mjs",
-		"dev": "node scripts/preview.mjs",
 		"dogfood": "node bin/grainulator.js",
 		"check:package": "node scripts/check-package.mjs",
 		"pack:local": "node scripts/pack-local.mjs",
 		"lint": "biome check .",
 		"test:runtime": "npm run test:conformance --workspace @grainulation/grainulator-runtime",
 		"test:install": "node scripts/package-isolation-check.mjs",
-		"test:playground": "node scripts/run-playground-check.mjs",
 		"test:distribution": "node --test migration/*.test.mjs scripts/homebrew*.test.mjs scripts/package-native.test.mjs",
-		"check:surface": "node scripts/check-surface.mjs && node scripts/generate-reference.mjs --check"
+		"check:surface": "node scripts/check-surface.mjs && node scripts/generate-reference.mjs --check",
+		"test:reports": "node scripts/audit-render-check.mjs"
 	},
 	"engines": {
 		"node": ">=24"
@@ -170,6 +165,6 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.6.7",
-		"@playwright/test": "1.65.1"
+		"playwright": "1.65.1"
 	}
 }

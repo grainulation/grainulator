@@ -2,7 +2,7 @@
 
 Version 3 retains the consolidated product and removes historical component identities. Updating the plugin does not rewrite your host settings, active conversations, project instructions, or saved research. Follow this checklist in the copy and host scope you actually use.
 
-Component browser dashboards and their `serve` commands are retired. Use the CLI or MCP tools for evidence, memory, exports and sprint analysis. Generated HTML reports still work offline, and `grainulator preview` still opens the local research playground. The separate migration artifact inventories historical state; v3 does not start or stop retired services.
+Component browser dashboards and their `serve` commands are retired. Use the CLI or MCP tools for evidence, memory, exports and sprint analysis. The browser playground and `grainulator preview` are also retired. Generated HTML reports still work offline, and portable sessions continue through `grainulator research`. The separate migration artifact inventories historical state; v3 does not start or stop retired services.
 
 ## 1. Identify the installation
 

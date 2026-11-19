@@ -20,7 +20,6 @@
 !hooks/**
 !skills/**
 !templates/**
-!public/**
 !docs/**
 !packages/*/package.json
 !packages/evidence/.mcp.json
@@ -29,7 +28,6 @@
 !packages/*/bin/**
 !packages/*/lib/**
 !packages/*/compiler/**
-!packages/*/public/**
 !packages/*/templates/**
 !packages/*/packs/**
 !packages/runtime/.claude-plugin/**
@@ -37,7 +35,6 @@
 !packages/runtime/skills/**
 !packages/runtime/schemas/**
 !packages/runtime/install.sh
-!scripts/preview.mjs
 !scripts/check-package.mjs
 !scripts/record-handoff.mjs
 !packages/shared/tools/**

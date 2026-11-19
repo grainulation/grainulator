@@ -6,9 +6,9 @@ Use the active sprint directory identified by the current task or project instru
 
 Source imports and local-edit provenance live in `docs/source-imports.json`. Do not overwrite original checkouts. The only supported product is Grainulator. Private workspace packages and folders describe responsibilities; no component aliases or standalone discovery are retained.
 
-Run `npm test` for component suites and dogfood regressions. Run `node test/conformance.mjs` from `packages/runtime` for Rust runtime conformance. Use `npm run dev` for the local research playground and `npm run test:playground` for responsive and keyboard checks. Public website code and deployment belong to grainulation/infra.
+Run `npm test` for component suites and dogfood regressions. Run `node test/conformance.mjs` from `packages/runtime` for Rust runtime conformance. Use `npm run test:install` for installed CLI/MCP and headless research acceptance. Public website code and deployment are maintained separately.
 
-The permission dashboard and component browser dashboards have been removed at the maintainer’s request. Do not restore their HTTP servers, browser apps, launch hooks, or runtime dependencies. Native hosts own permissions and remote access. The local research playground, generated evidence and analytics reports, and reusable report templates remain supported.
+The permission dashboard and component browser dashboards have been removed at the maintainer’s request. Do not restore their HTTP servers, browser apps, launch hooks, or runtime dependencies. Native hosts own permissions and remote access. The research playground, privacy pages, browser assets and website-asset vendoring are also retired. Do not restore local web servers or runtime browser dependencies. Dev-only browser checks may validate generated offline reports. Portable CLI research, generated evidence and analytics reports, and reusable report templates remain supported.
 
 ## Verification and reporting
 

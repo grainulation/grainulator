@@ -1,4 +1,6 @@
-# Grainulator 2.0.0 verification record
+# Historical Grainulator 2.0.0 verification record
+
+These are historical checkpoints. Current 3.x removes the bundled browser UI and legacy aliases; consult [installation](INSTALLATION.md), [research](RESEARCH.md) and current CI for supported behavior.
 
 The source release is [v2.0.0 on GitHub](https://github.com/grainulation/grainulator/releases/tag/v2.0.0); no npm package is published. The checkpoint notes below preserve the tests and remaining limits recorded during preparation. Release authorization does not turn unperformed provider or customer-task checks into passes.
 

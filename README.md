@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://grainulator.dev"><img src="public/glitchy.png" alt="Glitchy — the Grainulator mascot" width="200"></a>
+  <a href="https://grainulator.dev"><img src="docs/mascot.png" alt="Glitchy — the Grainulator mascot" width="200"></a>
 </p>
 
 <h1 align="center">Grainulator</h1>
@@ -54,7 +54,7 @@ Requires **Node.js 24 or later**; Node 24 and 26 LTS are the tested release line
 **Upgrading from an earlier version?** Follow the [migration checklist](docs/UPGRADING.md) to update the plugin and keep your existing research data.
 
 ```sh
-git clone https://github.com/grainulation/grainulator.git
+git clone --branch v3.0.1 https://github.com/grainulation/grainulator.git
 cd grainulator
 npm ci --ignore-scripts
 node bin/grainulator.js doctor
@@ -62,7 +62,13 @@ node bin/grainulator.js doctor
 
 To use Grainulator inside your agent, follow the **[Claude Code or Codex setup guide](docs/AGENT-SETUP.md)**.
 
-The local research playground remains available through `node bin/grainulator.js preview`. It runs models using a provider account you configure locally.
+Start a portable research session without making provider calls:
+
+```sh
+grainulator research --question "What evidence answers this question?" --dir ./research-session --prepare-only
+```
+
+See [CLI research](docs/RESEARCH.md) for provider configuration and checkpoint continuation.
 
 > **Grainulator 3:** one CLI/plugin with a unified configuration and separately verified native runtime assets. Follow [installation](docs/INSTALLATION.md), [upgrading](docs/UPGRADING.md), [configuration](docs/CONFIGURATION.md) and [data retention](docs/UNINSTALL.md). The [shared Homebrew tap](https://github.com/grainulation/homebrew#available-formulae) lists available stable formulas.
 
@@ -149,7 +155,7 @@ The equivalent MCP tool is **`add_claim`** on the **`grainulator`** server. See 
 
 ## Verification and limits
 
-CI checks Node 24 and 26, isolated package installation, plugin contracts, Rust runtime conformance, lint, and the static playground in a browser. Native host and live-provider acceptance have separate [verification guides](docs/READINESS.md).
+CI checks Node 24 and 26, isolated package installation, plugin contracts, Rust runtime conformance, lint, and credential-free CLI/MCP research and export workflows. Native host and live-provider acceptance have separate [verification guides](docs/READINESS.md).
 
 The compiler checks the structure and support recorded in the ledger; it does not establish that a source is true. Evaluations do not establish a general accuracy or efficiency gain, and per-pass limits are not a whole-session spending cap. Keep those distinctions when interpreting results.
 

@@ -7,7 +7,7 @@ Grainulator provides portable evidence, verifiable claims, and grounded reports 
 - [Installation](INSTALLATION.md): Supported Node LTS versions, source/identified archives and offline installation.
 - [Upgrading](UPGRADING.md): The v3 migration, retained history and explicit host cutover.
 - [Agent Setup](AGENT-SETUP.md): Plugin installation and explicit workspace binding for supported agent hosts.
-- [Deployment](DEPLOYMENT.md): Container, CI, and local preview boundaries.
+- [Deployment](DEPLOYMENT.md): Container, package checks, and separate website ownership.
 - [Configuration](CONFIGURATION.md): Scoped config resolution and read-only validation.
 - [Native Runtime](RUNTIME.md): Verified assets, typed claims and explicit hook enrollment.
 - [Uninstall](UNINSTALL.md): Remove the tool while retaining user data.
@@ -28,7 +28,7 @@ Grainulator provides portable evidence, verifiable claims, and grounded reports 
 
 ## Development & Verification
 
-- [Local Dogfooding](DOGFOOD.md): Local development workflow, preview playground, and dogfood tests.
+- [Local Dogfooding](DOGFOOD.md): Local CLI/MCP development, headless research, and dogfood tests.
 - [Plugin Testing](PLUGIN-TESTING.md): Validating manifests, hooks, and agent tool execution.
 - [Readiness Checklist](READINESS.md): Verification matrix, regression checks, and packaging gates.
 - [Release Candidates](RELEASING.md): Frozen artifacts, native platform checks and Homebrew promotion.

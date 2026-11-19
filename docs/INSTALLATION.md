@@ -13,14 +13,13 @@ Tagged releases and marketplace builds include `build-info.json`, an integrity m
 Clone the release tag and install its source dependencies:
 
 ```sh
-git clone --branch v3.0.0 https://github.com/grainulation/grainulator.git
+git clone --branch v3.0.1 https://github.com/grainulation/grainulator.git
 cd grainulator
 npm ci --ignore-scripts
 node bin/grainulator.js doctor
-node bin/grainulator.js preview
 ```
 
-Open http://127.0.0.1:4517/playground/ and import the session you exported. Enter a provider key locally or configure `OPENAI_API_KEY` / `OPENROUTER_API_KEY` in the preview server's environment.
+Use `node bin/grainulator.js research --question "Your question" --dir ./research-session --prepare-only` to create a portable session without provider access. See [CLI research](RESEARCH.md).
 
 ## Install an identified local archive
 
@@ -40,23 +39,23 @@ npm install --offline --ignore-scripts "<archive>"
 node node_modules/@grainulation/grainulator/bin/grainulator.js doctor --json
 ```
 
-Confirm `build.id` and `build.version` match the report and `build.verified` is `true`. The installed `build-info.json` records packaged file checksums; doctor checks those files instead of relying on the package version alone. Then start the installed preview:
+Confirm `build.id` and `build.version` match the report and `build.verified` is `true`. The installed `build-info.json` records packaged file checksums; doctor checks those files instead of relying on the package version alone. Prepare a headless research session with the installed CLI:
 
 ```sh
-node node_modules/@grainulation/grainulator/bin/grainulator.js preview
+node node_modules/@grainulation/grainulator/bin/grainulator.js research --question "Your question" --dir ./research-session --prepare-only
 ```
 
-These commands do not install global tools. Resume exported research through the local playground, or run the installed CLI with `research --session /path/to/session.json --dir ./continued-session` using a new output directory.
+These commands do not install global tools. Resume existing research by running the installed CLI with `research --session /path/to/session.json --dir ./continued-session` using a new output directory.
 
 ## Activate updates in the copy you use
 
 The source checkout, an npm consumer installation, and a host's plugin cache are separate copies. Editing source does not update either installed copy or a running process.
 
-For an existing local CLI installation, stop its preview or CLI process, install the newly printed archive path from that consumer directory, verify its build ID with doctor, and restart it. For a plugin, reinstall the intended local artifact through the host's local plugin mechanism, reload the plugin, and start a fresh test session. Verify the actual loaded cache, including skills, agents, and hooks; a direct MCP test does not exercise the full plugin.
+For an existing local CLI installation, stop its CLI process, install the newly printed archive path from that consumer directory, verify its build ID with doctor, and restart it. For a plugin, reinstall the intended local artifact through the host's local plugin mechanism, reload the plugin, and start a fresh test session. Verify the actual loaded cache, including skills, agents, and hooks; a direct MCP test does not exercise the full plugin.
 
-The bundled Claude marketplace entry does not pin your local artifact. Use the `v3.0.0` tagged checkout or an identified archive for release testing, and verify the loaded build. Follow the [fresh full-plugin acceptance guide](PLUGIN-TESTING.md) for the local installation and cache checks. Existing user sessions and global configuration are not automatically changed by packing or installing a CLI archive.
+The bundled Claude marketplace entry does not pin your local artifact. Use the `v3.0.1` tagged checkout or an identified archive for release testing, and verify the loaded build. Follow the [fresh full-plugin acceptance guide](PLUGIN-TESTING.md) for the local installation and cache checks. Existing user sessions and global configuration are not automatically changed by packing or installing a CLI archive.
 
-For an authenticated compatible endpoint, configure a local environment variable such as `MODEL_API_KEY` and append `--api-key-env MODEL_API_KEY` to the research command. Pass the variable name, never the secret itself. Custom endpoints do not inherit OpenAI or OpenRouter environment keys, and credential fields are excluded from exports. The playground shows this handoff note when Compatible endpoint is selected.
+For an authenticated compatible endpoint, configure a local environment variable such as `MODEL_API_KEY` and append `--api-key-env MODEL_API_KEY` to the research command. Pass the variable name, never the secret itself. Custom endpoints do not inherit OpenAI or OpenRouter environment keys, and credential fields are excluded from exports.
 
 ## Bind the native Codex plugin to a workspace
 

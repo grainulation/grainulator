@@ -1,6 +1,6 @@
 {
   "name": "@grainulation/grainulator-runtime",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Private Grainulator convergence runtime and reference checker",
   "type": "module",
   "private": true,

@@ -90,10 +90,6 @@ try {
     }
   } else if(evidence.has(command))await forward('packages/evidence/bin/evidence.js',[command,...args]);
   else if(children[command])await forward(children[command],args);
-  else if(command==='preview') {
-    validateOptions();
-    if(args.includes('--help')||args.includes('-h'))console.log('Usage:\n  grainulator preview\nServe the local research playground on loopback. GRAINULATOR_PORT selects the port (default 4517).');
-    else await forward('scripts/preview.mjs',args);
-  }
+
   else throw new Error(`Unknown command: ${command}. Run grainulator --help.`);
 } catch(error) {const message=error instanceof SyntaxError?'Invalid JSON argument.':error.message;if(json)console.log(JSON.stringify({schema_version:'grainulator.cli-error.v1',status:'error',message,error:{code:error.code||'E_USAGE',message}}));else console.error(`Grainulator: ${message}`);process.exitCode=1;}

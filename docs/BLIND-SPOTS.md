@@ -13,24 +13,22 @@ This review used a pre-mortem across data integrity, first-time use, workflow st
 
 Memory validation: 138 component tests on Node 25, plus 15 targeted memory/unified integration tests on both Node 24 and 25. See `.dogfood/memory-blindspot-{basic,full,regressions,node24}.log`. Exporter validation includes two new regressions and real Chromium checks at 390px and 1440px with long content. These are additional checks after the earlier Node matrix; do not relabel that earlier artifact as testing later edits.
 
-## Still open or deliberately bounded
+## Current limits and resolutions
 
 The machine-readable ledger lives in [`docs/limits.json`](limits.json) and is checked against the table below in `npm test`:
 
 | ID | Area | Limit / Boundary | Status | Mitigation / Reality |
 | --- | --- | --- | --- | --- |
 | `L1` | Claim lifecycle | Older active risks and time-specific facts remain beside newer evidence; resolve requires an actual conflict relationship | Deliberately bounded | Reviewed presentations select and cite the latest findings; full-ledger exports retain history |
-| `L2` | Real usage acceptance | A paid-provider playground run needs a locally configured API key; native host fixture tests do not replace real host tasks | Deliberately bounded | Install the local build in the target host and exercise it on a real task before claiming host readiness |
-| `L3` | Public execution | The static playground configures, imports, and exports only; model execution happens strictly locally | Deliberately bounded | Run model-backed tasks through the local CLI, MCP server, or host plugins |
-| `L4` | Organization source cleanup | Existing bin/, lib/, public/, tests, and legacy CLI metadata remain in grainulation-dogfood alongside the site | Open | Retained explicitly for compatibility until website-only checkout separation is scheduled |
+| `L2` | Real usage acceptance | Paid-provider CLI research needs locally configured credentials; native host fixture tests do not replace real host tasks | Deliberately bounded | Install the local build in the target host and exercise it on a real task before claiming host readiness |
+| `L3` | Execution boundary | Model-backed research runs only through explicit local CLI or host operations; no browser app or hosted execution service is bundled | Deliberately bounded | Use headless preparation without provider access, then authorize the intended local provider or host run |
+| `L4` | Product source separation | Website code and unused site assets are excluded; the product retains CLI/MCP, generated reports and documentation branding | Resolved | Package absence gates reject public directories and retired web launchers while exercising installed CLI/MCP/report workflows |
 | `L5` | Outcome evidence | Semantic-v2 found no general answer-quality or efficiency improvement; verification catches specified failures, not source truth | Deliberately bounded | Use explicit verifiers and adversarial rejected-claims checks; never claim universal accuracy or cost gains |
 | `L6` | Release boundary | Local verification does not perform remote CI, deployment, publication, or repository archival without authorization | Deliberately bounded | Require green CI and explicit maintainer release authorization before tagging or publishing |
 
-- **Claim lifecycle:** older active risks and time-specific facts remain beside newer evidence. For example, r002 still prompts migration investigation after r053 records the matrix, and r018 combines local routing with unperformed public deployment. The current `resolve` operation requires an actual conflict relationship; it is not a generic risk-closure command. Do not invent contradiction edges or exclude a whole topic to silence useful residual risks. A first-class closure/supersession workflow remains a product gap. The reviewed presentation selects and cites the latest findings; the generic full-ledger export retains history.
-- **Real usage acceptance:** a paid-provider playground run needs a locally configured API key. Native host fixture tests do not replace installing the local build in the maintainer's normal host and using it on a real task.
-- **Public execution:** the static playground configures, imports, and exports; model execution happens locally. A hosted model-execution service is not delivered by the Pages artifact.
-- **Organization source cleanup:** the new organization website and corrected README are ready locally. Existing `bin/`, `lib/`, `public/`, tests, and legacy CLI package metadata remain in `grainulation-dogfood`; it is not yet a website-only source checkout.
-- **Outcome evidence:** semantic-v2 found no general answer-quality or efficiency improvement. Verification catches specified failures; evidence structure does not establish source truth. Broader customer-task evaluations are still needed for stronger product claims.
-- **Release boundary:** remote CI, deployment, publication, and repository archival were not performed under the local-only instruction. Original repositories and stars remain untouched.
-
-Current review claims: r055–r058 in `../sprints/grainulator-dogfood/` relative to the product checkout. The presentation and its checks are in that sprint's `output/` directory.
+- **Claim lifecycle:** older active risks and time-specific facts remain beside newer evidence. For example, r002 still prompts migration investigation after r053 records the matrix, and r018 combines local routing with unperformed public deployment. The current `resolve` operation requires an actual conflict relationship; it is not a generic risk-closure command. Do not invent contradiction edges or exclude a whole topic to silence useful residual risks. A first-class closure/supersession workflow remained a product gap at this dated checkpoint. The reviewed presentation selects and cites the latest findings; the generic full-ledger export retains history.
+- **Real usage acceptance:** CLI/provider and host scopes require their own actual evidence; mock checks do not establish a live provider or loaded host.
+- **Execution boundary:** headless preparation makes no provider call. Explicit research execution remains local; no browser or hosted execution service is bundled.
+- **Product source separation:** bundled web surfaces and unused site assets are removed in 3.0.1. Generated user reports and documentation branding remain purposeful.
+- **Outcome evidence:** structural verification does not establish source truth or universal model-quality improvement.
+- **Release boundary:** remote CI, publication and host installation are distinct operations requiring their applicable authorization and evidence.

@@ -1,12 +1,11 @@
 {
   "name": "@grainulation/grainulator-memory",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Reusable knowledge for research sprints -- shared claim libraries, templates, and knowledge packs",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
-    ".": "./lib/index.js",
-    "./tokens": "./public/grainulation-tokens.css"
+    ".": "./lib/index.js"
   },
   "scripts": {
     "test": "node test/basic.test.js && node --test test/smart-fetch.test.js test/fetch-cache.test.js test/smart-fetch.live.test.js test/serve-mcp.test.js test/tarball.test.js",
@@ -16,7 +15,7 @@
     "format:check": "npx prettier@3.3 --check ."
   },
   "dependencies": {
-    "@grainulation/grainulator-shared": "3.0.0"
+    "@grainulation/grainulator-shared": "3.0.1"
   },
   "keywords": [
     "research",
@@ -42,7 +41,6 @@
     "bin/",
     "lib/",
     "packs/",
-    "public/",
     "CHANGELOG.md",
     "LICENSE",
     "CODE_OF_CONDUCT.md",

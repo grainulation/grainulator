@@ -14,6 +14,7 @@ import {
 	RUNTIME_BINARIES,
 	RUNTIME_SCHEMAS,
 	readRegular,
+	runtimeVersion,
 	sha256,
 	verifyInstalledAsset,
 } from "../../lib/runtime-assets.js";
@@ -28,7 +29,7 @@ import {
 
 // Synthetic executable-format headers make the archive parser tests independent
 // of a Rust toolchain. Native candidate acceptance executes the real binaries.
-function fixture({ version = "3.0.0" } = {}) {
+function fixture({ version = runtimeVersion() } = {}) {
 	const root = fs.mkdtempSync(
 		path.join(fs.realpathSync(os.tmpdir()), "grainulator-runtime-test-"),
 	);
@@ -588,15 +589,18 @@ test("a workspace refuses another host scope before creating its directory or or
 	}
 });
 test("different release cohorts cannot share a host, while an owned release handoff rolls back exactly", async () => {
+	const nextVersion = runtimeVersion().replace(/\d+$/, (patch) =>
+		String(Number(patch) + 1),
+	);
 	const a = fixture(),
-		b = fixture({ version: "3.0.1" });
+		b = fixture({ version: nextVersion });
 	try {
 		a.install();
 		b.options.home = a.home;
 		b.install();
 		initializeRuntime(a.workspace);
 		initializeRuntime(b.workspace);
-		const next = await versionedEnrollmentModule(b, "3.0.1");
+		const next = await versionedEnrollmentModule(b, nextVersion);
 		const config = path.join(a.root, "host"),
 			files = enrollmentPaths(a.workspace, config);
 		const first = enrollRuntime(a.workspace, {
@@ -631,7 +635,7 @@ test("different release cohorts cannot share a host, while an owned release hand
 			expectedEnrollmentHash: sha256(initialReceipt),
 			home: a.home,
 		});
-		assert.equal(upgraded.asset_version, "3.0.1");
+		assert.equal(upgraded.asset_version, nextVersion);
 		const groups = JSON.parse(readRegular(files.settings)).hooks.Stop;
 		assert.equal(groups.length, 1);
 		assert.equal(groups[0].hooks.length, 1);

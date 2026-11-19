@@ -1,6 +1,6 @@
 # Test the installed plugin
 
-Start from the `v3.0.0` tag of the [GitHub repository](https://github.com/grainulation/grainulator/tree/v3.0.0), or the identified archive you intend to test. The GitHub release does not publish an npm package.
+Start from the `v3.0.1` tag of the [GitHub repository](https://github.com/grainulation/grainulator/tree/v3.0.1), or the identified archive you intend to test. The GitHub release does not publish an npm package.
 
 CLI installation, direct MCP connection, full plugin loading, and subagent tool access are separate checks. A passing `grainulator connect` test does not establish that a host discovered the plugin's skills or hooks.
 

@@ -32,18 +32,9 @@ Each grainulation data format includes a `schema_version` field at the top level
 }
 ```
 
-### Tool manifests (package.json extensions)
+### Runtime interfaces
 
-```json
-{
-  "grainulation": {
-    "schema_version": "1.0",
-    "tool": "evidence",
-    "port": 9092,
-    "ui": "public/index.html"
-  }
-}
-```
+Historical website port/UI manifest extensions are retired. The supported product exposes canonical CLI/MCP interfaces and generated report outputs.
 
 ### Grainulator memory knowledge packs
 

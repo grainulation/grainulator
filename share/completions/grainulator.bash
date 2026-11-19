@@ -1,1 +1,1 @@
-complete -W 'init add import compile status search resolve guard stats maintain report research memory export analytics orchestrate runtime utils doctor config demo run setup connect mcp preview completion man help --help --version' grainulator
+complete -W 'init add import compile status search resolve guard stats maintain report research memory export analytics orchestrate runtime utils doctor config demo run setup connect mcp completion man help --help --version' grainulator

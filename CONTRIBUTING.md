@@ -38,19 +38,19 @@ For native Codex, install the intended local plugin through its marketplace mech
 
 ## Verification and CI
 
-CI runs `npm test`, `npm run check:package`, and `npm run test:install` on Node 24 and 26. Separate jobs run lint, Rust runtime conformance, and the Playwright local-playground check on Node 24. Browser tooling is a development dependency in this repository.
+CI runs `npm test`, `npm run check:package`, and `npm run test:install` on Node 24 and 26. Separate jobs run lint, Rust runtime conformance, static analysis and dependency checks. Installed-package acceptance exercises CLI/MCP and headless research without a browser.
 
 ```sh
 npm run lint
 npm run test:install
 npm run test:runtime
 npx playwright install chromium
-npm run test:playground
+npm run test:reports
 npm run test:distribution
 npm run check:surface
 ```
 
-Rust/Cargo is required for runtime conformance; Playwright Chromium is required for `npm run test:playground`. That command starts and stops its own isolated local preview and checks the runtime UI with synthetic provider responses. Public website deployments are maintained separately from this CLI and local playground. See [deployment and browser checks](docs/DEPLOYMENT.md). Paid-provider and native-host tests require the relevant credentials and are separate from CI's synthetic checks.
+Rust/Cargo is required for runtime conformance. Playwright is a development-only tool for checking generated offline reports, not a bundled browser app or runtime dependency. Routine checks use local fixtures and make no paid-provider calls. Native-host and live-provider acceptance remain separate from CLI/MCP tests; see [verification scope](docs/READINESS.md) and [packaging](docs/DEPLOYMENT.md).
 
 ## Skills and shared templates
 
