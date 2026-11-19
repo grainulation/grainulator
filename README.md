@@ -58,9 +58,9 @@ grainulator doctor
 grainulator demo
 ```
 
-Homebrew installs the Node 24 dependency. The demo is an offline synthetic example and uses a new temporary workspace. Native hooks use [explicit enrollment](docs/RUNTIME.md), and full plugins use [agent setup](docs/AGENT-SETUP.md). Installing the formula does not change host registration.
+Homebrew provides Node 24 and the matching native assets. The offline demo needs no credentials. For agent integration, follow [agent setup](docs/AGENT-SETUP.md).
 
-For a tagged source checkout instead:
+### From source
 
 Requires **Node.js 24 or later**; Node 24 and 26 LTS are the tested release lines. Node 24 is the development default.
 
