@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "id": "release-3.0.1-eb7aedc94694419f",
+  "id": "release-3.0.1-2d25f4537e3ca77a",
   "version": "3.0.1",
-  "source_sha256": "eb7aedc94694419fa93d26f937cb16add3e72e802d3c76c91d5fea21f2f1ef22",
+  "source_sha256": "2d25f4537e3ca77ab0f53850a4a3f20023e67b4766507aa5e68f9bafb42f2d53",
   "files": {
     ".claude-plugin/marketplace.json": "5a8b3439241f3f4db98981ca4643643ecd3cc749f6351ee7170ca72b5ae35631",
     ".claude-plugin/plugin.json": "1dd5a16cb464ba4adeaeef433e1506dbdd737f78139c9642db83503e041eb104",
@@ -12,7 +12,7 @@
     "CODE_OF_CONDUCT.md": "90386f504766a8352d15c54f7d31ec87cbb141690fb209b73ba2c7dc24f2ba31",
     "CONTRIBUTING.md": "5d47d726d0ca3e0b7eaa0fb5e66e3394b25cea2c8e60ab226b25dd221a1780dd",
     "LICENSE": "893000d487292a6322507960deedfde43f41e7b22f933c0947db52d556501cc7",
-    "README.md": "1618ce2068608176d3d670588436baf14f670732b4608eaae5bff612cdc68f63",
+    "README.md": "ea2ca35c0f8f034e8bfa7461823128b229035ad8e649d3db8f8529cb344c1ac8",
     "SECURITY.md": "d719236d6efae99c6420a05ec6ef97b2499f4bf02d265552430e3ef7b5779921",
     "agents/grainulator.md": "77f5407cafd0bce3cacc99efdafa83b8d71f2eba69e3ffb183ee9e7473cb7f17",
     "bin/grainulator-plugin.js": "e9f0801d383139bd3c8eaf5e6ccadaa1b7b00fd66c795a128ab00ceaeefc5257",
@@ -27,7 +27,7 @@
     "docs/EVIDENCE-MAINTENANCE.md": "297cca99038bcea19fe5bff3eedcefe090df529e08dc8d1bc4f382c4a916a8ad",
     "docs/GROUNDED-REPORTS.md": "bd75c09f4e460acb60fb4c150a646a54134d4c498b463fd410ef48ef1d992f54",
     "docs/HOSTS.md": "0c7c8b6fdd735cddc29b8b53a2e5ed576f38b3dbda5c99dcc07a7bbc03c004d1",
-    "docs/INSTALLATION.md": "ec98073187eb193c1a5dee0bb7653503804c4be7a89f0df70e80a2996193eed4",
+    "docs/INSTALLATION.md": "68a5379ea796dd6d37332ef068af2bdf18bfee487308d0c4e0b7e42390bf3aec",
     "docs/NEXT-ACTIONS.md": "21db01b1808b0bbf309b3a15a77349214f7102d7715b3ff2c831d5b99b610f01",
     "docs/PLUGIN-TESTING.md": "74a2f0ecc7aa085f25172574dc429276ee1c24ac04764d6c888b364d95830336",
     "docs/READINESS.md": "2a159fbbaf39ffee5ce32dd7de6fe7a3adcc0c332d26f7ae3a41f9fdbf4e6bc0",
