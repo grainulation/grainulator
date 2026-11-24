@@ -23,7 +23,7 @@ const __dirname = path.dirname(__filename);
 
 const WHEAT_BIN = path.resolve(__dirname, "../../..", "bin", "grainulator.js");
 const PKG = JSON.parse(
-	readFileSync(path.resolve(__dirname, "..", "package.json"), "utf8"),
+	readFileSync(path.resolve(__dirname, "../../..", "package.json"), "utf8"),
 );
 
 describe("wheat CLI", () => {
@@ -64,10 +64,7 @@ describe("wheat CLI", () => {
 			encoding: "utf8",
 			timeout: 5_000,
 		});
-		assert.ok(
-			output.trim().includes(PKG.version),
-			`version output "${output.trim()}" should include "${PKG.version}"`,
-		);
+		assert.equal(output.trim(), PKG.version);
 	});
 
 	it("-v is an alias for --version", () => {
@@ -75,7 +72,7 @@ describe("wheat CLI", () => {
 			encoding: "utf8",
 			timeout: 5_000,
 		});
-		assert.ok(output.trim().includes(PKG.version), "-v should show version");
+		assert.equal(output.trim(), PKG.version, "-v should show the public CLI version");
 	});
 
 	it("unknown flag exits non-zero", () => {

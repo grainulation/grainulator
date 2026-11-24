@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2026-11-24
+
+### Added
+
+- Opt-in `mcp --toolset compact` discovery with 15 tools for evidence, local memory and exports. Authored claims and document imports remain separate; the legacy 29-tool inventory and bundled plugin registrations remain the default.
+- Negotiated MCP protocol support with matching output schemas and structured results on `2025-06-18`, while preserving text-only responses for older supported clients.
+- Installed-package checks for compact discovery, resource access, legacy-name refusal and protocol compatibility.
+
+### Fixed
+
+- Describe initialization, local writes and replacement behavior with explicit tool hints, and align result contracts with successful and business-error responses.
+- Preserve historical audit access and project finding metadata from the same selected claim snapshot; bound diagnostic output and report truncation.
+- Reject malformed request IDs, metadata and tool arguments before negotiation or mutation, and align compact criteria constraints with dispatch validation.
+- Correct the removed-alias documentation and document compact scope, format discovery and migration requirements. These interface changes do not establish a new external quality score.
+
 ## [3.0.1] - 2026-11-18
 
 ### Fixed

@@ -1,6 +1,6 @@
 {
 	"name": "@grainulation/grainulator",
-	"version": "3.0.1",
+	"version": "3.1.0",
 	"description": "Portable evidence and execution tools for model-assisted work",
 	"type": "module",
 	"license": "MIT",

@@ -68,7 +68,7 @@ Requires **Node.js 24 or later**; Node 24 and 26 LTS are the tested release line
 **Upgrading from an earlier version?** Follow the [migration checklist](docs/UPGRADING.md) to update the plugin and keep your existing research data.
 
 ```sh
-git clone --branch v3.0.1 https://github.com/grainulation/grainulator.git
+git clone --branch v3.1.0 https://github.com/grainulation/grainulator.git
 cd grainulator
 npm ci --ignore-scripts
 node bin/grainulator.js doctor

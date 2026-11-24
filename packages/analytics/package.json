@@ -1,6 +1,6 @@
 {
   "name": "@grainulation/grainulator-analytics",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "description": "Analytics and retrospective layer for research sprints -- learn from every decision you've made",
   "type": "module",
   "main": "lib/analyzer.js",
@@ -54,7 +54,7 @@
   },
   "homepage": "https://grainulator.dev",
   "dependencies": {
-    "@grainulation/grainulator-shared": "3.0.1"
+    "@grainulation/grainulator-shared": "3.1.0"
   },
   "private": true
 }

@@ -26,7 +26,7 @@ Tagged releases and marketplace builds include `build-info.json`, an integrity m
 Clone the release tag and install its source dependencies:
 
 ```sh
-git clone --branch v3.0.1 https://github.com/grainulation/grainulator.git
+git clone --branch v3.1.0 https://github.com/grainulation/grainulator.git
 cd grainulator
 npm ci --ignore-scripts
 node bin/grainulator.js doctor
@@ -66,7 +66,7 @@ The source checkout, an npm consumer installation, and a host's plugin cache are
 
 For an existing local CLI installation, stop its CLI process, install the newly printed archive path from that consumer directory, verify its build ID with doctor, and restart it. For a plugin, reinstall the intended local artifact through the host's local plugin mechanism, reload the plugin, and start a fresh test session. Verify the actual loaded cache, including skills, agents, and hooks; a direct MCP test does not exercise the full plugin.
 
-The bundled Claude marketplace entry does not pin your local artifact. Use the `v3.0.1` tagged checkout or an identified archive for release testing, and verify the loaded build. Follow the [fresh full-plugin acceptance guide](PLUGIN-TESTING.md) for the local installation and cache checks. Existing user sessions and global configuration are not automatically changed by packing or installing a CLI archive.
+The bundled Claude marketplace entry does not pin your local artifact. Use the `v3.1.0` tagged checkout or an identified archive for release testing, and verify the loaded build. Follow the [fresh full-plugin acceptance guide](PLUGIN-TESTING.md) for the local installation and cache checks. Existing user sessions and global configuration are not automatically changed by packing or installing a CLI archive.
 
 For an authenticated compatible endpoint, configure a local environment variable such as `MODEL_API_KEY` and append `--api-key-env MODEL_API_KEY` to the research command. Pass the variable name, never the secret itself. Custom endpoints do not inherit OpenAI or OpenRouter environment keys, and credential fields are excluded from exports.
 

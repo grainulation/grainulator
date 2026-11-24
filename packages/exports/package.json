@@ -1,6 +1,6 @@
 {
   "name": "@grainulation/grainulator-exports",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "description": "Turn evidence sprint artifacts into shareable formats",
   "main": "lib/index.js",
   "exports": {
@@ -25,7 +25,7 @@
     "format:check": "npx prettier@3.3 --check ."
   },
   "dependencies": {
-    "@grainulation/grainulator-shared": "3.0.1"
+    "@grainulation/grainulator-shared": "3.1.0"
   },
   "keywords": [
     "evidence",
