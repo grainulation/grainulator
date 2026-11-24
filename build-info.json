@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "id": "release-3.0.1-af99e2a4958074bd",
+  "id": "release-3.0.1-b3e8bfd7c1a5bdca",
   "version": "3.0.1",
-  "source_sha256": "af99e2a4958074bd8350a48d83b0461690d4af33290c80a5ca0a79d4cebc7071",
+  "source_sha256": "b3e8bfd7c1a5bdcad9cb98cedd80884f004fb21b73bf14c91e560d52c16432fc",
   "files": {
     ".claude-plugin/marketplace.json": "5a8b3439241f3f4db98981ca4643643ecd3cc749f6351ee7170ca72b5ae35631",
     ".claude-plugin/plugin.json": "1dd5a16cb464ba4adeaeef433e1506dbdd737f78139c9642db83503e041eb104",
@@ -72,7 +72,7 @@
     "lib/workspace-config.js": "91d039249c5639f1682ba7eb2f6aa21ab5a506e642dfd709a27b4ce7167ec2f0",
     "mcp.json": "2c8c556298b8ac787d67b68cae25417af81db0278b79cd71a8de3525259a4837",
     "mcp_config.json": "888de77653e80b71691aaeba63f1f99ddc519cfba6602a73f2a0872ca2762054",
-    "package.json": "aa9b518f75ab9604df94c84fa42657e7ccda32fffdefff0a7322822d80c13b70",
+    "package.json": "24da6490de47d504c2277d28fd39c7c9cb06c59e89bd9875b056d780c19c7271",
     "packages/analytics/CHANGELOG.md": "486e916c7d1778bb20a14a81efcbfee9c1330f640962fc287b4c5b6a8d426488",
     "packages/analytics/CODE_OF_CONDUCT.md": "a0fb0d37e1483df77d811c1e3f4e0ea294c8747f97d57173c89c19ca23c2214f",
     "packages/analytics/CONTRIBUTING.md": "b3d887fe2976664639b67f165a61bf8b7d660864b75f46897966cf6d5f80da48",
