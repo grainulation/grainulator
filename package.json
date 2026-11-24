@@ -135,6 +135,7 @@
 		"url": "https://github.com/grainulation/grainulator/issues"
 	},
 	"scripts": {
+		"build": "node scripts/check-surface.mjs",
 		"test": "node scripts/test-workspace.mjs",
 		"test:e2e": "npm run test:install",
 		"test:all": "npm test && npm run test:runtime && npm run test:reports && npm run test:install",
