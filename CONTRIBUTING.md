@@ -36,6 +36,8 @@ For native Codex, install the intended local plugin through its marketplace mech
 4. After the final shipped-file edit, run `npm run build:identity` and include the updated `build-info.json` in the commit. Regenerate it if any packaged file changes again; CI checks that its file checksums match.
 5. Describe the problem, resulting behavior, checks actually run, and remaining limits. Do not report older test results as verification of newer edits.
 
+See [TypeScript development](docs/TYPESCRIPT.md) for canonical sources, strict checking and generated runtime JavaScript.
+
 ## Verification and CI
 
 CI runs `npm test`, `npm run check:package`, and `npm run test:install` on Node 24 and 26. Separate jobs run lint, Rust runtime conformance, static analysis and dependency checks. Installed-package acceptance exercises CLI/MCP and headless research without a browser.
@@ -44,24 +46,24 @@ CI runs `npm test`, `npm run check:package`, and `npm run test:install` on Node 
 npm run lint
 npm run test:install
 npm run test:runtime
-npx playwright install chromium
-npm run test:reports
+npm run typecheck
+npm run check:types
 npm run test:distribution
 npm run check:surface
 ```
 
-Rust/Cargo is required for runtime conformance. Playwright is a development-only tool for checking generated offline reports, not a bundled browser app or runtime dependency. Routine checks use local fixtures and make no paid-provider calls. Native-host and live-provider acceptance remain separate from CLI/MCP tests; see [verification scope](docs/READINESS.md) and [packaging](docs/DEPLOYMENT.md).
+Rust/Cargo is required for runtime conformance. Routine checks use local fixtures and make no paid-provider calls. Native-host and live-provider acceptance remain separate from CLI/MCP tests; see [verification scope](docs/READINESS.md) and [packaging](docs/DEPLOYMENT.md).
 
-## Skills and shared templates
+## Skills and exports
 
 Skills live in `skills/<name>/SKILL.md`, with YAML metadata and a portable Markdown workflow. Every directory under `skills/` must contain a real skill. Declare only needed tools; distinguish direct and host-prefixed MCP names where the host requires an allowlist.
 
-Shared artifact templates live in root `templates/`, outside skill discovery. Claude can resolve `${CLAUDE_PLUGIN_ROOT}/templates/<file>`; other hosts resolve templates relative to the installed plugin or checkout. Preserve the documented accessibility shell when customizing artifacts.
+Briefs and analytics reports use Markdown. JSON and Markdown exports preserve evidence for external rendering tools; this repository does not maintain presentation templates or browser rendering.
 
 ## Distribution and migration checks
 
 The [release guide](docs/RELEASING.md) covers frozen base/native candidates, the
-separate offline converter, manifest trust and actual Homebrew recipe acceptance.
+separate offline converter, manifest trust. Homebrew formula generation and installation acceptance belong to the separate tap repository.
 The v3 normal archive exposes one product CLI; it does not preserve old component
 binaries or automatically convert user data. Keep signed history and source
 provenance intact. Use isolated fixtures for conversion, rollback and hook tests;

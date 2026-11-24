@@ -1507,7 +1507,7 @@ Options:
 		if (top.length === 0) {
 			console.log("\nNo actions recommended — sprint looks complete.");
 			console.log(
-				"Consider: /brief to compile, /present to share, /calibrate after shipping.",
+				"Consider: /brief for a Markdown decision brief, /calibrate after shipping.",
 			);
 		} else {
 			console.log(
@@ -1763,7 +1763,7 @@ function computeNextActions(comp) {
 			command: "/evaluate",
 			reason: `Phase is ${phase} but no evaluation claims exist. Time to test claims against reality.`,
 			impact:
-				"Validates claims, resolves conflicts, produces comparison dashboard.",
+				"Validates claims, resolves conflicts, produces portable evidence data.",
 		});
 	}
 

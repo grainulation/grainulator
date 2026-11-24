@@ -25,6 +25,18 @@ const initializeParams = (protocolVersion = "2025-06-18") => ({
 	clientInfo: { name: "compact-test", version: "1" },
 });
 
+function readArtifactSnapshot(file) {
+	const fd = fs.openSync(file, fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW);
+	try {
+		const stat = fs.fstatSync(fd, { bigint: true });
+		assert.ok(stat.isFile());
+		const { dev, ino, mtimeNs } = stat;
+		return { bytes: fs.readFileSync(fd), dev, ino, mtimeNs };
+	} finally {
+		fs.closeSync(fd);
+	}
+}
+
 async function fixture(t, toolset = "compact", protocolVersion = "2025-06-18") {
 	const base = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-compact-"));
 	t.after(() => fs.rmSync(base, { recursive: true, force: true }));
@@ -683,11 +695,13 @@ test("compact memory, exports and catalogs remain usable without relaxing output
 	const outside = path.join(base, "outside");
 	fs.mkdirSync(outside);
 	fs.symlinkSync(outside, path.join(dir, "escape"));
+	const ledger = path.join(dir, "claims.json");
+	const previous = readArtifactSnapshot(ledger);
 	for (const args of [
 		{ format: "markdown", output: "claims.json" },
 		{ format: "markdown", output: "escape/new/report.md" },
 		{ format: "markdown", output: "report.md", lines: 2 },
-	])
+	]) {
 		assert.equal(
 			(
 				await rpc(handler, "tools/call", {
@@ -697,8 +711,9 @@ test("compact memory, exports and catalogs remain usable without relaxing output
 			).result.isError,
 			true,
 		);
+		assert.deepEqual(readArtifactSnapshot(ledger), previous);
+	}
 	assert.deepEqual(fs.readdirSync(outside), []);
-	const previous = fs.readFileSync(path.join(dir, "claims.json"), "utf8");
 	for (const args of [
 		{
 			mode: "criteria",
@@ -708,7 +723,7 @@ test("compact memory, exports and catalogs remain usable without relaxing output
 		},
 		{ mode: "unknown", question: "Rejected" },
 		{ mode: "create", question: "Rejected", arbitrary: true },
-	])
+	]) {
 		assert.equal(
 			(
 				await rpc(handler, "tools/call", {
@@ -718,10 +733,8 @@ test("compact memory, exports and catalogs remain usable without relaxing output
 			).result.isError,
 			true,
 		);
-	assert.equal(
-		fs.readFileSync(path.join(dir, "claims.json"), "utf8"),
-		previous,
-	);
+		assert.deepEqual(readArtifactSnapshot(ledger), previous);
+	}
 });
 
 test("CLI compact startup performs real stdio discovery and calls", async (t) => {
@@ -1131,9 +1144,10 @@ test("initialization returns configured artifact paths and confines writes in bo
 			);
 			assert.deepEqual(result.files_created, files);
 			for (const file of result.files_created) {
-				assert.ok(fs.statSync(path.resolve(result.directory, file)).isFile());
 				assert.ok(
-					JSON.parse(fs.readFileSync(path.resolve(result.directory, file))),
+					JSON.parse(
+						readArtifactSnapshot(path.resolve(result.directory, file)).bytes,
+					),
 				);
 			}
 			if (custom)
@@ -1427,15 +1441,13 @@ for (const toolset of ["legacy", "compact"]) {
 			done: "Evidence preserved",
 		});
 		const file = path.join(dir, "compilation.json"),
-			before = fs.readFileSync(file),
-			stamp = fs.statSync(file, { bigint: true }).mtimeNs;
+			before = readArtifactSnapshot(file);
 		const response = await rpc(handler, "tools/call", {
 			name: toolset === "compact" ? "compile_sprint" : "compile",
 			arguments: null,
 		});
 		assert.ok(response.error || response.result?.isError);
-		assert.deepEqual(fs.readFileSync(file), before);
-		assert.equal(fs.statSync(file, { bigint: true }).mtimeNs, stamp);
+		assert.deepEqual(readArtifactSnapshot(file), before);
 	});
 	test(`${toolset}: existing sprint recovery is profile-neutral`, async (t) => {
 		const { handler, dir } = await fixture(t, toolset);
@@ -1506,8 +1518,7 @@ for (const toolset of ["legacy", "compact"]) {
 			done: "No writes on malformed requests",
 		});
 		const file = path.join(dir, "compilation.json"),
-			before = fs.readFileSync(file),
-			stamp = fs.statSync(file, { bigint: true }).mtimeNs;
+			before = readArtifactSnapshot(file);
 		for (const meta of [
 			false,
 			null,
@@ -1522,8 +1533,7 @@ for (const toolset of ["legacy", "compact"]) {
 				_meta: meta,
 			});
 			assert.equal(response.error?.code, -32602);
-			assert.deepEqual(fs.readFileSync(file), before);
-			assert.equal(fs.statSync(file, { bigint: true }).mtimeNs, stamp);
+			assert.deepEqual(readArtifactSnapshot(file), before);
 		}
 	});
 }

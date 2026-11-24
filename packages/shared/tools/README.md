@@ -28,7 +28,3 @@ The manifest includes:
 - Topic map with claim IDs and evidence levels
 - Sprint detection results (via detect-sprints)
 - File-to-topic associations
-
-## build-pdf.js
-
-Thin wrapper around `npx md-to-pdf`. Validates the input file exists, runs the conversion, and reports the output path. Nothing more.

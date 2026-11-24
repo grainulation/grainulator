@@ -35,7 +35,7 @@ jobs:
       - name: Verify tag, commit and independently carried manifest pin
         env:
           EXPECTED_MANIFEST_SHA256: ${{ needs.candidates.outputs.manifest_sha256 }}
-        run: node scripts/homebrew-verify-release.mjs --directory release-input/release --manifest-sha256 "$EXPECTED_MANIFEST_SHA256" --version "${GITHUB_REF_NAME#v}" --source-commit "$GITHUB_SHA"
+        run: node scripts/verify-release.mjs --directory release-input --manifest-sha256 "$EXPECTED_MANIFEST_SHA256" --version "${GITHUB_REF_NAME#v}" --source-commit "$GITHUB_SHA"
       - name: Publish without replacing an existing release or asset
         env:
           GH_TOKEN: ${{ github.token }}
@@ -43,9 +43,9 @@ jobs:
         run: |
           node --input-type=module <<'JS'
           import {spawnSync} from 'node:child_process';
-          import {verifyRelease} from './scripts/homebrew-verify-release.mjs';
+          import {verifyRelease} from './scripts/verify-release.mjs';
           const tag=process.env.GITHUB_REF_NAME;
-          const verified=verifyRelease({directory:'release-input/release',manifestSha256:process.env.EXPECTED_MANIFEST_SHA256,version:tag.slice(1),sourceCommit:process.env.GITHUB_SHA});
+          const verified=verifyRelease({directory:'release-input',manifestSha256:process.env.EXPECTED_MANIFEST_SHA256,version:tag.slice(1),sourceCommit:process.env.GITHUB_SHA});
           if(spawnSync('gh',['release','view',tag],{stdio:'ignore'}).status===0)throw Error('Release already exists; refusing overwrite or rebuild');
           const result=spawnSync('gh',['release','create',tag,...verified.files,'--verify-tag','--title',tag,'--generate-notes'],{stdio:'inherit'});
           if(result.error||result.status!==0)throw Error('Release creation failed or outcome unknown; reconcile before retry');

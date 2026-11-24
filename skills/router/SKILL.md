@@ -22,7 +22,6 @@ Routes plain-language user messages to the appropriate grainulator skill.
 | "what are we missing", "any gaps?"                                     | `/blind-spot`         | Structural gap analysis    |
 | "where are we", "what's the status"                                    | `/status`             | Sprint snapshot            |
 | "write it up", "summarize for the team"                                | `/brief`              | Decision document          |
-| "make slides", "prepare for the meeting"                               | `/present`            | Stakeholder presentation   |
 | "publish to confluence", "sync to confluence", "push to wiki"          | `/sync`               | Confluence publish         |
 | "pull from confluence", "import from wiki", "backfill from confluence" | `/pull <slug>`        | Confluence pull            |
 | "show the plan", "what sprints are next", "dependency graph"           | `/orchestrate`            | Multi-sprint orchestration |

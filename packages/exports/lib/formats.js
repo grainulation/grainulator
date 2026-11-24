@@ -6,25 +6,21 @@ const { pathToFileURL } = require("node:url");
 const { loadSource } = require("./source-data.js");
 const { assertSafeOutput } = require("./output-safety.js");
 
-const pdf = require("./exporters/pdf.js");
 const csv = require("./exporters/csv.js");
 const markdown = require("./exporters/markdown.js");
 const jsonLd = require("./exporters/json-ld.js");
-const static_ = require("./publishers/static.js");
 const clipboard = require("./publishers/clipboard.js");
 
-// Legacy CJS exporters. The convert pipeline still uses these for the four
-// original formats; the broader format catalogue is the ESM files in
+// Legacy CJS exporters. The convert pipeline still uses these for the retained
+// original data formats; the broader format catalogue is the ESM files in
 // lib/formats/*.mjs (discovered below).
 const EXPORTERS = {
-  pdf,
   csv,
   markdown,
   "json-ld": jsonLd,
 };
 
 const PUBLISHERS = {
-  static: static_,
   clipboard,
 };
 

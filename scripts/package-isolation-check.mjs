@@ -21,12 +21,13 @@ try {
     for(const entry of ['apps','site','packages/legacy-cli/site','hooks/sprint-status-notifier.cjs','packages/evidence/lib/connect.js','packages/evidence/lib/disconnect.js','packages/analytics/lib/farmer.js','packages/orchestration/lib/farmer.js'])assert.equal(fs.existsSync(path.join(installed,entry)),false,entry);
     const manifest=JSON.parse(fs.readFileSync(path.join(installed,'package.json')));assert.equal(manifest.dependencies?.ws,undefined);
   });
-  check('retired component HTTP apps absent; report templates and export assets retained',()=>{
+  check('retired presentation assets absent; Markdown reports and data exports retained',()=>{
     for(const component of ['analytics','evidence','exports','legacy-cli','memory','orchestration','shared']) {
       const base=path.join(installed,'packages',component);
       for(const entry of ['public/index.html','lib/server.js','lib/server.mjs']) assert.equal(fs.existsSync(path.join(base,entry)),false,`${component}/${entry}`);
     }
-    for(const entry of ['packages/analytics/templates/retrospective.html','packages/analytics/lib/report.js','packages/orchestration/templates/dashboard.html','packages/shared/templates/brief.html']) assert.equal(fs.existsSync(path.join(installed,entry)),true,entry);
+    for(const entry of ['packages/analytics/lib/report.js','packages/exports/lib/formats/markdown.mjs','packages/exports/lib/formats/json.mjs']) assert.equal(fs.existsSync(path.join(installed,entry)),true,entry);
+    for(const entry of ['templates','skills/present','packages/shared/templates/brief.html','packages/orchestration/templates/dashboard.html','packages/analytics/templates/retrospective.html','packages/exports/lib/formats/html-report.mjs','packages/exports/lib/exporters/pdf.js']) assert.equal(fs.existsSync(path.join(installed,entry)),false,entry);
     for(const entry of ['packages/analytics/lib/dashboard.js','packages/analytics/templates/dashboard.html']) assert.equal(fs.existsSync(path.join(installed,entry)),false,entry);
   });
   check('browser payload and asset vendoring are absent from the installed product',()=>{
@@ -54,7 +55,7 @@ try {
   });
   check('CLI help',()=>assert.match(run(['--help']),/Grainulator/));
   check('doctor validates the required runtime and packaged components',()=>{const checks=JSON.parse(run(['doctor','--json'])).checks;assert.ok(checks.every(c=>c.available));assert.equal(checks.find(c=>c.component==='node').required,JSON.parse(fs.readFileSync(path.join(installed,'package.json'))).engines.node);});
-  if(fs.existsSync(path.join(installed,'build-info.json')))check('identified build verifies all recorded files',()=>{const build=JSON.parse(run(['doctor','--json'])).build;assert.equal(build.verified,true);assert.match(build.id,/^(?:local-|release-[^-]+-)[a-f0-9]{16}$/);});
+  check('identified build verifies all recorded files',()=>{const build=JSON.parse(run(['doctor','--json'])).build;assert.equal(build.verified,true);assert.match(build.id,/^(?:local-|release-[^-]+-)[a-f0-9]{16}$/);});
   // Use the real installed package in a path requiring file-URL encoding, never a source symlink.
   const corpus=JSON.parse(fs.readFileSync(path.join(installed,'evals/rejected-claims/corpus.json'),'utf8'));
   const verifier=path.join(installed,'evals/rejected-claims/verifier.mjs');

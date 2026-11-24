@@ -66,9 +66,9 @@ Optional: `--full` to generate an HTML retrospective report. `--calibrate` to ru
    - Tell the user they can generate a full HTML retrospective report:
      ```
      For a full retrospective report:
-       grainulator analytics report <dir> -o <dir>/output/analytics.html
+       grainulator analytics report <dir> -o <dir>/output/analytics.md
      ```
-   - If the user passed `--full`, run the report command directly and write the output to `<dir>/output/analytics.html` (use an absolute resolved directory).
+   - If the user passed `--full`, run the report command directly and write the output to `<dir>/output/analytics.md` (use an absolute resolved directory).
 
 6. **Recommend calibration if sprint is complete**:
    - If the sprint appears to be in a late phase (has recommendations, has a brief, or the user mentioned shipping), suggest:
@@ -95,7 +95,7 @@ Optional: `--full` to generate an HTML retrospective report. `--calibrate` to ru
    - Stale claims exist -> suggest `/challenge` or `/research` on the stalest
    - Weak evidence base -> suggest `/witness` or `/research`
    - Type concentration -> assess whether the task actually requires another perspective; do not add filler claims
-   - Sprint looks healthy -> suggest `/brief` or `/present`
+   - Sprint looks healthy -> suggest `/brief`
 
 ## Host access
 

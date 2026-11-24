@@ -47,19 +47,7 @@ function setup() {
     JSON.stringify({ claims }, null, 2),
   );
 
-  // Create a test HTML file
-  fs.writeFileSync(
-    path.join(FIXTURES, "brief.html"),
-    `<!DOCTYPE html>
-<html><head><title>Test Brief</title></head>
-<body>
-<h1>Sprint Brief</h1>
-<p>This is a <strong>test</strong> brief with <em>emphasis</em>.</p>
-<ul><li>First point</li><li>Second point</li></ul>
-<h2>Conclusion</h2>
-<p>All done.</p>
-</body></html>`,
-  );
+
 }
 
 function cleanup() {
@@ -101,11 +89,9 @@ test("--help prints usage", () => {
 
 test("formats command lists all formats", () => {
   const out = run(["formats"]);
-  assert.ok(out.includes("pdf"));
   assert.ok(out.includes("csv"));
   assert.ok(out.includes("markdown"));
   assert.ok(out.includes("json-ld"));
-  assert.ok(out.includes("static"));
   assert.ok(out.includes("clipboard"));
 });
 
@@ -138,8 +124,9 @@ test("json-ld export produces valid JSON-LD", () => {
 });
 
 test("markdown export converts HTML to markdown", () => {
-  const input = path.join(FIXTURES, "brief.html");
-  const output = path.join(tmpDir, "brief.md");
+  const input = path.join(tmpDir, "imported.html");
+  fs.writeFileSync(input, "<h1>Sprint Brief</h1><p>This is a <strong>test</strong> brief with <em>emphasis</em>.</p><ul><li>First point</li><li>Second point</li></ul><h2>Conclusion</h2>");
+  const output = path.join(tmpDir, "imported.md");
   const out = run(["export", "--format", "markdown", input, "-o", output]);
   assert.ok(out.includes("Markdown written"));
 
@@ -151,26 +138,10 @@ test("markdown export converts HTML to markdown", () => {
   assert.ok(md.includes("## Conclusion"));
 });
 
-test("static publish creates site with index", () => {
-  const inputDir = path.join(tmpDir, "sprint-output");
-  const siteDir = path.join(tmpDir, "site");
-  fs.mkdirSync(inputDir, { recursive: true });
-  fs.writeFileSync(path.join(inputDir, "brief.html"), "<h1>Brief</h1>");
-  fs.writeFileSync(path.join(inputDir, "claims.json"), "[]");
-
-  const out = run(["publish", "--target", "static", inputDir, "-o", siteDir]);
-  assert.ok(out.includes("Static site written"));
-  assert.ok(fs.existsSync(path.join(siteDir, "index.html")));
-  assert.ok(fs.existsSync(path.join(siteDir, "brief.html")));
-
-  const index = fs.readFileSync(path.join(siteDir, "index.html"), "utf-8");
-  assert.ok(index.includes("brief.html"));
-  assert.ok(index.includes("#d97706")); // amber accent
-});
 
 test("format detection works", () => {
   const formats = require("../lib/formats.js");
-  assert.strictEqual(formats.detectFormat("brief.html"), "html");
+  assert.strictEqual(formats.detectFormat("imported.html"), "html");
   assert.strictEqual(formats.detectFormat("claims.json"), "json");
   assert.strictEqual(formats.detectFormat("notes.md"), "markdown");
   assert.strictEqual(formats.detectFormat("data.csv"), "csv");
@@ -406,219 +377,34 @@ test("listExportFormats returns all export formats", () => {
   assert.ok(list.includes("csv"));
   assert.ok(list.includes("markdown"));
   assert.ok(list.includes("json-ld"));
-  assert.ok(list.includes("pdf"));
+  assert.ok(list.includes("json"));
+  assert.ok(!list.includes("pdf"));
 });
 
-test("listPublishTargets returns static and clipboard", () => {
+test("listPublishTargets retains clipboard and excludes static", () => {
   const formats = require("../lib/formats.js");
   const list = formats.listPublishTargets();
-  assert.ok(list.includes("static"));
+  assert.ok(!list.includes("static"));
   assert.ok(list.includes("clipboard"));
 });
 
-// ─── Static publisher: unit tests ────────────────────────────────────────────
 
-console.log("\nstatic publisher unit tests\n");
 
-test("static publisher includes all files in index", () => {
-  const inputDir = path.join(tmpDir, "multi-output");
-  const siteDir = path.join(tmpDir, "multi-site");
-  fs.mkdirSync(inputDir, { recursive: true });
-  fs.writeFileSync(path.join(inputDir, "brief.html"), "<h1>Brief</h1>");
-  fs.writeFileSync(path.join(inputDir, "data.csv"), "id,text\nr001,test");
-  fs.writeFileSync(path.join(inputDir, "notes.md"), "# Notes");
 
-  run(["publish", "--target", "static", inputDir, "-o", siteDir]);
-  const index = fs.readFileSync(path.join(siteDir, "index.html"), "utf-8");
-  assert.ok(index.includes("brief.html"));
-  assert.ok(index.includes("data.csv"));
-  assert.ok(index.includes("notes.md"));
-  assert.ok(index.includes("HTML"));
-  assert.ok(index.includes("CSV"));
-  assert.ok(index.includes("MD"));
-});
 
-test("static publisher copies source files to site", () => {
-  const inputDir = path.join(tmpDir, "copy-test");
-  const siteDir = path.join(tmpDir, "copy-site");
-  fs.mkdirSync(inputDir, { recursive: true });
-  fs.writeFileSync(path.join(inputDir, "test.txt"), "hello world");
 
-  run(["publish", "--target", "static", inputDir, "-o", siteDir]);
-  assert.ok(fs.existsSync(path.join(siteDir, "test.txt")));
-  assert.strictEqual(
-    fs.readFileSync(path.join(siteDir, "test.txt"), "utf-8"),
-    "hello world",
-  );
-});
 
-test("static publisher uses dark theme with amber accent", () => {
-  const inputDir = path.join(tmpDir, "theme-test");
-  const siteDir = path.join(tmpDir, "theme-site");
-  fs.mkdirSync(inputDir, { recursive: true });
-  fs.writeFileSync(path.join(inputDir, "a.html"), "<p>content</p>");
 
-  run(["publish", "--target", "static", inputDir, "-o", siteDir]);
-  const index = fs.readFileSync(path.join(siteDir, "index.html"), "utf-8");
-  assert.ok(index.includes("#d97706"), "uses amber accent color");
-  assert.ok(index.includes("background: #111"), "uses dark background");
-  assert.ok(index.includes("Built with @grainulation/grainulator-exports"), "has mill footer");
-});
 
-// ─── HTML accessibility tests ────────────────────────────────────────────────
 
-console.log("\nhtml accessibility tests\n");
 
-test("html-report has skip link", () => {
-  const input = path.join(FIXTURES, "claims.json");
-  const output = path.join(tmpDir, "a11y-report.html");
-  // Use ci-artifacts to generate html-report
-  run([
-    "ci-artifacts",
-    input,
-    "-o",
-    path.join(tmpDir, "a11y-report-dir"),
-    "-f",
-    "html-report",
-  ]);
-  const html = fs.readFileSync(
-    path.join(tmpDir, "a11y-report-dir", "html-report.html"),
-    "utf-8",
-  );
-  assert.ok(html.includes('class="skip-link"'), "has skip link");
-  assert.ok(html.includes('href="#main-content"'), "skip link targets main");
-});
 
-test("html-report has semantic landmarks", () => {
-  const html = fs.readFileSync(
-    path.join(tmpDir, "a11y-report-dir", "html-report.html"),
-    "utf-8",
-  );
-  assert.ok(html.includes("<main"), "has main landmark");
-  assert.ok(html.includes('role="banner"'), "has banner role");
-  assert.ok(html.includes('role="contentinfo"'), "has contentinfo role");
-  assert.ok(html.includes("<nav"), "has nav for filters");
-});
 
-test("html-report filter buttons have aria-pressed", () => {
-  const html = fs.readFileSync(
-    path.join(tmpDir, "a11y-report-dir", "html-report.html"),
-    "utf-8",
-  );
-  assert.ok(
-    html.includes('aria-pressed="true"'),
-    "filter buttons have aria-pressed",
-  );
-});
 
-test("html-report has article cards with aria-labelledby", () => {
-  const html = fs.readFileSync(
-    path.join(tmpDir, "a11y-report-dir", "html-report.html"),
-    "utf-8",
-  );
-  assert.ok(html.includes("<article"), "uses article for cards");
-  assert.ok(html.includes("aria-labelledby"), "cards have aria-labelledby");
-});
 
-test("html-report confidence bars have progressbar role", () => {
-  const html = fs.readFileSync(
-    path.join(tmpDir, "a11y-report-dir", "html-report.html"),
-    "utf-8",
-  );
-  assert.ok(
-    html.includes('role="progressbar"'),
-    "confidence bars have progressbar role",
-  );
-  assert.ok(html.includes("aria-valuenow"), "has aria-valuenow");
-  assert.ok(html.includes('aria-valuemin="0"'), "has aria-valuemin");
-  assert.ok(html.includes('aria-valuemax="100"'), "has aria-valuemax");
-});
 
-test("html-report has prefers-reduced-motion", () => {
-  const html = fs.readFileSync(
-    path.join(tmpDir, "a11y-report-dir", "html-report.html"),
-    "utf-8",
-  );
-  assert.ok(
-    html.includes("prefers-reduced-motion"),
-    "respects reduced motion preference",
-  );
-});
 
-test("executive-summary has skip link and table captions", () => {
-  run([
-    "ci-artifacts",
-    path.join(FIXTURES, "claims.json"),
-    "-o",
-    path.join(tmpDir, "a11y-exec-dir"),
-    "-f",
-    "executive-summary",
-  ]);
-  const html = fs.readFileSync(
-    path.join(tmpDir, "a11y-exec-dir", "executive-summary.html"),
-    "utf-8",
-  );
-  assert.ok(html.includes('class="skip-link"'), "has skip link");
-  assert.ok(html.includes("<main"), "has main landmark");
-  assert.ok(html.includes("<caption>"), "tables have captions");
-  assert.ok(html.includes('scope="col"'), "th elements have scope");
-});
 
-test("executive-summary has semantic sections", () => {
-  const html = fs.readFileSync(
-    path.join(tmpDir, "a11y-exec-dir", "executive-summary.html"),
-    "utf-8",
-  );
-  assert.ok(html.includes('aria-label="Key risks"'), "has risks section label");
-  assert.ok(
-    html.includes('aria-label="Recommendations"'),
-    "has recommendations section label",
-  );
-  assert.ok(
-    html.includes('aria-label="Evidence coverage"'),
-    "has evidence section label",
-  );
-});
-
-test("slide-deck has aria-roledescription on slides", () => {
-  run([
-    "ci-artifacts",
-    path.join(FIXTURES, "claims.json"),
-    "-o",
-    path.join(tmpDir, "a11y-slides-dir"),
-    "-f",
-    "slide-deck",
-  ]);
-  const html = fs.readFileSync(
-    path.join(tmpDir, "a11y-slides-dir", "slide-deck.html"),
-    "utf-8",
-  );
-  assert.ok(
-    html.includes('aria-roledescription="slide"'),
-    "slides have roledescription",
-  );
-  assert.ok(html.includes('role="group"'), "slides have group role");
-});
-
-test("slide-deck has live region counter", () => {
-  const html = fs.readFileSync(
-    path.join(tmpDir, "a11y-slides-dir", "slide-deck.html"),
-    "utf-8",
-  );
-  assert.ok(html.includes('aria-live="polite"'), "has live region");
-  assert.ok(html.includes("slide-counter"), "has slide counter");
-});
-
-test("slide-deck respects prefers-reduced-motion", () => {
-  const html = fs.readFileSync(
-    path.join(tmpDir, "a11y-slides-dir", "slide-deck.html"),
-    "utf-8",
-  );
-  assert.ok(
-    html.includes("prefers-reduced-motion"),
-    "has reduced motion media query",
-  );
-});
 
 // ─── Confluence ADF tests ────────────────────────────────────────────────────
 
@@ -674,21 +460,13 @@ test("confluence-adf tables have header and data rows", () => {
 
 console.log("\nci-artifacts command tests\n");
 
-test("ci-artifacts generates default formats", () => {
+test("ci-artifacts generates portable evidence formats", () => {
   const outDir = path.join(tmpDir, "ci-default");
   run(["ci-artifacts", path.join(FIXTURES, "claims.json"), "-o", outDir]);
-  assert.ok(
-    fs.existsSync(path.join(outDir, "html-report.html")),
-    "generated html-report",
-  );
-  assert.ok(
-    fs.existsSync(path.join(outDir, "executive-summary.html")),
-    "generated executive-summary",
-  );
-  assert.ok(
-    fs.existsSync(path.join(outDir, "slide-deck.html")),
-    "generated slide-deck",
-  );
+  for (const file of ["markdown.md", "json.json", "csv.csv"]) {
+    assert.ok(fs.existsSync(path.join(outDir, file)), `generated ${file}`);
+  }
+  assert.ok(!fs.readdirSync(outDir).some(file => /\.(html|pdf)$/.test(file)));
 });
 
 test("ci-artifacts --formats selects specific formats", () => {
@@ -710,6 +488,16 @@ test("ci-artifacts --formats selects specific formats", () => {
     !fs.existsSync(path.join(outDir, "html-report.html")),
     "did not generate html-report",
   );
+});
+
+test("retired presentation formats reject without writing partial CI artifacts", () => {
+  for (const format of ["html-report", "executive-summary", "slide-deck", "static-site", "pdf"]) {
+    const outputDir = path.join(tmpDir, `retired-${format}`);
+    const result = spawnSync(process.execPath, [MILL, "ci-artifacts", path.join(FIXTURES, "claims.json"), "-o", outputDir, "--formats", `markdown,${format}`], { encoding: "utf8" });
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /unknown format/);
+    assert.ok(!fs.existsSync(outputDir));
+  }
 });
 
 test("ci-artifacts --summary generates step-summary.md", () => {
@@ -775,12 +563,12 @@ const compiled = publicCli(["compile", "--dir", exportSprint]);
 assert.ok(fs.existsSync(path.join(exportSprint, "compilation.json")), compiled.stderr);
 
 test("public export resolves --dir paths and preserves actual compiled evidence", () => {
-  const result = publicCli(["export", "export", "--format", "executive-summary", "compilation.json", "-o", "brief.html", "--dir", "export sprint"]);
+  const result = publicCli(["export", "export", "--format", "markdown", "compilation.json", "-o", "brief.md", "--dir", "export sprint"]);
   assert.equal(result.status, 0, result.stderr);
-  const output = fs.readFileSync(path.join(exportSprint, "brief.html"), "utf8");
+  const output = fs.readFileSync(path.join(exportSprint, "brief.md"), "utf8");
   assert.ok(output.includes("Keep verified claim content in every export"));
   assert.ok(output.includes("Export the complete decision"));
-  assert.ok(!fs.existsSync(path.join(tmpDir, "brief.html")));
+  assert.ok(!fs.existsSync(path.join(tmpDir, "brief.md")));
 });
 
 test("compiled evidence survives CSV, JSON-LD, Markdown and convert routes", () => {
@@ -790,31 +578,31 @@ test("compiled evidence survives CSV, JSON-LD, Markdown and convert routes", () 
     assert.equal(result.status, 0, result.stderr);
     assert.ok(fs.readFileSync(output, "utf8").includes("Keep verified claim content in every export"));
   }
-  const result = publicCli(["export", "convert", "--dir", exportSprint, "--from", "json", "--to", "executive-summary", "compilation.json", "-o", "converted.html"]);
+  const result = publicCli(["export", "convert", "--dir", exportSprint, "--from", "json", "--to", "markdown", "compilation.json", "-o", "converted.md"]);
   assert.equal(result.status, 0, result.stderr);
-  assert.ok(fs.readFileSync(path.join(exportSprint, "converted.html"), "utf8").includes("Keep verified claim content in every export"));
+  assert.ok(fs.readFileSync(path.join(exportSprint, "converted.md"), "utf8").includes("Keep verified claim content in every export"));
 });
 
 test("ci-artifacts resolves --dir and uses normalized compilation data", () => {
-  const result = publicCli(["export", "ci-artifacts", "--dir", exportSprint, "compilation.json", "-o", "artifacts", "--formats", "executive-summary"]);
+  const result = publicCli(["export", "ci-artifacts", "--dir", exportSprint, "compilation.json", "-o", "artifacts", "--formats", "markdown"]);
   assert.equal(result.status, 0, result.stderr);
-  assert.ok(fs.readFileSync(path.join(exportSprint, "artifacts/executive-summary.html"), "utf8").includes("Keep verified claim content in every export"));
+  assert.ok(fs.readFileSync(path.join(exportSprint, "artifacts/markdown.md"), "utf8").includes("Keep verified claim content in every export"));
 });
 
 test("invalid or content-less compilation fails actionably without writing an empty report", () => {
   for (const data of [{ status: "ready" }, { resolved_claims: [{ id: "r001", type: "factual" }] }, { claims: "invalid" }]) {
     fs.writeFileSync(path.join(exportSprint, "incomplete.json"), JSON.stringify(data));
-    const result = publicCli(["export", "export", "--dir", exportSprint, "--format", "executive-summary", "incomplete.json", "-o", "empty.html"]);
+    const result = publicCli(["export", "export", "--dir", exportSprint, "--format", "markdown", "incomplete.json", "-o", "empty.md"]);
     assert.notEqual(result.status, 0);
     assert.match(result.stderr, /claims.json|recompile/);
-    assert.ok(!fs.existsSync(path.join(exportSprint, "empty.html")));
+    assert.ok(!fs.existsSync(path.join(exportSprint, "empty.md")));
   }
 });
 
 test("ESM exports cannot overwrite their input or the sprint ledger", () => {
   const before = fs.readFileSync(path.join(exportSprint, "claims.json"), "utf8");
   for (const output of ["claims.json", "compilation.json"]) {
-    const result = publicCli(["export", "export", "--dir", exportSprint, "--format", "executive-summary", "compilation.json", "-o", output]);
+    const result = publicCli(["export", "export", "--dir", exportSprint, "--format", "markdown", "compilation.json", "-o", output]);
     assert.notEqual(result.status, 0);
     assert.match(result.stderr, /Protected output|overwrite/);
   }

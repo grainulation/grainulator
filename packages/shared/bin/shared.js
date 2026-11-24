@@ -8,7 +8,6 @@
  * Commands:
  *   detect-sprints    Find sprint directories in a repo
  *   generate-manifest Build .grainulator/evidence/manifest.json topic map
- *   build-pdf         Convert markdown to PDF via npx md-to-pdf
  *   help              Show this help message
  *
  * Zero npm dependencies (Node built-in only).
@@ -51,7 +50,6 @@ export { vlog, verbose };
 const commands = {
   "detect-sprints": "detect-sprints.js",
   "generate-manifest": "generate-manifest.js",
-  "build-pdf": "build-pdf.js",
 };
 
 vlog("startup", `command=${command || "(none)"}`, `cwd=${process.cwd()}`);
@@ -70,14 +68,12 @@ Usage:
 Commands:
   detect-sprints               Find sprint directories in a repo
   generate-manifest            Build .grainulator/evidence/manifest.json topic map
-  build-pdf <file>             Convert markdown to PDF via npx md-to-pdf
   help                         Show this help message
 
 Examples:
   grainulator utils detect-sprints --json
   grainulator utils detect-sprints --active
   grainulator utils generate-manifest --root /path/to/repo
-  grainulator utils build-pdf output/brief.md
 
 Options:
   --version, -v   Print version and exit

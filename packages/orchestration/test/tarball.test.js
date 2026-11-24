@@ -7,13 +7,12 @@ import path from "node:path";
 import { test } from "node:test";
 
 const REQUIRED_PATHS = [
-  "package/templates/dashboard.html",
   "package/bin/orchestrate.js",
   "package/package.json",
   "package/README.md",
   "package/LICENSE"
 ];
-const RETIRED_PATHS = ["public/index.html", "lib/server.js", "lib/server.mjs"];
+const RETIRED_PATHS = ["templates/dashboard.html", "lib/dashboard.js", "public/index.html", "lib/server.js", "lib/server.mjs"];
 const PKG_ROOT = new URL("..", import.meta.url);
 
 test("npm pack includes retained runtime resources and excludes retired browser apps", () => {

@@ -27,6 +27,41 @@ async function run() {
     "Expected at least one format module in lib/formats/",
   );
 
+  for (const retired of ["html-report", "executive-summary", "slide-deck", "static-site"]) {
+    assert.ok(!files.includes(`${retired}.mjs`), `${retired} must not be discoverable`);
+  }
+  const evidence = {
+    meta: { question: "Keep source identity" },
+    claims: [{ id: "r001", type: "factual", status: "active", content: "Verified result",
+      evidence: { tier: "tested", source: "https://example.com/source" },
+      sources: ["https://example.com/source"], provenance: { revision: "abc123" },
+      verified_by: "command-verifier", verification: { verdict: "passed" } }],
+    certificate: { sha256: "a".repeat(64) },
+  };
+  const json = await import("../lib/formats/json.mjs");
+  assert.deepStrictEqual(JSON.parse(json.convert(evidence)), evidence, "JSON must preserve complete evidence");
+  const markdown = await import("../lib/formats/markdown.mjs");
+  const rendered = markdown.convert(evidence);
+  for (const expected of ["r001", "https://example.com/source", "abc123", "command-verifier", "passed"]) {
+    assert.ok(rendered.includes(expected), `Markdown lost evidence reference: ${expected}`);
+  }
+
+  const reference = {
+    url: "https://example.com/source?a=1&b=2",
+    excerpt: '<script>alert("x")</script>\n```\n# forged heading & exact bytes',
+  };
+  const tricky = {
+    claims: [{ id: "r002", type: "factual", content: '<script>prose</script> & text',
+      evidence: { tier: "documented", source: reference.url },
+      sources: [reference], provenance: reference }],
+  };
+  const literalMarkdown = markdown.convert(tricky);
+  const referenceBlocks = [...literalMarkdown.matchAll(/(?:^        .*\n)+/gm)]
+    .map(match => JSON.parse(match[0].split("\n").filter(Boolean).map(line => line.slice(8)).join("\n")));
+  assert.deepStrictEqual(referenceBlocks, [reference.url, [reference], reference], "Indented reference JSON must roundtrip without entity encoding");
+  assert.ok(literalMarkdown.includes("&lt;script&gt;prose&lt;/script&gt; &amp; text"), "Prose must still escape raw HTML");
+  assert.ok(!literalMarkdown.split("\n").some(line => /^(?:<script>|```|# forged)/.test(line)), "References cannot escape their code blocks");
+
   let passed = 0;
   let failed = 0;
 

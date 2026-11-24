@@ -90,7 +90,7 @@ describe("claims-ops: exports", () => {
 			paths.compilation,
 			path.join("/tmp/example", "compilation.json"),
 		);
-		assert.ok(paths.brief.endsWith(path.join("output", "brief.html")));
+		assert.ok(paths.brief.endsWith(path.join("output", "brief.md")));
 		assert.ok(paths.compiler.endsWith("evidence-compiler.js"));
 	});
 });

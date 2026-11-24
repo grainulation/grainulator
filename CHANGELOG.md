@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.1.0] - 2026-11-24
 
+### Product scope and core types
+
+- Retire built-in HTML reports, slide decks, static-site output, PDF generation and presentation templates. Briefs and analytics reports use Markdown; JSON and Markdown exports preserve evidence for external presentation tools. Existing user outputs are retained.
+- Keep Homebrew installation through the shared tap; formula tooling and channel acceptance now belong to that repository. Product CI still verifies native archives and immutable release manifests.
+- Introduce strict TypeScript contracts and migrate MCP result validation and research evidence parsing. Checked-in generated JavaScript preserves direct CLI and installed-package execution without a runtime compiler dependency. CI checks types and generated-file freshness.
+- Fix the compact MCP regression tests' filesystem races by reading bytes and metadata through one file descriptor, retaining content, timestamp and file-identity assertions.
+
 ### Added
 
 - Opt-in `mcp --toolset compact` discovery with 15 tools for evidence, local memory and exports. Authored claims and document imports remain separate; the legacy 29-tool inventory and bundled plugin registrations remain the default.
@@ -15,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Read complete hook stdin asynchronously before making write-guard decisions, avoiding a reproduced Node 24 delayed-pipe race that could leave managed-file writes unblocked.
 - Describe initialization, local writes and replacement behavior with explicit tool hints, and align result contracts with successful and business-error responses.
 - Preserve historical audit access and project finding metadata from the same selected claim snapshot; bound diagnostic output and report truncation.
 - Reject malformed request IDs, metadata and tool arguments before negotiation or mutation, and align compact criteria constraints with dispatch validation.

@@ -1,8 +1,8 @@
 # Distribution and website ownership
 
-Grainulator ships a CLI, MCP server, native assets and generated report templates. It includes no public web directory, browser playground, privacy page, HTTP preview server or website-asset vendoring route. Public website hosting is maintained separately from this product repository.
+Grainulator ships a CLI, MCP server, native assets and evidence data exports. It includes no public web directory, browser playground, privacy page, HTTP preview server or website-asset vendoring route. Public website hosting is maintained separately from this product repository.
 
-Generated reports and the static-site export format are user-owned outputs from evidence; they do not require a bundled website. Imported-source hashes in `source-imports.json` preserve historical provenance rather than describe the current package inventory.
+Grainulator exports evidence as JSON, Markdown and data interchange formats. Visual rendering, slide decks, static sites and PDF generation belong to external tools. Imported-source hashes in `source-imports.json` preserve historical provenance rather than describe the current package inventory.
 
 ## MCP container
 

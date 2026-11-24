@@ -38,9 +38,6 @@ const expectedFiles = [
   "bin/shared.js",
   "tools/detect-sprints.js",
   "tools/generate-manifest.js",
-  "tools/build-pdf.js",
-  "templates/explainer.html",
-  "templates/dashboard.html",
 ];
 
 for (const file of expectedFiles) {
@@ -61,24 +58,6 @@ assert(
   !pkg.dependencies || Object.keys(pkg.dependencies).length === 0,
   "zero runtime dependencies",
 );
-
-// ─── Template checks ────────────────────────────────────────────────────────
-
-console.log("\n--- Templates ---");
-
-const explainer = readFileSync(join(ROOT, "templates/explainer.html"), "utf8");
-assert(explainer.includes("scroll-snap-type"), "explainer has scroll-snap");
-assert(explainer.includes("{{TITLE}}"), "explainer has TITLE placeholder");
-assert(!explainer.includes("<link"), "explainer has no external CSS links");
-assert(!explainer.includes("<script src"), "explainer has no external JS");
-
-const dashboard = readFileSync(join(ROOT, "templates/dashboard.html"), "utf8");
-assert(
-  dashboard.includes("{{SPRINT_QUESTION}}"),
-  "dashboard has SPRINT_QUESTION placeholder",
-);
-assert(dashboard.includes(".phase-track"), "dashboard has phase track");
-assert(dashboard.includes(".evidence-bar"), "dashboard has evidence bars");
 
 // ─── CLI help check ─────────────────────────────────────────────────────────
 
@@ -101,7 +80,7 @@ try {
     helpOutput.includes("generate-manifest"),
     "barn help lists generate-manifest",
   );
-  assert(helpOutput.includes("build-pdf"), "barn help lists build-pdf");
+  assert(!helpOutput.includes("build-pdf"), "retired PDF command is not advertised");
 } catch (e) {
   assert(false, `barn help runs without error: ${e.message}`);
 }
@@ -319,43 +298,6 @@ try {
     assert(false, `generate-manifest runs on test claims: ${e.message}`);
   }
   rmSync(tmp, { recursive: true });
-}
-
-// ─── build-pdf: --help check ────────────────────────────────────────────────
-
-console.log("\n--- build-pdf ---");
-
-try {
-  const bpHelp = execFileSync(
-    process.execPath,
-    [join(ROOT, "tools/build-pdf.js"), "--help"],
-    {
-      timeout: 5000,
-      stdio: ["ignore", "pipe", "pipe"],
-    },
-  ).toString();
-  assert(bpHelp.includes("build-pdf"), "build-pdf help mentions itself");
-  assert(bpHelp.includes("markdown"), "build-pdf help mentions markdown");
-  assert(bpHelp.includes("md-to-pdf"), "build-pdf help mentions md-to-pdf");
-} catch (e) {
-  assert(false, `build-pdf --help runs: ${e.message}`);
-}
-
-// build-pdf exits with 1 for nonexistent file
-{
-  try {
-    execFileSync(
-      process.execPath,
-      [join(ROOT, "tools/build-pdf.js"), "/nonexistent/file.md"],
-      {
-        timeout: 5000,
-        stdio: ["ignore", "pipe", "pipe"],
-      },
-    );
-    assert(false, "build-pdf should fail for nonexistent file");
-  } catch (e) {
-    assert(e.status === 1, "build-pdf exits 1 for missing file");
-  }
 }
 
 // ─── CLI version/help checks ─────────────────────────────────────────────────

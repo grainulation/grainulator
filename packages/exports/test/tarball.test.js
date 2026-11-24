@@ -8,13 +8,12 @@ import { test } from "node:test";
 
 const REQUIRED_PATHS = [
   "package/lib/formats/markdown.mjs",
-  "package/lib/exporters/pdf-worker.js",
   "package/lib/serve-mcp.js",
   "package/bin/exports.js",
   "package/package.json",
   "package/LICENSE"
 ];
-const RETIRED_PATHS = ["public/index.html", "lib/server.js", "lib/server.mjs"];
+const RETIRED_PATHS = ["lib/exporters/pdf-worker.js", "lib/exporters/pdf.js", "lib/publishers/static.js", "lib/formats/html-report.mjs", "lib/formats/executive-summary.mjs", "lib/formats/slide-deck.mjs", "lib/formats/static-site.mjs", "public/index.html", "lib/server.js", "lib/server.mjs"];
 const PKG_ROOT = new URL("..", import.meta.url);
 
 test("npm pack includes retained runtime resources and excludes retired browser apps", () => {

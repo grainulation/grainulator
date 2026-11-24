@@ -6,9 +6,10 @@ a release manifest and checksums. The base archive is a public GitHub release as
 component workspaces remain private and are not published to the npm registry.
 
 The candidate workflow builds from one immutable Git commit. It exercises the
-same base archive on Node24 and26, runs each native archive on its own OS/CPU
-runner, and tests the generated Homebrew recipe in a private prefix. It does
-not tag or publish. Passing a cross-build alone is not platform acceptance.
+same base archive on Node 24 and 26 and runs each native archive on its own
+OS/CPU runner. It does not tag or publish. Passing a cross-build alone is not
+platform acceptance. Homebrew recipe generation and channel acceptance belong
+to the separate [shared tap](https://github.com/grainulation/homebrew).
 
 ## Prepare candidates
 
@@ -38,7 +39,7 @@ installation.
 Download all four passing native candidate outputs from the same workflow
 source identity, then assemble their exact bytes:
 
-    node scripts/homebrew-release.mjs \
+    node scripts/assemble-release.mjs \
       --base-record dist/base/base-record.json \
       --migration-record dist/migration/migration-record.json \
       --asset-record candidates/aarch64-apple-darwin/asset-record.json \
@@ -53,52 +54,52 @@ release manifest. Keep that manifest's SHA-256 from an independently reviewed
 source; an archive and an adjacent self-consistent checksum cannot authenticate
 each other.
 
-## Verify the Homebrew recipe
+## Verify the release inventory
 
-Use the independently reviewed manifest digest, never a placeholder:
+Recheck all attachments against the independently reviewed manifest digest:
 
-    node scripts/homebrew-formula.mjs \
-      --manifest dist/release/release-manifest.json \
+    node scripts/verify-release.mjs \
+      --directory dist/release \
       --manifest-sha256 REVIEWED_MANIFEST_SHA256 \
-      --artifacts dist/release \
-      --out /absolute/new-grainulator.rb
+      --version 3.1.0 \
+      --source-commit REVIEWED_SOURCE_COMMIT
 
-On an actual supported native Brew host with Node24 already available:
+This verifies the base, four native archives, separate converter and exact
+checksum inventory. Adding an unexpected attachment, changing archive bytes or
+rewriting adjacent checksums cannot replace the independently carried pin.
 
-    node scripts/homebrew-check.mjs \
-      --formula /absolute/new-grainulator.rb \
-      --release-dir /absolute/dist/release \
-      --manifest-sha256 REVIEWED_MANIFEST_SHA256 \
-      --brew /absolute/path/to/brew
+## Homebrew distribution boundary
 
-This creates a temporary owned tap and private prefix, loads the registered
-formula through Homebrew's real Ruby DSL, and runs credential-free installed
-tests. It supplies the caller's existing Node24 as the declared dependency; it
-does not install dependencies or a global keg and is not proof of a fresh
-public-network install. Homebrew may initialize its own pinned formula-test
-gems, just as brew test does.
+[grainulation/homebrew](https://github.com/grainulation/homebrew) owns formula
+generation, Ruby recipe tests, installation, upgrades and package-manager
+cleanup checks. Grainulator owns the portable application, matching native
+archives and release manifest consumed by that channel. Keep the stable
+installation instructions pointed at the tap; removing product-repository
+Homebrew tooling does not remove installation through Homebrew.
 
-The formula keeps the base tree byte-identical. Its wrapper selects Homebrew's
-Node24 explicitly and the matching native asset from that exact keg; it does
-not use another Node or native executable found on PATH. Brew-owned MCP config
-uses the stable opt product launcher and needs deliberate removal/rebinding if
-the formula is uninstalled.
+The tap already checks reviewed recipes, fresh public-main installs and an
+upgrade with user-data preservation and a stable MCP launcher on macOS ARM64.
+Private-prefix candidate checks establish a separate result and must run from
+the tap tooling before a formula update is accepted. They are no longer a
+Grainulator release-candidate job. Record the tap revision, candidate source
+commit and manifest pin with distribution acceptance; application CI does not
+establish Homebrew channel acceptance.
 
 Required native hooks use a separate explicit user-cache installation and
-per-enrollment release receipt. They must survive Brew upgrades, cleanup and
-removal without relying on Brew Node or a disappearing keg. Package install
-never enrolls, updates or detaches host hooks.
+per-enrollment release receipt. They must survive package upgrades, cleanup and
+removal without relying on the package manager's Node or a disappearing keg.
+Package installation never enrolls, updates or detaches host hooks.
 
 ## Publish after approval
 
-Only after source, conversion, native, package, browser and candidate recipe
-checks pass, obtain release authorization and push the reviewed v3 tag. The
+Only after source, conversion, native and installed-package checks pass, obtain
+release authorization and push the reviewed v3 tag. The
 release workflow reruns required checks, binds the exact candidate source to
 the tag, verifies checksums and attaches the passing bytes. It refuses to
 overwrite an existing release. Never rebuild or move a published tag merely to
 include a generated formula or its own archive hashes.
 
-Advance the generated formula separately in
+Generate and advance the formula separately in
 [grainulation/homebrew](https://github.com/grainulation/homebrew). This repository
 has no homebrew- prefix, so installation requires the explicit tap URL:
 

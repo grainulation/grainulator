@@ -37,12 +37,12 @@ Usage:
   grainulator analytics velocity <sprints-dir>      Sprint timing and phase analysis
   grainulator analytics tokens <sprints-dir>        Token cost tracking and efficiency
   grainulator analytics card <sprints-dir> [-o <output>]  Generate Analytics Report SVG card
-  grainulator analytics report <sprints-dir> [-o <output>]  Generate retrospective HTML
+  grainulator analytics report <sprints-dir> [-o <output>]  Generate retrospective Markdown
   grainulator analytics trends <sprints-dir>        All analyses in one pass
   grainulator analytics intelligence <sprints-dir>  Full intelligence report (all features)
 
 Options:
-  -o, --output <path>   Output file path (default: stdout or ./retrospective.html)
+  -o, --output <path>   Output file path (default: stdout or ./retrospective.md)
   -h, --help            Show this help
   --json                Output as JSON instead of text
   --days <n>            Decay threshold in days (default: 90)
@@ -245,7 +245,7 @@ async function main() {
     },
     report() {
       const sprints = loadSprintData(opts.dir);
-      const html = generateReport(sprints, {
+      const markdown = generateReport(sprints, {
         analyzeFn: analyze,
         calibrateFn: calibrate,
         patternsFn: detectPatterns,
@@ -255,9 +255,9 @@ async function main() {
         wrappedFn: generateWrapped,
       });
       const outPath =
-        opts.output || path.join(process.cwd(), "retrospective.html");
+        opts.output || path.join(process.cwd(), "retrospective.md");
       fs.mkdirSync(path.dirname(outPath), { recursive: true });
-      fs.writeFileSync(outPath, html, "utf8");
+      fs.writeFileSync(outPath, markdown, "utf8");
       console.log(`Retrospective written to ${outPath}`);
     },
     tokens() {

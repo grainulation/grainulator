@@ -56,29 +56,27 @@ Usage:
   grainulator export publish --target <dest> <dir>           Publish sprint outputs
   grainulator export convert --from <fmt> --to <fmt> <file>  Convert between formats
   grainulator export formats                                 List available formats
-  grainulator export ci-artifacts <file> -o <dir>            Generate CI artifacts (report, summary, slides)
+  grainulator export ci-artifacts <file> -o <dir>            Generate evidence artifacts (Markdown, JSON, CSV)
 
 Paths:
   --dir <sprint> resolves relative input and output paths within that directory.
   Absolute paths remain absolute. Compilation and claims JSON are supported.
 
 Export formats:
-  pdf        HTML or Markdown to PDF (via npx md-to-pdf)
+  json       Complete normalized evidence data, including provenance
   csv        Claims JSON to CSV
-  markdown   HTML artifacts to clean Markdown
-  json-ld    Claims JSON to JSON-LD for semantic web
+  markdown   Evidence data to Markdown (also imports external HTML)
+  json-ld    Claims JSON to JSON-LD
+  Run grainulator export formats for the complete data format catalog.
 
 Publish targets:
-  static     Generate a static site from sprint outputs
   clipboard  Copy formatted output to system clipboard
 
 Examples:
-  grainulator export export --format pdf output/brief.html
-  grainulator export export --format executive-summary compilation.json -o brief.html --dir ./sprint
+  grainulator export export --format markdown compilation.json -o brief.md --dir ./sprint
+  grainulator export export --format json compilation.json -o evidence.json
   grainulator export export --format csv claims.json
   grainulator export export --format json-ld claims.json -o claims.jsonld
-  grainulator export publish --target static output/
-  grainulator export convert --from html --to markdown output/brief.html
   grainulator export ci-artifacts compilation.json -o ./artifacts
 `.trim();
 
@@ -207,7 +205,7 @@ async function runPublish(args) {
   }
 
   if (!values.target) {
-    console.error("grainulator export: missing --target. Options: static, clipboard");
+    console.error("grainulator export: missing --target. Options: clipboard");
     process.exit(1);
   }
 
@@ -378,8 +376,8 @@ async function runCiArtifacts(args) {
     ? path.resolve(baseDir, values.output)
     : path.resolve(baseDir, "artifacts");
 
-  // Default CI formats: the three HTML formats plus markdown for step summary
-  const defaultFormats = ["html-report", "executive-summary", "slide-deck"];
+  // Evidence artifacts remain portable; presentation belongs to consumer tools.
+  const defaultFormats = ["markdown", "json", "csv"];
   const requestedFormats = values.formats
     ? values.formats.split(",").map((f) => f.trim())
     : defaultFormats;
@@ -391,11 +389,6 @@ async function runCiArtifacts(args) {
   } catch (err) {
     console.error(`grainulator export: failed to read ${inputPath}: ${err.message}`);
     process.exit(1);
-  }
-
-  // Create output dir
-  if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir, { recursive: true });
   }
 
   // Discover ESM formats
@@ -411,6 +404,13 @@ async function runCiArtifacts(args) {
     } catch {}
   }
 
+  const unknownFormats = requestedFormats.filter(fmt => typeof formatMap[fmt]?.convert !== "function");
+  if (unknownFormats.length) {
+    console.error(`grainulator export: unknown format: ${unknownFormats.join(", ")}`);
+    process.exit(1);
+  }
+  // Validate the complete request before creating files, including mixed retired formats.
+  fs.mkdirSync(outputDir, { recursive: true });
   const results = [];
 
   for (const fmt of requestedFormats) {

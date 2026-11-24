@@ -100,7 +100,7 @@ async function exportMarkdown(inputPath, outputPath) {
 
 module.exports = {
   name: "markdown",
-  description: "Convert HTML artifacts to clean Markdown",
+  description: "Export evidence as Markdown or import an external HTML document",
   export: exportMarkdown,
   htmlToMarkdown,
 };

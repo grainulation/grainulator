@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
@@ -12,7 +12,7 @@ const workflows = fs
 	.filter((name) => fs.existsSync(path.join(root, "skills", name, "SKILL.md")))
 	.map((name) => `skills/${name}/SKILL.md`);
 
-test("skill discovery contains only real skills and shared artifact templates resolve", () => {
+test("skill discovery contains only real skills and briefs use portable Markdown", () => {
 	for (const entry of fs.readdirSync(path.join(root, "skills"), {
 		withFileTypes: true,
 	})) {
@@ -22,16 +22,17 @@ test("skill discovery contains only real skills and shared artifact templates re
 				entry.name,
 			);
 	}
-	for (const name of ["brief", "present"]) {
-		const source = read(`skills/${name}/SKILL.md`);
-		assert.doesNotMatch(source, /skills\/_templates/);
-		const matches = [
-			...source.matchAll(/\$\{CLAUDE_PLUGIN_ROOT\}\/(templates\/[a-z.-]+)/g),
-		];
-		assert.ok(matches.length >= 2);
-		for (const match of matches)
-			assert.ok(fs.existsSync(path.join(root, match[1])), match[1]);
-	}
+	const source = read("skills/brief/SKILL.md");
+	assert.doesNotMatch(
+		source,
+		/skills\/_templates|CLAUDE_PLUGIN_ROOT.*templates/,
+	);
+	assert.match(source, /"format":"markdown"/);
+	assert.match(source, /output\/brief\.md/);
+	assert.equal(
+		fs.existsSync(path.join(root, "skills/present/SKILL.md")),
+		false,
+	);
 });
 
 test("core verification workflows preserve unresolved findings and distinguish host acceptance", () => {
@@ -145,6 +146,72 @@ test("write guard points blocked mutations to the canonical tools and leaves ord
 		},
 	);
 	assert.equal(result.status, 0);
+});
+
+test("write guard waits for complete delayed pipe input before deciding", async (t) => {
+	const hook = path.join(root, "hooks/write-guard.cjs");
+	const child = spawn(
+		process.execPath,
+		[
+			"--input-type=commonjs",
+			"-e",
+			`process.stdout.write("HOOK_READY\\n"); require(${JSON.stringify(hook)});`,
+		],
+		{ stdio: ["pipe", "pipe", "pipe"] },
+	);
+	t.after(() => child.kill());
+	let stderr = "";
+	child.stderr.setEncoding("utf8");
+	child.stderr.on("data", (chunk) => {
+		stderr += chunk;
+	});
+	child.stdin.on("error", () => {});
+	child.stdout.once("data", () => {
+		// Wait until the guard has entered its read, then deliver incomplete JSON
+		// before the final chunk. A synchronous nonblocking read fails with EAGAIN.
+		setTimeout(() => {
+			child.stdin.write('{"tool_input":');
+			setTimeout(() => child.stdin.end('{"file_path":"claims.json"}}'), 20);
+		}, 100);
+	});
+	const status = await new Promise((resolve, reject) => {
+		const timeout = setTimeout(
+			() => reject(new Error("Hook did not finish reading stdin")),
+			5000,
+		);
+		child.once("error", reject);
+		child.once("close", (code) => {
+			clearTimeout(timeout);
+			resolve(code);
+		});
+	});
+	assert.equal(status, 2, stderr);
+	assert.match(stderr, /BLOCKED: claims\.json/);
+	assert.doesNotMatch(stderr, /malformed hook context/);
+});
+
+test("write guard retains environment context fallback and malformed-input diagnostics", () => {
+	const hook = path.join(root, "hooks/write-guard.cjs");
+	const environment = {
+		...process.env,
+		CLAUDE_HOOK_CONTEXT: JSON.stringify({
+			tool_input: { file_path: "compilation.json" },
+		}),
+	};
+	const fallback = spawnSync(process.execPath, [hook], {
+		input: "",
+		encoding: "utf8",
+		env: environment,
+	});
+	assert.equal(fallback.status, 2, fallback.stderr);
+	const malformed = spawnSync(process.execPath, [hook], {
+		input: "{",
+		encoding: "utf8",
+		env: environment,
+	});
+	assert.equal(malformed.status, 0);
+	assert.match(malformed.stderr, /malformed hook context/);
+	assert.doesNotMatch(malformed.stderr, /BLOCKED/);
 });
 
 test("packaged Claude agent permits direct and plugin-prefixed core MCP tools", async () => {

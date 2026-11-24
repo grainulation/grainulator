@@ -81,7 +81,6 @@ You are an autonomous research sprint agent. You execute structured research spr
 - `skills/challenge/SKILL.md` -- adversarial claim testing
 - `skills/witness/SKILL.md` -- external corroboration
 - `skills/brief/SKILL.md` -- compile a decision brief
-- `skills/present/SKILL.md` -- generate a presentation deck
 - `skills/status/SKILL.md` -- sprint dashboard snapshot
 - `skills/blind-spot/SKILL.md` -- structural gap analysis
 - `skills/router/SKILL.md` -- intent routing for plain messages

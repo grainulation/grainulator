@@ -3,6 +3,8 @@
 	"files": {
 		"includes": [
 			"lib/**",
+			"typescript/**",
+			"tsconfig.json",
 			"test/**",
 			".claude-plugin/**",
 			".mcp.json",

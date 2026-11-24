@@ -18,10 +18,11 @@ export const description = "Clean Markdown document from compilation data";
  * @returns {string} Markdown output
  */
 export function convert(compilation) {
+  const originalClaims = compilation.claims || [];
   compilation = escapeMarkdownData(compilation);
   const lines = [];
   const meta = compilation.meta || {};
-  const claims = compilation.claims || [];
+  const claims = originalClaims;
   const conflicts = compilation.conflicts || [];
   const certificate = compilation.certificate || {};
 
@@ -83,10 +84,11 @@ export function convert(compilation) {
     const group = byType[type];
     if (!group || group.length === 0) continue;
 
-    lines.push(`## ${capitalize(type)}s (${group.length})`);
+    lines.push(`## ${capitalize(escapeMarkdownData(type))}s (${group.length})`);
     lines.push("");
 
-    for (const claim of group) {
+    for (const originalClaim of group) {
+      const claim = escapeMarkdownData(originalClaim);
       const conf =
         claim.confidence != null
           ? ` [${Math.round(claim.confidence * 100)}%]`
@@ -99,6 +101,13 @@ export function convert(compilation) {
       const status = claim.status === "superseded" ? " ~~superseded~~" : "";
       const body = claim.content || claim.text || "";
       lines.push(`- **${claim.id}**${conf}${tier}${status}: ${body}`);
+      // Preserve exact reference bytes in indented code; prose escaping would alter URLs.
+      for (const field of ["source", "sources", "provenance", "verified_by", "verification"]) {
+        const value = originalClaim[field] ?? (field === "source" ? originalClaim.evidence?.source : undefined);
+        if (value === undefined || value === null) continue;
+        lines.push(`  - ${field}:`, "");
+        lines.push(...JSON.stringify(value, null, 2).split("\n").map(line => `        ${line}`), "");
+      }
     }
     lines.push("");
   }

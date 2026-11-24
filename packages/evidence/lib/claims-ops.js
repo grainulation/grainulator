@@ -50,7 +50,7 @@ function resolvePaths(dir) {
 	return {
 		claims: path.resolve(config.origin, config.compiler.claims),
 		compilation: path.resolve(config.origin, config.compiler.compilation),
-		brief: path.resolve(config.origin, config.dirs.output, "brief.html"),
+		brief: path.resolve(config.origin, config.dirs.output, "brief.md"),
 		compiler: path.join(dir, "evidence-compiler.js"),
 	};
 }

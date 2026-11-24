@@ -139,7 +139,7 @@
       "id": "qa009",
       "type": "recommendation",
       "topic": "presentation",
-      "content": "Output a 5-slide HTML presentation: (1) title + verdict + metadata, (2) what changed, (3) coverage impact, (4) verification results table, (5) post-merge checklist. Dark scroll-snap theme, self-contained, no external deps.",
+      "content": "Output a Markdown decision brief: (1) title, verdict and metadata, (2) what changed, (3) coverage impact, (4) verification results table, (5) post-merge checklist. Preserve claim IDs and sources for external presentation tools.",
       "source": { "origin": "experience", "artifact": null, "connector": null },
       "evidence": "documented",
       "status": "active",

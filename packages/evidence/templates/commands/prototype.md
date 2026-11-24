@@ -12,7 +12,7 @@ You are building a proof-of-concept for the current Grainulator sprint. Read CLA
    - Runnable — include a README or run script
    - Measurable — produce output that can be evaluated
 
-3. **Also generate a demo artifact**: Create `prototypes/<name>/demo.html` — a self-contained HTML page that shows what the prototype does, with screenshots, code snippets, or interactive elements. Non-technical stakeholders should be able to understand the prototype from this page alone.
+3. **Also generate a demo artifact**: Create `prototypes/<name>/demo.md` — a Markdown explanation of the hypothesis, run command, observed results, and relevant screenshots or code snippets. Preserve measured output and source references.
 
 ## Claim updates
 
@@ -60,7 +60,7 @@ Preserve the user’s edits. Commit only when the task explicitly calls for it; 
 
 ## Tell the user
 
-- Point them to the demo.html and the actual prototype code
+- Point them to demo.md and the actual prototype code
 - Summarize what was tested and what was found
 - Highlight any research claims that were confirmed or contradicted
 - Suggest: more `/prototype` for other options, `/evaluate` to compare, or `/status` to see progress

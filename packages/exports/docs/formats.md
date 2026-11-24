@@ -42,10 +42,10 @@ exports publish --target <target> <dir> [-o <output>]
 | Command                                     | Description                                          |
 | ------------------------------------------- | ---------------------------------------------------- |
 | `exports formats`                              | List available formats (`--json` for machine output) |
-| `exports serve-mcp`                            | Start the MCP server on stdio                        |
+| `grainulator mcp`                              | Start the unified MCP server                        |
 | `exports --version`, `-v`                      | Print version                                        |
 
-## Available Formats (24)
+## Available Data Formats
 
 These are the export format modules in `lib/formats/`:
 
@@ -56,11 +56,10 @@ These are the export format modules in `lib/formats/`:
 | csv               | `csv.js`               | Flat CSV table of claims      |
 | dot               | `dot.js`               | Graphviz DOT graph            |
 | evidence-matrix   | `evidence-matrix.js`   | Evidence matrix visualization |
-| executive-summary | `executive-summary.js` | Executive summary document    |
 | github-issues     | `github-issues.js`     | GitHub Issues JSON payloads   |
 | graphml           | `graphml.js`           | GraphML graph format          |
-| html-report       | `html-report.js`       | Self-contained HTML report    |
 | jira-csv          | `jira-csv.js`          | Jira-compatible CSV import    |
+| json              | `json.mjs`             | Complete evidence and provenance |
 | json-ld           | `json-ld.js`           | JSON-LD linked data           |
 | markdown          | `markdown.js`          | Clean Markdown document       |
 | ndjson            | `ndjson.js`            | Newline-delimited JSON        |
@@ -69,9 +68,7 @@ These are the export format modules in `lib/formats/`:
 | ris               | `ris.js`               | RIS citation format           |
 | rss               | `rss.js`               | RSS feed                      |
 | sankey            | `sankey.js`            | Sankey diagram data           |
-| slide-deck        | `slide-deck.js`        | Scroll-snap HTML presentation |
 | sql               | `sql.js`               | SQL INSERT statements         |
-| static-site       | `static-site.js`       | Static site with index page   |
 | treemap           | `treemap.js`           | Treemap visualization data    |
 | typescript-defs   | `typescript-defs.js`   | TypeScript type definitions   |
 | yaml              | `yaml.js`              | YAML export                   |
@@ -80,5 +77,7 @@ These are the export format modules in `lib/formats/`:
 
 | Target      | Description                                 |
 | ----------- | ------------------------------------------- |
-| `static`    | Dark-themed static site from sprint outputs |
 | `clipboard` | Copy formatted output to system clipboard   |
+
+HTML reports, slide decks, static-site publishing and PDF rendering are retired.
+Use JSON or Markdown exports with a presentation tool of your choice.

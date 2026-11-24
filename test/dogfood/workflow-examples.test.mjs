@@ -16,7 +16,7 @@ function fixture(t) {
 	return dir;
 }
 
-test("brief and present skill JSON examples generate their advertised HTML artifacts", async (t) => {
+test("brief skill JSON example generates its advertised Markdown artifact", async (t) => {
 	const dir = fixture(t);
 	const handler = createHandler({ dir, memoryDir: path.join(dir, "memory") });
 	const call = async (name, args) => {
@@ -27,7 +27,7 @@ test("brief and present skill JSON examples generate their advertised HTML artif
 		return JSON.parse(result.content[0].text);
 	};
 	await call("init", { question: "Documented export example" });
-	for (const name of ["brief", "present"]) {
+	for (const name of ["brief"]) {
 		const source = fs.readFileSync(
 			path.join(root, "skills", name, "SKILL.md"),
 			"utf8",
@@ -37,10 +37,10 @@ test("brief and present skill JSON examples generate their advertised HTML artif
 		assert.equal(result.status, "ok");
 		assert.match(
 			fs.readFileSync(path.join(dir, example.output), "utf8"),
-			/<!DOCTYPE html>/i,
+			/^# /m,
 		);
-		assert.match(source, /does not accept a template argument/);
-		assert.match(source, /If no PDF renderer is available/);
+		assert.equal(example.format, "markdown");
+		assert.match(example.output, /\.md$/);
 	}
 });
 

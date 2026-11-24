@@ -1,19 +1,4 @@
-/**
- * Unit tests: lib/report.js
- *
- * report.generateReport accepts a sprints array + `fns` bag (analyzeFn,
- * calibrateFn, patternsFn, decayFn, velocityFn, tokensFn, wrappedFn).
- * We wire in the real modules + a minimal SAMPLE_SPRINT so the assertions
- * are stable without needing a HTML fixture.
- *
- * Covers:
- *   - happy path against the live template: returns a non-empty HTML string
- *     with key placeholders replaced (GENERATED_DATE, counts, insights)
- *   - empty sprints array: produces a valid HTML doc with zeroed counts
- *   - all optional fns omitted (no tokens, no wrapped): template still renders
- *     (no unreplaced {{...}} placeholders for the sections we exercised)
- *   - XSS: claim content is HTML-escaped (no unescaped <script>)
- */
+/** Markdown retrospectives preserve analysis data without a browser renderer. */
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
@@ -69,12 +54,13 @@ const ALL_FNS = {
 };
 
 describe("report: generateReport (happy path)", () => {
-  it("returns an HTML string with basic structure and counts replaced", () => {
+  it("returns Markdown with analysis data and counts", () => {
     const sprint = makeSprint("test-sprint", SAMPLE_CLAIMS);
     const html = generateReport([sprint], ALL_FNS);
     assert.equal(typeof html, "string");
     assert.ok(html.length > 100, "report should be non-trivial in size");
-    assert.match(html, /<html|<!DOCTYPE/i, "should be HTML");
+    assert.match(html, /^# Grainulator analytics retrospective/);
+    assert.match(html, /## Analysis/);
     // Counts injected
     assert.ok(html.includes("2"), "should include the claim count");
     // Date placeholder replaced
@@ -104,7 +90,7 @@ describe("report: generateReport (boundary / edge cases)", () => {
     const html = generateReport([], ALL_FNS);
     assert.equal(typeof html, "string");
     // Zero sprints / zero claims should still produce a document.
-    assert.match(html, /<html|<!DOCTYPE/i);
+    assert.match(html, /^# Grainulator analytics retrospective/);
     assert.ok(!html.includes("{{SPRINT_COUNT}}"));
   });
 
@@ -116,27 +102,38 @@ describe("report: generateReport (boundary / edge cases)", () => {
   });
 });
 
-describe("report: generateReport (XSS escape)", () => {
-  it('escapes < > & " in claim content', () => {
-    const xssSprint = makeSprint("xss-test", [
-      {
-        id: "r001",
-        type: "factual",
-        evidence: "stated",
-        status: "active",
-        text: '<script>alert("xss")</script> & "quotes"',
-        topic: "<img onerror=alert(1)>",
-        created: NOW,
-      },
-    ]);
-    const html = generateReport([xssSprint], ALL_FNS);
-    // The escapeHtml helper should strip raw script tags from user-controlled
-    // fields (title/insight/etc.). We do not assert the entire absence of
-    // the string "<script>" since it may appear in static template chrome,
-    // but the escaped form should also appear, confirming escaping ran.
-    assert.ok(
-      html.includes("&lt;") || html.includes("&amp;"),
-      "escaped output should contain HTML entities",
-    );
+describe("report: generateReport (literal evidence data)", () => {
+  it("roundtrips JSON with ampersand URLs, script text and Markdown fences", () => {
+    const payload = {
+      summary: { totalSprints: 1, totalClaims: 1 },
+      source: "https://example.com/source?a=1&b=2",
+      content: '<script>alert("x")</script>\n```\n# forged heading & exact bytes',
+    };
+    const report = generateReport([], {
+      analyzeFn: () => payload,
+      calibrateFn: () => null,
+      patternsFn: () => null,
+      decayFn: () => null,
+      velocityFn: () => null,
+    });
+    const blocks = [...report.matchAll(/(?:^    .*\n)+/gm)];
+    assert.equal(blocks.length, 1);
+    const restored = JSON.parse(blocks[0][0].split("\n").filter(Boolean).map(line => line.slice(4)).join("\n"));
+    assert.deepEqual(restored, payload);
+    assert.ok(!report.split("\n").some(line => /^(?:<script>|```|# forged)/.test(line)));
+  });
+
+  it("escapes user-authored summary prose while preserving the code payload", () => {
+    const payload = { summary: { totalSprints: "<script>prose</script> &", totalClaims: 0 } };
+    const report = generateReport([], {
+      analyzeFn: () => payload,
+      calibrateFn: () => null,
+      patternsFn: () => null,
+      decayFn: () => null,
+      velocityFn: () => null,
+    });
+    assert.ok(report.includes("Sprints: &lt;script&gt;prose&lt;/script&gt; &amp;"));
+    const block = report.match(/(?:^    .*\n)+/m)[0];
+    assert.deepEqual(JSON.parse(block.split("\n").filter(Boolean).map(line => line.slice(4)).join("\n")), payload);
   });
 });

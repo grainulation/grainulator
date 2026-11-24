@@ -212,7 +212,7 @@ const TOOLS = [
   {
     name: "exports_convert",
     description:
-      "Convert sprint compilation or claims to any supported format (csv, markdown, json-ld, yaml, sql, ndjson, html-report, executive-summary, slide-deck, jira-csv, github-issues, obsidian, graphml, dot, and more). Returns the converted output inline or writes to a file.",
+      "Convert sprint compilation or claims to any supported format (csv, markdown, json-ld, yaml, sql, ndjson, json, jira-csv, github-issues, obsidian, graphml, dot, and more). Returns the converted output inline or writes to a file.",
     inputSchema: {
       type: "object",
       properties: {

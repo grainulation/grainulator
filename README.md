@@ -180,6 +180,8 @@ The compiler checks the structure and support recorded in the ledger; it does no
 npm test
 npm run test:install
 npm run lint
+npm run typecheck
+npm run check:types
 ```
 
 Browser and runtime prerequisites are in [CONTRIBUTING.md](CONTRIBUTING.md). The offline `node bin/grainulator.js demo` exercises the adapter/verifier protocol without a provider account.

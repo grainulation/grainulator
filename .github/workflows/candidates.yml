@@ -71,7 +71,7 @@ jobs:
     uses: ./.github/workflows/native-candidates.yml
 
   assemble:
-    name: Bind passing candidates and generate formula
+    name: Bind passing candidate archives
     needs: [base-acceptance, native]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -94,44 +94,16 @@ jobs:
         run: |
           arguments=()
           while IFS= read -r record; do arguments+=(--asset-record "$record"); done < <(find "$RUNNER_TEMP/candidate-inputs" -type f -name asset-record.json)
-          node scripts/homebrew-release.mjs --base-record "$RUNNER_TEMP/candidate-inputs/base-candidate/base/base-record.json" --migration-record "$RUNNER_TEMP/candidate-inputs/base-candidate/migration/migration-record.json" "${arguments[@]}" --out "$RUNNER_TEMP/release"
+          node scripts/assemble-release.mjs --base-record "$RUNNER_TEMP/candidate-inputs/base-candidate/base/base-record.json" --migration-record "$RUNNER_TEMP/candidate-inputs/base-candidate/migration/migration-record.json" "${arguments[@]}" --out "$RUNNER_TEMP/release"
           node --input-type=module -e 'import fs from "node:fs";import crypto from "node:crypto";const pin=crypto.createHash("sha256").update(fs.readFileSync(process.env.RUNNER_TEMP+"/release/release-manifest.json")).digest("hex");fs.appendFileSync(process.env.GITHUB_OUTPUT,"manifest_sha256="+pin+"\n")'
       - name: Revalidate trusted manifest inventory before upload
         env:
           MANIFEST_SHA256: ${{ steps.manifest.outputs.manifest_sha256 }}
-        run: node scripts/homebrew-verify-release.mjs --directory "$RUNNER_TEMP/release" --manifest-sha256 "$MANIFEST_SHA256" --source-commit "$GITHUB_SHA"
-      - name: Generate literal formula from pinned candidates
-        env:
-          MANIFEST_SHA256: ${{ steps.manifest.outputs.manifest_sha256 }}
-        run: node scripts/homebrew-formula.mjs --manifest "$RUNNER_TEMP/release/release-manifest.json" --manifest-sha256 "$MANIFEST_SHA256" --artifacts "$RUNNER_TEMP/release" --out "$RUNNER_TEMP/grainulator.rb"
+        run: node scripts/verify-release.mjs --directory "$RUNNER_TEMP/release" --manifest-sha256 "$MANIFEST_SHA256" --source-commit "$GITHUB_SHA"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-candidate
-          path: |
-            ${{ runner.temp }}/release/
-            ${{ runner.temp }}/grainulator.rb
+          path: ${{ runner.temp }}/release/
           if-no-files-found: error
           retention-days: 30
           compression-level: 0
-
-  homebrew:
-    name: Actual candidate formula / macOS ARM64
-    needs: assemble
-    runs-on: macos-15
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 24
-          package-manager-cache: false
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          name: release-candidate
-          path: ${{ runner.temp }}/brew-input
-      - name: Run reviewed recipe in a private prefix
-        env:
-          MANIFEST_SHA256: ${{ needs.assemble.outputs.manifest_sha256 }}
-        run: node scripts/homebrew-check.mjs --formula "$RUNNER_TEMP/brew-input/grainulator.rb" --release-dir "$RUNNER_TEMP/brew-input/release" --manifest-sha256 "$MANIFEST_SHA256" --brew /opt/homebrew/bin/brew

@@ -6,7 +6,6 @@ import path from "node:path";
 import { test } from "node:test";
 import { convert as bibtex } from "../../packages/exports/lib/formats/bibtex.mjs";
 import { convert as obsidian } from "../../packages/exports/lib/formats/obsidian.mjs";
-import { convert as site } from "../../packages/exports/lib/formats/static-site.mjs";
 import { FetchCache } from "../../packages/memory/lib/fetch-cache.js";
 import { Store } from "../../packages/memory/lib/store.js";
 import { Templates } from "../../packages/memory/lib/templates.js";
@@ -171,19 +170,6 @@ test("exported YAML scalars preserve hostile metadata as one quoted value", () =
 			value,
 		);
 	assert.equal(front.length, 5);
-	const config = JSON.parse(
-		site({ meta: { sprint: value, question: value }, claims: [] }),
-	).files["config.yaml"];
-	assert.equal(
-		JSON.parse(
-			config
-				.split("\n")
-				.find((line) => line.startsWith("title: "))
-				.slice(7),
-		),
-		value,
-	);
-	assert.ok(!config.split("\n").some((line) => line.startsWith("injected:")));
 });
 
 test("HTML conversion retains supported formatting without activating encoded HTML or unsafe URLs", () => {

@@ -483,10 +483,10 @@ describe("export source integrity", () => {
     fs.symlinkSync(path.join(dir, "claims.json"), path.join(nested, "claims.json"));
     const { child } = await spawnAndInitialize(nested);
     try {
-      const { response, payload } = await callTool(child, 201, "exports_convert", { format: "executive-summary", output: "report.html" });
+      const { response, payload } = await callTool(child, 201, "exports_convert", { format: "markdown", output: "report.md" });
       assert.equal(response.result.isError, true);
       assert.match(payload.message, /grainulator compile --dir|outside workspace/i);
-      assert.ok(!fs.existsSync(path.join(nested, "report.html")));
+      assert.ok(!fs.existsSync(path.join(nested, "report.md")));
     } finally { cleanup(child); }
   });
 

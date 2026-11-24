@@ -31,11 +31,9 @@
     "evidence",
     "sprint",
     "export",
-    "pdf",
     "csv",
     "markdown",
-    "json-ld",
-    "publishing"
+    "json-ld"
   ],
   "author": "grainulation contributors",
   "license": "MIT",

@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
 import {
 	RUNTIME_FILES,
 	RUNTIME_SCHEMAS,
@@ -11,10 +10,8 @@ import {
 	encodeRuntimeArchive,
 	sha256,
 } from "../lib/runtime-assets.js";
-import { assembleRelease } from "./homebrew-release.mjs";
-import { renderFormula } from "./homebrew-formula.mjs";
-import { unpackBase } from "./homebrew-archive.mjs";
-import { verifyRelease } from "./homebrew-verify-release.mjs";
+import { assembleRelease } from "./assemble-release.mjs";
+import { verifyRelease } from "./verify-release.mjs";
 const version = "3.0.0",
 	commit = "a".repeat(40);
 // Header-only fixtures exercise packaging identity; they are never executed and
@@ -144,7 +141,7 @@ function fixture(t) {
 	);
 	return { dir, baseRecord, assetRecords, migrationRecord };
 }
-test("frozen candidate set yields pinned release plus literal formula, without publication", (t) => {
+test("frozen candidate set yields pinned release without publication", (t) => {
 	const f = fixture(t),
 		out = path.join(f.dir, "release");
 	const result = assembleRelease({ ...f, out });
@@ -159,58 +156,13 @@ test("frozen candidate set yields pinned release plus literal formula, without p
 		}).status,
 		"verified",
 	);
-	const manifest = path.join(out, "release-manifest.json");
-	const formula = renderFormula({
-		manifest,
-		manifestSha256: result.manifest_sha256,
-		artifactDirectory: out,
-	});
-	assert.match(formula, /depends_on "node@24"/);
-	assert.match(formula, /GRAINULATOR_HOMEBREW_LAUNCHER/);
-	assert.match(
-		formula,
-		/GRAINULATOR_RUNTIME_ASSET_DIR=#\{\(libexec/,
-		"native asset path must be this exact keg, not symlinked opt",
-	);
-	assert.doesNotMatch(formula, /\bpost_install\b|system "npm"|curl/);
-	assert.match(formula, /runtime", "check"/);
-	assert.match(formula, /bash_completion\.install_symlink/);
-	assert.match(formula, /zsh_completion\.install_symlink/);
-	assert.match(formula, /man1\.install_symlink/);
-	assert.doesNotMatch(
-		formula,
-		/^\s*(?:bash_completion|zsh_completion|fish_completion|man1)\.install /m,
-	);
-	const ruby = path.join(f.dir, "grainulator.rb");
-	fs.writeFileSync(ruby, formula);
-	const syntax = spawnSync("ruby", ["-c", ruby], { encoding: "utf8" });
-	assert.equal(syntax.status, 0, syntax.stderr);
-	const extracted = path.join(f.dir, "extracted");
-	unpackBase(
-		fs.readFileSync(path.join(out, "grainulator-3.0.0.tgz")),
-		extracted,
-	);
-	assert.equal(
-		JSON.parse(fs.readFileSync(path.join(extracted, "package.json"))).version,
-		version,
-	);
 	assert.throws(
-		() =>
-			renderFormula({
-				manifest,
-				manifestSha256: "0".repeat(64),
-				artifactDirectory: out,
-			}),
-		/reviewed SHA/,
+		() => verifyRelease({ directory: out, manifestSha256: "0".repeat(64) }),
+		/trusted pin/,
 	);
 	fs.appendFileSync(path.join(out, "grainulator-3.0.0.tgz"), "changed");
 	assert.throws(
-		() =>
-			renderFormula({
-				manifest,
-				manifestSha256: result.manifest_sha256,
-				artifactDirectory: out,
-			}),
+		() => verifyRelease({ directory: out, manifestSha256: result.manifest_sha256 }),
 		/differ/,
 	);
 });
@@ -256,30 +208,6 @@ test("missing, duplicate, dirty, mismatched and modified native candidates canno
 		() => assembleRelease({ ...f, out: path.join(f.dir, "tamper") }),
 		/changed/,
 	);
-});
-test("base archive extraction refuses traversal, duplicate case paths and nonregular entries", (t) => {
-	const { dir } = fixture(t);
-	const entry = (name) => [
-		name,
-		{ bytes: Buffer.from("content"), mode: 0o644 },
-	];
-	for (const names of [
-		["package/../escaped"],
-		["package/abs/../../escaped"],
-		["package/A", "package/a"],
-		["other/package.json"],
-	]) {
-		const archive = encodeRuntimeArchive(new Map(names.map(entry)));
-		const destination = path.join(
-			dir,
-			"bad-" + Math.random().toString(16).slice(2),
-		);
-		assert.throws(
-			() => unpackBase(archive, destination),
-			/Unsafe|Duplicate|Unexpected/,
-		);
-	}
-	assert.equal(fs.existsSync(path.join(dir, "escaped")), false);
 });
 
 test("publisher rejects modified bytes plus rewritten adjacent checksums, extras and missing assets", (t) => {

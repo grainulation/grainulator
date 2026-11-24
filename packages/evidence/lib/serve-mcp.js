@@ -515,8 +515,8 @@ const RESOURCES = [
 		uri: "grainulator://brief",
 		name: "Decision Brief",
 		description:
-			"Latest compiled brief (output/brief.html) -- self-contained HTML.",
-		mimeType: "text/html",
+			"Latest compiled brief (output/brief.md) -- portable Markdown.",
+		mimeType: "text/markdown",
 	},
 	{
 		uri: "grainulator://sync-log",
@@ -628,7 +628,7 @@ async function handleRequest(dir, method, params, id, options = {}) {
 					break;
 				case "grainulator://brief":
 					filePath = paths.brief;
-					mimeType = "text/html";
+					mimeType = "text/markdown";
 					break;
 				case "grainulator://sync-log":
 					filePath = path.join(dir, "output", "sync-log.json");

@@ -19,7 +19,6 @@ import {
 import { printStatus, getStatusData } from "../lib/tracker.js";
 import { assignSprint } from "../lib/assignments.js";
 import { syncAll } from "../lib/sync.js";
-import { generateDashboard } from "../lib/dashboard.js";
 import {
   detectConflicts,
   filterBySeverity,
@@ -47,7 +46,6 @@ const COMMANDS = {
   sync: "Sync sprint states from their directories",
   decompose: "Auto-decompose a question into sub-sprints",
   hackathon: "Hackathon coordinator (init|team|status|end)",
-  dashboard: "Generate unified HTML dashboard",
   next: "Show sprints ready for grainulator execution",
   doctor: "Check health of orchestration setup",
   help: "Show this help message",
@@ -179,11 +177,6 @@ async function main() {
     }
     case "sync": {
       syncAll(config, root);
-      break;
-    }
-    case "dashboard": {
-      const outPath = args[1] || path.join(root, "orchestration-dashboard.html");
-      generateDashboard(config, root, outPath);
       break;
     }
     case "conflicts": {

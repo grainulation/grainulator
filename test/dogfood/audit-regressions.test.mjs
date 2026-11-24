@@ -294,7 +294,7 @@ test("fresh full-support witness renews age; partial/contradictory or another sp
 test("analytics report creates missing destination directories from unrelated cwd", async (t) => {
 	const { dir, call } = fixture(t);
 	await init(call);
-	const output = path.join(dir, "output", "analytics.html");
+	const output = path.join(dir, "output", "analytics.md");
 	const cli = spawnSync(
 		process.execPath,
 		[
@@ -308,7 +308,10 @@ test("analytics report creates missing destination directories from unrelated cw
 		{ cwd: os.tmpdir(), encoding: "utf8" },
 	);
 	assert.equal(cli.status, 0, cli.stderr + cli.stdout);
-	assert.match(fs.readFileSync(output, "utf8"), /<!DOCTYPE html>/i);
+	assert.match(
+		fs.readFileSync(output, "utf8"),
+		/^# Grainulator analytics retrospective/m,
+	);
 });
 
 test("Codex patch guard checks add/update/delete/rename and allows ordinary patches", () => {
