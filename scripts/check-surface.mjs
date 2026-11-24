@@ -4,12 +4,13 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
-import {TOOLS,RESOURCES} from '../lib/grainulator-mcp.js';
+import {TOOLS,COMPACT_TOOLS,RESOURCES} from '../lib/grainulator-mcp.js';
 const root=fileURLToPath(new URL('../',import.meta.url));
 const pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json')));
 assert.deepEqual(Object.keys(pkg.bin),['grainulator']);
 const tools=['evidence_health','premise_links','correct_claim','observe_source','findings','finding_action','duplicate_candidates','acceptance_check','acceptance_set','compile','add_claim','import_claims','resolve','search','status','init','deepwiki','sync_log','memory_search','memory_list','memory_pull','memory_store','memory_packs','memory_graph','memory_confluence','memory_smart_fetch','exports_convert','exports_formats','exports_preview'];
 assert.deepEqual(TOOLS.map(t=>t.name).sort(),tools.sort());
+assert.deepEqual(COMPACT_TOOLS.map(tool=>tool.name).sort(),['configure_sprint','record_claim','import_claims','correct_claim','resolve_conflict','search_claims','compile_sprint','inspect_sprint','link_premises','observe_source','update_finding','search_memory','import_memory','store_memory','export_document'].sort());
 assert.equal(new Set(RESOURCES.map(r=>r.uri)).size,7);assert.ok(RESOURCES.every(r=>r.uri.startsWith('grainulator://')));
 for(const component of ['evidence','memory','exports','analytics','orchestration','shared','runtime']){const metadata=JSON.parse(fs.readFileSync(path.join(root,'packages',component,'package.json')));assert.equal(metadata.name,`@grainulation/grainulator-${component}`);assert.equal(metadata.version,pkg.version);assert.equal(metadata.private,true);assert.equal(metadata.bin,undefined);}
 assert.equal(fs.existsSync(path.join(root,'packages/legacy-cli')),false);

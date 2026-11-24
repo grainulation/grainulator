@@ -65,7 +65,7 @@ async function toolConvert(dir, args) {
   if (!fmt) {
     return {
       status: "error",
-      message: `Unknown format: "${format}". Use exports_formats to list available formats.`,
+      message: `Unknown format: "${format}". Read grainulator://exports/formats to list available formats.`,
     };
   }
   if (!fmt.convert) {

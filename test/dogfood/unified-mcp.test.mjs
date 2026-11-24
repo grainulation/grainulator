@@ -45,7 +45,13 @@ test("one server exposes canonical metadata with no startup filesystem writes", 
 	const { workspace, memoryDir } = fixture(t);
 	const handle = createHandler({ dir: workspace, memoryDir });
 	assert.equal(
-		(await rpc(handle, "initialize")).result.serverInfo.name,
+		(
+			await rpc(handle, "initialize", {
+				protocolVersion: "2024-11-05",
+				capabilities: {},
+				clientInfo: { name: "dogfood-test", version: "1" },
+			})
+		).result.serverInfo.name,
 		"grainulator",
 	);
 	assert.equal((await rpc(handle, "tools/list")).result.tools.length, 29);
@@ -66,7 +72,7 @@ test("one server exposes canonical metadata with no startup filesystem writes", 
 	assert.deepEqual(fs.readdirSync(workspace), []);
 });
 
-test("stdio performs evidence, reusable memory, exports, resources and hidden aliases end to end", async (t) => {
+test("stdio performs evidence, reusable memory, exports and resources with canonical names end to end", async (t) => {
 	const { workspace, memoryDir } = fixture(t);
 	seed(workspace);
 	const client = mcp(
@@ -83,7 +89,13 @@ test("stdio performs evidence, reusable memory, exports, resources and hidden al
 	);
 	t.after(() => client.close());
 	assert.equal(
-		(await client.request("initialize")).serverInfo.name,
+		(
+			await client.request("initialize", {
+				protocolVersion: "2024-11-05",
+				capabilities: {},
+				clientInfo: { name: "dogfood-test", version: "1" },
+			})
+		).serverInfo.name,
 		"grainulator",
 	);
 	client.notify("notifications/initialized");

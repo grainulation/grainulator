@@ -97,6 +97,26 @@ export function currentObservations(claim) {
   return records.filter(record => !replaced.has(record.id));
 }
 
+/** Project one selected record without loading a ledger or reading source files. */
+export function projectFinding(claim, observationStatuses = new Map()) {
+  const observations = currentObservations(claim);
+  const support = id => !id ? 'not_recorded' : observations.some(item => item.id === id)
+    ? observationStatuses.get(id) : 'superseded';
+  return { claim_id: claim.id, content: claim.content,
+    audit: claim.audit || { revision: 0, verdict: 'unverified', resolution: 'open', duplicate_of: null },
+    verification_observation_status: support(claim.audit?.observation_id),
+    resolution_observation_status: support(claim.audit?.resolution_observation_id),
+  };
+}
+
+/** Inspect only observations referenced by this record, then use the pure projection. */
+export function inspectFinding(dir, claim) {
+  const ids = new Set([claim.audit?.observation_id, claim.audit?.resolution_observation_id]);
+  const statuses = new Map(currentObservations(claim).filter(item => ids.has(item.id))
+    .map(item => [item.id, inspectObservation(dir, item).status]));
+  return projectFinding(claim, statuses);
+}
+
 /** Pure dependency projection plus bounded local source observations; no writes or processes. */
 export function evidenceHealth(ledger, dir) {
   const claims = ledger.claims || [];

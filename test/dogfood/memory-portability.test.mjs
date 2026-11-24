@@ -109,7 +109,11 @@ test("CLI and MCP share configured memory and return source provenance when reus
 	t.after(() => client.close());
 	const call = async (name, args = {}) =>
 		toolJSON(await client.request("tools/call", { name, arguments: args }));
-	await client.request("initialize");
+	await client.request("initialize", {
+		protocolVersion: "2024-11-05",
+		capabilities: {},
+		clientInfo: { name: "dogfood-test", version: "1" },
+	});
 	await call("memory_store", { name: "From MCP" });
 	const run = (args) =>
 		command([process.execPath, cli, "memory", ...args], { cwd: sprint, env });

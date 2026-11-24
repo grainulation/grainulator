@@ -73,8 +73,8 @@ function toolResolve(dir, args) {
 	return resolveClaim(dir, args);
 }
 
-function toolSearch(dir, args) {
-	return searchClaims(dir, args);
+function toolSearch(dir, args, options) {
+	return searchClaims(dir, args, options);
 }
 
 function toolStatus(dir) {
@@ -459,7 +459,7 @@ const TOOLS = [
 				done: {
 					type: "string",
 					description:
-						'What "done" looks like (default: A recommendation with evidence)',
+						'Explicit completion criteria. Omitted or empty creates no done-criteria claim; acceptance_check reports the gap.',
 				},
 				force: {
 					type: "boolean",
@@ -529,7 +529,7 @@ const RESOURCES = [
 
 // --- Request handler ---------------------------------------------------------
 
-async function handleRequest(dir, method, params, id) {
+async function handleRequest(dir, method, params, id, options = {}) {
 	switch (method) {
 		case "initialize":
 			return jsonRpcResponse(id, {
@@ -584,7 +584,7 @@ async function handleRequest(dir, method, params, id) {
 					result = toolResolve(effectiveDir, toolArgs);
 					break;
 				case "search":
-					result = toolSearch(effectiveDir, toolArgs);
+					result = toolSearch(effectiveDir, toolArgs, options);
 					break;
 				case "status":
 					result = toolStatus(effectiveDir);

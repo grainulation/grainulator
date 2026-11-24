@@ -114,6 +114,21 @@ try {
     for(const name of ['wheat/status','silo/list','mill/formats'])assert.ok((await client.request('tools/call',{name,arguments:{}}).catch(error=>({error}))).error,'historical alias rejected');
     report.checks.push('installed unified evidence, memory, exports and canonical resources; historical aliases rejected');
   } finally {await client.close();}
+  const compactClient=mcp([process.execPath,cli,'mcp','--dir',sprint,'--toolset','compact'],{cwd:sprint,env:{GRAINULATOR_MEMORY_DIR:path.join(dir,'compact-memory')}});
+  try {
+    const init=await compactClient.request('initialize',{protocolVersion:'2025-06-18',capabilities:{},clientInfo:{name:'grainulator-compact-install-check',version:'1'}});
+    assert.equal(init.protocolVersion,'2025-06-18');
+    const tools=(await compactClient.request('tools/list')).tools;
+    assert.equal(tools.length,15);assert.ok(tools.every(tool=>tool.outputSchema&&Object.keys(tool.annotations).length===4));
+    const inspected=await compactClient.request('tools/call',{name:'inspect_sprint',arguments:{limit:5}});
+    assert.equal(inspected.isError,false);assert.equal(inspected.structuredContent.status,'ok');
+    assert.deepEqual(inspected.structuredContent,toolJSON(inspected));
+    const rendered=await compactClient.request('tools/call',{name:'export_document',arguments:{format:'markdown',lines:5}});
+    assert.equal(rendered.isError,false);assert.ok(rendered.structuredContent.preview);
+    for(const uri of ['grainulator://memory/index','grainulator://memory/packs','grainulator://exports/formats'])assert.ok((await compactClient.request('resources/read',{uri})).contents[0].text);
+    assert.ok((await compactClient.request('tools/call',{name:'add_claim',arguments:{}}).catch(error=>({error}))).error);
+    report.checks.push('installed compact15 inventory, negotiated structured results, resources and disabled legacy routes');
+  } finally {await compactClient.close();}
   check('installed offline demo writes outside package and preserves verification protocol',()=>{const result=JSON.parse(run(['demo','--dir',path.join(dir,'demo'),'--json']));assert.equal(result.status,'verified');assert.equal(result.rounds.length,2);assert.ok(!result.trace.startsWith(installed+path.sep));});
   check('installed config schema and generated reference are bundled',()=>{for(const entry of ['packages/shared/schemas/project-config.schema.json','share/completions/grainulator.bash','share/man/man1/grainulator.1'])assert.ok(fs.existsSync(path.join(installed,entry)));assert.equal(JSON.parse(run(['config','check','--dir',sprint,'--json'])).status,'ok');});
   report.passed=true;

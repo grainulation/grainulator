@@ -6,7 +6,7 @@ import { loadClaims } from './load-claims.js';
 import { prepareClaim, resolvePaths } from './claims-ops.js';
 import { atomicWriteJSON } from '../../shared/lib/atomic.js';
 import { withFileTransaction } from '../../shared/lib/transaction.js';
-import { bytesDigest, captureSource, confinedEvidencePath, currentObservations, evidenceDigest, evidenceHealth, inspectObservation, premiseDigest } from './evidence-health.js';
+import { bytesDigest, captureSource, confinedEvidencePath, currentObservations, evidenceDigest, evidenceHealth, inspectFinding, inspectObservation, premiseDigest } from './evidence-health.js';
 
 const stamp = () => new Date().toISOString();
 function load(dir) {
@@ -20,7 +20,7 @@ function claimAt(data, id, active = true) {
   return claim;
 }
 function reason(value) {
-  if (typeof value !== 'string' || !value.trim() || value.length > 4096) throw new Error('A nonempty reason of at most 4096 characters is required.');
+  if (typeof value !== 'string' || !value.trim() || [...value].length > 4096) throw new Error('A nonempty reason of at most 4096 characters is required.');
   return value.trim();
 }
 function transaction(dir, operation) {
@@ -215,17 +215,10 @@ export function duplicateCandidates(dir) {
     limits: 'Shared current source ranges are candidates only; distinct defects may occupy the same lines. No records were merged.' };
 }
 
-export function listFindings(dir) {
-  return { status: 'ok', findings: load(dir).claims.filter(claim => claim.status === 'active').map(claim => {
-    const observations = currentObservations(claim);
-    const support = id => !id ? 'not_recorded' : observations.some(item => item.id === id)
-      ? inspectObservation(dir, observations.find(item => item.id === id)).status : 'superseded';
-    return { claim_id: claim.id, content: claim.content,
-      audit: claim.audit || { revision: 0, verdict: 'unverified', resolution: 'open', duplicate_of: null },
-      verification_observation_status: support(claim.audit?.observation_id),
-      resolution_observation_status: support(claim.audit?.resolution_observation_id),
-    };
-  }) };
+export function listFindings(dir, { include_inactive = false } = {}) {
+  if (typeof include_inactive !== 'boolean') throw new Error('include_inactive must be boolean.');
+  return { status: 'ok', findings: load(dir).claims.filter(claim => include_inactive || claim.status === 'active')
+    .map(claim => inspectFinding(dir, claim)) };
 }
 
 export function acceptanceGaps(dir) {

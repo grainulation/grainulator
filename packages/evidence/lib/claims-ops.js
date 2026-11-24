@@ -18,6 +18,7 @@ import path from "node:path";
 import { atomicWriteJSON } from "../../shared/lib/atomic.js";
 import { withFileTransaction } from "../../shared/lib/transaction.js";
 import { loadClaims } from "./load-claims.js";
+import { inspectFinding } from "./evidence-health.js";
 import {
 	isDigest,
 	normalizeStored,
@@ -323,7 +324,7 @@ function resolveClaim(dir, args) {
 	return mutate(dir, args, resolveClaimUnlocked);
 }
 
-function searchClaims(dir, args) {
+function searchClaims(dir, args, { includeAudit = false, afterSelect } = {}) {
 	const { data, errors: loadErrors } = loadClaims(dir);
 	if (!data) {
 		return {
@@ -349,11 +350,18 @@ function searchClaims(dir, args) {
 		const q = args.query.toLowerCase();
 		results = results.filter((c) => c.content.toLowerCase().includes(q));
 	}
+	// Keep the selected records even if another writer replaces the ledger now.
+	afterSelect?.();
+	const selected = results.map((c) => {
+		if (!includeAudit) return c;
+		const { claim_id: _id, content: _content, ...audit } = inspectFinding(dir, c);
+		return { ...c, ...audit };
+	});
 
 	return {
 		status: "ok",
 		count: results.length,
-		claims: results.map((c) =>
+		claims: selected.map((c) =>
 			args.full || args.id
 				? { ...c }
 				: {
