@@ -20,6 +20,7 @@
   <a href="docs/INSTALLATION.md"><img src="https://img.shields.io/badge/node-%E2%89%A524-339933?logo=nodedotjs&logoColor=white" alt="Node.js 24 or later"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license"></a>
   <a href="https://deepwiki.com/grainulation/grainulator"><img src="https://img.shields.io/badge/docs-DeepWiki-1f6feb" alt="Docs on DeepWiki"></a>
+  <a href="https://glama.ai/mcp/servers/grainulation/grainulator"><img src="https://glama.ai/mcp/servers/grainulation/grainulator/badges/score.svg" alt="grainulation/grainulator MCP server"></a>
 </p>
 
 <p align="center">
