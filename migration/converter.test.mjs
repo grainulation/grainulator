@@ -1,20 +1,20 @@
-import test, { after } from "node:test";
+// Generated from typescript/migration/converter.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import crypto from "node:crypto";
-import { spawnSync } from "node:child_process";
+import test, { after } from "node:test";
 import { fileURLToPath } from "node:url";
 import { validateClaim, validateRun } from "../lib/runtime-enrollment.js";
 import {
-	inspectMigration,
 	applyMigration,
-	verifyMigration,
+	inspectMigration,
 	resumeMigration,
 	rollbackMigration,
+	verifyMigration,
 } from "./converter.mjs";
-
 // Crash fixtures must never leave fences in a real converter's per-user registry.
 // Every converter in this test process, including children, still shares one
 // registry so the overlap and dead-owner recovery checks retain their meaning.
@@ -33,7 +33,6 @@ after(() => {
 	}
 	fs.rmSync(suiteTemporary, { recursive: true, force: true });
 });
-
 const hash = (value) => crypto.createHash("sha256").update(value).digest("hex");
 function fixtureBytes(file, encoding) {
 	const fd = fs.openSync(
@@ -43,7 +42,9 @@ function fixtureBytes(file, encoding) {
 	);
 	try {
 		assert.ok(fs.fstatSync(fd).isFile());
-		return fs.readFileSync(fd, encoding);
+		return encoding === undefined
+			? fs.readFileSync(fd)
+			: fs.readFileSync(fd, encoding);
 	} finally {
 		fs.closeSync(fd);
 	}
@@ -103,7 +104,7 @@ test("config section merge preserves source bytes, custom paths, unknown fields 
 	const result = applyMigration(plan, { quiesced: true });
 	assert.equal(result.status, "complete");
 	const config = JSON.parse(
-		fs.readFileSync(path.join(project, "grainulator.config.json")),
+		String(fs.readFileSync(path.join(project, "grainulator.config.json"))),
 	);
 	assert.deepEqual(config.evidence, evidence);
 	assert.equal(config.orchestration.unknown, 42);
@@ -180,7 +181,9 @@ test("staged interruption resumes without reexecution, and changed destination p
 	assert.equal(result.status, "staged");
 	assert.equal(
 		JSON.parse(
-			fs.readFileSync(path.join(project, ".grainulator/migration.json")),
+			String(
+				fs.readFileSync(path.join(project, ".grainulator/migration.json")),
+			),
 		).state,
 		"in-progress",
 	);
@@ -218,8 +221,9 @@ test("preexisting unrelated canonical sections survive conversion and rollback",
 		quiesced: true,
 	});
 	assert.deepEqual(
-		JSON.parse(fs.readFileSync(path.join(project, "grainulator.config.json")))
-			.extension,
+		JSON.parse(
+			String(fs.readFileSync(path.join(project, "grainulator.config.json"))),
+		).extension,
 		{ v: 2 },
 	);
 	rollbackMigration(result.transaction_directory, { quiesced: true });
@@ -267,11 +271,15 @@ test("runtime conversion archives oracle receipts and exact source history witho
 	});
 	const native = path.join(project, ".grainulator/runtime");
 	assert.doesNotThrow(() =>
-		validateRun(JSON.parse(fs.readFileSync(path.join(native, "run.json")))),
+		validateRun(
+			JSON.parse(String(fs.readFileSync(path.join(native, "run.json")))),
+		),
 	);
-	JSON.parse(fs.readFileSync(path.join(native, "claims.json"))).claims.forEach(
-		(claim) => assert.doesNotThrow(() => validateClaim(claim)),
-	);
+	JSON.parse(
+		String(fs.readFileSync(path.join(native, "claims.json"))),
+	).claims.forEach((claim) => {
+		assert.doesNotThrow(() => validateClaim(claim));
+	});
 	assert.equal(fs.existsSync(sentinel), false);
 	assert.equal(
 		fs.existsSync(path.join(native, "verdicts")),
@@ -279,7 +287,7 @@ test("runtime conversion archives oracle receipts and exact source history witho
 		"legacy passes cannot become active canonical verdicts",
 	);
 	assert.equal(
-		JSON.parse(fs.readFileSync(path.join(native, "state.json"))).round,
+		JSON.parse(String(fs.readFileSync(path.join(native, "state.json")))).round,
 		4,
 	);
 	assert.equal(
@@ -294,7 +302,7 @@ test("runtime conversion archives oracle receipts and exact source history witho
 		verdict,
 	);
 	const stale = JSON.parse(
-		fs.readFileSync(path.join(native, "migration-required.json")),
+		String(fs.readFileSync(path.join(native, "migration-required.json"))),
 	);
 	assert.equal(stale.state, "verification-required");
 	assert.deepEqual(stale.oracle_bindings_requiring_review, ["v"]);
@@ -320,7 +328,7 @@ test("explicit memory selection validates hashes and never silently merges two s
 		path.join(source, "claims/one.json"),
 		JSON.stringify({ meta: { hash: digest.slice(0, 12) }, claims }),
 	);
-	let plan = inspectMigration({
+	const plan = inspectMigration({
 		project,
 		memorySource: source,
 		memoryDestination: destination,
@@ -351,7 +359,6 @@ test("explicit memory selection validates hashes and never silently merges two s
 		/integrity mismatch/,
 	);
 });
-
 const converter = fileURLToPath(new URL("./converter.mjs", import.meta.url));
 function child(args, crash) {
 	return spawnSync(process.execPath, [converter, ...args], {
@@ -527,7 +534,8 @@ test("rollback refuses externally missing destinations and corrupt or mode-chang
 		),
 		original = fs.readFileSync(backupFD),
 		mode = fs.fstatSync(backupFD).mode & 0o777;
-	const replaceBackup = (data) => {
+	const replaceBackup = (input) => {
+		let data = input;
 		data = Buffer.from(data);
 		fs.ftruncateSync(backupFD, 0);
 		fs.writeSync(backupFD, data, 0, data.length, 0);
@@ -634,15 +642,15 @@ test("runtime control files and real lessons stay inert; supported array ledger 
 		assert.equal(fs.existsSync(path.join(dest, history, name)), true);
 	}
 	assert.deepEqual(
-		JSON.parse(fs.readFileSync(path.join(dest, "claims.json"))),
+		JSON.parse(String(fs.readFileSync(path.join(dest, "claims.json")))),
 		claims,
 	);
 	assert.deepEqual(
-		JSON.parse(fs.readFileSync(path.join(dest, "state.json"))),
+		JSON.parse(String(fs.readFileSync(path.join(dest, "state.json")))),
 		state,
 	);
 	const marker = JSON.parse(
-		fs.readFileSync(path.join(dest, "migration-required.json")),
+		String(fs.readFileSync(path.join(dest, "migration-required.json"))),
 	);
 	assert.deepEqual(marker.oracle_bindings_requiring_review, [
 		"first",
@@ -756,8 +764,10 @@ test("every historical sync is blocked, including empty pages and missing maps; 
 		quiesced: true,
 	});
 	let marker = JSON.parse(
-		fs.readFileSync(
-			path.join(project, ".grainulator/evidence/remote-migration.json"),
+		String(
+			fs.readFileSync(
+				path.join(project, ".grainulator/evidence/remote-migration.json"),
+			),
 		),
 	);
 	assert.equal(marker.state, "pending");
@@ -773,8 +783,10 @@ test("every historical sync is blocked, including empty pages and missing maps; 
 	});
 	result = applyMigration(inspectMigration({ project }), { quiesced: true });
 	marker = JSON.parse(
-		fs.readFileSync(
-			path.join(project, ".grainulator/evidence/remote-migration.json"),
+		String(
+			fs.readFileSync(
+				path.join(project, ".grainulator/evidence/remote-migration.json"),
+			),
 		),
 	);
 	assert.equal(marker.missing_sync_map, true);
@@ -923,13 +935,13 @@ test("two projects targeting one store are fenced; a live lock is never stolen a
 	assert.equal(fs.existsSync(destination), false);
 	const ownerFile = path.join(project, ".grainulator-migration.lock"),
 		old = fs.readFileSync(ownerFile),
-		owner = JSON.parse(old);
+		owner = JSON.parse(String(old));
 	fs.writeFileSync(ownerFile, JSON.stringify({ ...owner, pid: process.pid }));
 	assert.throws(
 		() => resumeMigration(dir, { quiesced: true, recoverLocks: true }),
 		/lock/i,
 	);
-	assert.equal(JSON.parse(fs.readFileSync(ownerFile)).pid, process.pid);
+	assert.equal(JSON.parse(String(fs.readFileSync(ownerFile))).pid, process.pid);
 	fs.writeFileSync(ownerFile, old);
 	const resumed = child([
 		"resume",
@@ -1009,8 +1021,10 @@ test("one empty historical sync remains ambiguous even alongside a fully identif
 		quiesced: true,
 	});
 	const marker = JSON.parse(
-		fs.readFileSync(
-			path.join(project, ".grainulator/evidence/remote-migration.json"),
+		String(
+			fs.readFileSync(
+				path.join(project, ".grainulator/evidence/remote-migration.json"),
+			),
 		),
 	);
 	assert.equal(marker.ambiguity, true);
@@ -1179,7 +1193,9 @@ for (const boundary of ["after-locks", "before-first-journal"])
 			const stopped = child(["apply", "--plan", file, "--quiesced"], boundary);
 			assert.equal(stopped.signal, "SIGKILL");
 			const owner = JSON.parse(
-				fs.readFileSync(path.join(project, ".grainulator-migration.lock")),
+				String(
+					fs.readFileSync(path.join(project, ".grainulator-migration.lock")),
+				),
 			);
 			assert.equal(owner.plan_sha256, plan.plan_sha256);
 			assert.equal(
@@ -1202,7 +1218,7 @@ for (const boundary of ["after-locks", "before-first-journal"])
 				owner.transaction,
 			]);
 			assert.equal(recovered.status, 0, recovered.stderr);
-			const result = JSON.parse(recovered.stdout);
+			const result = JSON.parse(String(recovered.stdout));
 			assert.equal(
 				verifyMigration(result.transaction_directory).status,
 				"verified",
@@ -1255,17 +1271,20 @@ test("valid v2 claims without content roundtrip through canonical runtime valida
 		}),
 		target = path.join(project, ".grainulator/runtime");
 	const converted = JSON.parse(
-			fs.readFileSync(path.join(target, "claims.json")),
+			String(fs.readFileSync(path.join(target, "claims.json"))),
 		),
-		convertedRun = JSON.parse(fs.readFileSync(path.join(target, "run.json")));
+		convertedRun = JSON.parse(
+			String(fs.readFileSync(path.join(target, "run.json"))),
+		);
 	converted.claims.forEach(validateClaim);
 	validateRun(convertedRun);
 	assert.deepEqual(converted, { claims, extension: "retained" });
 	assert.deepEqual(convertedRun, run);
 	assert.equal("content" in converted.claims[0], false);
 	assert.equal(
-		JSON.parse(fs.readFileSync(path.join(target, "migration-required.json")))
-			.state,
+		JSON.parse(
+			String(fs.readFileSync(path.join(target, "migration-required.json"))),
+		).state,
 		"verification-required",
 	);
 	rollbackMigration(result.transaction_directory, { quiesced: true });
@@ -1338,13 +1357,14 @@ for (let index = 0; index < 5; index++)
 					fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW,
 					0o600,
 				);
-			} catch (error) {
+			} catch (_error) {
+				const error = _error;
 				if (error.code !== "ENOENT") throw error;
 			}
 			if (bindingFD !== undefined) {
 				try {
 					const bindingBytes = fs.readFileSync(bindingFD),
-						owner = JSON.parse(bindingBytes),
+						owner = JSON.parse(String(bindingBytes)),
 						bindingStat = fs.fstatSync(bindingFD);
 					assert.equal(owner.project, project);
 					assert.equal(owner.plan_sha256, plan.plan_sha256);
@@ -1369,7 +1389,7 @@ for (let index = 0; index < 5; index++)
 			}
 			const recovered = child(args);
 			assert.equal(recovered.status, 0, recovered.stderr);
-			const result = JSON.parse(recovered.stdout);
+			const result = JSON.parse(String(recovered.stdout));
 			assert.equal(
 				verifyMigration(result.transaction_directory).status,
 				"verified",
@@ -1377,12 +1397,14 @@ for (let index = 0; index < 5; index++)
 			if (otherResult.status !== 0)
 				otherResult = child(["apply", "--plan", otherFile, "--quiesced"]);
 			assert.equal(otherResult.status, 0, otherResult.stderr);
-			rollbackMigration(JSON.parse(otherResult.stdout).transaction_directory, {
-				quiesced: true,
-			});
+			rollbackMigration(
+				JSON.parse(String(otherResult.stdout)).transaction_directory,
+				{
+					quiesced: true,
+				},
+			);
 			rollbackMigration(result.transaction_directory, { quiesced: true });
 		});
-
 test("a leaf changed to a symbolic link between inventory and open is refused by the fd open", (t) => {
 	const { root, project, put } = fixture(t),
 		leaf = put(".wheat/data", "source bytes"),
@@ -1470,7 +1492,7 @@ test("path replacement during a config snapshot cannot substitute another refere
 	}
 	assert.equal(raced, true);
 	assert.equal(fixtureBytes(leaf, "utf8"), '{"foreign":"preserved"}');
-	assert.deepEqual(JSON.parse(fixtureBytes(saved)), { dirs: {} });
+	assert.deepEqual(JSON.parse(String(fixtureBytes(saved))), { dirs: {} });
 	assert.equal(fs.existsSync(path.join(project, ".grainulator")), false);
 });
 test("the shared temporary fence rejects permissive or symbolic directories and creates an owned private directory", (t) => {

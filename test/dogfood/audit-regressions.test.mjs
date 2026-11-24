@@ -1,3 +1,4 @@
+// Generated from typescript/test/dogfood/audit-regressions.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -11,7 +12,6 @@ import { checkDecay, decayAlerts } from "../../packages/analytics/lib/decay.js";
 import { convert as csv } from "../../packages/exports/lib/formats/csv.mjs";
 import { convert as jira } from "../../packages/exports/lib/formats/jira-csv.mjs";
 import { convert as yaml } from "../../packages/exports/lib/formats/yaml.mjs";
-
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const base = {
 	type: "factual",
@@ -30,7 +30,8 @@ function fixture(t) {
 		assert.ok(!rpc.error, JSON.stringify(rpc));
 		return JSON.parse(rpc.result.content[0].text);
 	};
-	const read = () => JSON.parse(fs.readFileSync(path.join(dir, "claims.json")));
+	const read = () =>
+		JSON.parse(fs.readFileSync(path.join(dir, "claims.json"), "utf8"));
 	return { dir, call, read };
 }
 async function init(call) {
@@ -39,7 +40,6 @@ async function init(call) {
 		"ok",
 	);
 }
-
 test("exact ID lookup returns full evidence and lifecycle; one-sided conflicts resolve without overwriting", async (t) => {
 	const { call, read } = fixture(t);
 	await init(call);
@@ -80,7 +80,6 @@ test("exact ID lookup returns full evidence and lifecycle; one-sided conflicts r
 	assert.deepEqual(status.topic_list, ["audit"]);
 	assert.equal(status.evidence_distribution.documented, 2);
 });
-
 test("public calibration schema persists correct/wrong/partial/unknown outcomes; scorer excludes unknown binary scores", async (t) => {
 	const { call, read, dir } = fixture(t);
 	await init(call);
@@ -178,9 +177,9 @@ test("public calibration schema persists correct/wrong/partial/unknown outcomes;
 		{ encoding: "utf8" },
 	);
 	assert.equal(cli.status, 0, cli.stderr + cli.stdout);
-	assert.equal(JSON.parse(cli.stdout).claim.calibration.delta, 3);
+	const added = JSON.parse(cli.stdout);
+	assert.equal(added.claim.calibration.delta, 3);
 });
-
 test("document imports are atomic, conservative, idempotent and do not resurrect historical or locally rejected findings", async (t) => {
 	const { call, read, dir } = fixture(t);
 	await init(call);
@@ -237,7 +236,6 @@ test("document imports are atomic, conservative, idempotent and do not resurrect
 	assert.equal(cli.status, 0, cli.stderr + cli.stdout);
 	assert.equal(JSON.parse(cli.stdout).existing, 2);
 });
-
 test("fresh full-support witness renews age; partial/contradictory or another sprint witness does not", () => {
 	const now = "2026-09-22T00:00:00Z";
 	const old = {
@@ -290,7 +288,6 @@ test("fresh full-support witness renews age; partial/contradictory or another sp
 		1,
 	);
 });
-
 test("analytics report creates missing destination directories from unrelated cwd", async (t) => {
 	const { dir, call } = fixture(t);
 	await init(call);
@@ -313,7 +310,6 @@ test("analytics report creates missing destination directories from unrelated cw
 		/^# Grainulator analytics retrospective/m,
 	);
 });
-
 test("Codex patch guard checks add/update/delete/rename and allows ordinary patches", () => {
 	for (const header of [
 		"Add File: claims.json",
@@ -350,7 +346,6 @@ test("Codex patch guard checks add/update/delete/rename and allows ordinary patc
 	);
 	assert.equal(allowed.status, 0);
 });
-
 test("CSV carriage returns/formulas preserve row boundaries in independent parser; YAML roundtrips all JSON types", async (t) => {
 	const content = "before\rafter\nlast\n";
 	const input = {
@@ -396,7 +391,6 @@ test("CSV carriage returns/formulas preserve row boundaries in independent parse
 		assert.deepEqual(JSON.parse(parsed.stdout), input);
 	});
 });
-
 test("format catalogue excludes helpers; memory search labels supersession", async (t) => {
 	const { call, dir } = fixture(t);
 	await init(call);
@@ -424,7 +418,6 @@ test("format catalogue excludes helpers; memory search labels supersession", asy
 	assert.equal(old.status, "superseded");
 	assert.equal(old.resolved_by, "new");
 });
-
 test("Markdown-family exports render raw HTML as text without changing source records", async () => {
 	const data = {
 		meta: { question: "<img src=x onerror=alert(1)>" },
@@ -447,7 +440,6 @@ test("Markdown-family exports render raw HTML as text without changing source re
 	}
 	assert.equal(JSON.stringify(data), before);
 });
-
 test("smart fetch reports degraded/error/concise/full/truncated results without claiming complete evidence", async (t) => {
 	const { createServer } = await import("node:http");
 	const { smartFetch } = await import(
@@ -476,11 +468,14 @@ test("smart fetch reports degraded/error/concise/full/truncated results without 
 	const degraded = await smartFetch(`${url}/short`, options);
 	assert.equal(degraded.quality, "degraded");
 	assert.equal(degraded.mode_used, "concise");
+	assert.ok(degraded.warnings);
 	assert.ok(!degraded.warnings.some((w) => w.startsWith("auto-retry:")));
 	const concise = await smartFetch(`${url}/long`, options);
+	assert.ok(concise.content);
 	assert.equal(concise.content.length, 2048);
 	assert.equal(concise.truncated, true);
 	const full = await smartFetch(`${url}/long`, { ...options, mode: "full" });
+	assert.ok(full.content);
 	assert.ok(full.content.length > 2048);
 	assert.equal(full.truncated, false);
 	const truncated = await smartFetch(`${url}/truncated`, {
@@ -489,11 +484,11 @@ test("smart fetch reports degraded/error/concise/full/truncated results without 
 	});
 	assert.equal(truncated.quality, "failed");
 	assert.equal(truncated.truncated, true);
+	assert.ok(truncated.warnings);
 	assert.ok(truncated.warnings.some((w) => w.startsWith("auto-retry:")));
 	const invalid = await smartFetch("file:///etc/passwd", options);
 	assert.equal(invalid.ok, false);
 });
-
 test("Confluence snapshot preserves blocked findings visibly and hostile CDATA roundtrips", async () => {
 	const { buildBriefPageBody, buildJsonCodeBlock } = await import(
 		"../../lib/confluence-sync.js"
@@ -514,7 +509,6 @@ test("Confluence snapshot preserves blocked findings visibly and hostile CDATA r
 		compilation,
 	);
 });
-
 test("publication coordinator uses discovered formats, authorizes destination, preserves blockers and never retries ambiguous writes", async () => {
 	const { publishSnapshot } = await import("../../lib/confluence-sync.js");
 	let writes = 0;
@@ -592,7 +586,6 @@ test("publication coordinator uses discovered formats, authorizes destination, p
 		assert.doesNotMatch(JSON.stringify(failed), /SECRET/);
 	}
 });
-
 test("document conflict IDs cannot resolve through object prototypes", async (t) => {
 	const { call, read } = fixture(t);
 	await init(call);
@@ -603,7 +596,6 @@ test("document conflict IDs cannot resolve through object prototypes", async (t)
 	assert.equal(result.status, "error");
 	assert.deepEqual(read().claims, []);
 });
-
 test("CSV formula protection covers whitespace and line-feed prefixes", () => {
 	for (const content of ["\n=1+2", "  =1+2", "\uFEFF@SUM(1,2)", "\t-1+2"]) {
 		const text = csv({ claims: [{ ...base, id: "a", content }] });
@@ -616,6 +608,7 @@ test("CSV formula protection covers whitespace and line-feed prefixes", () => {
 			{ input: text, encoding: "utf8" },
 		);
 		assert.equal(parsed.status, 0, parsed.stderr);
-		assert.equal(JSON.parse(parsed.stdout)[1][3], `'${content}`);
+		const rows = JSON.parse(parsed.stdout);
+		assert.equal(rows[1][3], `'${content}`);
 	}
 });

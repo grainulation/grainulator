@@ -16,4 +16,4 @@ WORKDIR /app
 COPY --from=package /package/ ./
 
 ENTRYPOINT ["node", "bin/grainulator.js"]
-CMD ["mcp", "--dir", "/app"]
+CMD ["mcp", "--dir", "/app", "--toolset", "compact"]

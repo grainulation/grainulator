@@ -1,3 +1,4 @@
+// Generated from typescript/test/smoke.test.ts; edit that source and run npm run build:types.
 /**
  * Smoke tests for the grainulator plugin.
  *
@@ -6,21 +7,16 @@
  *
  * Uses node:test + node:assert -- zero dependencies.
  */
-
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
-
 // ── plugin.json ──────────────────────────────────────────────────────────────
-
 describe("plugin.json", () => {
 	let plugin;
-
 	it("parses as valid JSON", () => {
 		const raw = fs.readFileSync(
 			path.join(ROOT, ".claude-plugin", "plugin.json"),
@@ -28,7 +24,6 @@ describe("plugin.json", () => {
 		);
 		plugin = JSON.parse(raw);
 	});
-
 	it("has required fields", () => {
 		assert.ok(plugin.name, "missing name");
 		assert.ok(plugin.version, "missing version");
@@ -37,7 +32,6 @@ describe("plugin.json", () => {
 		assert.ok(plugin.agents, "missing agents");
 		assert.ok(plugin.mcpServers, "missing mcpServers");
 	});
-
 	it("referenced paths exist", () => {
 		assert.ok(
 			fs.existsSync(path.join(ROOT, plugin.skills)),
@@ -60,9 +54,7 @@ describe("plugin.json", () => {
 		);
 	});
 });
-
 // ── Skill files ──────────────────────────────────────────────────────────────
-
 describe("skill files", () => {
 	const skillsDir = path.join(ROOT, "skills");
 	// Skills use subdirectory format: skills/<name>/SKILL.md
@@ -74,14 +66,11 @@ describe("skill files", () => {
 				fs.statSync(path.join(skillsDir, f)).isDirectory() &&
 				!f.startsWith("_"),
 		);
-
 	it("has at least one skill directory", () => {
 		assert.ok(skillDirs.length > 0, "no skill subdirectories found");
 	});
-
 	for (const dir of skillDirs) {
 		const skillFile = path.join(skillsDir, dir, "SKILL.md");
-
 		it(`${dir}/SKILL.md exists and has YAML frontmatter with name and description`, () => {
 			assert.ok(fs.existsSync(skillFile), `${dir}/SKILL.md does not exist`);
 			const content = fs.readFileSync(skillFile, "utf8");
@@ -106,17 +95,13 @@ describe("skill files", () => {
 		});
 	}
 });
-
 // ── hooks.json ───────────────────────────────────────────────────────────────
-
 describe("hooks.json", () => {
 	let hooks;
-
 	it("parses as valid JSON", () => {
 		const raw = fs.readFileSync(path.join(ROOT, "hooks", "hooks.json"), "utf8");
 		hooks = JSON.parse(raw);
 	});
-
 	it("has event-keyed hooks object", () => {
 		assert.ok(hooks.hooks, "missing hooks wrapper");
 		assert.ok(typeof hooks.hooks === "object", "hooks.hooks is not an object");
@@ -129,7 +114,6 @@ describe("hooks.json", () => {
 			);
 		}
 	});
-
 	it("each hook entry has matcher and hooks array with type+command", () => {
 		for (const [event, entries] of Object.entries(hooks.hooks)) {
 			for (const entry of entries) {
@@ -146,17 +130,13 @@ describe("hooks.json", () => {
 		}
 	});
 });
-
 // ── .mcp.json ────────────────────────────────────────────────────────────────
-
 describe(".mcp.json", () => {
 	let mcp;
-
 	it("parses as valid JSON", () => {
 		const raw = fs.readFileSync(path.join(ROOT, ".mcp.json"), "utf8");
 		mcp = JSON.parse(raw);
 	});
-
 	it("has mcpServers object", () => {
 		assert.ok(mcp.mcpServers, "missing mcpServers");
 		assert.ok(
@@ -164,7 +144,6 @@ describe(".mcp.json", () => {
 			"mcpServers is not an object",
 		);
 	});
-
 	it("does not use CWD variable in env values", () => {
 		const raw = fs.readFileSync(path.join(ROOT, ".mcp.json"), "utf8");
 		const cwdVar = "$" + "{CWD}";
@@ -174,7 +153,6 @@ describe(".mcp.json", () => {
 		);
 	});
 });
-
 describe("Markdown output skills", () => {
 	it("keeps the brief workflow and retires presentation assets", () => {
 		const source = fs.readFileSync(

@@ -1,3 +1,4 @@
+// Generated from typescript/packages/evidence/lib/freshness.ts; edit that source and run npm run build:types.
 /**
  * freshness — is a compilation still current for its sprint?
  *
@@ -11,21 +12,14 @@
  *
  * Zero npm dependencies.
  */
-
 import fs from "node:fs";
 import path from "node:path";
-import { evidenceHealth, healthFingerprint } from './evidence-health.js';
 import {
 	COMPILER_VERSION,
 	generateCertificate,
 	passagesFingerprint,
 } from "../compiler/evidence-compiler.js";
-
-/**
- * @param {string} claimsPath path to claims.json
- * @param {object} compilation parsed compilation.json
- * @returns {{ fresh: boolean, reason: string }}
- */
+import { evidenceHealth, healthFingerprint } from "./evidence-health.js";
 export function compilationFreshness(claimsPath, compilation) {
 	const claimsData = JSON.parse(fs.readFileSync(claimsPath, "utf8"));
 	const certificate = compilation?.compilation_certificate;
@@ -41,10 +35,12 @@ export function compilationFreshness(claimsPath, compilation) {
 	// ledger references no passages.
 	const recorded =
 		certificate.passages_hash ?? passagesFingerprint({ claims: [] }, ".");
-	if (recorded !== current)
-		return { fresh: false, reason: "passages_changed" };
-	const health = evidenceHealth(claimsData, path.dirname(path.resolve(claimsPath)));
+	if (recorded !== current) return { fresh: false, reason: "passages_changed" };
+	const health = evidenceHealth(
+		claimsData,
+		path.dirname(path.resolve(claimsPath)),
+	);
 	if (certificate.evidence_health_hash !== healthFingerprint(health))
-		return { fresh: false, reason: 'evidence_observations_changed' };
+		return { fresh: false, reason: "evidence_observations_changed" };
 	return { fresh: true, reason: "ok" };
 }

@@ -1,3 +1,4 @@
+// Generated from typescript/test/dogfood/semantic-evaluation.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { score, tasks } from "../../evals/semantic-tasks.mjs";
@@ -5,9 +6,9 @@ import {
 	canStartCall,
 	usageTotals,
 } from "../../scripts/lib/evaluation-usage.mjs";
-
 test("semantic evaluation scores ordered results and formatting independently", () => {
 	const task = tasks.find((t) => t.id === "allocation-2");
+	assert.ok(task);
 	assert.deepEqual(task.expected, { accepted: ["B", "D", "E"], remaining: 1 });
 	const correct = JSON.stringify(task.expected);
 	assert.equal(score(task, `Reasoning\n${correct}`).semantic, true);

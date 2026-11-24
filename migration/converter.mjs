@@ -1,9 +1,10 @@
 #!/usr/bin/env node
+// Generated from typescript/migration/converter.mts; edit that source and run npm run build:types.
+import crypto from "node:crypto";
 // Separate offline converter: no application loaders, providers or subprocesses.
 import fs from "node:fs";
-import path from "node:path";
 import os from "node:os";
-import crypto from "node:crypto";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 const SCHEMA = "grainulator.migration-plan.v1",
 	JOURNAL = "grainulator.migration-journal.v1";
@@ -12,19 +13,26 @@ const MAX_ENTRIES = 20_000,
 	MAX_FILE = 32 * 1024 * 1024,
 	MAX_DOCUMENT = 16 * 1024 * 1024,
 	MAX_DEPTH = 64;
+function member(items, value) {
+	return items.includes(value);
+}
+function integer(value) {
+	return Number.isSafeInteger(value);
+}
 const OWNER = ".grainulator-migration-owner.json";
 const sha = (b) => crypto.createHash("sha256").update(b).digest("hex");
 const encode = (v) => Buffer.from(JSON.stringify(v, null, 2) + "\n");
 const object = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
 const equal = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-const fail = (message) => {
+function fail(message) {
 	throw new Error(message);
-};
+}
 const exists = (f) => {
 	try {
 		fs.lstatSync(f);
 		return true;
-	} catch (e) {
+	} catch (_e) {
+		const e = _e;
 		if (e.code === "ENOENT") return false;
 		throw e;
 	}
@@ -92,7 +100,8 @@ function openRegular(
 			}
 		}
 		return { fd, stat };
-	} catch (error) {
+	} catch (_error) {
+		const error = _error;
 		fs.closeSync(fd);
 		throw error;
 	}
@@ -145,7 +154,7 @@ function bytes(file, peer) {
 	return snapshot(file, { peer }).data;
 }
 function jsonAny(file) {
-	return JSON.parse(bytes(file));
+	return JSON.parse(String(bytes(file).toString()));
 }
 function json(file) {
 	const value = jsonAny(file);
@@ -283,7 +292,7 @@ function validateSchema(value, kind) {
 				"1.0",
 				`https://github.com/grainulation/bean/schemas/${kind}.schema.json`,
 			];
-			if (!allowed.includes(value[field]))
+			if (!member(allowed, value[field]))
 				fail("Unsupported runtime " + kind + " schema");
 		}
 }
@@ -309,24 +318,27 @@ function validateRuntime(root) {
 			!object(c) ||
 			!safeId(c.id) ||
 			ids.has(c.id) ||
-			![
-				"constraint",
-				"factual",
-				"estimate",
-				"risk",
-				"recommendation",
-				"feedback",
-			].includes(c.type) ||
+			!member(
+				[
+					"constraint",
+					"factual",
+					"estimate",
+					"risk",
+					"recommendation",
+					"feedback",
+				],
+				c.type,
+			) ||
 			typeof c.topic !== "string" ||
 			!c.topic.trim() ||
 			(c.content !== undefined && typeof c.content !== "string")
 		)
 			fail("Malformed or duplicate runtime claim");
 		ids.add(c.id);
-		if (!tiers.includes(c.evidence)) fail("Unsupported runtime evidence tier");
+		if (!member(tiers, c.evidence)) fail("Unsupported runtime evidence tier");
 		if (
 			c.status !== undefined &&
-			!["active", "superseded", "rejected", "resolved"].includes(c.status)
+			!member(["active", "superseded", "rejected", "resolved"], c.status)
 		)
 			fail("Invalid runtime claim status");
 		for (const key of ["depends_on", "conflicts_with"])
@@ -367,26 +379,25 @@ function validateRuntime(root) {
 				fail("Malformed runtime " + field);
 		if (
 			run.verification !== undefined &&
-			!["strict", "compat", "advisory"].includes(run.verification.mode)
+			!member(["strict", "compat", "advisory"], run.verification.mode)
 		)
 			fail("Unknown runtime verification mode");
 		if (
 			run.budget?.max_rounds !== undefined &&
-			(!Number.isSafeInteger(run.budget.max_rounds) ||
-				run.budget.max_rounds < 1)
+			(!integer(run.budget.max_rounds) || run.budget.max_rounds < 1)
 		)
 			fail("Malformed runtime budget");
 		if (run.task_id !== undefined && typeof run.task_id !== "string")
 			fail("Invalid runtime task id");
 		if (
 			run.stakes !== undefined &&
-			!["low", "medium", "high"].includes(run.stakes)
+			!member(["low", "medium", "high"], run.stakes)
 		)
 			fail("Invalid runtime stakes");
 		for (const key of ["load_bearing", "recommendation"])
 			if (
 				run.evidence_bar?.[key] !== undefined &&
-				!tiers.includes(run.evidence_bar[key])
+				!member(tiers, run.evidence_bar[key])
 			)
 				fail("Invalid runtime evidence bar");
 		if (run.mutation_policy !== undefined) {
@@ -416,7 +427,7 @@ function validateRuntime(root) {
 				fail("Malformed oracle inputs");
 			if (
 				oracle.timeout_ms !== undefined &&
-				(!Number.isSafeInteger(oracle.timeout_ms) || oracle.timeout_ms < 1)
+				(!integer(oracle.timeout_ms) || oracle.timeout_ms < 1)
 			)
 				fail("Invalid oracle timeout");
 			if (
@@ -426,7 +437,7 @@ function validateRuntime(root) {
 				fail("Invalid oracle digest");
 			if (
 				oracle.trust !== undefined &&
-				!["dev_oracle", "answer_key"].includes(oracle.trust)
+				!member(["dev_oracle", "answer_key"], oracle.trust)
 			)
 				fail("Invalid oracle trust");
 		}
@@ -438,10 +449,7 @@ function validateRuntime(root) {
 		if (!("round" in state))
 			fail("Runtime temporal state must retain its round counter");
 		for (const field of ["round", "dry_rounds"])
-			if (
-				field in state &&
-				(!Number.isSafeInteger(state[field]) || state[field] < 0)
-			)
+			if (field in state && (!integer(state[field]) || state[field] < 0))
 				fail("Malformed runtime temporal counter");
 		for (const field of ["seen_ids", "superseded_hashes"])
 			if (
@@ -476,7 +484,7 @@ function validateMemory(root) {
 			templates: "templates",
 			pack: "packs",
 			packs: "packs",
-		}[entry.type];
+		}[String(entry.type)];
 		if (!folder) fail("Unknown memory collection type");
 		const file = path.join(root, folder, entry.id + ".json");
 		if (!exists(file)) fail("Memory index has a dangling collection reference");
@@ -554,7 +562,8 @@ function validateManifest(file) {
 			!strings(topic.claims) ||
 			!strings(topic.files) ||
 			typeof topic.sprint !== "string" ||
-			!["stated", "web", "documented", "tested", "production"].includes(
+			!member(
+				["stated", "web", "documented", "tested", "production"],
 				topic.evidence_level,
 			)
 		)
@@ -622,13 +631,13 @@ function tree(source, destination, kind, exclude = []) {
 	};
 }
 export function inspectMigration({
-	project,
+	project: projectInput,
 	memorySource,
 	memoryDestination,
 	cacheSource,
 	cacheDestination,
 } = {}) {
-	project = safeAbsolute(project);
+	const project = safeAbsolute(projectInput);
 	if (!fs.lstatSync(project).isDirectory()) fail("Project must be a directory");
 	const operations = [],
 		sources = [];
@@ -754,23 +763,23 @@ function validatePlan(plan) {
 		fail("Unsupported or over-bound migration plan");
 	const { plan_sha256, ...body } = plan;
 	if (plan_sha256 !== sha(encode(body))) fail("Plan changed after inspection");
-	safeAbsolute(plan.project);
+	const project = safeAbsolute(plan.project);
 	const selected = [],
 		destinations = [];
 	for (const op of plan.operations) {
-		if (!["config", "evidence", "runtime", "memory", "cache"].includes(op.kind))
+		if (!member(["config", "evidence", "runtime", "memory", "cache"], op.kind))
 			fail("Unknown operation");
 		safeAbsolute(op.destination);
 		destinations.push(op.destination);
 		if (op.kind === "config") {
-			if (op.destination !== path.join(plan.project, "grainulator.config.json"))
+			if (op.destination !== path.join(project, "grainulator.config.json"))
 				fail("Invalid config destination");
 			for (const s of op.sources) {
 				if (
-					!["evidence", "orchestration"].includes(s.section) ||
+					!member(["evidence", "orchestration"], s.section) ||
 					s.path !==
 						path.join(
-							plan.project,
+							project,
 							s.section === "evidence" ? "wheat.config.json" : "orchard.json",
 						)
 				)
@@ -779,14 +788,11 @@ function validatePlan(plan) {
 			}
 		} else {
 			if (
-				["runtime", "evidence"].includes(op.kind) &&
-				(op.destination !== path.join(plan.project, ".grainulator", op.kind) ||
+				member(["runtime", "evidence"], op.kind) &&
+				(op.destination !== path.join(project, ".grainulator", op.kind) ||
 					(op.source &&
 						op.source !==
-							path.join(
-								plan.project,
-								op.kind === "runtime" ? ".bean" : ".wheat",
-							)))
+							path.join(project, op.kind === "runtime" ? ".bean" : ".wheat")))
 			)
 				fail("Invalid project data mapping");
 			if (op.source) {
@@ -796,7 +802,7 @@ function validatePlan(plan) {
 			if (op.manifest) {
 				if (
 					op.kind !== "evidence" ||
-					op.manifest.path !== path.join(plan.project, "wheat-manifest.json")
+					op.manifest.path !== path.join(project, "wheat-manifest.json")
 				)
 					fail("Invalid manifest mapping");
 				selected.push({
@@ -828,16 +834,15 @@ function validatePlan(plan) {
 		}
 	for (const file of destinations)
 		if (
-			fs.statSync(nearest(path.dirname(file))).dev !==
-			fs.statSync(plan.project).dev
+			fs.statSync(nearest(path.dirname(file))).dev !== fs.statSync(project).dev
 		)
 			fail(
 				"Cross-device migration is unsupported; choose a same-device destination before activation",
 			);
 	for (const item of selected)
 		if (
-			nested(path.join(plan.project, ".grainulator-migrations"), item.path) ||
-			nested(item.path, path.join(plan.project, ".grainulator-migrations"))
+			nested(path.join(project, ".grainulator-migrations"), item.path) ||
+			nested(item.path, path.join(project, ".grainulator-migrations"))
 		)
 			fail("Selected path overlaps transaction storage");
 }
@@ -1040,7 +1045,7 @@ function lockRoots(plan) {
 					...(op.sources || []).map((s) => s.path),
 					op.manifest?.path,
 				])
-				.filter(Boolean),
+				.filter((value) => Boolean(value)),
 		]),
 	].sort();
 }
@@ -1056,10 +1061,10 @@ function readLock(file, original = file) {
 	)
 		fail("Unknown or uncertain writer lock: " + file);
 	const data = pinned.data,
-		owner = JSON.parse(data);
+		owner = JSON.parse(String(data.toString()));
 	if (
 		owner.schema !== "grainulator.offline-lock.v2" ||
-		!Number.isSafeInteger(owner.pid) ||
+		!integer(owner.pid) ||
 		owner.pid <= 0 ||
 		!/^[a-f0-9-]{36}$/.test(owner.transaction) ||
 		!/^[a-f0-9-]{36}$/.test(owner.token) ||
@@ -1080,7 +1085,8 @@ function deadOwner(owner) {
 	try {
 		process.kill(owner.pid, 0);
 		return false;
-	} catch (e) {
+	} catch (_e) {
+		const e = _e;
 		return e.code === "ESRCH";
 	}
 }
@@ -1116,7 +1122,8 @@ function locks(plan, transaction, { recoverLocks = false } = {}) {
 	try {
 		fs.mkdirSync(registry, { mode: 0o700 });
 		syncDir(path.dirname(registry));
-	} catch (e) {
+	} catch (_e) {
+		const e = _e;
 		if (e.code !== "EEXIST") throw e;
 	}
 	const registryFD = fs.openSync(
@@ -1201,7 +1208,8 @@ function locks(plan, transaction, { recoverLocks = false } = {}) {
 			crash("lock-" + index + ":owner-prepared");
 			try {
 				fs.linkSync(ownerFile, file);
-			} catch (e) {
+			} catch (_e) {
+				const e = _e;
 				fs.unlinkSync(ownerFile);
 				syncDir(path.dirname(file));
 				throw e;
@@ -1211,7 +1219,8 @@ function locks(plan, transaction, { recoverLocks = false } = {}) {
 			crash("lock-" + index + ":published");
 		}
 		return release;
-	} catch (e) {
+	} catch (_e) {
+		const e = _e;
 		release();
 		throw e;
 	}
@@ -1601,7 +1610,7 @@ export function applyMigration(
 		const value = json(old);
 		if (value.state === "complete" && value.plan_sha256 === plan.plan_sha256)
 			return {
-				...verifyMigration(value.transaction_directory),
+				...verifyMigration(safeAbsolute(value.transaction_directory)),
 				idempotent: true,
 			};
 	}
@@ -1650,7 +1659,8 @@ export function applyMigration(
 		if (interruptAfterStage)
 			return { status: "staged", transaction_directory: dir };
 		return commit(j);
-	} catch (e) {
+	} catch (_e) {
+		const e = _e;
 		if (j) e.transaction_directory = j.transaction_directory;
 		throw e;
 	} finally {
@@ -1907,7 +1917,7 @@ export async function main(argv = process.argv.slice(2)) {
 		recoverLocks: options["--recover-locks"],
 		recoverTransaction: options["--recover-transaction"],
 	};
-	if (["inspect", "plan"].includes(command)) {
+	if (member(["inspect", "plan"], command)) {
 		result = inspectMigration({
 			project: options["--project"],
 			memorySource: options["--memory-source"],
@@ -1931,7 +1941,7 @@ export async function main(argv = process.argv.slice(2)) {
 		result = resumeMigration(options["--transaction"], recovery);
 	else if (command === "rollback")
 		result = rollbackMigration(options["--transaction"], recovery);
-	else if (["--help", "help", undefined].includes(command)) {
+	else if (member(["--help", "help", undefined], command)) {
 		console.log(
 			"Offline Grainulator 3 converter (separate artifact)\n  inspect --project /absolute/project [--memory-source /old --memory-destination /new] [--cache-source /old --cache-destination /new] [--out /new-plan.json]\n  apply --plan /plan.json --quiesced\n  verify --transaction /project/.grainulator-migrations/<id>\n  resume|rollback --transaction /project/.grainulator-migrations/<id> --quiesced [--recover-locks]\nRecovery steals only proven dead, same-host locks for this exact transaction. Stop all writers; cross-device selections are refused before activation. No network, child execution, host registration, source deletion or remote migration. Inspect is read-only unless --out explicitly selects a new plan file.",
 		);

@@ -1,15 +1,14 @@
+// Generated from typescript/packages/evidence/lib/defaults.ts; edit that source and run npm run build:types.
 /**
  * Smart defaults and environment detection for evidence CLI.
  * Central location for all process.env reads — other modules import from here.
  * Zero dependencies — Node built-ins only.
  */
-
 export const DEFAULTS = {
 	audience: ["engineers"],
 	constraints: [],
 	doneCriteria: "Decision-ready brief with evidence",
 };
-
 /**
  * Centralized environment variable reads.
  * Every process.env reference in the evidence codebase should go through this object.
@@ -39,15 +38,12 @@ export const env = {
 		return process.env.CLAUDE_PLUGIN_ROOT || "";
 	},
 };
-
 export function isTTY() {
 	return Boolean(process.stdout.isTTY) && !isCI();
 }
-
 export function isCI() {
 	return env.CI;
 }
-
 export function outputMode() {
 	if (process.argv.includes("--quiet")) return "quiet";
 	if (process.argv.includes("--json")) return "json";

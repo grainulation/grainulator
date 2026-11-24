@@ -1,3 +1,4 @@
+// Generated from typescript/packages/memory/lib/templates.ts; edit that source and run npm run build:types.
 import { atomicWriteJSON } from "../../shared/lib/atomic.js";
 /**
  * templates.js — Sprint template management
@@ -5,16 +6,13 @@ import { atomicWriteJSON } from "../../shared/lib/atomic.js";
  * Templates are pre-built research questions with seeded claims.
  * A template contains: question, audience, constraints, and starter claims.
  */
-
 import fs from "node:fs";
 import path from "node:path";
 import { Store } from "./store.js";
-
 export class Templates {
 	constructor(store) {
 		this.store = store || new Store();
 	}
-
 	/**
 	 * Save a sprint configuration as a reusable template.
 	 *
@@ -37,7 +35,6 @@ export class Templates {
 			};
 			const filePath = path.join(this.store.templatesDir, `${id}.json`);
 			atomicWriteJSON(filePath, entry);
-
 			this.store._addToIndexUnlocked({
 				id,
 				name,
@@ -45,11 +42,9 @@ export class Templates {
 				claimCount: (template.seedClaims || []).length,
 				storedAt: entry.savedAt,
 			});
-
 			return entry;
 		});
 	}
-
 	/** Get a template by name/id. */
 	get(nameOrId) {
 		const id = this._slugify(nameOrId);
@@ -57,13 +52,11 @@ export class Templates {
 		if (!fs.existsSync(filePath)) return null;
 		return JSON.parse(fs.readFileSync(filePath, "utf-8"));
 	}
-
 	/** List all saved templates. */
 	list() {
 		this.store.init();
 		const dir = this.store.templatesDir;
 		if (!fs.existsSync(dir)) return [];
-
 		return fs
 			.readdirSync(dir)
 			.filter((f) => f.endsWith(".json"))
@@ -81,9 +74,8 @@ export class Templates {
 					return null;
 				}
 			})
-			.filter(Boolean);
+			.filter((entry) => entry !== null);
 	}
-
 	/**
 	 * Instantiate a template into a sprint directory.
 	 * Creates claims.json with seed claims and a sprint config stub.
@@ -96,11 +88,9 @@ export class Templates {
 		if (!template) {
 			throw new Error(`Template "${nameOrId}" not found`);
 		}
-
 		if (!fs.existsSync(targetDir)) {
 			fs.mkdirSync(targetDir, { recursive: true });
 		}
-
 		// Write seed claims
 		const claimsPath = path.join(targetDir, "claims.json");
 		const claims = (template.seedClaims || []).map((c, i) => ({
@@ -108,7 +98,6 @@ export class Templates {
 			id: c.id || `d${String(i + 1).padStart(3, "0")}`,
 		}));
 		atomicWriteJSON(claimsPath, claims);
-
 		// Write sprint config stub
 		const configPath = path.join(targetDir, "sprint.json");
 		const config = {
@@ -119,14 +108,12 @@ export class Templates {
 			createdAt: new Date().toISOString(),
 		};
 		atomicWriteJSON(configPath, config);
-
 		return {
 			claimsFile: claimsPath,
 			configFile: configPath,
 			seedClaims: claims.length,
 		};
 	}
-
 	_slugify(str) {
 		return str
 			.toLowerCase()

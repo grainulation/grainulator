@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Retire built-in HTML reports, slide decks, static-site output, PDF generation and presentation templates. Briefs and analytics reports use Markdown; JSON and Markdown exports preserve evidence for external presentation tools. Existing user outputs are retained.
 - Keep Homebrew installation through the shared tap; formula tooling and channel acceptance now belong to that repository. Product CI still verifies native archives and immutable release manifests.
-- Introduce strict TypeScript contracts and migrate MCP result validation and research evidence parsing. Checked-in generated JavaScript preserves direct CLI and installed-package execution without a runtime compiler dependency. CI checks types and generated-file freshness.
+- Convert all maintained first-party CLI, workspace, hook, research, release/migration, evaluation and test sources to strict TypeScript. Checked-in generated JavaScript preserves direct CLI and installed-package execution without a runtime compiler dependency. CI checks the full type graph, complete source/output inventory and generated-file freshness.
 - Fix the compact MCP regression tests' filesystem races by reading bytes and metadata through one file descriptor, retaining content, timestamp and file-identity assertions.
 
 ### Premortem corrections
@@ -22,10 +22,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refuse failed or colliding CI artifact/summary outputs and return structured MCP filesystem errors.
 - Bind release identities to exact base/converter archive contents, exercise the archived converter before acceptance, and verify the peeled live tag before publication.
 - Correct retired command references and document the actual supported manual Homebrew update procedure.
+- Correct orchestration cycle rendering to use Set size, and keep decomposition previews free of an undefined filesystem-root reference.
+- Preserve prototype-named manifest topics and analytics keys without inherited-property collisions or prototype pollution, and reject malformed manifest source metadata before string operations.
 
 ### Added
 
-- Opt-in `mcp --toolset compact` discovery with 15 tools for evidence, local memory and exports. Authored claims and document imports remain separate; the legacy 29-tool inventory and bundled plugin registrations remain the default.
+- Add `mcp --toolset compact` discovery with 15 consistently named tools for evidence, local memory and exports, selected explicitly by the Docker image. Authored claims and document imports remain separate; CLI and bundled plugin registrations retain the legacy 29-tool default, and containers can select it explicitly.
+- Document nested input semantics, conditional modes, result shapes, side effects, sibling selection and valid call examples in both MCP profiles; verify real wire discovery and compact lifecycle calls against those contracts. These checks do not assert a new Glama score.
 - Negotiated MCP protocol support with matching output schemas and structured results on `2025-06-18`, while preserving text-only responses for older supported clients.
 - Installed-package checks for compact discovery, resource access, legacy-name refusal and protocol compatibility.
 

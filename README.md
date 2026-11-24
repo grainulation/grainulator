@@ -184,7 +184,7 @@ npm run typecheck
 npm run check:types
 ```
 
-Browser and runtime prerequisites are in [CONTRIBUTING.md](CONTRIBUTING.md). The offline `node bin/grainulator.js demo` exercises the adapter/verifier protocol without a provider account.
+Development and runtime prerequisites are in [CONTRIBUTING.md](CONTRIBUTING.md). The offline `node bin/grainulator.js demo` exercises the adapter/verifier protocol without a provider account.
 
 </details>
 

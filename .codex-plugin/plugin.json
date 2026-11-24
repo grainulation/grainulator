@@ -10,10 +10,7 @@
 	"mcpServers": {
 		"grainulator": {
 			"command": "node",
-			"env_vars": [
-				"GRAINULATOR_WORKSPACE",
-				"GRAINULATOR_CONFIG"
-			]
+			"env_vars": ["GRAINULATOR_WORKSPACE", "GRAINULATOR_CONFIG"]
 		}
 	},
 	"interface": {
@@ -22,10 +19,7 @@
 		"longDescription": "Track evidence, challenge assumptions, resolve conflicting claims, and carry the work between models and sessions.",
 		"developerName": "Grainulation",
 		"category": "Productivity",
-		"capabilities": [
-			"Read",
-			"Write"
-		],
+		"capabilities": ["Read", "Write"],
 		"websiteURL": "https://grainulator.dev",
 		"defaultPrompt": [
 			"Use Grainulator to investigate this question.",

@@ -1,3 +1,4 @@
+// Generated from typescript/packages/evidence/lib/load-claims.ts; edit that source and run npm run build:types.
 import projectConfig from "../../shared/lib/project-config.cjs";
 import { assertEvidenceTarget } from "./evidence-target.js";
 /**
@@ -8,35 +9,17 @@ import { assertEvidenceTarget } from "./evidence-target.js";
  *
  * Zero npm dependencies.
  */
-
 import fs from "fs";
 import path from "path";
 import { checkAndMigrateSchema } from "../compiler/evidence-compiler.js";
 import { readBoundedRegularFile } from "./passages.js";
-
-/**
- * Load and migrate claims.json from a directory.
- *
- * @param {string} dir - Directory containing claims.json
- * @param {object} [opts] - Options
- * @param {string} [opts.filename='claims.json'] - Claims filename override
- * @param {number} [opts.maxBytes] - Optional bounded, regular-file-only read
- * @returns {{ data: object|null, errors: Array<{code: string, message: string}>, path: string, raw?: string, raw_bytes?: Buffer }}
- *   - data: the full claims object (with schema_version, meta, claims) or null if file missing/invalid
- *   - errors: migration errors (empty array on success)
- *   - path: resolved file path
- *   - raw/raw_bytes: bounded mode only; decoded parsing text and exact file bytes
- *     are separate because UTF-8 decoding can consume an optional BOM.
- */
 export function loadClaims(dir, opts = {}) {
-	const config=projectConfig.evidenceConfig(dir);
+	const config = projectConfig.evidenceConfig(dir);
 	const filename = opts.filename || config.compiler.claims;
 	const claimsPath = path.resolve(config.origin, filename);
-
 	if (!fs.existsSync(claimsPath)) {
 		return { data: null, errors: [], path: claimsPath };
 	}
-
 	let raw, rawBytes;
 	try {
 		if (opts.maxBytes !== undefined) {
@@ -59,7 +42,6 @@ export function loadClaims(dir, opts = {}) {
 			path: claimsPath,
 		};
 	}
-
 	let parsed;
 	try {
 		parsed = JSON.parse(raw);
@@ -75,18 +57,28 @@ export function loadClaims(dir, opts = {}) {
 			path: claimsPath,
 		};
 	}
-
-	try { assertEvidenceTarget(dir, parsed); } catch (error) { return {data:null,errors:[{code:error.code,message:error.message}],path:claimsPath}; }
-
+	try {
+		assertEvidenceTarget(dir, parsed);
+	} catch (error) {
+		return {
+			data: null,
+			errors: [
+				{
+					code: error.code,
+					message: error.message,
+				},
+			],
+			path: claimsPath,
+		};
+	}
 	// Run schema migration
 	const result = checkAndMigrateSchema(parsed);
-
 	// Reads never rewrite the ledger. Mutations persist migrations under the transaction lock.
-
 	return {
+		// The loader preserves the parsed document; compiler validation checks claims.
 		data: result.errors.length > 0 ? null : result.data,
 		errors: result.errors,
 		path: claimsPath,
-		...(opts.maxBytes !== undefined ? { raw, raw_bytes: rawBytes } : {}),
+		...(rawBytes !== undefined ? { raw, raw_bytes: rawBytes } : {}),
 	};
 }

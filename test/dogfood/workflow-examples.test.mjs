@@ -1,3 +1,4 @@
+// Generated from typescript/test/dogfood/workflow-examples.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -6,7 +7,6 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { createHandler } from "../../lib/grainulator-mcp.js";
-
 const root = fileURLToPath(new URL("../../", import.meta.url));
 function fixture(t) {
 	const dir = fs.mkdtempSync(
@@ -15,14 +15,13 @@ function fixture(t) {
 	t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
 	return dir;
 }
-
 test("brief skill JSON example generates its advertised Markdown artifact", async (t) => {
 	const dir = fixture(t);
 	const handler = createHandler({ dir, memoryDir: path.join(dir, "memory") });
 	const call = async (name, args) => {
-		const result = JSON.parse(
+		const { result } = JSON.parse(
 			await handler("tools/call", { name, arguments: args }, 1),
-		).result;
+		);
 		assert.equal(result.isError, false, JSON.stringify(result));
 		return JSON.parse(result.content[0].text);
 	};
@@ -43,7 +42,6 @@ test("brief skill JSON example generates its advertised Markdown artifact", asyn
 		assert.match(example.output, /\.md$/);
 	}
 });
-
 test("orchestration workflow runs from a discovered nested configuration parent", (t) => {
 	const dir = fixture(t);
 	const configParent = path.join(dir, ".grainulator");

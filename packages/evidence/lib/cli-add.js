@@ -1,3 +1,4 @@
+// Generated from typescript/packages/evidence/lib/cli-add.ts; edit that source and run npm run build:types.
 /**
  * grainulator add — Add a typed claim to the sprint
  *
@@ -5,16 +6,13 @@
  *
  * Zero npm dependencies.
  */
-
 import { addClaim, VALID_EVIDENCE, VALID_TYPES } from "./claims-ops.js";
 import { PASSAGE_MAX_BYTES, readBoundedRegularFile } from "./passages.js";
-
 function parseFlag(args, flag) {
 	const idx = args.indexOf(flag);
 	if (idx === -1 || idx + 1 >= args.length) return undefined;
 	return args[idx + 1];
 }
-
 // Reads a regular file of at most PASSAGE_MAX_BYTES as UTF-8 text.
 function readPassageFile(file) {
 	const read = readBoundedRegularFile(file, PASSAGE_MAX_BYTES);
@@ -25,9 +23,10 @@ function readPassageFile(file) {
 		not_regular: "is not a regular file",
 		too_large: `is larger than ${PASSAGE_MAX_BYTES} bytes`,
 	};
-	throw new Error(`--passage-file ${file} ${why[read.code] || "cannot be read"}.`);
+	throw new Error(
+		`--passage-file ${file} ${why[read.code] || "cannot be read"}.`,
+	);
 }
-
 export async function run(dir, args) {
 	if (args.includes("--help") || args.includes("-h")) {
 		console.log(`grainulator add — Add a typed claim to the sprint
@@ -42,9 +41,7 @@ Required:
   --content <text>   The claim content
 
 Options:
-  --evidence <tier>  Evidence tier: ${VALID_EVIDENCE.join(
-		", ",
-	)} (default: stated)
+  --evidence <tier>  Evidence tier: ${VALID_EVIDENCE.join(", ")} (default: stated)
   --tags <list>      Comma-separated tags (e.g., perf,postgres)
   --source-origin <name>       Publisher, repository, test suite, or stakeholder
   --source-artifact <ref>      Source URL or local evidence reference
@@ -70,9 +67,7 @@ Examples:
   grainulator add --id r002 --type risk --topic db --content "Migration needs downtime" --json`);
 		return;
 	}
-
 	const jsonMode = args.includes("--json");
-
 	const id = parseFlag(args, "--id");
 	const type = parseFlag(args, "--type");
 	const topic = parseFlag(args, "--topic");
@@ -80,7 +75,6 @@ Examples:
 	const evidence = parseFlag(args, "--evidence");
 	const tagsRaw = parseFlag(args, "--tags");
 	const tags = tagsRaw ? tagsRaw.split(",").map((t) => t.trim()) : undefined;
-
 	const origin = parseFlag(args, "--source-origin");
 	const artifact = parseFlag(args, "--source-artifact");
 	const connector = parseFlag(args, "--source-connector");
@@ -147,7 +141,6 @@ Examples:
 		source,
 		conflicts_with,
 	});
-
 	if (jsonMode) {
 		console.log(JSON.stringify(result, null, 2));
 		if (result.status !== "ok") process.exitCode = 1;

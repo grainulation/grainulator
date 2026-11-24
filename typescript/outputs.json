@@ -1,0 +1,1345 @@
+{
+	"schema": "grainulator.typescript.outputs/v1",
+	"modules": [
+		{
+			"source": "typescript/bin/grainulator-plugin.ts",
+			"output": "bin/grainulator-plugin.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/bin/grainulator.ts",
+			"output": "bin/grainulator.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/evals/cli-adapter.mts",
+			"output": "evals/cli-adapter.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/evals/fixtures/answer-verifier.mts",
+			"output": "evals/fixtures/answer-verifier.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/evals/fixtures/repair-adapter.mts",
+			"output": "evals/fixtures/repair-adapter.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/evals/rejected-claims/verifier.mts",
+			"output": "evals/rejected-claims/verifier.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/evals/semantic-tasks.mts",
+			"output": "evals/semantic-tasks.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/evals/semantic-verifier.mts",
+			"output": "evals/semantic-verifier.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/evals/tasks.mts",
+			"output": "evals/tasks.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/evals/verifier.mts",
+			"output": "evals/verifier.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/examples/grounded-report-sprint/build.mts",
+			"output": "examples/grounded-report-sprint/build.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/hooks/write-guard.cts",
+			"output": "hooks/write-guard.cjs",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/lib/build-info.ts",
+			"output": "lib/build-info.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/lib/command-surface.ts",
+			"output": "lib/command-surface.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/lib/compact-mcp.ts",
+			"output": "lib/compact-mcp.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/lib/confluence-pull.ts",
+			"output": "lib/confluence-pull.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/lib/confluence-sync.ts",
+			"output": "lib/confluence-sync.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/lib/contracts.ts",
+			"output": "lib/contracts.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/lib/grainulator-mcp.ts",
+			"output": "lib/grainulator-mcp.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/lib/maintenance-cli.ts",
+			"output": "lib/maintenance-cli.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/lib/maintenance-mcp.ts",
+			"output": "lib/maintenance-mcp.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/lib/mcp-contracts.ts",
+			"output": "lib/mcp-contracts.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/lib/report-packet.ts",
+			"output": "lib/report-packet.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/lib/research-cli.ts",
+			"output": "lib/research-cli.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/lib/research-provider.ts",
+			"output": "lib/research-provider.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/lib/research/evidence.ts",
+			"output": "lib/research/evidence.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/lib/research/session.ts",
+			"output": "lib/research/session.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/lib/runner.ts",
+			"output": "lib/runner.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/lib/runtime-assets.ts",
+			"output": "lib/runtime-assets.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/lib/runtime-cli.ts",
+			"output": "lib/runtime-cli.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/lib/runtime-enrollment.ts",
+			"output": "lib/runtime-enrollment.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/lib/sprint-init.ts",
+			"output": "lib/sprint-init.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/lib/tips-hook.cts",
+			"output": "lib/tips-hook.cjs",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/lib/tool-behavior.ts",
+			"output": "lib/tool-behavior.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/lib/workspace-config.ts",
+			"output": "lib/workspace-config.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/migration/converter.mts",
+			"output": "migration/converter.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/migration/converter.test.mts",
+			"output": "migration/converter.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/migration/remote.mts",
+			"output": "migration/remote.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/migration/remote.test.mts",
+			"output": "migration/remote.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/analytics/bin/analytics.ts",
+			"output": "packages/analytics/bin/analytics.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/analytics/lib/analyzer.ts",
+			"output": "packages/analytics/lib/analyzer.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/analytics/lib/calibration.ts",
+			"output": "packages/analytics/lib/calibration.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/analytics/lib/decay.ts",
+			"output": "packages/analytics/lib/decay.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/analytics/lib/patterns.ts",
+			"output": "packages/analytics/lib/patterns.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/analytics/lib/report-card.ts",
+			"output": "packages/analytics/lib/report-card.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/analytics/lib/report.ts",
+			"output": "packages/analytics/lib/report.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/analytics/lib/token-tracker.ts",
+			"output": "packages/analytics/lib/token-tracker.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/analytics/lib/tokens.ts",
+			"output": "packages/analytics/lib/tokens.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/analytics/lib/velocity.ts",
+			"output": "packages/analytics/lib/velocity.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/analytics/lib/wrapped.ts",
+			"output": "packages/analytics/lib/wrapped.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/analytics/test/basic.test.ts",
+			"output": "packages/analytics/test/basic.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/analytics/test/report.test.ts",
+			"output": "packages/analytics/test/report.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/analytics/test/tarball.test.ts",
+			"output": "packages/analytics/test/tarball.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/analytics/test/token-tracker.test.ts",
+			"output": "packages/analytics/test/token-tracker.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/analytics/test/wrapped.test.ts",
+			"output": "packages/analytics/test/wrapped.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/bin/evidence.ts",
+			"output": "packages/evidence/bin/evidence.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/compiler/evidence-compiler.ts",
+			"output": "packages/evidence/compiler/evidence-compiler.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/compiler/generate-manifest.ts",
+			"output": "packages/evidence/compiler/generate-manifest.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/lib/claims-ops.ts",
+			"output": "packages/evidence/lib/claims-ops.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/lib/cli-add.ts",
+			"output": "packages/evidence/lib/cli-add.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/lib/cli-help.ts",
+			"output": "packages/evidence/lib/cli-help.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/lib/cli-import.ts",
+			"output": "packages/evidence/lib/cli-import.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/lib/cli-resolve.ts",
+			"output": "packages/evidence/lib/cli-resolve.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/lib/cli-search.ts",
+			"output": "packages/evidence/lib/cli-search.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/lib/compiler.ts",
+			"output": "packages/evidence/lib/compiler.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/lib/defaults.ts",
+			"output": "packages/evidence/lib/defaults.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/lib/evidence-health.ts",
+			"output": "packages/evidence/lib/evidence-health.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/lib/evidence-target.ts",
+			"output": "packages/evidence/lib/evidence-target.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/lib/freshness.ts",
+			"output": "packages/evidence/lib/freshness.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/lib/guard.ts",
+			"output": "packages/evidence/lib/guard.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/lib/import-claims.ts",
+			"output": "packages/evidence/lib/import-claims.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/lib/index.ts",
+			"output": "packages/evidence/lib/index.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/lib/load-claims.ts",
+			"output": "packages/evidence/lib/load-claims.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/lib/maintenance.ts",
+			"output": "packages/evidence/lib/maintenance.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/lib/next-actions.cts",
+			"output": "packages/evidence/lib/next-actions.cjs",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/evidence/lib/passages.ts",
+			"output": "packages/evidence/lib/passages.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/lib/serve-mcp.ts",
+			"output": "packages/evidence/lib/serve-mcp.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/lib/stats.ts",
+			"output": "packages/evidence/lib/stats.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/lib/status.ts",
+			"output": "packages/evidence/lib/status.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/test/claims-ops.test.ts",
+			"output": "packages/evidence/test/claims-ops.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/test/cli-help.test.ts",
+			"output": "packages/evidence/test/cli-help.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/test/cli.test.ts",
+			"output": "packages/evidence/test/cli.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/test/compiler.test.ts",
+			"output": "packages/evidence/test/compiler.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/test/guard.test.ts",
+			"output": "packages/evidence/test/guard.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/test/init.test.ts",
+			"output": "packages/evidence/test/init.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/test/load-claims.test.ts",
+			"output": "packages/evidence/test/load-claims.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/test/mcp.test.ts",
+			"output": "packages/evidence/test/mcp.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/test/migration.test.ts",
+			"output": "packages/evidence/test/migration.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/test/passages.test.ts",
+			"output": "packages/evidence/test/passages.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/test/status.test.ts",
+			"output": "packages/evidence/test/status.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/evidence/test/tarball.test.ts",
+			"output": "packages/evidence/test/tarball.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/exports/bin/exports.ts",
+			"output": "packages/exports/bin/exports.js",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/exports/lib/exporters/csv.ts",
+			"output": "packages/exports/lib/exporters/csv.js",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/exports/lib/exporters/json-ld.ts",
+			"output": "packages/exports/lib/exporters/json-ld.js",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/exports/lib/exporters/markdown.ts",
+			"output": "packages/exports/lib/exporters/markdown.js",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/exports/lib/formats.ts",
+			"output": "packages/exports/lib/formats.js",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/exports/lib/formats/_shared.mts",
+			"output": "packages/exports/lib/formats/_shared.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/exports/lib/formats/bibtex.mts",
+			"output": "packages/exports/lib/formats/bibtex.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/exports/lib/formats/changelog.mts",
+			"output": "packages/exports/lib/formats/changelog.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/exports/lib/formats/confluence-adf.mts",
+			"output": "packages/exports/lib/formats/confluence-adf.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/exports/lib/formats/csv.mts",
+			"output": "packages/exports/lib/formats/csv.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/exports/lib/formats/dot.mts",
+			"output": "packages/exports/lib/formats/dot.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/exports/lib/formats/evidence-matrix.mts",
+			"output": "packages/exports/lib/formats/evidence-matrix.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/exports/lib/formats/github-issues.mts",
+			"output": "packages/exports/lib/formats/github-issues.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/exports/lib/formats/graphml.mts",
+			"output": "packages/exports/lib/formats/graphml.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/exports/lib/formats/jira-csv.mts",
+			"output": "packages/exports/lib/formats/jira-csv.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/exports/lib/formats/json-ld.mts",
+			"output": "packages/exports/lib/formats/json-ld.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/exports/lib/formats/json.mts",
+			"output": "packages/exports/lib/formats/json.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/exports/lib/formats/markdown.mts",
+			"output": "packages/exports/lib/formats/markdown.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/exports/lib/formats/ndjson.mts",
+			"output": "packages/exports/lib/formats/ndjson.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/exports/lib/formats/obsidian.mts",
+			"output": "packages/exports/lib/formats/obsidian.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/exports/lib/formats/opml.mts",
+			"output": "packages/exports/lib/formats/opml.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/exports/lib/formats/ris.mts",
+			"output": "packages/exports/lib/formats/ris.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/exports/lib/formats/rss.mts",
+			"output": "packages/exports/lib/formats/rss.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/exports/lib/formats/sankey.mts",
+			"output": "packages/exports/lib/formats/sankey.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/exports/lib/formats/sql.mts",
+			"output": "packages/exports/lib/formats/sql.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/exports/lib/formats/treemap.mts",
+			"output": "packages/exports/lib/formats/treemap.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/exports/lib/formats/typescript-defs.mts",
+			"output": "packages/exports/lib/formats/typescript-defs.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/exports/lib/formats/yaml.mts",
+			"output": "packages/exports/lib/formats/yaml.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/exports/lib/index.ts",
+			"output": "packages/exports/lib/index.js",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/exports/lib/json-ld-common.ts",
+			"output": "packages/exports/lib/json-ld-common.js",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/exports/lib/output-safety.ts",
+			"output": "packages/exports/lib/output-safety.js",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/exports/lib/publishers/clipboard.ts",
+			"output": "packages/exports/lib/publishers/clipboard.js",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/exports/lib/serve-mcp.ts",
+			"output": "packages/exports/lib/serve-mcp.js",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/exports/lib/source-data.ts",
+			"output": "packages/exports/lib/source-data.js",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/exports/test/basic.test.ts",
+			"output": "packages/exports/test/basic.test.js",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/exports/test/formats-esm.test.ts",
+			"output": "packages/exports/test/formats-esm.test.js",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/exports/test/serve-mcp.test.ts",
+			"output": "packages/exports/test/serve-mcp.test.js",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/exports/test/tarball.test.ts",
+			"output": "packages/exports/test/tarball.test.js",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/memory/bin/memory.ts",
+			"output": "packages/memory/bin/memory.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/memory/lib/analytics.ts",
+			"output": "packages/memory/lib/analytics.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/memory/lib/confluence.ts",
+			"output": "packages/memory/lib/confluence.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/memory/lib/fetch-cache.ts",
+			"output": "packages/memory/lib/fetch-cache.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/memory/lib/graph.ts",
+			"output": "packages/memory/lib/graph.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/memory/lib/import-export.ts",
+			"output": "packages/memory/lib/import-export.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/memory/lib/index.ts",
+			"output": "packages/memory/lib/index.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/memory/lib/packs.ts",
+			"output": "packages/memory/lib/packs.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/memory/lib/search.ts",
+			"output": "packages/memory/lib/search.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/memory/lib/serve-mcp.ts",
+			"output": "packages/memory/lib/serve-mcp.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/memory/lib/smart-fetch.ts",
+			"output": "packages/memory/lib/smart-fetch.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/memory/lib/store.ts",
+			"output": "packages/memory/lib/store.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/memory/lib/templates.ts",
+			"output": "packages/memory/lib/templates.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/memory/test/basic.test.ts",
+			"output": "packages/memory/test/basic.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/memory/test/fetch-cache.test.ts",
+			"output": "packages/memory/test/fetch-cache.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/memory/test/serve-mcp.test.ts",
+			"output": "packages/memory/test/serve-mcp.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/memory/test/smart-fetch.live.test.ts",
+			"output": "packages/memory/test/smart-fetch.live.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/memory/test/smart-fetch.test.ts",
+			"output": "packages/memory/test/smart-fetch.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/memory/test/tarball.test.ts",
+			"output": "packages/memory/test/tarball.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/orchestration/bin/orchestrate.ts",
+			"output": "packages/orchestration/bin/orchestrate.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/orchestration/lib/assignments.ts",
+			"output": "packages/orchestration/lib/assignments.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/orchestration/lib/conflicts.ts",
+			"output": "packages/orchestration/lib/conflicts.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/orchestration/lib/decompose.ts",
+			"output": "packages/orchestration/lib/decompose.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/orchestration/lib/doctor.ts",
+			"output": "packages/orchestration/lib/doctor.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/orchestration/lib/emit.ts",
+			"output": "packages/orchestration/lib/emit.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/orchestration/lib/hackathon.ts",
+			"output": "packages/orchestration/lib/hackathon.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/orchestration/lib/planner.ts",
+			"output": "packages/orchestration/lib/planner.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/orchestration/lib/project-config.ts",
+			"output": "packages/orchestration/lib/project-config.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/orchestration/lib/sync.ts",
+			"output": "packages/orchestration/lib/sync.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/orchestration/lib/tracker.ts",
+			"output": "packages/orchestration/lib/tracker.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/orchestration/test/basic.test.ts",
+			"output": "packages/orchestration/test/basic.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/orchestration/test/emit.test.ts",
+			"output": "packages/orchestration/test/emit.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/orchestration/test/tarball.test.ts",
+			"output": "packages/orchestration/test/tarball.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/runtime/bin/runtime-check.ts",
+			"output": "packages/runtime/bin/runtime-check.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/runtime/test/codex-portability.test.ts",
+			"output": "packages/runtime/test/codex-portability.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/runtime/test/conformance.mts",
+			"output": "packages/runtime/test/conformance.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/runtime/test/runtime-check.test.ts",
+			"output": "packages/runtime/test/runtime-check.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/runtime/test/smoke.test.ts",
+			"output": "packages/runtime/test/smoke.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/shared/bin/shared.ts",
+			"output": "packages/shared/bin/shared.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/shared/lib/atomic.cts",
+			"output": "packages/shared/lib/atomic.cjs",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/shared/lib/atomic.ts",
+			"output": "packages/shared/lib/atomic.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/shared/lib/cli.cts",
+			"output": "packages/shared/lib/cli.cjs",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/shared/lib/cli.ts",
+			"output": "packages/shared/lib/cli.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/shared/lib/errors.cts",
+			"output": "packages/shared/lib/errors.cjs",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/shared/lib/fs-safe.cts",
+			"output": "packages/shared/lib/fs-safe.cjs",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/shared/lib/html.cts",
+			"output": "packages/shared/lib/html.cjs",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/shared/lib/index.ts",
+			"output": "packages/shared/lib/index.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/shared/lib/mcp-crash.cts",
+			"output": "packages/shared/lib/mcp-crash.cjs",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/shared/lib/mcp-crash.ts",
+			"output": "packages/shared/lib/mcp-crash.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/shared/lib/mcp.cts",
+			"output": "packages/shared/lib/mcp.cjs",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/shared/lib/mcp.ts",
+			"output": "packages/shared/lib/mcp.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/shared/lib/observe-command.ts",
+			"output": "packages/shared/lib/observe-command.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/shared/lib/paths.cts",
+			"output": "packages/shared/lib/paths.cjs",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/shared/lib/paths.ts",
+			"output": "packages/shared/lib/paths.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/shared/lib/phases.cts",
+			"output": "packages/shared/lib/phases.cjs",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/shared/lib/phases.ts",
+			"output": "packages/shared/lib/phases.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/shared/lib/project-config.cts",
+			"output": "packages/shared/lib/project-config.cjs",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/shared/lib/remote-migration.cts",
+			"output": "packages/shared/lib/remote-migration.cjs",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/shared/lib/sprints.cts",
+			"output": "packages/shared/lib/sprints.cjs",
+			"module": "cjs"
+		},
+		{
+			"source": "typescript/packages/shared/lib/sprints.ts",
+			"output": "packages/shared/lib/sprints.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/shared/lib/transaction.ts",
+			"output": "packages/shared/lib/transaction.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/shared/test/basic.test.ts",
+			"output": "packages/shared/test/basic.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/shared/test/dashboard-retirement.test.ts",
+			"output": "packages/shared/test/dashboard-retirement.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/shared/test/mcp-crash.test.ts",
+			"output": "packages/shared/test/mcp-crash.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/shared/test/shared-utils.test.ts",
+			"output": "packages/shared/test/shared-utils.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/shared/test/tarball.test.ts",
+			"output": "packages/shared/test/tarball.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/shared/tools/detect-sprints.ts",
+			"output": "packages/shared/tools/detect-sprints.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/packages/shared/tools/generate-manifest.ts",
+			"output": "packages/shared/tools/generate-manifest.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/assemble-release.mts",
+			"output": "scripts/assemble-release.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/build-identity.mts",
+			"output": "scripts/build-identity.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/check-package.mts",
+			"output": "scripts/check-package.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/check-surface.mts",
+			"output": "scripts/check-surface.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/claude-plugin-agent-check.mts",
+			"output": "scripts/claude-plugin-agent-check.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/codex-plugin-check.mts",
+			"output": "scripts/codex-plugin-check.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/evaluate-models.mts",
+			"output": "scripts/evaluate-models.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/evaluate-semantic.mts",
+			"output": "scripts/evaluate-semantic.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/evaluation-diagnostics.mts",
+			"output": "scripts/evaluation-diagnostics.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/final-acceptance.mts",
+			"output": "scripts/final-acceptance.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/generate-reference.mts",
+			"output": "scripts/generate-reference.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/host-integration-check.mts",
+			"output": "scripts/host-integration-check.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/host-recovery-check.mts",
+			"output": "scripts/host-recovery-check.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/lib/evaluation-usage.mts",
+			"output": "scripts/lib/evaluation-usage.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/lib/host-call.mts",
+			"output": "scripts/lib/host-call.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/lib/local-checks.mts",
+			"output": "scripts/lib/local-checks.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/migration-candidate-check.mts",
+			"output": "scripts/migration-candidate-check.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/migration-check.mts",
+			"output": "scripts/migration-check.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/native-candidate-check.mts",
+			"output": "scripts/native-candidate-check.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/native-hook-check.mts",
+			"output": "scripts/native-hook-check.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/next-actions-host-check.mts",
+			"output": "scripts/next-actions-host-check.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/node-matrix-check.mts",
+			"output": "scripts/node-matrix-check.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/pack-local.mts",
+			"output": "scripts/pack-local.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/package-isolation-check.mts",
+			"output": "scripts/package-isolation-check.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/package-migration.mts",
+			"output": "scripts/package-migration.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/package-native.mts",
+			"output": "scripts/package-native.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/package-native.test.mts",
+			"output": "scripts/package-native.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/package-release.mts",
+			"output": "scripts/package-release.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/provider-live-check.mts",
+			"output": "scripts/provider-live-check.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/publish-release.mts",
+			"output": "scripts/publish-release.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/record-handoff.mts",
+			"output": "scripts/record-handoff.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/release-archive.mts",
+			"output": "scripts/release-archive.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/release-artifacts.test.mts",
+			"output": "scripts/release-artifacts.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/session-recovery-check.mts",
+			"output": "scripts/session-recovery-check.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/sync-version.ts",
+			"output": "scripts/sync-version.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/test-workspace.mts",
+			"output": "scripts/test-workspace.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/typescript-build.mts",
+			"output": "scripts/typescript-build.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/verify-release.mts",
+			"output": "scripts/verify-release.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/confluence.test.ts",
+			"output": "test/confluence.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/audit-regressions.test.mts",
+			"output": "test/dogfood/audit-regressions.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/build-info.test.mts",
+			"output": "test/dogfood/build-info.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/compact-mcp.test.mts",
+			"output": "test/dogfood/compact-mcp.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/evaluation.test.mts",
+			"output": "test/dogfood/evaluation.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/evidence-maintenance.test.mts",
+			"output": "test/dogfood/evidence-maintenance.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/example-sprint.test.mts",
+			"output": "test/dogfood/example-sprint.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/flashprove-prototyping.test.mts",
+			"output": "test/dogfood/flashprove-prototyping.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/host-contracts.test.mts",
+			"output": "test/dogfood/host-contracts.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/integrity.test.mts",
+			"output": "test/dogfood/integrity.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/legacy-scaffold.test.mts",
+			"output": "test/dogfood/legacy-scaffold.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/mcp-metadata.test.mts",
+			"output": "test/dogfood/mcp-metadata.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/mcp-roots.test.mts",
+			"output": "test/dogfood/mcp-roots.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/memory-portability.test.mts",
+			"output": "test/dogfood/memory-portability.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/metadata-discovery.test.mts",
+			"output": "test/dogfood/metadata-discovery.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/migration-boundaries.test.mts",
+			"output": "test/dogfood/migration-boundaries.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/native-plugin.test.mts",
+			"output": "test/dogfood/native-plugin.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/next-actions.test.mts",
+			"output": "test/dogfood/next-actions.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/project-config.test.mts",
+			"output": "test/dogfood/project-config.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/report-packet.test.mts",
+			"output": "test/dogfood/report-packet.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/research-security.test.mts",
+			"output": "test/dogfood/research-security.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/research.test.mts",
+			"output": "test/dogfood/research.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/runner.test.mts",
+			"output": "test/dogfood/runner.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/runtime-distribution.test.mts",
+			"output": "test/dogfood/runtime-distribution.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/security-remediation.test.mts",
+			"output": "test/dogfood/security-remediation.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/semantic-evaluation.test.mts",
+			"output": "test/dogfood/semantic-evaluation.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/session-recovery.test.mts",
+			"output": "test/dogfood/session-recovery.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/typescript-core.test.mts",
+			"output": "test/dogfood/typescript-core.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/unified-mcp.test.mts",
+			"output": "test/dogfood/unified-mcp.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/workflow-examples.test.mts",
+			"output": "test/dogfood/workflow-examples.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/dogfood/workspace-config.test.mts",
+			"output": "test/dogfood/workspace-config.test.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/smoke.test.ts",
+			"output": "test/smoke.test.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/test/workflow-contracts.test.ts",
+			"output": "test/workflow-contracts.test.js",
+			"module": "esm"
+		}
+	]
+}

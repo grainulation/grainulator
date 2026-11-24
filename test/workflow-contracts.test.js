@@ -1,17 +1,16 @@
+// Generated from typescript/test/workflow-contracts.test.ts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-
 const root = fileURLToPath(new URL("../", import.meta.url));
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const workflows = fs
 	.readdirSync(path.join(root, "skills"))
 	.filter((name) => fs.existsSync(path.join(root, "skills", name, "SKILL.md")))
 	.map((name) => `skills/${name}/SKILL.md`);
-
 test("skill discovery contains only real skills and briefs use portable Markdown", () => {
 	for (const entry of fs.readdirSync(path.join(root, "skills"), {
 		withFileTypes: true,
@@ -34,7 +33,6 @@ test("skill discovery contains only real skills and briefs use portable Markdown
 		false,
 	);
 });
-
 test("core verification workflows preserve unresolved findings and distinguish host acceptance", () => {
 	for (const name of ["grainulator", "blind-spot", "status"]) {
 		const source = read(`skills/${name}/SKILL.md`);
@@ -51,7 +49,6 @@ test("core verification workflows preserve unresolved findings and distinguish h
 		);
 	}
 });
-
 test("native Codex onboarding discloses workspace binding and direct MCP scope", () => {
 	for (const file of [
 		"skills/setup/SKILL.md",
@@ -73,7 +70,6 @@ test("native Codex onboarding discloses workspace binding and direct MCP scope",
 		);
 	}
 });
-
 test("shipped workflows expose the product namespace and retain portable next actions", () => {
 	for (const file of [...workflows, "agents/grainulator.md"]) {
 		const source = read(file);
@@ -93,7 +89,6 @@ test("shipped workflows expose the product namespace and retain portable next ac
 		);
 	}
 });
-
 test("mutation reminder covers canonical/plugin-prefixed mutations and excludes removed aliases", () => {
 	const config = JSON.parse(read("hooks/hooks.json"));
 	const matcher = new RegExp(config.hooks.PostToolUse[0].matcher);
@@ -118,7 +113,6 @@ test("mutation reminder covers canonical/plugin-prefixed mutations and excludes 
 		assert.equal(matcher.test(name), false, name);
 	}
 });
-
 test("write guard points blocked mutations to the canonical tools and leaves ordinary files usable", () => {
 	for (const file of [
 		"claims.json",
@@ -147,7 +141,6 @@ test("write guard points blocked mutations to the canonical tools and leaves ord
 	);
 	assert.equal(result.status, 0);
 });
-
 test("write guard waits for complete delayed pipe input before deciding", async (t) => {
 	const hook = path.join(root, "hooks/write-guard.cjs");
 	const child = spawn(
@@ -189,7 +182,6 @@ test("write guard waits for complete delayed pipe input before deciding", async 
 	assert.match(stderr, /BLOCKED: claims\.json/);
 	assert.doesNotMatch(stderr, /malformed hook context/);
 });
-
 test("write guard retains environment context fallback and malformed-input diagnostics", () => {
 	const hook = path.join(root, "hooks/write-guard.cjs");
 	const environment = {
@@ -213,7 +205,6 @@ test("write guard retains environment context fallback and malformed-input diagn
 	assert.match(malformed.stderr, /malformed hook context/);
 	assert.doesNotMatch(malformed.stderr, /BLOCKED/);
 });
-
 test("write guard treats nonobject JSON envelopes as malformed context without crashing", () => {
 	for (const context of [
 		null,
@@ -241,13 +232,17 @@ test("write guard treats nonobject JSON envelopes as malformed context without c
 		assert.doesNotMatch(result.stderr, /TypeError|Unhandled|BLOCKED/);
 	}
 });
-
 test("packaged Claude agent permits direct and plugin-prefixed core MCP tools", async () => {
 	const { TOOLS } = await import("../lib/grainulator-mcp.js");
 	const source = read("agents/grainulator.md");
 	const frontmatter = source.split("---")[1];
+	assert.ok(frontmatter !== undefined);
 	const allowed = new Set(
-		[...frontmatter.matchAll(/^ {2}- (.+)$/gm)].map((match) => match[1]),
+		[...frontmatter.matchAll(/^ {2}- (.+)$/gm)].map((match) => {
+			const name = match[1];
+			assert.ok(name !== undefined);
+			return name;
+		}),
 	);
 	for (const tool of TOOLS) {
 		assert.ok(

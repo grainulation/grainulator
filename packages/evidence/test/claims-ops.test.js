@@ -1,3 +1,4 @@
+// Generated from typescript/packages/evidence/test/claims-ops.test.ts; edit that source and run npm run build:types.
 /**
  * Unit tests: lib/claims-ops.js
  *
@@ -10,13 +11,12 @@
  *
  * All disk I/O happens in per-test tempdirs — no user-state pollution.
  */
-
-import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { compile } from "../compiler/evidence-compiler.js";
 import fs from "node:fs";
-import path from "node:path";
 import os from "node:os";
+import path from "node:path";
+import { afterEach, beforeEach, describe, it } from "node:test";
+import { compile } from "../compiler/evidence-compiler.js";
 import {
 	addClaim,
 	getStatus,
@@ -26,14 +26,12 @@ import {
 	VALID_EVIDENCE,
 	VALID_TYPES,
 } from "../lib/claims-ops.js";
-
 function writeClaims(dir, data) {
 	fs.writeFileSync(
 		path.join(dir, "claims.json"),
 		JSON.stringify(data, null, 2) + "\n",
 	);
 }
-
 function baseClaimsDoc(overrides = {}) {
 	return {
 		schema_version: "1.0",
@@ -48,7 +46,6 @@ function baseClaimsDoc(overrides = {}) {
 		...overrides,
 	};
 }
-
 function makeClaim(id, overrides = {}) {
 	return {
 		id,
@@ -66,7 +63,6 @@ function makeClaim(id, overrides = {}) {
 		...overrides,
 	};
 }
-
 describe("claims-ops: exports", () => {
 	it("exports VALID_TYPES as an array of 6 types", () => {
 		assert.ok(Array.isArray(VALID_TYPES));
@@ -75,14 +71,12 @@ describe("claims-ops: exports", () => {
 		assert.ok(VALID_TYPES.includes("factual"));
 		assert.ok(VALID_TYPES.includes("recommendation"));
 	});
-
 	it("exports VALID_EVIDENCE as an array of 5 tiers", () => {
 		assert.ok(Array.isArray(VALID_EVIDENCE));
 		assert.equal(VALID_EVIDENCE.length, 5);
 		assert.ok(VALID_EVIDENCE.includes("stated"));
 		assert.ok(VALID_EVIDENCE.includes("production"));
 	});
-
 	it("resolvePaths returns the expected path shape", () => {
 		const paths = resolvePaths("/tmp/example");
 		assert.equal(paths.claims, path.join("/tmp/example", "claims.json"));
@@ -94,18 +88,14 @@ describe("claims-ops: exports", () => {
 		assert.ok(paths.compiler.endsWith("evidence-compiler.js"));
 	});
 });
-
 describe("claims-ops: addClaim", () => {
 	let dir;
-
 	beforeEach(() => {
 		dir = fs.mkdtempSync(path.join(os.tmpdir(), "wheat-claims-ops-"));
 	});
-
 	afterEach(() => {
 		fs.rmSync(dir, { recursive: true, force: true });
 	});
-
 	it("returns error when claims.json missing", () => {
 		const result = addClaim(dir, {
 			id: "r001",
@@ -116,7 +106,6 @@ describe("claims-ops: addClaim", () => {
 		assert.equal(result.status, "error");
 		assert.match(result.message, /No claims\.json/);
 	});
-
 	it("appends a claim and persists to disk (happy path)", () => {
 		writeClaims(dir, baseClaimsDoc());
 		const result = addClaim(dir, {
@@ -132,13 +121,11 @@ describe("claims-ops: addClaim", () => {
 		assert.equal(result.claim.evidence, "documented");
 		assert.deepEqual(result.claim.tags, ["sky"]);
 		assert.equal(result.claim.status, "active");
-
 		const raw = fs.readFileSync(path.join(dir, "claims.json"), "utf8");
 		const parsed = JSON.parse(raw);
 		assert.equal(parsed.claims.length, 1);
-		assert.equal(parsed.claims[0].id, "r001");
+		assert.equal(parsed.claims[0]?.id, "r001");
 	});
-
 	it("defaults evidence to 'stated' when omitted", () => {
 		writeClaims(dir, baseClaimsDoc());
 		const result = addClaim(dir, {
@@ -151,14 +138,12 @@ describe("claims-ops: addClaim", () => {
 		assert.equal(result.claim.evidence, "stated");
 		assert.deepEqual(result.claim.tags, []);
 	});
-
 	it("rejects missing required fields", () => {
 		writeClaims(dir, baseClaimsDoc());
 		const result = addClaim(dir, { id: "r001", type: "factual" });
 		assert.equal(result.status, "error");
 		assert.match(result.message, /Required fields/);
 	});
-
 	it("rejects invalid type", () => {
 		writeClaims(dir, baseClaimsDoc());
 		const result = addClaim(dir, {
@@ -170,7 +155,6 @@ describe("claims-ops: addClaim", () => {
 		assert.equal(result.status, "error");
 		assert.match(result.message, /Invalid type/);
 	});
-
 	it("rejects invalid evidence tier", () => {
 		writeClaims(dir, baseClaimsDoc());
 		const result = addClaim(dir, {
@@ -183,7 +167,6 @@ describe("claims-ops: addClaim", () => {
 		assert.equal(result.status, "error");
 		assert.match(result.message, /Invalid evidence/);
 	});
-
 	it("rejects duplicate claim IDs", () => {
 		writeClaims(dir, baseClaimsDoc({ claims: [makeClaim("r001")] }));
 		const result = addClaim(dir, {
@@ -196,10 +179,8 @@ describe("claims-ops: addClaim", () => {
 		assert.match(result.message, /already exists/);
 	});
 });
-
 describe("claims-ops: searchClaims", () => {
 	let dir;
-
 	beforeEach(() => {
 		dir = fs.mkdtempSync(path.join(os.tmpdir(), "wheat-search-"));
 		writeClaims(
@@ -235,38 +216,35 @@ describe("claims-ops: searchClaims", () => {
 			}),
 		);
 	});
-
 	afterEach(() => {
 		fs.rmSync(dir, { recursive: true, force: true });
 	});
-
 	it("returns all active claims when no filters are given", () => {
 		const result = searchClaims(dir, {});
 		assert.equal(result.status, "ok");
 		assert.equal(result.count, 3);
 	});
-
 	it("filters by topic", () => {
 		const result = searchClaims(dir, { topic: "topic-a" });
+		assert.equal(result.status, "ok");
 		assert.equal(result.count, 2);
 	});
-
 	it("filters by type", () => {
 		const result = searchClaims(dir, { type: "recommendation" });
+		assert.equal(result.status, "ok");
 		assert.equal(result.count, 1);
-		assert.equal(result.claims[0].id, "r003");
+		assert.equal(result.claims?.[0]?.id, "r003");
 	});
-
 	it("filters by evidence tier", () => {
 		const result = searchClaims(dir, { evidence: "tested" });
+		assert.equal(result.status, "ok");
 		assert.equal(result.count, 1);
 	});
-
 	it("query filter is case-insensitive substring match on content", () => {
 		const result = searchClaims(dir, { query: "sse" });
+		assert.equal(result.status, "ok");
 		assert.equal(result.count, 2);
 	});
-
 	it("truncates content longer than 200 chars with ellipsis", () => {
 		const longContent = "x".repeat(250);
 		writeClaims(
@@ -276,11 +254,13 @@ describe("claims-ops: searchClaims", () => {
 			}),
 		);
 		const result = searchClaims(dir, { topic: "long" });
+		assert.equal(result.status, "ok");
 		assert.equal(result.count, 1);
-		assert.ok(result.claims[0].content.endsWith("..."));
-		assert.equal(result.claims[0].content.length, 203);
+		const claim = result.claims?.[0];
+		assert.ok(claim);
+		assert.ok(claim.content.endsWith("..."));
+		assert.equal(claim.content.length, 203);
 	});
-
 	it("returns error when claims.json missing", () => {
 		const emptyDir = fs.mkdtempSync(path.join(os.tmpdir(), "wheat-empty-"));
 		try {
@@ -291,18 +271,14 @@ describe("claims-ops: searchClaims", () => {
 		}
 	});
 });
-
 describe("claims-ops: resolveClaim", () => {
 	let dir;
-
 	beforeEach(() => {
 		dir = fs.mkdtempSync(path.join(os.tmpdir(), "wheat-resolve-"));
 	});
-
 	afterEach(() => {
 		fs.rmSync(dir, { recursive: true, force: true });
 	});
-
 	it("resolves a valid conflict and marks loser superseded", () => {
 		writeClaims(
 			dir,
@@ -320,39 +296,36 @@ describe("claims-ops: resolveClaim", () => {
 		});
 		assert.equal(result.status, "ok");
 		assert.match(result.message, /Better evidence/);
-
 		const parsed = JSON.parse(
 			fs.readFileSync(path.join(dir, "claims.json"), "utf8"),
 		);
 		const winner = parsed.claims.find((c) => c.id === "r001");
 		const loser = parsed.claims.find((c) => c.id === "r002");
+		assert.ok(winner);
+		assert.ok(loser);
 		assert.equal(winner.status, "active");
 		assert.deepEqual(winner.conflicts_with, []);
 		assert.equal(loser.status, "superseded");
 		assert.equal(loser.resolved_by, "r001");
 	});
-
 	it("errors when required args are missing", () => {
 		writeClaims(dir, baseClaimsDoc());
 		const result = resolveClaim(dir, { winner: "r001" });
 		assert.equal(result.status, "error");
 		assert.match(result.message, /Required fields/);
 	});
-
 	it("errors when winner does not exist", () => {
 		writeClaims(dir, baseClaimsDoc({ claims: [makeClaim("r002")] }));
 		const result = resolveClaim(dir, { winner: "r001", loser: "r002" });
 		assert.equal(result.status, "error");
 		assert.match(result.message, /"r001" not found/);
 	});
-
 	it("errors when loser does not exist", () => {
 		writeClaims(dir, baseClaimsDoc({ claims: [makeClaim("r001")] }));
 		const result = resolveClaim(dir, { winner: "r001", loser: "r002" });
 		assert.equal(result.status, "error");
 		assert.match(result.message, /"r002" not found/);
 	});
-
 	it("errors when claims have no conflict relationship", () => {
 		writeClaims(
 			dir,
@@ -364,30 +337,24 @@ describe("claims-ops: resolveClaim", () => {
 		assert.equal(result.status, "error");
 		assert.match(result.message, /no conflicts_with relationship/);
 	});
-
 	it("errors when claims.json missing", () => {
 		const result = resolveClaim(dir, { winner: "r001", loser: "r002" });
 		assert.equal(result.status, "error");
 		assert.match(result.message, /No claims\.json/);
 	});
 });
-
 describe("claims-ops: getStatus", () => {
 	let dir;
-
 	beforeEach(() => {
 		dir = fs.mkdtempSync(path.join(os.tmpdir(), "wheat-status-"));
 	});
-
 	afterEach(() => {
 		fs.rmSync(dir, { recursive: true, force: true });
 	});
-
 	it("returns no_sprint when claims.json missing", () => {
 		const result = getStatus(dir);
 		assert.equal(result.status, "no_sprint");
 	});
-
 	it("summarizes an active sprint (happy path)", () => {
 		writeClaims(
 			dir,
@@ -413,7 +380,6 @@ describe("claims-ops: getStatus", () => {
 		assert.equal(result.type_distribution.factual, 2);
 		assert.equal(result.type_distribution.recommendation, 1);
 	});
-
 	it("counts active claims with conflicts_with as conflicted", () => {
 		writeClaims(
 			dir,
@@ -425,23 +391,27 @@ describe("claims-ops: getStatus", () => {
 			}),
 		);
 		const result = getStatus(dir);
+		assert.equal(result.status, "ok");
 		assert.equal(result.conflicted_claims, 2);
 	});
-
 	it("reads compilation_status from compilation.json when present", () => {
 		writeClaims(dir, baseClaimsDoc());
-		compile(path.join(dir, "claims.json"), path.join(dir, "compilation.json"), dir);
+		compile(
+			path.join(dir, "claims.json"),
+			path.join(dir, "compilation.json"),
+			dir,
+		);
 		const result = getStatus(dir);
+		assert.equal(result.status, "ok");
 		assert.equal(result.compilation_status, "ready");
 	});
-
 	it("degrades to 'unknown' when compilation.json is malformed", () => {
 		writeClaims(dir, baseClaimsDoc());
 		fs.writeFileSync(path.join(dir, "compilation.json"), "{not json");
 		const result = getStatus(dir);
+		assert.equal(result.status, "ok");
 		assert.equal(result.compilation_status, "unknown");
 	});
-
 	it("handles empty sprint (no claims)", () => {
 		writeClaims(dir, baseClaimsDoc({ claims: [] }));
 		const result = getStatus(dir);

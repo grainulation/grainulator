@@ -1,3 +1,4 @@
+// Generated from typescript/packages/evidence/test/guard.test.ts; edit that source and run npm run build:types.
 /**
  * Integration test: wheat guard
  *
@@ -10,29 +11,23 @@
  *
  * Uses node:test + node:assert — zero dependencies.
  */
-
-import { describe, it, before, after } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import path from "node:path";
 import os from "node:os";
-
+import path from "node:path";
+import { after, before, describe, it } from "node:test";
 // Import the guard function directly for unit-style integration testing
 import { generateCertificate } from "../compiler/evidence-compiler.js";
 import { guard } from "../lib/guard.js";
-
 describe("wheat guard", () => {
 	let tmpDir;
-
 	before(() => {
 		tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "wheat-guard-test-"));
 		fs.mkdirSync(path.join(tmpDir, "output"), { recursive: true });
 	});
-
 	after(() => {
 		fs.rmSync(tmpDir, { recursive: true, force: true });
 	});
-
 	it("allows writes to non-output paths", () => {
 		const result = guard(
 			tmpDir,
@@ -42,7 +37,6 @@ describe("wheat guard", () => {
 		);
 		assert.equal(result.allow, true);
 	});
-
 	it("blocks writes to output/ when no compilation.json exists", () => {
 		const result = guard(
 			tmpDir,
@@ -52,11 +46,10 @@ describe("wheat guard", () => {
 		);
 		assert.equal(result.allow, false);
 		assert.ok(
-			result.reason.includes("BLOCKED"),
+			result.reason?.includes("BLOCKED"),
 			"reason should include BLOCKED",
 		);
 	});
-
 	it("allows writes to output/ when compilation is fresh and ready", () => {
 		// Create claims.json
 		const claimsPath = path.join(tmpDir, "claims.json");
@@ -67,17 +60,17 @@ describe("wheat guard", () => {
 				claims: [],
 			}),
 		);
-
 		// Wait a tick so compilation.json mtime is after claims.json
 		const compilationPath = path.join(tmpDir, "compilation.json");
-
 		// Write compilation slightly after claims to ensure it's "fresh"
 		const now = new Date();
 		fs.writeFileSync(
 			compilationPath,
 			JSON.stringify({
 				status: "ready",
-				compilation_certificate: generateCertificate(JSON.parse(fs.readFileSync(claimsPath, "utf8"))),
+				compilation_certificate: generateCertificate(
+					JSON.parse(fs.readFileSync(claimsPath, "utf8")),
+				),
 				errors: [],
 				summary: {},
 			}),
@@ -85,7 +78,6 @@ describe("wheat guard", () => {
 		// Force compilation mtime to be after claims mtime
 		const future = new Date(now.getTime() + 1000);
 		fs.utimesSync(compilationPath, future, future);
-
 		const result = guard(
 			tmpDir,
 			JSON.stringify({
@@ -98,7 +90,6 @@ describe("wheat guard", () => {
 			"should allow when compilation is fresh and ready",
 		);
 	});
-
 	it("blocks writes to output/ when compilation status is blocked", () => {
 		const compilationPath = path.join(tmpDir, "compilation.json");
 		fs.writeFileSync(
@@ -111,7 +102,6 @@ describe("wheat guard", () => {
 		);
 		const future = new Date(Date.now() + 2000);
 		fs.utimesSync(compilationPath, future, future);
-
 		const result = guard(
 			tmpDir,
 			JSON.stringify({
@@ -120,11 +110,10 @@ describe("wheat guard", () => {
 		);
 		assert.equal(result.allow, false);
 		assert.ok(
-			result.reason.includes("blocked"),
+			result.reason?.includes("blocked"),
 			"reason should mention blocked status",
 		);
 	});
-
 	it("blocks claims.json writes missing meta.question", () => {
 		const result = guard(
 			tmpDir,
@@ -135,11 +124,10 @@ describe("wheat guard", () => {
 		);
 		assert.equal(result.allow, false);
 		assert.ok(
-			result.reason.includes("meta.question"),
+			result.reason?.includes("meta.question"),
 			"reason should mention meta.question",
 		);
 	});
-
 	it("blocks claims.json writes missing claims array", () => {
 		const result = guard(
 			tmpDir,
@@ -150,11 +138,10 @@ describe("wheat guard", () => {
 		);
 		assert.equal(result.allow, false);
 		assert.ok(
-			result.reason.includes("claims"),
+			result.reason?.includes("claims"),
 			"reason should mention claims array",
 		);
 	});
-
 	it("allows valid claims.json writes", () => {
 		const result = guard(
 			tmpDir,
@@ -168,7 +155,6 @@ describe("wheat guard", () => {
 		);
 		assert.equal(result.allow, true);
 	});
-
 	it("allows non-JSON tool input (passes through)", () => {
 		const result = guard(tmpDir, "not json at all");
 		assert.equal(result.allow, true);

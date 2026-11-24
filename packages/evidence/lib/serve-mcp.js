@@ -1,16 +1,15 @@
+// Generated from typescript/packages/evidence/lib/serve-mcp.ts; edit that source and run npm run build:types.
+import { htmlText, withoutElements } from "../../shared/lib/html.cjs";
 import { importClaims } from "./import-claims.js";
-import { withoutElements, htmlText } from "../../shared/lib/html.cjs";
 /** Private Grainulator evidence MCP handlers; only the root server owns stdio/discovery. */
-
-import { initializeSprint } from "../../../lib/sprint-init.js";
 import fs from "node:fs";
 import https from "node:https";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { initializeSprint } from "../../../lib/sprint-init.js";
 import { jsonRpcError, jsonRpcResponse } from "../../shared/lib/mcp.js";
 import { isInsideDir } from "../../shared/lib/paths.js";
 import { compile } from "../compiler/evidence-compiler.js";
-import nextActionsModule from "./next-actions.cjs";
 import {
 	addClaim,
 	getStatus,
@@ -20,30 +19,24 @@ import {
 	VALID_EVIDENCE,
 	VALID_TYPES,
 } from "./claims-ops.js";
-
+import nextActionsModule from "./next-actions.cjs";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 // --- Constants ---------------------------------------------------------------
-
 const SERVER_NAME = "grainulator";
 const SERVER_VERSION = JSON.parse(
 	fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf8"),
 ).version;
 const PROTOCOL_VERSION = "2024-11-05";
-
 // --- Tool implementations ----------------------------------------------------
-
 function toolCompile(dir) {
 	const paths = resolvePaths(dir);
-
 	if (!fs.existsSync(paths.claims)) {
 		return {
 			status: "error",
 			message: "No claims.json found. Run grainulator init first.",
 		};
 	}
-
 	try {
 		const compilationPath = path.join(dir, "compilation.json");
 		const result = compile(paths.claims, compilationPath, dir);
@@ -64,25 +57,6 @@ function toolCompile(dir) {
 		};
 	}
 }
-
-function toolAddClaim(dir, args) {
-	return addClaim(dir, args);
-}
-
-function toolResolve(dir, args) {
-	return resolveClaim(dir, args);
-}
-
-function toolSearch(dir, args, options) {
-	return searchClaims(dir, args, options);
-}
-
-function toolStatus(dir) {
-	return getStatus(dir);
-}
-
-function toolInit(dir,args) { return initializeSprint(dir,args); }
-
 function toolDeepwiki(_dir, args) {
 	const repo = args.repo;
 	if (!repo || !/^[a-zA-Z0-9._-]+\/[a-zA-Z0-9._-]+$/.test(repo)) {
@@ -92,9 +66,7 @@ function toolDeepwiki(_dir, args) {
 				'Required: repo in "org/name" format (e.g., "grainulation/evidence")',
 		};
 	}
-
 	const url = `https://deepwiki.com/${repo}`;
-
 	return new Promise((resolve) => {
 		try {
 			const req = https.get(
@@ -120,7 +92,6 @@ function toolDeepwiki(_dir, args) {
 						res.resume();
 						return;
 					}
-
 					let body = "";
 					res.setEncoding("utf8");
 					res.on("error", (err) => {
@@ -145,28 +116,31 @@ function toolDeepwiki(_dir, args) {
 							"nav",
 							"footer",
 						]);
-
 						// Extract headings and their content for structured output
 						const sections = [];
 						const headingRegex = /<h([1-3])[^>]*>([\s\S]*?)<\/h\1>/gi;
-						let match;
-						while ((match = headingRegex.exec(cleaned)) !== null) {
+						for (
+							let match = headingRegex.exec(cleaned);
+							match !== null;
+							match = headingRegex.exec(cleaned)
+						) {
 							const level = parseInt(match[1], 10);
 							const title = htmlText(match[2]).trim();
 							if (title) sections.push({ level, title });
 						}
-
 						// Extract paragraph text
 						const paragraphs = [];
 						const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
-						while ((match = pRegex.exec(cleaned)) !== null) {
+						for (
+							let match = pRegex.exec(cleaned);
+							match !== null;
+							match = pRegex.exec(cleaned)
+						) {
 							const text = htmlText(match[1]).trim();
 							if (text && text.length > 30) paragraphs.push(text);
 						}
-
 						// Limit output to avoid overwhelming context
 						const truncatedParagraphs = paragraphs.slice(0, 30);
-
 						resolve({
 							status: "ok",
 							repo,
@@ -178,7 +152,6 @@ function toolDeepwiki(_dir, args) {
 					});
 				},
 			);
-
 			req.on("error", (err) => {
 				resolve({
 					status: "error",
@@ -200,7 +173,6 @@ function toolDeepwiki(_dir, args) {
 		}
 	});
 }
-
 function toolSyncLog(dir) {
 	const logPath = path.join(dir, "output", "sync-log.json");
 	if (!fs.existsSync(logPath)) {
@@ -217,15 +189,52 @@ function toolSyncLog(dir) {
 		return { status: "error", message: "sync-log.json is corrupted." };
 	}
 }
-
 // --- Tool & Resource definitions ---------------------------------------------
-
 const DIR_PARAM = {
 	type: "string",
 	description:
-		"Optional target directory override. Use when working with sub-sprints in subdirectories. Defaults to the server's startup directory.",
+		"Sprint directory inside the server startup workspace. Omit for the startup directory, or select a relative child such as research/cache; traversal and symlink escapes are rejected by the unified server.",
 };
-
+const TOOL_EXAMPLES = {
+	compile: {},
+	add_claim: {
+		id: "r001",
+		type: "factual",
+		topic: "cache",
+		content: "The local cache isolates tenant keys.",
+		evidence: "stated",
+		source: {
+			origin: "local-review",
+			artifact: "src/cache.ts",
+			connector: null,
+		},
+	},
+	import_claims: {
+		source: "https://example.org/design/cache-v1",
+		claims: [
+			{
+				id: "finding-1",
+				type: "risk",
+				topic: "cache",
+				content: "Shared keys may cross tenant boundaries.",
+			},
+		],
+	},
+	resolve: {
+		winner: "r001",
+		loser: "r002",
+		reason: "The signed policy supersedes the proposal.",
+	},
+	search: { id: "r001" },
+	status: {},
+	init: {
+		question: "Does the cache isolate tenant keys?",
+		constraints: "Preserve tenant separation",
+		done: "Isolation regression passes",
+	},
+	deepwiki: { repo: "grainulation/grainulator" },
+	sync_log: {},
+};
 const TOOLS = [
 	{
 		name: "compile",
@@ -246,30 +255,53 @@ const TOOLS = [
 				dir: DIR_PARAM,
 				id: {
 					type: "string",
-					description: "Claim ID (e.g., r001, x001, d001)",
+					description:
+						"New unique claim identifier within this sprint, for example r001. Duplicate IDs fail without appending a record.",
 				},
-				type: { type: "string", enum: VALID_TYPES, description: "Claim type" },
+				type: {
+					type: "string",
+					enum: VALID_TYPES,
+					description:
+						"Finding category: constraint limits the solution, factual reports an observation, estimate predicts an outcome, risk identifies uncertainty, recommendation proposes action, and feedback records stakeholder input.",
+				},
 				topic: {
 					type: "string",
-					description: "Topic slug (e.g., database-migration)",
+					description:
+						"Nonempty topic grouping used in compiler coverage, for example database-migration.",
 				},
 				content: {
 					type: "string",
-					description: "The claim content -- specific, verifiable finding",
+					description:
+						"Nonempty finding text describing one specific observation, constraint or prediction; no independent verification is performed by recording it.",
 				},
 				evidence: {
 					type: "string",
 					enum: VALID_EVIDENCE,
-					description: "Evidence tier (default: stated)",
+					description:
+						"Recorded evidence level: stated is an assertion, web cites an online source, documented cites records, tested cites execution, production cites observed operation. Defaults to stated; labels do not execute verification.",
+					default: "stated",
+					examples: ["stated"],
 				},
 				source: {
 					type: "object",
 					description:
 						"Evidence provenance. Use a distinct publisher, repository, test suite, or stakeholder as origin; artifact is a URL or local evidence reference.",
 					properties: {
-						origin: { type: "string" },
-						artifact: { type: ["string", "null"] },
-						connector: { type: ["string", "null"] },
+						origin: {
+							type: "string",
+							description:
+								"Independent publisher, repository, test suite or stakeholder identity used for source-diversity accounting, for example acme/cache-tests.",
+						},
+						artifact: {
+							type: ["string", "null"],
+							description:
+								"URL or local evidence reference identifying the cited material; null when no concrete artifact is available.",
+						},
+						connector: {
+							type: ["string", "null"],
+							description:
+								"Retrieval channel name such as manual, web or confluence; null for a directly supplied source.",
+						},
 						witnessed_claim: {
 							type: "string",
 							description:
@@ -282,6 +314,8 @@ const TOOLS = [
 						relationship: {
 							type: "string",
 							enum: ["full_support", "partial_support", "contradicts"],
+							description:
+								"How this source relates to witnessed_claim or challenged_claim: full support, limited support, or contradiction. This declaration does not independently establish support.",
 						},
 						what_differs: {
 							type: ["string", "null"],
@@ -314,28 +348,51 @@ const TOOLS = [
 				},
 				calibration: {
 					type: "object",
+					description:
+						"Observed outcome linked to an existing active estimate, risk or recommendation. Requires prediction_id, verdict and outcome; records calibration history without certifying forecasting skill.",
 					properties: {
-						prediction_id: { type: "string" },
+						prediction_id: {
+							type: "string",
+							description:
+								"Existing active estimate, risk or recommendation claim ID whose outcome is being assessed, for example r010.",
+						},
 						verdict: {
 							type: "string",
 							enum: ["correct", "wrong", "partial", "unknown"],
+							description:
+								"Assessment of the linked prediction against the recorded outcome; partial/unknown are kept separate from binary accuracy.",
 						},
-						outcome: { type: "string" },
-						delta: { type: "number" },
+						outcome: {
+							type: "string",
+							description:
+								"Nonempty observed outcome text explaining the verdict and its evidence.",
+						},
+						delta: {
+							type: "number",
+							description:
+								"Optional finite numeric prediction error, in the prediction's own units; define its sign and units in outcome text.",
+						},
 					},
 					required: ["prediction_id", "verdict", "outcome"],
 				},
 				conflicts_with: {
 					type: "array",
-					items: { type: "string" },
+					items: {
+						type: "string",
+						description:
+							"ID of an existing contradictory finding in the selected sprint.",
+					},
 					description:
 						"IDs of claims this finding contradicts. The compiler flags the conflict until resolved.",
 				},
-
 				tags: {
 					type: "array",
-					items: { type: "string" },
-					description: "Optional tags",
+					items: {
+						type: "string",
+						description: "One searchable label, for example performance.",
+					},
+					description:
+						"Optional string labels for organizing this finding; omitted stores an empty tag list.",
 				},
 			},
 			required: ["id", "type", "topic", "content"],
@@ -349,20 +406,78 @@ const TOOLS = [
 			type: "object",
 			properties: {
 				dir: DIR_PARAM,
-				source: { type: "string" },
+				source: {
+					type: "string",
+					description:
+						"Stable nonempty document URL or identifier used with each source claim ID to derive collision-safe imported IDs. Reuse exactly the same value for repeat imports.",
+					examples: ["https://example.org/design/cache-v1"],
+				},
 				claims: {
 					type: "array",
+					description:
+						"Source findings with unique nonempty IDs in this batch. Active/conflicted or omitted status imports at stated evidence; inactive records are skipped. Changed repeated records fail atomically rather than overwriting.",
 					items: {
 						type: "object",
+						description:
+							"One source-document finding; imported provenance preserves its original ID, status, evidence and source.",
 						properties: {
-							id: { type: "string" },
-							type: { type: "string", enum: VALID_TYPES },
-							topic: { type: "string" },
-							content: { type: "string" },
-							status: { type: "string" },
-							evidence: { type: "string" },
-							source: { type: "object" },
-							conflicts_with: { type: "array", items: { type: "string" } },
+							id: {
+								type: "string",
+								description:
+									"Stable ID unique within the source document and this batch, for example finding-1. The destination uses a derived imp- ID.",
+							},
+							type: {
+								type: "string",
+								enum: VALID_TYPES,
+								description:
+									"Source finding category, retained in the destination ledger.",
+							},
+							topic: {
+								type: "string",
+								description:
+									"Nonempty topic grouping retained for compiler coverage.",
+							},
+							content: {
+								type: "string",
+								description:
+									"Nonempty source finding text, preserved as the imported claim content.",
+							},
+							status: {
+								type: "string",
+								enum: [
+									"active",
+									"superseded",
+									"conflicted",
+									"resolved",
+									"archived",
+								],
+								description:
+									"Original source status; omission means active. Only active/conflicted findings import, while other accepted states count as skipped_inactive.",
+							},
+							evidence: {
+								type: "string",
+								description:
+									"Original evidence label retained as historical imported_evidence. Destination evidence always starts at stated, regardless of this value.",
+							},
+							source: {
+								type: "object",
+								description:
+									"Historical source metadata preserved verbatim under imported_source; top-level source remains the batch document identity.",
+								additionalProperties: {
+									description:
+										"Uninterpreted original provenance value retained for audit; never treated as independently verified evidence.",
+								},
+							},
+							conflicts_with: {
+								type: "array",
+								description:
+									"Source-document IDs this finding contradicts. Active batch targets are remapped; unknown targets fail the whole import, and inactive targets are not linked.",
+								items: {
+									type: "string",
+									description:
+										"Another source finding ID present in this import batch.",
+								},
+							},
 						},
 						required: ["id", "type", "topic", "content"],
 					},
@@ -403,13 +518,19 @@ const TOOLS = [
 				},
 				full: {
 					type: "boolean",
-					description: "Return complete records without truncation",
+					description:
+						"False by default; true returns complete filtered records instead of compact summaries. An exact id also selects the complete record.",
 				},
 				include_inactive: {
 					type: "boolean",
-					description: "Include superseded claims (default false)",
+					description:
+						"False by default; true also includes historical records such as superseded or refuted findings.",
 				},
-				topic: { type: "string", description: "Filter by topic slug" },
+				topic: {
+					type: "string",
+					description:
+						"Exact topic grouping; omission includes all topics, for example database-migration.",
+				},
 				type: {
 					type: "string",
 					enum: VALID_TYPES,
@@ -422,7 +543,8 @@ const TOOLS = [
 				},
 				query: {
 					type: "string",
-					description: "Free-text search in claim content",
+					description:
+						"Case-insensitive substring matched in claim content, combined with all supplied filters; omission applies no text filter.",
 				},
 			},
 		},
@@ -439,7 +561,7 @@ const TOOLS = [
 	{
 		name: "init",
 		description:
-			"Initialize a new research sprint. Creates claims.json, CLAUDE.md, and slash commands.",
+			"Initialize a new sprint at configured ledger/compilation paths and return directory, files_created and stated seed count. Existing ledgers require force and receive a backup. Use acceptance_set to revise existing criteria; no host instructions, hooks or registration are created.",
 		inputSchema: {
 			type: "object",
 			properties: {
@@ -459,11 +581,12 @@ const TOOLS = [
 				done: {
 					type: "string",
 					description:
-						'Explicit completion criteria. Omitted or empty creates no done-criteria claim; acceptance_check reports the gap.',
+						"Explicit completion criteria. Omitted or empty creates no done-criteria claim; acceptance_check reports the gap.",
 				},
 				force: {
 					type: "boolean",
-					description: "Reinitialize even if sprint exists (default: false)",
+					description:
+						"False by default. True explicitly replaces an existing ledger after saving a unique backup; returns its path. Existing host configuration and hooks are untouched.",
 				},
 			},
 			required: ["question"],
@@ -495,8 +618,10 @@ const TOOLS = [
 			properties: { dir: DIR_PARAM },
 		},
 	},
-];
-
+].map((tool) => ({
+	...tool,
+	inputSchema: { ...tool.inputSchema, examples: [TOOL_EXAMPLES[tool.name]] },
+}));
 const RESOURCES = [
 	{
 		uri: "grainulator://compilation",
@@ -526,9 +651,6 @@ const RESOURCES = [
 		mimeType: "application/json",
 	},
 ];
-
-// --- Request handler ---------------------------------------------------------
-
 async function handleRequest(dir, method, params, id, options = {}) {
 	switch (method) {
 		case "initialize":
@@ -537,20 +659,16 @@ async function handleRequest(dir, method, params, id, options = {}) {
 				capabilities: { tools: {}, resources: {} },
 				serverInfo: { name: SERVER_NAME, version: SERVER_VERSION },
 			});
-
 		case "notifications/initialized":
 			// No response needed for notifications
 			return null;
-
 		case "tools/list":
 			return jsonRpcResponse(id, { tools: TOOLS });
-
 		case "tools/call": {
 			const toolName = params.name;
 			const toolArgs = params.arguments || {};
 			// Allow per-call dir override for sprint isolation (sub-sprints in subdirs)
 			const effectiveDir = toolArgs.dir ? path.resolve(toolArgs.dir) : dir;
-
 			// Containment check: effectiveDir must be within the server's startup dir
 			if (!isInsideDir(effectiveDir, dir)) {
 				return jsonRpcResponse(id, {
@@ -567,9 +685,7 @@ async function handleRequest(dir, method, params, id, options = {}) {
 					isError: true,
 				});
 			}
-
 			let result;
-
 			switch (toolName) {
 				case "compile":
 					result = toolCompile(effectiveDir);
@@ -578,19 +694,19 @@ async function handleRequest(dir, method, params, id, options = {}) {
 					result = importClaims(effectiveDir, toolArgs);
 					break;
 				case "add_claim":
-					result = toolAddClaim(effectiveDir, toolArgs);
+					result = addClaim(effectiveDir, toolArgs);
 					break;
 				case "resolve":
-					result = toolResolve(effectiveDir, toolArgs);
+					result = resolveClaim(effectiveDir, toolArgs);
 					break;
 				case "search":
-					result = toolSearch(effectiveDir, toolArgs, options);
+					result = searchClaims(effectiveDir, toolArgs, options);
 					break;
 				case "status":
-					result = toolStatus(effectiveDir);
+					result = getStatus(effectiveDir);
 					break;
 				case "init":
-					result = toolInit(effectiveDir, toolArgs);
+					result = initializeSprint(effectiveDir, toolArgs);
 					break;
 				case "deepwiki":
 					result = await toolDeepwiki(effectiveDir, toolArgs);
@@ -601,22 +717,18 @@ async function handleRequest(dir, method, params, id, options = {}) {
 				default:
 					return jsonRpcError(id, -32601, `Unknown tool: ${toolName}`);
 			}
-
 			const isError = result.status === "error";
 			return jsonRpcResponse(id, {
 				content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
 				isError,
 			});
 		}
-
 		case "resources/list":
 			return jsonRpcResponse(id, { resources: RESOURCES });
-
 		case "resources/read": {
 			const uri = params.uri;
 			const paths = resolvePaths(dir);
 			let filePath, mimeType;
-
 			switch (uri) {
 				case "grainulator://compilation":
 					filePath = paths.compilation;
@@ -637,7 +749,6 @@ async function handleRequest(dir, method, params, id, options = {}) {
 				default:
 					return jsonRpcError(id, -32602, `Unknown resource: ${uri}`);
 			}
-
 			if (!fs.existsSync(filePath)) {
 				return jsonRpcResponse(id, {
 					contents: [
@@ -645,7 +756,6 @@ async function handleRequest(dir, method, params, id, options = {}) {
 					],
 				});
 			}
-
 			let text;
 			try {
 				text = fs.readFileSync(filePath, "utf8");
@@ -660,17 +770,13 @@ async function handleRequest(dir, method, params, id, options = {}) {
 				contents: [{ uri, mimeType, text }],
 			});
 		}
-
 		case "ping":
 			return jsonRpcResponse(id, {});
-
 		default:
 			// Ignore unknown notifications (no id = notification)
 			if (id === undefined || id === null) return null;
 			return jsonRpcError(id, -32601, `Method not found: ${method}`);
 	}
 }
-
 // --- Stdio transport ---------------------------------------------------------
-
 export { handleRequest, RESOURCES, TOOLS };

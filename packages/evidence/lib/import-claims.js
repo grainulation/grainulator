@@ -1,12 +1,12 @@
+// Generated from typescript/packages/evidence/lib/import-claims.ts; edit that source and run npm run build:types.
 /** Import active findings from a document, not a ledger restore. */
 import crypto from "node:crypto";
 import path from "node:path";
 import { atomicWriteJSON } from "../../shared/lib/atomic.js";
 import { withFileTransaction } from "../../shared/lib/transaction.js";
-import { loadClaims } from "./load-claims.js";
-import { assertEvidenceMutation } from "./evidence-target.js";
 import { resolvePaths, VALID_TYPES } from "./claims-ops.js";
-
+import { assertEvidenceMutation } from "./evidence-target.js";
+import { loadClaims } from "./load-claims.js";
 export function importClaims(dir, { source, claims }) {
 	try {
 		assertEvidenceMutation(dir);
@@ -44,7 +44,8 @@ export function importClaims(dir, { source, claims }) {
 				throw new Error("Invalid source claim or duplicate source ID.");
 			ids.add(c.id);
 		}
-		const active = claims.filter(
+		const findings = claims;
+		const active = findings.filter(
 			(c) =>
 				c.status === undefined ||
 				c.status === "active" ||
@@ -75,7 +76,10 @@ export function importClaims(dir, { source, claims }) {
 					.digest("hex");
 				const prior = data.claims.find((old) => old.id === idMap[c.id]);
 				if (prior) {
-					if (prior.source?.import_fingerprint !== fingerprint)
+					if (
+						typeof prior.source === "string" ||
+						prior.source?.import_fingerprint !== fingerprint
+					)
 						throw new Error(
 							`Source claim ${c.id} changed; record a reviewed correction instead of overwriting.`,
 						);
@@ -85,7 +89,7 @@ export function importClaims(dir, { source, claims }) {
 				const missing = (c.conflicts_with || []).filter(
 					(id) =>
 						!Object.hasOwn(idMap, id) &&
-						!claims.some((other) => other.id === id),
+						!findings.some((other) => other.id === id),
 				);
 				if (missing.length)
 					throw new Error(

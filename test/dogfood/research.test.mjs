@@ -1,3 +1,4 @@
+// Generated from typescript/test/dogfood/research.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import fs from "node:fs";
@@ -20,7 +21,6 @@ import {
 	environmentKey,
 	providerRequest,
 } from "../../lib/research-provider.js";
-
 const session = () =>
 	createSession({
 		question: "Is the cache isolated?",
@@ -28,6 +28,7 @@ const session = () =>
 		instructions: "Preserve uncertainties.",
 	});
 const result = (text) => ({
+	elapsedMs: 0,
 	text,
 	model: "fixture-model",
 	sources: [{ url: "https://example.org/evidence", title: "Source" }],
@@ -129,6 +130,7 @@ test("OpenAI request carries the chosen model, search, reasoning, and token budg
 	const { url, body } = providerRequest(DEFAULTS, "System", "Task");
 	assert.equal(url, "https://api.openai.com/v1/responses");
 	assert.equal(body.model, "gpt-6-astra");
+	assert.ok("store" in body);
 	assert.equal(body.store, false);
 	assert.deepEqual(body.tools, [{ type: "web_search" }]);
 	assert.equal(body.max_output_tokens, 8192);
@@ -376,7 +378,6 @@ test("feature switches change executed passes and export without inventing evide
 		/requires the claims ledger/,
 	);
 });
-
 test("the evidence gate blocks synthesis, survives import, and can be disabled for a caveated run", async () => {
 	const ledger = JSON.stringify({
 		claims: [
@@ -436,7 +437,6 @@ test("the evidence gate blocks synthesis, survives import, and can be disabled f
 	assert.equal((await runResearch(ungated, { complete })).status, "complete");
 	assert.equal(calls.length, 5);
 });
-
 test("ledger validation rejects malformed claims and does not checkpoint invalid model JSON", async () => {
 	const { readLedger, evidenceReport } = await import(
 		"../../lib/research/evidence.js"
@@ -462,6 +462,8 @@ test("ledger validation rejects malformed claims and does not checkpoint invalid
 		/unknown/,
 	);
 	const noFacts = {
+		question: "Check claims",
+		config: { provider: DEFAULTS.provider },
 		steps: [{ pass: "ledger", text: JSON.stringify({ claims: [c] }) }],
 	};
 	assert.equal(evidenceReport(noFacts).passed, false);
@@ -479,12 +481,12 @@ test("ledger validation rejects malformed claims and does not checkpoint invalid
 		["research"],
 	);
 });
-
 test("sessions exported before feature controls retain their completed work", () => {
 	const s = session();
-	delete s.config.blindSpots;
-	delete s.config.ledger;
-	delete s.config.evidenceGate;
+	const legacyConfig = s.config;
+	delete legacyConfig.blindSpots;
+	delete legacyConfig.ledger;
+	delete legacyConfig.evidenceGate;
 	s.basis = sessionBasis(s);
 	s.steps = [{ pass: "research", ...result("Existing research") }];
 	const restored = importSession(s);
@@ -495,7 +497,6 @@ test("sessions exported before feature controls retain their completed work", ()
 		/changed/,
 	);
 });
-
 test("CLI prepares a real evidence ledger and compilation while keeping a blocked gate blocked", async (t) => {
 	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-ledger-"));
 	t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
@@ -537,19 +538,21 @@ test("CLI prepares a real evidence ledger and compilation while keeping a blocke
 		"--prepare-only",
 	]);
 	assert.equal(prepared.code, 0, prepared.stderr);
-	const claims = JSON.parse(fs.readFileSync(path.join(dest, "claims.json")));
+	const claims = JSON.parse(
+		fs.readFileSync(path.join(dest, "claims.json"), "utf8"),
+	);
 	assert.equal(claims.claims[0].evidence, "stated");
 	const compilation = JSON.parse(
-		fs.readFileSync(path.join(dest, "compilation.json")),
+		fs.readFileSync(path.join(dest, "compilation.json"), "utf8"),
 	);
 	assert.ok(compilation.compilation_certificate);
 	assert.equal(
-		importSession(JSON.parse(fs.readFileSync(path.join(dest, "session.json"))))
-			.status,
+		importSession(
+			JSON.parse(fs.readFileSync(path.join(dest, "session.json"), "utf8")),
+		).status,
 		"blocked",
 	);
 });
-
 test("a valid long Unicode session can be exported and reopened by the real CLI", async (t) => {
 	const dir = fs.mkdtempSync(
 		path.join(os.tmpdir(), "grainulator-large-session-"),
@@ -582,12 +585,11 @@ test("a valid long Unicode session can be exported and reopened by the real CLI"
 	]);
 	assert.equal(prepared.code, 0, prepared.stderr);
 	const restored = importSession(
-		JSON.parse(fs.readFileSync(path.join(dest, "session.json"))),
+		JSON.parse(fs.readFileSync(path.join(dest, "session.json"), "utf8")),
 	);
 	assert.equal(restored.steps[3].text, s.steps[3].text);
 	assert.equal(restored.status, "complete");
 });
-
 test("headless question sessions prepare without provider access and execute through the real CLI", async (t) => {
 	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-question-"));
 	t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
@@ -686,7 +688,6 @@ test("headless question sessions prepare without provider access and execute thr
 				!fs.readFileSync(path.join(destination, name), "utf8").includes(key),
 			);
 });
-
 test("ambiguous or invalid research arguments fail before writing a destination", async (t) => {
 	const dir = fs.mkdtempSync(
 		path.join(os.tmpdir(), "grainulator-question-args-"),

@@ -1,3 +1,4 @@
+// Generated from typescript/migration/remote.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -8,7 +9,6 @@ import {
 	previewRemoteMigration,
 	reconcileRemoteMigration,
 } from "./remote.mjs";
-
 function fixture(t, format = "snapshot") {
 	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-remote-"));
 	t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
@@ -34,7 +34,7 @@ function fixture(t, format = "snapshot") {
 		},
 		update: async (request) => {
 			const receipt = JSON.parse(
-				fs.readFileSync(path.join(dir, "receipt.json")),
+				String(fs.readFileSync(path.join(dir, "receipt.json"))),
 			);
 			assert.equal(receipt.pages[0].state, "sent");
 			assert.equal(request.expected_version, current.version);
@@ -96,7 +96,7 @@ test("apply requires authorization, uses exact CAS, journals sent before write, 
 	await applyRemoteMigration({ ...f, plan, authorized: true });
 	assert.equal(f.calls.length, 1);
 	assert.equal(
-		JSON.parse(fs.readFileSync(f.receiptFile)).pages[0].state,
+		JSON.parse(String(fs.readFileSync(f.receiptFile))).pages[0].state,
 		"confirmed",
 	);
 });
@@ -163,7 +163,6 @@ test("contradictory formats, duplicate IDs and tampered plan refuse", async (t) 
 	);
 	assert.equal(f.calls.length, 0);
 });
-
 test("finalization requires inspected marker hash and bound confirmed receipt; ambiguity remains blocked", async (t) => {
 	const { completeRemoteMigration } = await import("./remote.mjs");
 	const crypto = await import("node:crypto");
@@ -253,7 +252,6 @@ test("finalization requires inspected marker hash and bound confirmed receipt; a
 		/Ambiguous/,
 	);
 });
-
 test("explicit local inventory resolution requires CAS and complete documented sources, preserves original bytes and never calls an adapter", async (t) => {
 	const { resolveRemoteInventory } = await import("./remote.mjs");
 	const crypto = await import("node:crypto");
@@ -366,7 +364,6 @@ test("documented not-configured review unblocks an empty inventory without assum
 	gate.assertRemoteMigrationReady(project);
 	assert.equal(f.calls.length, 0);
 });
-
 test("mixed ambiguous sources retain every known page/role and cannot be waived at file level", async (t) => {
 	const { resolveRemoteInventory } = await import("./remote.mjs");
 	const crypto = await import("node:crypto");
@@ -512,7 +509,6 @@ test("mixed ambiguous sources retain every known page/role and cannot be waived 
 	assert.equal(result.state, "pending");
 	assert.equal(f.calls.length, 0);
 });
-
 function localReviewFixture(t) {
 	const f = fixture(t),
 		markerFile = path.join(
@@ -658,26 +654,33 @@ test("finalizer and resolver share the same writer lock and reject stale snapsho
 			before = fs.readFileSync(c.markerFile),
 			realpath = fs.realpathSync;
 		let injected = false;
-		fs.realpathSync = function (file, ...rest) {
-			if (file === c.receiptFile && !injected) {
-				injected = true;
-				const target = changed === "marker" ? c.markerFile : c.receiptFile;
-				const value = JSON.parse(fs.readFileSync(target));
-				value.concurrent_change = true;
-				fs.writeFileSync(target, JSON.stringify(value));
-			}
-			return realpath.call(this, file, ...rest);
-		};
+		const mockedRealpath = t.mock.method(
+			fs,
+			"realpathSync",
+			(file, ...rest) => {
+				if (file === c.receiptFile && !injected) {
+					injected = true;
+					const target = changed === "marker" ? c.markerFile : c.receiptFile;
+					const value = JSON.parse(String(fs.readFileSync(target)));
+					value.concurrent_change = true;
+					fs.writeFileSync(target, JSON.stringify(value));
+				}
+				return Reflect.apply(realpath, fs, [file, ...rest]);
+			},
+		);
 		try {
 			assert.throws(() => completeRemoteMigration(c), /changed/);
 		} finally {
-			fs.realpathSync = realpath;
+			mockedRealpath.mock.restore();
 		}
 		assert.equal(injected, true);
 		if (changed === "receipt")
 			assert.deepEqual(fs.readFileSync(c.markerFile), before);
 		else
-			assert.equal(JSON.parse(fs.readFileSync(c.markerFile)).state, "pending");
+			assert.equal(
+				JSON.parse(String(fs.readFileSync(c.markerFile))).state,
+				"pending",
+			);
 		assert.equal(fs.existsSync(c.markerFile + ".lock"), false);
 	}
 	const c = await confirmedFixture(t);
@@ -710,7 +713,7 @@ test("a matching durable resolution receipt resumes after interrupted marker com
 				"remote-resolution-" + x.sha(x.bytes) + ".json",
 			),
 			receiptBytes = fs.readFileSync(receiptFile),
-			receipt = JSON.parse(receiptBytes);
+			receipt = JSON.parse(String(receiptBytes));
 		assert.deepEqual(fs.readFileSync(x.markerFile), x.bytes);
 		if (conflict) {
 			assert.throws(
@@ -725,7 +728,10 @@ test("a matching durable resolution receipt resumes after interrupted marker com
 		} else {
 			const result = resolveRemoteInventory(x.args);
 			assert.equal(result.state, "complete");
-			assert.equal(JSON.parse(fs.readFileSync(receiptFile)).at, receipt.at);
+			assert.equal(
+				JSON.parse(String(fs.readFileSync(receiptFile))).at,
+				receipt.at,
+			);
 			assert.equal(result.local_resolution.sha256, x.sha(receiptBytes));
 		}
 		assert.deepEqual(fs.readFileSync(receiptFile), receiptBytes);

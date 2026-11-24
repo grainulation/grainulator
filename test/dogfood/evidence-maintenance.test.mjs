@@ -1,3 +1,4 @@
+// Generated from typescript/test/dogfood/evidence-maintenance.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -26,7 +27,6 @@ import {
 	observeSource,
 	setAcceptance,
 } from "../../packages/evidence/lib/maintenance.js";
-
 function fixture(t, done = "Known observable result") {
 	const dir = fs.mkdtempSync(
 		path.join(os.tmpdir(), "grainulator-maintenance-"),
@@ -54,7 +54,7 @@ function fixture(t, done = "Known observable result") {
 	return dir;
 }
 const ledger = (dir) =>
-	JSON.parse(fs.readFileSync(path.join(dir, "claims.json")));
+	JSON.parse(fs.readFileSync(path.join(dir, "claims.json"), "utf8"));
 const compileDir = (dir) =>
 	compile(
 		path.join(dir, "claims.json"),
@@ -62,7 +62,6 @@ const compileDir = (dir) =>
 		dir,
 		{ skipSprintDetection: true },
 	);
-
 test("necessary premises survive correction as explicit re-verification paths; replacement never silently repairs conclusions", (t) => {
 	const dir = fixture(t);
 	linkPremises(dir, {
@@ -114,7 +113,6 @@ test("necessary premises survive correction as explicit re-verification paths; r
 	});
 	assert.equal(compileDir(dir).status, "ready");
 });
-
 test("invalid graph/correction operations are atomic and leave ledger bytes intact", (t) => {
 	const dir = fixture(t);
 	linkPremises(dir, { claim_id: "b", premises: ["a"], reason: "necessary" });
@@ -133,7 +131,6 @@ test("invalid graph/correction operations are atomic and leave ledger bytes inta
 	);
 	assert.deepEqual(fs.readFileSync(path.join(dir, "claims.json")), before);
 });
-
 test("compiler conflict resolution invalidates dependent premises in the same compilation", (t) => {
 	const dir = fixture(t);
 	linkPremises(dir, {
@@ -180,7 +177,6 @@ test("compiler conflict resolution invalidates dependent premises in the same co
 		true,
 	);
 });
-
 test("source edits invalidate compile freshness and report packets; explicit same-binding replacement preserves history", (t) => {
 	const dir = fixture(t);
 	const obs = observeSource(dir, {
@@ -216,7 +212,6 @@ test("source edits invalidate compile freshness and report packets; explicit sam
 	);
 	assert.equal(buildReportPacket(dir).evidence_health.coverage.resolved, 1);
 });
-
 test("execution receipts bind actual literal argv, code files and output without promoting tiers", async (t) => {
 	const dir = fixture(t);
 	fs.writeFileSync(
@@ -251,7 +246,6 @@ test("execution receipts bind actual literal argv, code files and output without
 	assert.equal(failed.observation.exit_code, 9);
 	assert.equal(compileDir(dir).status, "blocked");
 });
-
 test("input mutation during a successful command cannot earn passing current support", async (t) => {
 	const dir = fixture(t);
 	fs.writeFileSync(
@@ -267,7 +261,6 @@ test("input mutation during a successful command cannot earn passing current sup
 	assert.equal(result.observation.input_changed, true);
 	assert.notEqual(result.check.status, "passed");
 });
-
 test("invalid execution replacements are rejected before launching the command", async (t) => {
 	const dir = fixture(t);
 	const argv = [
@@ -296,7 +289,6 @@ test("invalid execution replacements are rejected before launching the command",
 		assert.equal(fs.existsSync(path.join(dir, "launched")), false);
 	}
 });
-
 test("exhausted maintenance history rejects execution before launching the command", async (t) => {
 	const dir = fixture(t);
 	for (let i = 0; i < 1000; i++)
@@ -321,7 +313,6 @@ test("exhausted maintenance history rejects execution before launching the comma
 	assert.equal(fs.existsSync(path.join(dir, "launched")), false);
 	assert.deepEqual(fs.readFileSync(path.join(dir, "claims.json")), before);
 });
-
 test("source confinement rejects traversal, symlinks, binary files and invalid ranges", (t) => {
 	const dir = fixture(t);
 	fs.symlinkSync("source.js", path.join(dir, "link.js"));
@@ -337,7 +328,6 @@ test("source confinement rejects traversal, symlinks, binary files and invalid r
 		}),
 	);
 });
-
 test("all active claims remain in coverage denominator; static bytes cannot establish tested support", (t) => {
 	const dir = fixture(t);
 	assert.equal(
@@ -359,7 +349,6 @@ test("all active claims remain in coverage denominator; static bytes cannot esta
 	assert.equal(health.coverage.unresolved, 5);
 	assert.equal(health.coverage.effective_coverage, 0);
 });
-
 test("finding verdict and resolution stay independent; stale revisions and stale proof are rejected", (t) => {
 	const dir = fixture(t);
 	const observation = observeSource(dir, {
@@ -416,7 +405,6 @@ test("finding verdict and resolution stay independent; stale revisions and stale
 		2,
 	);
 });
-
 test("overlapping current anchors only suggest duplicates and explicit reconciliation rejects cycles", (t) => {
 	const dir = fixture(t);
 	observeSource(dir, {
@@ -456,7 +444,6 @@ test("overlapping current anchors only suggest duplicates and explicit reconcili
 		/cycles/,
 	);
 });
-
 test("acceptance clarification reports missing explicit criteria and preserves superseded decisions", (t) => {
 	const dir = fixture(t, "");
 	assert.equal(acceptanceGaps(dir).questions.length, 1);
@@ -477,7 +464,6 @@ test("acceptance clarification reports missing explicit criteria and preserves s
 		["superseded", "active"],
 	);
 });
-
 test("maintenance CLI and direct MCP expose the same source checks without external execution tools", async (t) => {
 	const dir = fixture(t);
 	const cli = spawnSync(

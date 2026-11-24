@@ -1,3 +1,4 @@
+// Generated from typescript/packages/evidence/lib/cli-search.ts; edit that source and run npm run build:types.
 /**
  * grainulator search — Search claims by topic, type, evidence, or text
  *
@@ -5,15 +6,12 @@
  *
  * Zero npm dependencies.
  */
-
 import { searchClaims, VALID_EVIDENCE, VALID_TYPES } from "./claims-ops.js";
-
 function parseFlag(args, flag) {
 	const idx = args.indexOf(flag);
 	if (idx === -1 || idx + 1 >= args.length) return undefined;
 	return args[idx + 1];
 }
-
 export async function run(dir, args) {
 	if (args.includes("--help") || args.includes("-h")) {
 		console.log(`grainulator search — Search claims by topic, type, evidence, or text
@@ -40,14 +38,11 @@ Examples:
   grainulator search --type factual --evidence web --json`);
 		return;
 	}
-
 	const jsonMode = args.includes("--json");
-
 	const topic = parseFlag(args, "--topic");
 	const type = parseFlag(args, "--type");
 	const evidence = parseFlag(args, "--evidence");
 	const query = parseFlag(args, "--query");
-
 	const result = searchClaims(dir, {
 		topic,
 		type,
@@ -57,7 +52,6 @@ Examples:
 		full: args.includes("--full"),
 		include_inactive: args.includes("--include-inactive"),
 	});
-
 	if (result.status === "error") {
 		if (jsonMode) {
 			console.log(JSON.stringify(result, null, 2));
@@ -66,42 +60,32 @@ Examples:
 		}
 		process.exit(1);
 	}
-
 	if (jsonMode) {
 		console.log(JSON.stringify(result, null, 2));
 		return;
 	}
-
 	if (result.count === 0) {
 		console.log("\n  No claims found.\n");
 		return;
 	}
-
 	console.log(
 		`\n  ${result.count} claim${result.count === 1 ? "" : "s"} found:\n`,
 	);
-
 	// Table header
 	const idW = 10;
 	const typeW = 16;
 	const topicW = 20;
 	const evW = 12;
 	console.log(
-		`  ${"ID".padEnd(idW)}${"TYPE".padEnd(typeW)}${"TOPIC".padEnd(
-			topicW,
-		)}${"EVIDENCE".padEnd(evW)}CONTENT`,
+		`  ${"ID".padEnd(idW)}${"TYPE".padEnd(typeW)}${"TOPIC".padEnd(topicW)}${"EVIDENCE".padEnd(evW)}CONTENT`,
 	);
 	console.log(`  ${"-".repeat(idW + typeW + topicW + evW + 40)}`);
-
 	for (const c of result.claims) {
 		const content =
 			c.content.length > 50 ? c.content.slice(0, 47) + "..." : c.content;
 		console.log(
-			`  ${c.id.padEnd(idW)}${c.type.padEnd(typeW)}${c.topic.padEnd(
-				topicW,
-			)}${c.evidence.padEnd(evW)}${content}`,
+			`  ${c.id.padEnd(idW)}${c.type.padEnd(typeW)}${c.topic.padEnd(topicW)}${c.evidence.padEnd(evW)}${content}`,
 		);
 	}
-
 	console.log();
 }

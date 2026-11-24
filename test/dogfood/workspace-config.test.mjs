@@ -1,3 +1,4 @@
+// Generated from typescript/test/dogfood/workspace-config.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -6,7 +7,6 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { loadWorkspace, saveWorkspace } from "../../lib/workspace-config.js";
-
 const cli = fileURLToPath(new URL("../../bin/grainulator.js", import.meta.url));
 test("setup persists an explicit default; environment overrides and invalid setup preserves previous settings", (t) => {
 	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-setup-"));
@@ -49,7 +49,7 @@ test("setup persists an explicit default; environment overrides and invalid setu
 });
 test("version is readable without a sprint or configuration", () => {
 	const expected = JSON.parse(
-		fs.readFileSync(new URL("../../package.json", import.meta.url)),
+		fs.readFileSync(new URL("../../package.json", import.meta.url)).toString(),
 	).version;
 	for (const flag of ["--version", "-v", "version"]) {
 		const result = spawnSync(process.execPath, [cli, flag], {
@@ -60,7 +60,6 @@ test("version is readable without a sprint or configuration", () => {
 		assert.equal(result.stdout.trim(), expected);
 	}
 });
-
 test("setup preserves pre-existing temporary paths and cleans only its own failed transaction", (t) => {
 	const dir = fs.mkdtempSync(
 		path.join(os.tmpdir(), "grainulator-setup-ownership-"),
@@ -110,7 +109,6 @@ test("setup preserves pre-existing temporary paths and cleans only its own faile
 		"owned temporary file is removed after failed replacement",
 	);
 });
-
 test("root execution and connection help never starts work or creates files", (t) => {
 	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-root-help-"));
 	t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
@@ -143,7 +141,6 @@ test("root execution and connection help never starts work or creates files", (t
 		}
 	}
 });
-
 test("retired browser and site-asset commands fail without output files", (t) => {
 	const dir = fs.mkdtempSync(
 		path.join(os.tmpdir(), "grainulator-retired-web-"),

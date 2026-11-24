@@ -1,10 +1,10 @@
+// Generated from typescript/scripts/release-archive.mts; edit that source and run npm run build:types.
 // Bounded, read-only archive inspection. Never delegate archive paths to tar extraction.
 import crypto from "node:crypto";
 import path from "node:path";
 import zlib from "node:zlib";
-import { sha256 } from "../lib/runtime-assets.js";
 import { portableMcpBytes } from "../lib/build-info.js";
-
+import { sha256 } from "../lib/runtime-assets.js";
 const string = (bytes) => bytes.toString("utf8").replace(/\0.*$/s, "");
 const octal = (bytes) => {
 	const value = string(bytes).trim();
@@ -71,7 +71,9 @@ const object = (value) =>
 const json = (files, name) => {
 	const bytes = files.get(name)?.bytes;
 	if (!bytes) throw Error("Missing archive identity member: " + name);
-	return JSON.parse(bytes);
+	const value = JSON.parse(String(bytes));
+	if (!object(value)) throw Error("Expected archive JSON object");
+	return value;
 };
 export function verifyBaseArchive(bytes, { version, buildId }) {
 	const files = readReleaseArchive(bytes, 5 * 1024 * 1024);

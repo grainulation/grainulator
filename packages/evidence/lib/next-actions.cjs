@@ -1,7 +1,5 @@
+// Generated from typescript/packages/evidence/lib/next-actions.cts; edit that source and run npm run build:types.
 "use strict";
-
-// One recommendation policy for compiled artifacts, CLI, MCP and host reminders.
-// Recommendations explain gaps; they do not authorize actions or certify readiness.
 function nextActions(compilation = {}) {
 	const actions = [];
 	const add = (command, label, reason, claim_ids = []) => {
@@ -39,9 +37,14 @@ function nextActions(compilation = {}) {
 	const unresolvedCount = (compilation.conflict_graph?.unresolved || []).length;
 	const errors = compilation.errors || [];
 	if (compilation.evidence_health?.needs_reverification?.length)
-		add('grainulator maintain inspect --json', 'Recheck changed premises and evidence',
-			'Inspect the affected paths, record current observations and explicitly revise necessary-premise links after re-verification.',
-			compilation.evidence_health.needs_reverification.map(item => item.claim_id));
+		add(
+			"grainulator maintain inspect --json",
+			"Recheck changed premises and evidence",
+			"Inspect the affected paths, record current observations and explicitly revise necessary-premise links after re-verification.",
+			compilation.evidence_health.needs_reverification.map(
+				(item) => item.claim_id,
+			),
+		);
 	if (conflicts.length) {
 		const ids = [
 			...new Set(
@@ -144,10 +147,8 @@ function nextActions(compilation = {}) {
 		);
 	return { auto: actions.slice(0, 3), manual };
 }
-
 const nextActionsInstruction =
 	"When the user asks for next steps, the entire final response must contain only two bullet lists labeled Auto and Manual, beginning with Auto. No preamble, status summary, counts, explanation, or closing text. For other requests, include these two lists after the requested answer. Auto contains work you can continue within existing authorization; Manual contains only actions, decisions, access or approvals that actually need the user. Reclassify compiler suggestions using the current task constraints; suggestions never grant permission. Keep 2–3 useful actions total when available, with a short label and concrete command where useful. Do not repeat reasons, claim counts, status recaps or generic offers to continue. Show None for an empty group; do not invent actions to fill a quota. Compile first if the snapshot is stale. Continue already authorized work; do not stop just to ask whether to run an Auto action. If the user asks for a list without execution, list the tasks without treating that pause as a need for new approval.";
-
 function formatNextActions(groups = {}) {
 	return ["auto", "manual"]
 		.map((group) =>
@@ -163,5 +164,4 @@ function formatNextActions(groups = {}) {
 		)
 		.join("\n\n");
 }
-
 module.exports = { nextActions, formatNextActions, nextActionsInstruction };

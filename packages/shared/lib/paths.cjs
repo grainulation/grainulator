@@ -1,19 +1,13 @@
+// Generated from typescript/packages/shared/lib/paths.cts; edit that source and run npm run build:types.
+"use strict";
 /**
  * paths.cjs — CommonJS mirror of lib/paths.js.
  */
-
-"use strict";
-
-const {
-	resolve,
-	relative,
-	sep,
-	dirname,
-	basename,
-	join,
-} = require("node:path");
-const { realpathSync, lstatSync, readlinkSync } = require("node:fs");
-
+const path = require("node:path");
+const fs = require("node:fs");
+const errors = require("./errors.cjs");
+const { resolve, relative, sep, dirname, basename, join } = path;
+const { realpathSync, lstatSync, readlinkSync } = fs;
 // Resolve-and-realpath, so a symlink inside baseDir pointing at /etc
 // does not silently pass containment checks. Falls back to logical
 // resolve when the path doesn't exist yet.
@@ -23,12 +17,19 @@ function resolveReal(p, depth = 0) {
 	try {
 		return realpathSync(abs);
 	} catch (error) {
-		if (error.code !== "ENOENT" && error.code !== "ENOTDIR") throw error;
+		if (
+			errors.errorCode(error) !== "ENOENT" &&
+			errors.errorCode(error) !== "ENOTDIR"
+		)
+			throw error;
 		try {
 			if (lstatSync(abs).isSymbolicLink())
 				return resolveReal(resolve(dirname(abs), readlinkSync(abs)), depth + 1);
 		} catch (linkError) {
-			if (linkError.code !== "ENOENT" && linkError.code !== "ENOTDIR")
+			if (
+				errors.errorCode(linkError) !== "ENOENT" &&
+				errors.errorCode(linkError) !== "ENOTDIR"
+			)
 				throw linkError;
 		}
 		const parent = dirname(abs);
@@ -36,14 +37,12 @@ function resolveReal(p, depth = 0) {
 		return join(resolveReal(parent, depth), basename(abs));
 	}
 }
-
 function isInsideDir(target, baseDir) {
 	const base = resolveReal(baseDir);
 	const t = resolveReal(target);
 	if (t === base) return true;
 	return t.startsWith(base + sep);
 }
-
 function resolveSafe(baseDir, target) {
 	const base = resolve(baseDir);
 	const resolved = resolve(base, target);
@@ -54,7 +53,6 @@ function resolveSafe(baseDir, target) {
 	}
 	return resolved;
 }
-
 function assertInsideDir(target, baseDir) {
 	if (!isInsideDir(target, baseDir)) {
 		throw new Error(
@@ -62,12 +60,10 @@ function assertInsideDir(target, baseDir) {
 		);
 	}
 }
-
 function relativeInside(baseDir, target) {
 	if (!isInsideDir(target, baseDir)) return null;
 	return relative(resolve(baseDir), resolve(target));
 }
-
 module.exports = {
 	isInsideDir,
 	resolveSafe,

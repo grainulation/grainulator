@@ -1,10 +1,10 @@
 #!/usr/bin/env node
+// Generated from typescript/scripts/publish-release.mts; edit that source and run npm run build:types.
 // Source identity is checked against the live peeled tag immediately before create.
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { verifyRelease } from "./verify-release.mjs";
-
 const defaultRun = (argv) =>
 	spawnSync("gh", argv, {
 		encoding: "utf8",
@@ -15,7 +15,7 @@ function request(run, endpoint) {
 	const result = run(["api", endpoint]);
 	if (result.error || result.status !== 0)
 		throw Error("Cannot establish live release tag identity");
-	return JSON.parse(result.stdout);
+	return JSON.parse(String(result.stdout));
 }
 export function publishRelease({
 	directory,
@@ -102,16 +102,17 @@ if (
 				publishRelease({
 					directory: "release-input",
 					manifestSha256: process.env.EXPECTED_MANIFEST_SHA256,
-					version: tag?.slice(1),
+					version: tag.slice(1),
 					sourceCommit: process.env.GITHUB_SHA,
-					tag,
+					tag: tag,
 					repository: process.env.GITHUB_REPOSITORY,
 				}),
 				null,
 				2,
 			),
 		);
-	} catch (error) {
+	} catch (_error) {
+		const error = _error;
 		console.error("Release publication: " + error.message);
 		process.exitCode = 1;
 	}

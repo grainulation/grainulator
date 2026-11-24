@@ -1,3 +1,4 @@
+// Generated from typescript/test/dogfood/flashprove-prototyping.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -10,12 +11,10 @@ import { runTask } from "../../lib/runner.js";
 import { initializeSprint } from "../../lib/sprint-init.js";
 import { compile } from "../../packages/evidence/compiler/evidence-compiler.js";
 import { addClaim } from "../../packages/evidence/lib/claims-ops.js";
-
 const ROOT = path.resolve(
 	path.dirname(fileURLToPath(import.meta.url)),
 	"../..",
 );
-
 test("source.what_differs is validated, stored in claims.json, and preserved in compilation.json", () => {
 	const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-differs-"));
 	try {
@@ -39,7 +38,6 @@ test("source.what_differs is validated, stored in claims.json, and preserved in 
 		});
 		assert.equal(bad.status, "error");
 		assert.match(bad.message, /source\.what_differs must be a string or null/);
-
 		const good = addClaim(tmp, {
 			id: "r001",
 			type: "factual",
@@ -54,7 +52,6 @@ test("source.what_differs is validated, stored in claims.json, and preserved in 
 			},
 		});
 		assert.equal(good.status, "ok");
-
 		const compiled = compile(
 			path.join(tmp, "claims.json"),
 			path.join(tmp, "compilation.json"),
@@ -62,15 +59,16 @@ test("source.what_differs is validated, stored in claims.json, and preserved in 
 		);
 		assert.equal(compiled.status, "ready");
 		const resolved = compiled.resolved_claims.find((c) => c.id === "r001");
+		const source = resolved.source;
+		assert.ok(typeof source === "object" && source !== null);
 		assert.equal(
-			resolved.source.what_differs,
+			source.what_differs,
 			"Keeps unfolded rows for a later stage; masking bound in H1.1 differs from Lemma 9.3.",
 		);
 	} finally {
 		fs.rmSync(tmp, { recursive: true, force: true });
 	}
 });
-
 test("evals/rejected-claims corpus rejects every adversarial fixture with its expected reason code", () => {
 	const corpus = JSON.parse(
 		fs.readFileSync(
@@ -85,7 +83,6 @@ test("evals/rejected-claims corpus rejects every adversarial fixture with its ex
 		assert.equal(res.reason, entry.reason_code);
 	}
 });
-
 test("runner.js treats verifier exit code 3 as an immediate soundness_break without retrying", async () => {
 	const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-sb-"));
 	try {
@@ -114,7 +111,6 @@ console.log(JSON.stringify({ answer: JSON.stringify({ "rc-001-quote-not-in-passa
 		assert.equal(res.rounds[0].verification.exitCode, 3);
 		assert.equal(res.rounds[0].verification.soundnessBreak, true);
 		assert.match(res.rounds[0].verification.feedback, /LOOK: soundness break/);
-
 		const honestAdapter = path.join(tmp, "honest-adapter.mjs");
 		fs.writeFileSync(
 			honestAdapter,
@@ -137,7 +133,6 @@ console.log(JSON.stringify({ answer: JSON.stringify(out) }));
 		fs.rmSync(tmp, { recursive: true, force: true });
 	}
 });
-
 test("docs/limits.json matches the rendered Markdown table in docs/BLIND-SPOTS.md", () => {
 	const limits = JSON.parse(
 		fs.readFileSync(path.join(ROOT, "docs/limits.json"), "utf8"),
@@ -158,7 +153,6 @@ test("docs/limits.json matches the rendered Markdown table in docs/BLIND-SPOTS.m
 		assert.deepEqual({ id, area, limit, status, mitigation }, limits[i]);
 	}
 });
-
 const verifierPath = path.join(ROOT, "evals/rejected-claims/verifier.mjs");
 const rejectedCorpus = JSON.parse(
 	fs.readFileSync(path.join(ROOT, "evals/rejected-claims/corpus.json"), "utf8"),
@@ -181,7 +175,6 @@ function checkVerifier(script, input, expectedExit, expectedOutput) {
 	assert.match(result.stdout + result.stderr, expectedOutput);
 	if (expectedExit !== 0) assert.doesNotMatch(result.stdout, /YES:/);
 }
-
 test("verifier subprocess requires explicit, complete rejection reports", () => {
 	checkVerifier(verifierPath, { answer: rejectionAnswer() }, 0, /YES: all 3/);
 	checkVerifier(
@@ -193,19 +186,20 @@ test("verifier subprocess requires explicit, complete rejection reports", () => 
 	for (const answer of [null, [], 123, "not JSON", {}]) {
 		checkVerifier(verifierPath, { answer }, 1, /Verifier error:/);
 	}
+	const first = rejectedCorpus[0];
 	for (const report of [
 		null,
 		[],
 		"REJECTED",
 		{},
-		{ reason_code: rejectedCorpus[0].reason_code },
-		{ verdict: null, reason_code: rejectedCorpus[0].reason_code },
-		{ verdict: "APPROVED", reason_code: rejectedCorpus[0].reason_code },
+		{ reason_code: first.reason_code },
+		{ verdict: null, reason_code: first.reason_code },
+		{ verdict: "APPROVED", reason_code: first.reason_code },
 		{ verdict: "REJECTED" },
 		{ verdict: "REJECTED", reason_code: "wrong" },
 	]) {
 		const answer = rejectionAnswer();
-		answer[rejectedCorpus[0].id] = report;
+		answer[first.id] = report;
 		checkVerifier(verifierPath, { answer }, 1, /Verifier error:/);
 	}
 	for (const input of ["{", "null", "[]", ""]) {
@@ -219,7 +213,6 @@ test("verifier subprocess requires explicit, complete rejection reports", () => 
 		/LOOK: soundness break/,
 	);
 });
-
 function copiedVerifier(t) {
 	const dir = fs.mkdtempSync(
 		path.join(os.tmpdir(), "grainulator verifier # ü-"),
@@ -240,7 +233,6 @@ function copiedVerifier(t) {
 	fs.writeFileSync(corpusPath, JSON.stringify(rejectedCorpus));
 	return { dir, script, corpusPath };
 }
-
 test("verifier executes from paths containing spaces, hash and Unicode", (t) => {
 	const { script } = copiedVerifier(t);
 	checkVerifier(script, { answer: rejectionAnswer() }, 0, /YES: all 3/);
@@ -252,7 +244,6 @@ test("verifier executes from paths containing spaces, hash and Unicode", (t) => 
 		/LOOK: soundness break/,
 	);
 });
-
 test("verifier executes through a symlink alias", {
 	skip:
 		process.platform === "win32"
@@ -265,7 +256,6 @@ test("verifier executes through a symlink alias", {
 	checkVerifier(alias, { answer: rejectionAnswer() }, 0, /YES: all 3/);
 	checkVerifier(alias, { answer: {} }, 1, /Verifier error:/);
 });
-
 test("verifier rejects local reason drift and fixture setup failures", (t) => {
 	const { script, corpusPath } = copiedVerifier(t);
 	const corpus = structuredClone(rejectedCorpus);

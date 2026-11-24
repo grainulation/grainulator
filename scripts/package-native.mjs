@@ -1,19 +1,19 @@
 #!/usr/bin/env node
+// Generated from typescript/scripts/package-native.mts; edit that source and run npm run build:types.
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import {
+	assertNoSymlinkPath,
+	encodeRuntimeArchive,
+	NATIVE_TARGETS,
 	RUNTIME_BINARIES,
 	RUNTIME_SCHEMAS,
-	NATIVE_TARGETS,
 	readRegular,
-	sha256,
 	runtimeVersion,
-	encodeRuntimeArchive,
-	assertNoSymlinkPath,
+	sha256,
 } from "../lib/runtime-assets.js";
-
 const root = path.resolve(fileURLToPath(new URL("../", import.meta.url)));
 const args = process.argv.slice(2);
 function option(name, fallback) {

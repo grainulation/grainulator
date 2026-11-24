@@ -1,3 +1,4 @@
+// Generated from typescript/test/dogfood/legacy-scaffold.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -5,7 +6,6 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-
 const root = fileURLToPath(new URL("../../", import.meta.url));
 function initialize(t, previousConfig) {
 	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-scaffold-"));

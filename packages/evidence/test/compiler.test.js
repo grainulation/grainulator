@@ -1,3 +1,4 @@
+// Generated from typescript/packages/evidence/test/compiler.test.ts; edit that source and run npm run build:types.
 /**
  * Integration test: wheat compile
  *
@@ -6,26 +7,21 @@
  *
  * Uses node:test + node:assert — zero dependencies.
  */
-
-import { describe, it, before, after } from "node:test";
 import assert from "node:assert/strict";
-import fs from "node:fs";
-import path from "node:path";
-import os from "node:os";
 import { execFileSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { after, before, describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 const COMPILER_PATH = path.resolve(
 	__dirname,
 	"..",
 	"compiler",
 	"evidence-compiler.js",
 );
-
-/** Build a minimal valid claims.json payload */
 function minimalClaims(overrides = {}) {
 	return {
 		schema_version: overrides.schema_version || "1.0",
@@ -55,30 +51,23 @@ function minimalClaims(overrides = {}) {
 		],
 	};
 }
-
 describe("wheat compile", () => {
 	let tmpDir;
-
 	before(() => {
 		tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "wheat-compiler-test-"));
 	});
-
 	after(() => {
 		fs.rmSync(tmpDir, { recursive: true, force: true });
 	});
-
 	it("produces compilation.json from valid claims", () => {
 		const claimsPath = path.join(tmpDir, "claims.json");
 		fs.writeFileSync(claimsPath, JSON.stringify(minimalClaims(), null, 2));
-
 		execFileSync(process.execPath, [COMPILER_PATH, "--dir", tmpDir], {
 			timeout: 10_000,
 			stdio: "pipe",
 		});
-
 		const compilationPath = path.join(tmpDir, "compilation.json");
 		assert.ok(fs.existsSync(compilationPath), "compilation.json should exist");
-
 		const compilation = JSON.parse(fs.readFileSync(compilationPath, "utf8"));
 		assert.ok(
 			["ready", "blocked"].includes(compilation.status),
@@ -95,7 +84,6 @@ describe("wheat compile", () => {
 			"compilation should have phase_summary",
 		);
 	});
-
 	it("accepts refuted as a valid claim status", () => {
 		const claimsPath = path.join(tmpDir, "claims.json");
 		fs.writeFileSync(
@@ -127,13 +115,11 @@ describe("wheat compile", () => {
 				2,
 			),
 		);
-
 		execFileSync(
 			process.execPath,
 			[COMPILER_PATH, "--dir", tmpDir, "--check"],
 			{ timeout: 10_000, stdio: "pipe" },
 		);
-
 		const compilationPath = path.join(tmpDir, "compilation.json");
 		const compilation = JSON.parse(fs.readFileSync(compilationPath, "utf8"));
 		assert.equal(
@@ -142,11 +128,9 @@ describe("wheat compile", () => {
 			"refuted_claims counter should reflect refuted claims",
 		);
 	});
-
 	it("--check exits 0 for valid claims", () => {
 		const claimsPath = path.join(tmpDir, "claims.json");
 		fs.writeFileSync(claimsPath, JSON.stringify(minimalClaims(), null, 2));
-
 		// Should not throw (exit 0)
 		execFileSync(
 			process.execPath,
@@ -157,20 +141,16 @@ describe("wheat compile", () => {
 			},
 		);
 	});
-
 	it("--summary produces human-readable output", () => {
 		const claimsPath = path.join(tmpDir, "claims.json");
 		fs.writeFileSync(claimsPath, JSON.stringify(minimalClaims(), null, 2));
-
 		const result = execFileSync(
 			process.execPath,
 			[COMPILER_PATH, "--dir", tmpDir, "--summary"],
 			{ timeout: 10_000, encoding: "utf8" },
 		);
-
 		assert.ok(result.length > 0, "summary should produce output");
 	});
-
 	it("rejects claims with missing required fields", () => {
 		const badClaims = minimalClaims({
 			claims: [
@@ -182,13 +162,11 @@ describe("wheat compile", () => {
 		});
 		const claimsPath = path.join(tmpDir, "claims.json");
 		fs.writeFileSync(claimsPath, JSON.stringify(badClaims, null, 2));
-
 		// Compile — should produce compilation with errors or blocked status
 		execFileSync(process.execPath, [COMPILER_PATH, "--dir", tmpDir], {
 			timeout: 10_000,
 			stdio: "pipe",
 		});
-
 		const compilation = JSON.parse(
 			fs.readFileSync(path.join(tmpDir, "compilation.json"), "utf8"),
 		);
@@ -199,7 +177,6 @@ describe("wheat compile", () => {
 		);
 		assert.ok(compilation.errors.length > 0, "should have validation errors");
 	});
-
 	it("detects duplicate claim IDs", () => {
 		const dupeClaims = minimalClaims({
 			claims: [
@@ -235,12 +212,10 @@ describe("wheat compile", () => {
 		});
 		const claimsPath = path.join(tmpDir, "claims.json");
 		fs.writeFileSync(claimsPath, JSON.stringify(dupeClaims, null, 2));
-
 		execFileSync(process.execPath, [COMPILER_PATH, "--dir", tmpDir], {
 			timeout: 10_000,
 			stdio: "pipe",
 		});
-
 		const compilation = JSON.parse(
 			fs.readFileSync(path.join(tmpDir, "compilation.json"), "utf8"),
 		);

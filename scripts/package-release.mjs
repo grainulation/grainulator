@@ -1,13 +1,12 @@
 #!/usr/bin/env node
-// Candidate bytes always come from one committed snapshot, never dirty worktree files.
-import fs from "node:fs";
-import path from "node:path";
-import os from "node:os";
-import crypto from "node:crypto";
+// Generated from typescript/scripts/package-release.mts; edit that source and run npm run build:types.
 import { spawnSync } from "node:child_process";
+import crypto from "node:crypto";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { assertNoSymlinkPath } from "../lib/runtime-assets.js";
-
 const root = fileURLToPath(new URL("../", import.meta.url));
 const sha = (bytes) => crypto.createHash("sha256").update(bytes).digest("hex");
 function run(command, args, options = {}) {
@@ -57,20 +56,24 @@ export function packageRelease({ out, revision }) {
 		throw Error("Cannot read committed snapshot");
 	fs.writeFileSync(archive, archived.stdout, { flag: "wx" });
 	run("tar", ["-xf", archive, "-C", source]);
-	const pkg = JSON.parse(fs.readFileSync(path.join(source, "package.json")));
+	const pkg = JSON.parse(
+		String(fs.readFileSync(path.join(source, "package.json"))),
+	);
 	if (!/^3\.\d+\.\d+$/.test(pkg.version))
 		throw Error("Candidate must declare a plain v3 release version");
 	run(process.execPath, [path.join(source, "scripts/build-identity.mjs")], {
 		cwd: source,
 	});
 	const identity = JSON.parse(
-		fs.readFileSync(path.join(source, "build-info.json")),
+		String(fs.readFileSync(path.join(source, "build-info.json"))),
 	);
 	const packed = JSON.parse(
-		run(
-			"npm",
-			["pack", "--ignore-scripts", "--json", "--pack-destination", stage],
-			{ cwd: source },
+		String(
+			run(
+				"npm",
+				["pack", "--ignore-scripts", "--json", "--pack-destination", stage],
+				{ cwd: source },
+			),
 		),
 	)[0];
 	if (packed.size > 5 * 1024 * 1024) throw Error("Base archive exceeds5MiB");

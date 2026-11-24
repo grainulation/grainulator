@@ -1,42 +1,39 @@
+// Generated from typescript/packages/memory/lib/serve-mcp.ts; edit that source and run npm run build:types.
 /** Private Grainulator memory MCP handlers; only the root server owns stdio/discovery. */
-
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { jsonRpcError, jsonRpcResponse } from "../../shared/lib/mcp.js";
 import { isInsideDir } from "../../shared/lib/paths.js";
-import { Store } from "./store.js";
-import { Search } from "./search.js";
+import { Confluence } from "./confluence.js";
+import { Graph } from "./graph.js";
 import { ImportExport } from "./import-export.js";
 import { Packs } from "./packs.js";
-import { Graph } from "./graph.js";
-import { Confluence } from "./confluence.js";
+import { Search } from "./search.js";
 import { smartFetch } from "./smart-fetch.js";
-
+import { Store } from "./store.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 // ─── Constants ──────────────────────────────────────────────────────────────
-
 const SERVER_NAME = "grainulator";
-const SERVER_VERSION = JSON.parse(
+const { version: SERVER_VERSION } = JSON.parse(
 	fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf-8"),
-).version;
+);
 const PROTOCOL_VERSION = "2024-11-05";
-
 // ─── Initialize memory components ─────────────────────────────────────────────
-
 export const TOOLS = [
 	{
 		name: "memory_search",
 		description:
-			"Full-text search across all stored claims and knowledge packs. Returns ranked results with relevance scores.",
+			'Search locally stored collections for reusable claims; returns ranked hits, source provenance and content snippets capped at 200 characters. May initialize the local index; no network or sprint import. Missing query returns an error. Use memory_list or memory_packs to discover sources, then memory_pull to import. Example: {"query":"security architecture","limit":5}.',
 		inputSchema: {
 			type: "object",
 			properties: {
 				query: {
 					type: "string",
-					description: "Search query (space-separated terms, OR logic)",
+					description:
+						"Required nonempty search text. Space-separated terms use OR matching and relevance ranking across stored claims; this does not search the current sprint ledger.",
+					examples: ["security architecture"],
 				},
 				type: {
 					type: "string",
@@ -48,167 +45,300 @@ export const TOOLS = [
 						"recommendation",
 						"feedback",
 					],
-					description: "Filter by claim type",
+					description:
+						"Optional claim-type filter applied to stored hits; omit to include all supported claim types.",
+					examples: ["risk"],
 				},
 				evidence: {
 					type: "string",
 					enum: ["stated", "web", "documented", "tested", "production"],
-					description: "Filter by evidence tier",
+					description:
+						"Optional recorded evidence-tier filter; tiers are stored labels, not independently verified proof.",
+					examples: ["tested"],
 				},
-				limit: { type: "number", description: "Max results (default: 20)" },
+				limit: {
+					type: "number",
+					description:
+						"Maximum returned ranked hits; omitted or zero uses 20. Prefer a positive whole number. Returned content is a 200-character snippet.",
+					examples: [5],
+					default: 20,
+				},
 			},
 			required: ["query"],
+			description:
+				"Arguments for memory_search. Paths resolve within the selected sprint unless described otherwise.",
+			examples: [
+				{
+					query: "security architecture",
+					limit: 5,
+				},
+			],
 		},
 	},
 	{
 		name: "memory_list",
 		description:
-			"List all stored collections in the memory (completed sprints, imported knowledge).",
-		inputSchema: { type: "object", properties: {} },
+			"List stored local collections with IDs, names, claim counts and stored timestamps; returns collections and count. May initialize the local index without changing sprint claims. Use memory_search for content or memory_packs for pack metadata. Example: {}.",
+		inputSchema: {
+			type: "object",
+			properties: {},
+			description:
+				"Arguments for memory_list. Paths resolve within the selected sprint unless described otherwise.",
+			examples: [{}],
+		},
 	},
 	{
 		name: "memory_pull",
 		description:
-			"Pull claims from a knowledge pack or stored collection into the current sprint claims.json. Deduplicates and re-prefixes IDs to avoid collisions.",
+			'Import a named local pack or stored collection into an existing sprint ledger; returns imported and skipped counts after deduplication and ID remapping. Writes the destination ledger; missing sources, invalid ledgers or escaping paths return errors. Discover names with memory_list or memory_packs; use memory_store to save a collection. Example: {"pack":"security","into":"claims.json"}.',
 		inputSchema: {
 			type: "object",
 			properties: {
 				pack: {
 					type: "string",
 					description:
-						'Pack name (e.g., "compliance", "security") or stored collection ID',
+						"Required knowledge-pack name or stored collection ID discovered with memory_packs or memory_list. File paths are not supported by the unified MCP entry point.",
+					examples: ["security"],
 				},
 				into: {
 					type: "string",
-					description: "Target claims.json path (default: ./claims.json)",
+					description:
+						"Existing destination claims ledger inside the selected sprint; relative paths resolve from dir. Default is claims.json; pass a custom configured ledger filename explicitly.",
+					examples: ["claims.json"],
+					default: "claims.json",
 				},
 			},
 			required: ["pack"],
+			description:
+				"Arguments for memory_pull. Paths resolve within the selected sprint unless described otherwise.",
+			examples: [
+				{
+					pack: "security",
+					into: "claims.json",
+				},
+			],
 		},
 	},
 	{
 		name: "memory_store",
 		description:
-			"Store the current sprint claims into the memory for future reuse across other sprints.",
+			'Save sprint claims as a named reusable local collection; returns its id, claimCount and integrity hash. Writes memory data and index under a lock; an existing name may be replaced. Invalid source JSON or escaping paths return errors. No upload; use memory_search to find saved claims. Example: {"name":"security-review","from":"claims.json"}.',
 		inputSchema: {
 			type: "object",
 			properties: {
 				name: {
 					type: "string",
-					description: 'Collection name (e.g., "q4-migration-findings")',
+					description:
+						"Required reusable local collection name. Reusing an existing name can replace that saved collection.",
+					examples: ["security-review"],
 				},
 				from: {
 					type: "string",
-					description: "Source claims.json path (default: ./claims.json)",
+					description:
+						"Source claims ledger or claims-array JSON inside the selected sprint, relative to dir unless absolute. Default is claims.json; pass custom configured filenames explicitly.",
+					examples: ["claims.json"],
+					default: "claims.json",
 				},
 			},
 			required: ["name"],
+			description:
+				"Arguments for memory_store. Paths resolve within the selected sprint unless described otherwise.",
+			examples: [
+				{
+					name: "security-review",
+					from: "claims.json",
+				},
+			],
 		},
 	},
 	{
 		name: "memory_packs",
 		description:
-			"List available knowledge packs (built-in: compliance, security, architecture, migration, vendor-eval, adr, hackathon categories, etc.).",
-		inputSchema: { type: "object", properties: {} },
+			"List available local knowledge packs with names, descriptions, claim counts and source metadata; returns packs and count without importing claims or using the network. Use memory_pull with a returned name to import, or memory_list for saved collections. Example: {}.",
+		inputSchema: {
+			type: "object",
+			properties: {},
+			description:
+				"Arguments for memory_packs. Paths resolve within the selected sprint unless described otherwise.",
+			examples: [{}],
+		},
 	},
 	{
 		name: "memory_graph",
 		description:
-			"Cross-sprint knowledge graph — find related claims, explore topics, and discover clusters across all stored collections and packs.",
+			'Build or inspect the local memory relationship graph; action selects build, related, topic, clusters or stats. Returns action-specific statistics or matching claim snippets; missing claimId/topic and unknown actions return errors. Build refreshes the in-memory graph and may initialize local memory storage; similarity is not verified evidence or necessary-premise dependency. Use memory_search for text search. Example: {"action":"related","claimId":"r001"}.',
 		inputSchema: {
 			type: "object",
 			properties: {
 				action: {
 					type: "string",
 					enum: ["build", "related", "topic", "clusters", "stats"],
-					description: "Graph operation to perform",
+					description:
+						"Required operation: build refreshes the in-memory graph; related requires claimId; topic requires topic; clusters groups by topic using minSize; stats reads the current graph totals, so build first to refresh.",
+					examples: ["related", "stats"],
 				},
 				claimId: {
 					type: "string",
-					description: 'Claim ID for "related" action',
+					description:
+						"Existing claim ID or collection-qualified graph node key required only for action=related; returns up to 20 related claim snippets with relationship weights.",
+					examples: ["r001"],
 				},
 				topic: {
 					type: "string",
-					description: 'Topic string for "topic" action',
+					description:
+						"Topic to inspect, required for action=topic. Case-insensitive topic substring matching returns up to 50 claim snippets; use memory_search for free-text matching.",
+					examples: ["security"],
 				},
-				tag: { type: "string", description: "Tag for filtering" },
 				minSize: {
 					type: "number",
 					description:
-						'Minimum cluster size for "clusters" action (default: 3)',
+						"Minimum claims per topic cluster for action=clusters; omitted or zero uses 3. At most 20 clusters are returned.",
+					examples: [3],
+					default: 3,
 				},
 			},
 			required: ["action"],
+			description:
+				"Arguments for memory_graph. Paths resolve within the selected sprint unless described otherwise.",
+			examples: [
+				{
+					action: "related",
+					claimId: "r001",
+				},
+			],
 		},
 	},
 	{
 		name: "memory_confluence",
 		description:
-			"Confluence backend adapter — publish claims to Confluence pages or pull claims from existing pages. Requires CONFLUENCE_BASE_URL, CONFLUENCE_TOKEN, CONFLUENCE_EMAIL env vars.",
+			'List, pull or publish Confluence pages using the configured service credentials. Returns page metadata or claim counts; pull writes a local ledger only when into is supplied, and publish writes remotely. Requires CONFLUENCE_BASE_URL, CONFLUENCE_TOKEN and CONFLUENCE_EMAIL; configuration, identity and HTTP failures return errors. Authorize external writes before publish. Use memory_store for local reuse. Example: {"action":"list","spaceKey":"ENG"}.',
 		inputSchema: {
 			type: "object",
 			properties: {
 				action: {
 					type: "string",
 					enum: ["publish", "pull", "list"],
-					description: "Confluence operation",
+					description:
+						"Required operation: list reads pages; pull requires pageId or title and optionally merges into a local ledger; publish requires title and writes a remote page.",
+					examples: ["list", "pull"],
 				},
 				title: {
 					type: "string",
-					description: "Page title (publish/pull by title)",
+					description:
+						"Required page title for publish, including updates. For pull, used only when pageId is omitted; pageId takes precedence.",
+					examples: ["Security review"],
 				},
 				from: {
 					type: "string",
 					description:
-						"Source claims.json path (publish, default: ./claims.json)",
+						"Local source ledger for action=publish, relative to dir unless absolute and confined to the selected sprint. Defaults to claims.json; custom configured filenames must be supplied.",
+					examples: ["claims.json"],
+					default: "claims.json",
 				},
-				into: { type: "string", description: "Target claims.json path (pull)" },
-				sourceId: {type:"string",description:"Stable reviewed collection/source identity when publishing a migrated source."},
-				newSource: {type:"string",description:"Explicit stable identity for a genuinely new collection after completed remote migration; never use for an existing mapped source."},
+				into: {
+					type: "string",
+					description:
+						"Optional local target ledger for action=pull, confined to the selected sprint and relative to dir unless absolute. Omit to return page title/count without importing claims.",
+					examples: ["claims.json"],
+				},
+				sourceId: {
+					type: "string",
+					description:
+						"Stable reviewed source or collection identity for publishing an existing migrated source; must match its confirmed remote destination.",
+					examples: ["security-review:claims"],
+				},
+				newSource: {
+					type: "string",
+					description:
+						"Explicit stable identity for a genuinely new collection after remote migration is reconciled. Do not combine with an existing pageId or use to bypass a mapped source.",
+					examples: ["new-security-review:claims"],
+				},
 				pageId: {
 					type: "string",
-					description: "Confluence page ID (pull/publish update)",
+					description:
+						"Confluence page ID: selects a page for pull or an existing page to update for publish. Omit on publish to create a new page subject to migration checks.",
+					examples: ["12345"],
 				},
-				spaceKey: { type: "string", description: "Confluence space key" },
-				parentId: { type: "string", description: "Parent page ID (publish)" },
+				spaceKey: {
+					type: "string",
+					description:
+						"Confluence space key for list, pull or publish. Omission uses CONFLUENCE_SPACE_KEY when configured.",
+					examples: ["ENG"],
+				},
+				parentId: {
+					type: "string",
+					description:
+						"Parent page ID when creating a new page with action=publish; omit for a top-level page. Does not select the page being updated.",
+					examples: ["10001"],
+				},
 			},
 			required: ["action"],
+			description:
+				"Arguments for memory_confluence. Paths resolve within the selected sprint unless described otherwise.",
+			examples: [
+				{
+					action: "list",
+					spaceKey: "ENG",
+				},
+			],
 		},
 	},
 	{
 		name: "memory_smart_fetch",
 		description:
-			"Fetch a URL and extract structured content (title, description, main body) with 80-99% size reduction vs raw HTML. Use for /witness corroboration, /pull from external sources, or ad-hoc web research. Opt-in: no existing flows change unless you call this tool explicitly.",
+			'Fetch one HTTP(S) URL and return bounded extracted text, metadata, HTTP status, quality, warnings and truncation flags. Uses network and optionally local cache; records no claims and proves no source truth. Invalid URLs, blocked destinations or retrieval failures return errors. Inspect warnings/truncated before citing. Use memory_search for stored evidence. Example: {"url":"https://example.com/","mode":"concise","privacy":true}.',
 		inputSchema: {
 			type: "object",
 			properties: {
-				url: { type: "string", description: "Absolute URL to fetch" },
+				url: {
+					type: "string",
+					description:
+						"Required absolute http:// or https:// URL. Network policy rejects private or otherwise blocked destinations; local files are not supported.",
+					examples: ["https://example.com/"],
+				},
 				mode: {
 					type: "string",
 					enum: ["auto", "full", "concise", "meta-only"],
 					description:
-						"auto (default) uses concise output and retries only failed, body-truncated extraction. concise caps body at 2KB. meta-only returns title + description. full remains bounded; inspect truncated and warnings.",
+						"Extraction mode: auto defaults to concise and retries failed extraction after body truncation; concise returns a 2,048-character text slice; meta-only omits body text; full remains bounded. Inspect quality, warnings and truncated.",
+					examples: ["concise"],
+					default: "auto",
 				},
 				cache: {
 					type: "boolean",
 					description:
-						"Use the local cache (default true). Set false to force a network fetch.",
+						"Read/write the local fetch cache when true. Set false to force retrieval; privacy=true overrides this and skips cache entirely.",
+					examples: [false],
+					default: true,
 				},
 				timeout: {
 					type: "number",
-					description: "Request timeout in ms (default 15000)",
+					description:
+						"Network request timeout in milliseconds; omission uses 15000. This does not guarantee complete extracted evidence.",
+					examples: [15000],
+					default: 15000,
 				},
 				privacy: {
 					type: "boolean",
 					description:
-						"If true, skips cache entirely. For one-off sensitive fetches.",
+						"Skip all fetch-cache reads and writes when true; this still contacts the remote HTTP(S) server. Omission permits the normal cache behavior.",
+					examples: [true],
+					default: false,
 				},
 			},
 			required: ["url"],
+			description:
+				"Arguments for memory_smart_fetch. Paths resolve within the selected sprint unless described otherwise.",
+			examples: [
+				{
+					url: "https://example.com/",
+					mode: "concise",
+					privacy: true,
+				},
+			],
 		},
 	},
 ];
-
 export const RESOURCES = [
 	{
 		uri: "grainulator://memory/index",
@@ -224,9 +354,6 @@ export const RESOURCES = [
 		mimeType: "application/json",
 	},
 ];
-
-// ─── Request handler ────────────────────────────────────────────────────────
-
 export function createHandler({ storeDir } = {}) {
 	const store = new Store(storeDir);
 	const search = new Search(store);
@@ -239,21 +366,17 @@ export function createHandler({ storeDir } = {}) {
 		email: process.env.CONFLUENCE_EMAIL,
 		spaceKey: process.env.CONFLUENCE_SPACE_KEY,
 	});
-
 	// ─── Tool implementations ───────────────────────────────────────────────────
-
 	function toolSearch(args) {
 		const { query, type, evidence, limit } = args;
 		if (!query) {
 			return { status: "error", message: "Required field: query" };
 		}
-
 		const results = search.query(query, {
 			type: type || null,
 			tier: evidence || null,
 			limit: limit || 20,
 		});
-
 		return {
 			status: "ok",
 			count: results.length,
@@ -277,7 +400,6 @@ export function createHandler({ storeDir } = {}) {
 			})),
 		};
 	}
-
 	function toolList() {
 		const collections = store.list();
 		return {
@@ -291,7 +413,6 @@ export function createHandler({ storeDir } = {}) {
 			})),
 		};
 	}
-
 	function toolPull(dir, args) {
 		const { pack, into } = args;
 		if (!pack) {
@@ -300,7 +421,6 @@ export function createHandler({ storeDir } = {}) {
 				message: "Required field: pack (pack name or collection ID)",
 			};
 		}
-
 		const targetFile = into
 			? path.resolve(dir, into)
 			: path.join(dir, "claims.json");
@@ -317,26 +437,23 @@ export function createHandler({ storeDir } = {}) {
 				message: `Target file not found: ${targetFile}. Run grainulator init first.`,
 			};
 		}
-
 		try {
 			const result = io.pull(pack, targetFile, {});
 			return {
 				status: "ok",
 				message: `Pulled ${result.imported} claims from "${pack}" into ${path.basename(targetFile)}.`,
 				imported: result.imported,
-				skipped: result.skipped || 0,
+				skipped: 0,
 			};
 		} catch (err) {
 			return { status: "error", message: err.message };
 		}
 	}
-
 	function toolStore(dir, args) {
 		const { name, from } = args;
 		if (!name) {
 			return { status: "error", message: "Required field: name" };
 		}
-
 		const sourceFile = from
 			? path.resolve(dir, from)
 			: path.join(dir, "claims.json");
@@ -353,7 +470,6 @@ export function createHandler({ storeDir } = {}) {
 				message: `Source file not found: ${sourceFile}`,
 			};
 		}
-
 		try {
 			const data = JSON.parse(fs.readFileSync(sourceFile, "utf8"));
 			const claims = data.claims || data;
@@ -370,7 +486,6 @@ export function createHandler({ storeDir } = {}) {
 			return { status: "error", message: err.message };
 		}
 	}
-
 	function toolPacks() {
 		const available = packs.list();
 		return {
@@ -379,12 +494,11 @@ export function createHandler({ storeDir } = {}) {
 			packs: available.map((p) => ({
 				name: p.name,
 				description: p.description || "",
-				claimCount: p.claims ? p.claims.length : p.claimCount || 0,
+				claimCount: p.claimCount || 0,
 				source: p.source || "unknown",
 			})),
 		};
 	}
-
 	function toolGraph(args) {
 		const { action, claimId, topic, minSize } = args;
 		switch (action) {
@@ -454,7 +568,6 @@ export function createHandler({ storeDir } = {}) {
 				};
 		}
 	}
-
 	function toolConfluence(dir, args) {
 		const { action } = args;
 		if (!confluence.isConfigured()) {
@@ -464,10 +577,10 @@ export function createHandler({ storeDir } = {}) {
 					"Confluence not configured. Set CONFLUENCE_BASE_URL, CONFLUENCE_TOKEN, and CONFLUENCE_EMAIL environment variables.",
 			};
 		}
-
 		switch (action) {
 			case "publish": {
-				const { title, from, spaceKey, parentId, pageId, sourceId, newSource } = args;
+				const { title, from, spaceKey, parentId, pageId, sourceId, newSource } =
+					args;
 				if (!title)
 					return { status: "error", message: "Required field: title" };
 				const sourceFile = from
@@ -488,7 +601,15 @@ export function createHandler({ storeDir } = {}) {
 				const raw = JSON.parse(fs.readFileSync(sourceFile, "utf8"));
 				const claims = Array.isArray(raw) ? raw : raw.claims || [];
 				return confluence
-					.publish(title, claims, { dir, workspace:args.workspace, spaceKey, parentId, pageId, sourceId, newSource })
+					.publish(title, claims, {
+						dir,
+						workspace: args.workspace,
+						spaceKey,
+						parentId,
+						pageId,
+						sourceId,
+						newSource,
+					})
 					.then((result) => ({
 						status: "ok",
 						message: `Published to Confluence: ${result.title}`,
@@ -531,7 +652,7 @@ export function createHandler({ storeDir } = {}) {
 			case "list": {
 				const { spaceKey } = args;
 				return confluence
-					.listPages({ dir, workspace:args.workspace, spaceKey })
+					.listPages({ dir, workspace: args.workspace, spaceKey })
 					.then((result) => ({ status: "ok", ...result }))
 					.catch((err) => ({ status: "error", message: err.message }));
 			}
@@ -542,9 +663,7 @@ export function createHandler({ storeDir } = {}) {
 				};
 		}
 	}
-
 	// ─── smart-fetch tool ───────────────────────────────────────────────────────
-
 	function toolSmartFetch(args) {
 		const url = args && args.url;
 		if (typeof url !== "string" || !/^https?:\/\//i.test(url)) {
@@ -567,9 +686,7 @@ export function createHandler({ storeDir } = {}) {
 			}))
 			.catch((err) => ({ status: "error", message: err.message }));
 	}
-
 	// ─── Tool & Resource definitions ────────────────────────────────────────────
-
 	function handleRequest(dir, method, params, id) {
 		switch (method) {
 			case "initialize":
@@ -578,18 +695,14 @@ export function createHandler({ storeDir } = {}) {
 					capabilities: { tools: {}, resources: {} },
 					serverInfo: { name: SERVER_NAME, version: SERVER_VERSION },
 				});
-
 			case "notifications/initialized":
 				return null;
-
 			case "tools/list":
 				return jsonRpcResponse(id, { tools: TOOLS });
-
 			case "tools/call": {
 				const toolName = params.name;
 				const toolArgs = params.arguments || {};
 				let result;
-
 				switch (toolName) {
 					case "memory_search":
 						result = toolSearch(toolArgs);
@@ -618,9 +731,8 @@ export function createHandler({ storeDir } = {}) {
 					default:
 						return jsonRpcError(id, -32601, `Unknown tool: ${toolName}`);
 				}
-
 				// Handle async tool results (e.g., confluence)
-				if (result && typeof result.then === "function") {
+				if (result instanceof Promise) {
 					return result.then((r) =>
 						jsonRpcResponse(id, {
 							content: [{ type: "text", text: JSON.stringify(r, null, 2) }],
@@ -628,20 +740,16 @@ export function createHandler({ storeDir } = {}) {
 						}),
 					);
 				}
-
 				return jsonRpcResponse(id, {
 					content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
 					isError: result.status === "error",
 				});
 			}
-
 			case "resources/list":
 				return jsonRpcResponse(id, { resources: RESOURCES });
-
 			case "resources/read": {
 				const uri = params.uri;
 				let text;
-
 				switch (uri) {
 					case "grainulator://memory/index":
 						text = JSON.stringify(store.list(), null, 2);
@@ -651,7 +759,7 @@ export function createHandler({ storeDir } = {}) {
 							packs.list().map((p) => ({
 								name: p.name,
 								description: p.description,
-								claimCount: p.claims ? p.claims.length : 0,
+								claimCount: 0,
 								source: p.source,
 							})),
 							null,
@@ -661,28 +769,22 @@ export function createHandler({ storeDir } = {}) {
 					default:
 						return jsonRpcError(id, -32602, `Unknown resource: ${uri}`);
 				}
-
 				return jsonRpcResponse(id, {
 					contents: [{ uri, mimeType: "application/json", text }],
 				});
 			}
-
 			case "ping":
 				return jsonRpcResponse(id, {});
-
 			default:
 				if (id === undefined || id === null) return null;
 				return jsonRpcError(id, -32601, `Method not found: ${method}`);
 		}
 	}
-
 	return handleRequest;
 }
-
 let defaultHandler;
 export function handleRequest(...args) {
 	defaultHandler ||= createHandler();
 	return defaultHandler(...args);
 }
-
 // ─── Stdio transport ────────────────────────────────────────────────────────

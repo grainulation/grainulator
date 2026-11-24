@@ -1,3 +1,4 @@
+// Generated from typescript/packages/exports/lib/formats/ndjson.mts; edit that source and run npm run build:types.
 /**
  * exports format: ndjson
  *
@@ -5,21 +6,17 @@
  * Each line is a claim with all fields preserved.
  * Zero dependencies — node built-in only.
  */
-
 export const name = "ndjson";
 export const extension = ".ndjson";
 export const mimeType = "application/x-ndjson";
 export const description = "Newline-delimited JSON — one claim object per line";
-
 /**
  * Convert a compilation object to NDJSON.
  * @param {object} compilation - The compilation.json content
  * @returns {string} NDJSON output
  */
 export function convert(compilation) {
-  const claims = compilation.claims || [];
-
-  if (claims.length === 0) return "";
-
-  return claims.map((c) => JSON.stringify(c)).join("\n") + "\n";
+	const claims = compilation.claims || [];
+	if (claims.length === 0) return "";
+	return claims.map((c) => JSON.stringify(c)).join("\n") + "\n";
 }

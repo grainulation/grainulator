@@ -1,3 +1,4 @@
+// Generated from typescript/test/dogfood/typescript-core.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -12,7 +13,6 @@ import {
 	withStructuredResult,
 } from "../../lib/mcp-contracts.js";
 import { claimsDocument, readLedger } from "../../lib/research/evidence.js";
-
 test("checked research boundary rejects malformed external JSON and keeps model claims stated", () => {
 	for (const claims of [null, 1, [], {}, { claims: null }])
 		assert.throws(() => readLedger(JSON.stringify(claims)), /1–24 claims/);
@@ -36,13 +36,11 @@ test("checked research boundary rejects malformed external JSON and keeps model 
 		config: { provider: "openai" },
 		steps: [{ pass: "ledger", text: JSON.stringify({ claims: [claim] }) }],
 	});
-	assert.equal(document.claims[0].evidence, "stated");
-	assert.deepEqual(document.claims[0].source.urls, [
-		"https://example.com/source",
-	]);
-	assert.deepEqual(document.claims[0].tags, ["needs-verification"]);
+	const recorded = document.claims[0];
+	assert.equal(recorded.evidence, "stated");
+	assert.deepEqual(recorded.source.urls, ["https://example.com/source"]);
+	assert.deepEqual(recorded.tags, ["needs-verification"]);
 });
-
 test("checked MCP boundary rejects malformed content before advertising structured results", () => {
 	for (const content of [
 		null,
@@ -67,7 +65,6 @@ test("checked MCP boundary rejects malformed content before advertising structur
 			/Expected one JSON tool result/,
 		);
 });
-
 test("output contracts distinguish declared properties from Object prototype names", () => {
 	const schema = {
 		type: "object",
@@ -91,7 +88,6 @@ test("output contracts distinguish declared properties from Object prototype nam
 		/expected string/,
 	);
 });
-
 test("output enum contracts compare nested JSON values structurally", () => {
 	const schema = {
 		enum: [{ answer: [1, { confirmed: true }], label: "recorded" }],
@@ -113,14 +109,14 @@ test("output enum contracts compare nested JSON values structurally", () => {
 		/unsupported value/,
 	);
 });
-
 test("compact criteria validate conditional fields before invoking a backend", async () => {
 	const tool = COMPACT_TOOLS.find(
 		(candidate) => candidate.name === "configure_sprint",
 	);
 	const calls = [];
 	const backend = async (_method, request) => {
-		calls.push(request);
+		assert.ok(typeof request.name === "string");
+		calls.push({ name: request.name });
 		return JSON.stringify({
 			result: { content: [{ type: "text", text: '{"status":"ok"}' }] },
 		});
@@ -159,7 +155,6 @@ test("compact criteria validate conditional fields before invoking a backend", a
 		["init", "acceptance_set"],
 	);
 });
-
 test("TypeScript freshness rejects runtime output orphaned by a deleted canonical source", (t) => {
 	const root = fileURLToPath(new URL("../../", import.meta.url));
 	const fixture = fs.mkdtempSync(
@@ -168,7 +163,6 @@ test("TypeScript freshness rejects runtime output orphaned by a deleted canonica
 	t.after(() => fs.rmSync(fixture, { recursive: true, force: true }));
 	for (const name of [
 		"typescript",
-		"lib",
 		"package.json",
 		"tsconfig.json",
 		"biome.json",
@@ -176,11 +170,23 @@ test("TypeScript freshness rejects runtime output orphaned by a deleted canonica
 		fs.cpSync(path.join(root, name), path.join(fixture, name), {
 			recursive: true,
 		});
-	fs.mkdirSync(path.join(fixture, "scripts"));
-	fs.copyFileSync(
-		path.join(root, "scripts/typescript-build.mjs"),
-		path.join(fixture, "scripts/typescript-build.mjs"),
+	const inventory = JSON.parse(
+		fs.readFileSync(path.join(root, "typescript/outputs.json"), "utf8"),
 	);
+	for (const item of inventory.modules) {
+		const target = path.join(fixture, item.output);
+		fs.mkdirSync(path.dirname(target), { recursive: true });
+		fs.copyFileSync(path.join(root, item.output), target);
+	}
+	// Runtime package boundaries must match the mirrored compiler metadata.
+	for (const name of fs.readdirSync(path.join(root, "packages"))) {
+		const metadata = path.join("packages", name, "package.json");
+		if (!fs.existsSync(path.join(root, metadata))) continue;
+		fs.mkdirSync(path.dirname(path.join(fixture, metadata)), {
+			recursive: true,
+		});
+		fs.copyFileSync(path.join(root, metadata), path.join(fixture, metadata));
+	}
 	fs.symlinkSync(
 		path.join(root, "node_modules"),
 		path.join(fixture, "node_modules"),
@@ -190,11 +196,23 @@ test("TypeScript freshness rejects runtime output orphaned by a deleted canonica
 		spawnSync(
 			process.execPath,
 			[path.join(fixture, "scripts/typescript-build.mjs"), mode],
-			{ cwd: fixture, encoding: "utf8", timeout: 30000 },
+			{ cwd: fixture, encoding: "utf8", timeout: 60000 },
 		);
 	const baseline = run("--check");
 	assert.ifError(baseline.error);
 	assert.equal(baseline.status, 0, baseline.stdout + baseline.stderr);
+	const handwritten = path.join(fixture, "unmapped-firstparty.cjs");
+	fs.writeFileSync(handwritten, "module.exports = {};\n");
+	for (const mode of ["--check", "--write"]) {
+		const rejected = run(mode);
+		assert.ifError(rejected.error);
+		assert.notEqual(rejected.status, 0);
+		assert.match(
+			rejected.stderr,
+			/Handwritten or orphaned JavaScript module unmapped-firstparty\.cjs/,
+		);
+	}
+	fs.unlinkSync(handwritten);
 	const runtime = path.join(fixture, "lib/mcp-contracts.js");
 	const before = fs.readFileSync(runtime);
 	fs.unlinkSync(path.join(fixture, "typescript/lib/mcp-contracts.ts"));

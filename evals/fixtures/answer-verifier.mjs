@@ -1,5 +1,12 @@
-let input = ''; for await (const chunk of process.stdin) input += chunk;
+// Generated from typescript/evals/fixtures/answer-verifier.mts; edit that source and run npm run build:types.
+let input = "";
+for await (const chunk of process.stdin) input += chunk;
 const request = JSON.parse(input);
 const passed = request.answer.trim() === String(6 * 7);
-console.log(passed ? 'Independent arithmetic check passed.' : 'The answer does not equal 6 × 7. Recalculate.');
+console.log(
+	passed
+		? "Independent arithmetic check passed."
+		: "The answer does not equal 6 × 7. Recalculate.",
+);
 process.exitCode = passed ? 0 : 1;
+export {};

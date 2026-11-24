@@ -1,3 +1,4 @@
+// Generated from typescript/packages/memory/lib/store.ts; edit that source and run npm run build:types.
 import { atomicWriteJSON } from "../../shared/lib/atomic.js";
 /**
  * store.js — Local claim/template storage (filesystem-based)
@@ -5,19 +6,16 @@ import { atomicWriteJSON } from "../../shared/lib/atomic.js";
  * Memory is stored as JSON files with a local transaction lock for shared writers.
  * No database, no dependencies — just the filesystem.
  */
-
-import fs from "node:fs";
-import path from "node:path";
 import crypto from "node:crypto";
+import fs from "node:fs";
 import os from "node:os";
+import path from "node:path";
 import { withFileTransaction } from "../../shared/lib/transaction.js";
-
 export const DEFAULT_MEMORY_DIR = path.join(
 	os.homedir(),
 	".grainulator",
 	"memory",
 );
-
 /** One resolver for CLI, MCP, and library callers. No legacy locations are probed. */
 export function resolveMemoryDir(
 	explicit,
@@ -28,22 +26,19 @@ export function resolveMemoryDir(
 		return path.resolve(env.GRAINULATOR_MEMORY_DIR);
 	return path.join(homeDir, ".grainulator", "memory");
 }
-
 export class Store {
-	constructor(memoryDir) {
-		memoryDir = resolveMemoryDir(memoryDir);
+	constructor(explicit) {
+		const memoryDir = resolveMemoryDir(explicit);
 		this.root = memoryDir;
 		this.claimsDir = path.join(memoryDir, "claims");
 		this.templatesDir = path.join(memoryDir, "templates");
 		this.packsDir = path.join(memoryDir, "packs");
 		this.indexPath = path.join(memoryDir, "index.json");
 	}
-
 	/** Create the store and its index under the same lock used by every writer. */
 	init() {
 		return this._transaction(() => this);
 	}
-
 	_transaction(operation) {
 		for (const dir of [
 			this.root,
@@ -62,7 +57,6 @@ export class Store {
 			return operation();
 		});
 	}
-
 	/** Store a collection of claims under a name. */
 	storeClaims(name, claims, meta = {}) {
 		return this._transaction(() => {
@@ -83,7 +77,6 @@ export class Store {
 			return entry;
 		});
 	}
-
 	/** Retrieve claims by collection name/id. Verifies integrity if hash exists. */
 	getClaims(nameOrId) {
 		const id = this._slugify(nameOrId);
@@ -99,7 +92,6 @@ export class Store {
 		}
 		return data;
 	}
-
 	/** Verify integrity of all stored collections. Returns array of {id, ok, warning?}. */
 	verifyAll() {
 		return this._transaction(() => {
@@ -124,14 +116,12 @@ export class Store {
 			return results;
 		});
 	}
-
 	/** List all stored collections. */
 	list() {
 		return this._transaction(
 			() => this._readJSON(this.indexPath).collections || [],
 		);
 	}
-
 	/** Remove a collection by name/id. */
 	remove(nameOrId) {
 		return this._transaction(() => {
@@ -146,43 +136,34 @@ export class Store {
 			return true;
 		});
 	}
-
 	// --- Internal helpers ---
-
 	_readJSON(filePath) {
 		return JSON.parse(fs.readFileSync(filePath, "utf-8"));
 	}
-
 	_writeJSON(filePath, data) {
 		atomicWriteJSON(filePath, data);
 	}
-
 	_hash(str) {
 		return crypto.createHash("sha256").update(str).digest("hex");
 	}
-
 	_slugify(str) {
 		return str
 			.toLowerCase()
 			.replace(/[^a-z0-9]+/g, "-")
 			.replace(/^-|-$/g, "");
 	}
-
 	_addToIndex(entry) {
 		return this._transaction(() => this._addToIndexUnlocked(entry));
 	}
-
 	_addToIndexUnlocked(entry) {
 		const index = this._readJSON(this.indexPath);
 		index.collections = index.collections.filter((c) => c.id !== entry.id);
 		index.collections.push(entry);
 		this._writeJSON(this.indexPath, index);
 	}
-
 	_removeFromIndex(id) {
 		return this._transaction(() => this._removeFromIndexUnlocked(id));
 	}
-
 	_removeFromIndexUnlocked(id) {
 		const index = this._readJSON(this.indexPath);
 		index.collections = index.collections.filter((c) => c.id !== id);

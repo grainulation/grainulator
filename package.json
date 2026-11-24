@@ -125,7 +125,8 @@
 		"docs/RELEASING.md",
 		"packages/runtime/EXAMPLE.md",
 		"docs/mascot.png",
-		"docs/TYPESCRIPT.md"
+		"docs/TYPESCRIPT.md",
+		"docs/TDQS.md"
 	],
 	"author": "grainulation contributors",
 	"bugs": {
@@ -165,6 +166,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.6.8",
-		"typescript": "7.0.2"
+		"typescript": "7.0.2",
+		"@types/node": "24.19.2"
 	}
 }

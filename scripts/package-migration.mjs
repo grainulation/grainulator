@@ -1,13 +1,14 @@
 #!/usr/bin/env node
+// Generated from typescript/scripts/package-migration.mts; edit that source and run npm run build:types.
+import { spawnSync } from "node:child_process";
 // Package only committed converter bytes, separately from the normal application.
 import fs from "node:fs";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import {
+	assertNoSymlinkPath,
 	encodeRuntimeArchive,
 	sha256,
-	assertNoSymlinkPath,
 } from "../lib/runtime-assets.js";
 const root = fileURLToPath(new URL("../", import.meta.url));
 try {
@@ -24,7 +25,7 @@ try {
 	}
 	if (!options["--out"] || !options["--revision"])
 		throw Error("Explicit revision and new output are required");
-	const git = (args, encoding = "utf8") => {
+	function git(args, encoding = "utf8") {
 		const r = spawnSync("git", args, {
 			cwd: root,
 			encoding,
@@ -32,7 +33,7 @@ try {
 		});
 		if (r.status !== 0) throw Error("Cannot read frozen converter source");
 		return r.stdout;
-	};
+	}
 	const commit = git([
 		"rev-parse",
 		"--verify",
@@ -40,7 +41,7 @@ try {
 	]).trim();
 	if (!/^[a-f0-9]{40}$/.test(commit)) throw Error("Invalid commit identity");
 	const read = (name) => git(["show", commit + ":" + name], null);
-	const version = JSON.parse(read("package.json")).version;
+	const version = JSON.parse(String(read("package.json"))).version;
 	if (!/^3\.\d+\.\d+$/.test(version))
 		throw Error("Expected v3 converter source");
 	const prefix = "grainulator-migrate-" + version,

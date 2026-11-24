@@ -1,22 +1,21 @@
 #!/usr/bin/env node
+// Generated from typescript/scripts/assemble-release.mts; edit that source and run npm run build:types.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+	decodeRuntimeArchive,
 	NATIVE_TARGETS,
 	readRegular,
 	sha256,
-	decodeRuntimeArchive,
 	verifyAssetFiles,
 } from "../lib/runtime-assets.js";
-
 import {
 	verifyBaseArchive,
 	verifyMigrationArchive,
 } from "./release-archive.mjs";
-
 function record(file) {
-	return JSON.parse(readRegular(path.resolve(file), 1024 * 1024));
+	return JSON.parse(String(readRegular(path.resolve(file), 1024 * 1024)));
 }
 function artifact(recordFile, value, maxBytes = 64 * 1024 * 1024) {
 	if (
@@ -89,7 +88,7 @@ export function assembleRelease({
 		const metadataBytes = files.get("runtime-asset.json")?.bytes;
 		if (!metadataBytes || sha256(metadataBytes) !== item.metadata_sha256)
 			throw Error("Unbound runtime metadata");
-		const metadata = JSON.parse(metadataBytes);
+		const metadata = JSON.parse(String(metadataBytes));
 		if (metadata.source_dirty !== false)
 			throw Error("Dirty runtime bytes cannot be promoted");
 		verifyAssetFiles(metadata, files, {
@@ -171,7 +170,9 @@ export function assembleRelease({
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
 	try {
 		const args = process.argv.slice(2),
-			options = { assetRecords: [] };
+			options = {
+				assetRecords: [],
+			};
 		const map = {
 			"--base-record": "baseRecord",
 			"--migration-record": "migrationRecord",
@@ -187,7 +188,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 			else throw Error("Unknown or duplicate option");
 		}
 		console.log(JSON.stringify(assembleRelease(options), null, 2));
-	} catch (e) {
+	} catch (_e) {
+		const e = _e;
 		console.error("Release assembly: " + e.message);
 		process.exitCode = 1;
 	}

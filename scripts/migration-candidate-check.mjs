@@ -1,18 +1,20 @@
 #!/usr/bin/env node
+// Generated from typescript/scripts/migration-candidate-check.mts; edit that source and run npm run build:types.
 // Execute only the converter bytes validated from the exact candidate archive.
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { readRegular, sha256 } from "../lib/runtime-assets.js";
 import { verifyMigrationArchive } from "./release-archive.mjs";
-
 export function checkMigrationCandidate(candidateDirectory) {
 	const directory = path.resolve(candidateDirectory);
 	const record = JSON.parse(
-		readRegular(path.join(directory, "migration-record.json"), 1024 * 1024),
+		String(
+			readRegular(path.join(directory, "migration-record.json"), 1024 * 1024),
+		),
 	);
 	if (
 		record.schema !== "grainulator.migration-record.v1" ||
@@ -53,7 +55,7 @@ export function checkMigrationCandidate(candidateDirectory) {
 			});
 			assert.ifError(result.error);
 			assert.equal(result.status, 0, result.stderr || result.stdout);
-			return JSON.parse(result.stdout);
+			return JSON.parse(String(result.stdout));
 		};
 		const project = path.join(stage, "project # café");
 		fs.mkdirSync(project);

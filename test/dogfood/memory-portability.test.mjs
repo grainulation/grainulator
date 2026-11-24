@@ -1,3 +1,4 @@
+// Generated from typescript/test/dogfood/memory-portability.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import fs from "node:fs";
@@ -7,7 +8,6 @@ import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { resolveMemoryDir, Store } from "../../packages/memory/lib/store.js";
 import { command, mcp, toolJSON } from "../../scripts/lib/local-checks.mjs";
-
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const cli = path.join(root, "bin/grainulator.js");
 function fixture(t) {
@@ -32,7 +32,6 @@ function worker(argv) {
 		);
 	});
 }
-
 test("concurrent memory writers preserve every collection and index entry from first initialization", async (t) => {
 	const dir = fixture(t);
 	const memory = path.join(dir, "memory");
@@ -67,7 +66,6 @@ test("concurrent memory writers preserve every collection and index entry from f
 	assert.equal(fs.readdirSync(store.claimsDir).length, 320);
 	assert.ok(store.verifyAll().every((entry) => entry.ok));
 });
-
 test("CLI and MCP share configured memory and return source provenance when reusing a finding", async (t) => {
 	const dir = fixture(t);
 	const memory = path.join(dir, "memory");
@@ -180,7 +178,6 @@ test("CLI and MCP share configured memory and return source provenance when reus
 		"The original store stays unchanged",
 	);
 });
-
 test("memory path precedence never probes old roots or legacy environment settings", (t) => {
 	const dir = fixture(t);
 	const options = { homeDir: dir, env: {} };

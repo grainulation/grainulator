@@ -1,3 +1,4 @@
+// Generated from typescript/packages/evidence/lib/cli-import.ts; edit that source and run npm run build:types.
 import fs from "node:fs";
 import { importClaims } from "./import-claims.js";
 export async function run(dir, args) {
@@ -12,7 +13,9 @@ export async function run(dir, args) {
 		return;
 	}
 	try {
-		const data = JSON.parse(fs.readFileSync(value("--file"), "utf8"));
+		const filename = value("--file");
+		// Let Node report its existing invalid-path error for a missing flag.
+		const data = JSON.parse(fs.readFileSync(filename, "utf8"));
 		const result = importClaims(dir, {
 			source: value("--source"),
 			claims: Array.isArray(data) ? data : data.claims,

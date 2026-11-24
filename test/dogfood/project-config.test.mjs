@@ -1,3 +1,4 @@
+// Generated from typescript/test/dogfood/project-config.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -10,7 +11,6 @@ import { initializeSprint } from "../../lib/sprint-init.js";
 import { compile } from "../../packages/evidence/compiler/evidence-compiler.js";
 import { guard } from "../../packages/evidence/lib/guard.js";
 import config from "../../packages/shared/lib/project-config.cjs";
-
 const root = fileURLToPath(new URL("../../", import.meta.url));
 function fixture(t) {
 	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-config-"));
@@ -72,7 +72,10 @@ test("locked section update preserves other sections and unknown values; custom 
 	config.updateSection(
 		dir,
 		"orchestration",
-		(current) => ({ ...current, sprints: [{ path: "." }] }),
+		(current) => ({
+			...current,
+			sprints: [{ path: "." }],
+		}),
 		{ configFile: "custom.json" },
 	);
 	const after = config.readProjectConfig(dir, {

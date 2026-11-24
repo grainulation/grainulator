@@ -31,7 +31,7 @@ For native Codex, install the intended local plugin through its marketplace mech
 ## Pull requests
 
 1. Create a focused branch from `main` and preserve existing user data and compatibility boundaries.
-2. Update the relevant instructions when commands or behavior change. Add meaningful regression coverage for changed functionality.
+2. Edit canonical code under `typescript/`, then run `npm run build:types` and commit the generated runtime outputs with their sources. Update the relevant instructions when commands or behavior change. Add meaningful regression coverage for changed functionality.
 3. Run `npm test` and `npm run lint`, plus the checks relevant to your change. Use `npx biome format --write <changed-files>` for files covered by the repository's Biome configuration.
 4. After the final shipped-file edit, run `npm run build:identity` and include the updated `build-info.json` in the commit. Regenerate it if any packaged file changes again; CI checks that its file checksums match.
 5. Describe the problem, resulting behavior, checks actually run, and remaining limits. Do not report older test results as verification of newer edits.

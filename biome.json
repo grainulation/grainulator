@@ -2,14 +2,14 @@
 	"$schema": "https://biomejs.dev/schemas/2.6.8/schema.json",
 	"files": {
 		"includes": [
-			"lib/**",
 			"typescript/**",
 			"tsconfig.json",
-			"test/**",
 			".claude-plugin/**",
+			".codex-plugin/**",
 			".mcp.json",
-			"hooks/**",
-			"package.json"
+			"hooks/hooks.json",
+			"package.json",
+			"biome.json"
 		]
 	},
 	"linter": {

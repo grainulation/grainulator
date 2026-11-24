@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Generated from typescript/packages/evidence/compiler/evidence-compiler.ts; edit that source and run npm run build:types.
 import { withoutElements } from "../../shared/lib/html.cjs";
 /**
  * Grainulator Compiler — Bran-based compilation passes for research claims
@@ -14,22 +15,18 @@ import { withoutElements } from "../../shared/lib/html.cjs";
  *   node evidence-compiler.js --input X --output Y  # compile arbitrary claims file
  *   node evidence-compiler.js --diff A B   # diff two compilation.json files
  */
-
 import fs from "fs";
-import nextActionsModule from "../lib/next-actions.cjs";
-import { atomicWriteJSON } from "../../shared/lib/atomic.js";
+const errorMessage = (error) => error.message;
 import crypto from "crypto";
 import path from "path";
-
 import { fileURLToPath } from "url";
+import { atomicWriteJSON } from "../../shared/lib/atomic.js";
 import projectConfig from "../../shared/lib/project-config.cjs";
-import { assertEvidenceTarget } from "../lib/evidence-target.js";
-import { evidenceHealth, healthFingerprint } from "../lib/evidence-health.js";
-
 // Sprint detection — git-based, no config pointer needed (p013/f001)
 import { detectSprints } from "../../shared/tools/detect-sprints.js";
-// Direct manifest generation — avoids subprocess + redundant detectSprints call
-import { buildManifest } from "./generate-manifest.js";
+import { evidenceHealth, healthFingerprint } from "../lib/evidence-health.js";
+import { assertEvidenceTarget } from "../lib/evidence-target.js";
+import nextActionsModule from "../lib/next-actions.cjs";
 import {
 	isDigest,
 	MAX_PASSAGE_BYTES_PER_COMPILE,
@@ -38,21 +35,19 @@ import {
 	quoteProblem,
 	readPassage,
 } from "../lib/passages.js";
-
+// Direct manifest generation — avoids subprocess + redundant detectSprints call
+import { buildManifest } from "./generate-manifest.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 // ─── --dir: target directory (defaults to script location for backwards compat) ─
 const _dirIdx = process.argv.indexOf("--dir");
 const TARGET_DIR =
 	_dirIdx !== -1 && process.argv[_dirIdx + 1]
 		? path.resolve(process.argv[_dirIdx + 1])
 		: __dirname;
-
 // ─── Configuration ──────────────────────────────────────────────────────────
 /** @returns {{ dirs: Object<string, string>, compiler: Object<string, string> }} Merged config from grainulator.config.json with defaults */
 const loadConfig = projectConfig.evidenceConfig;
-
 // ─── Evidence tier hierarchy (higher = stronger) ─────────────────────────────
 /** @type {Object<string, number>} Maps evidence tier names to numeric strength (1–5) */
 const EVIDENCE_TIERS = {
@@ -62,7 +57,6 @@ const EVIDENCE_TIERS = {
 	tested: 4,
 	production: 5,
 };
-
 /** @type {string[]} Allowed claim type values */
 const VALID_TYPES = [
 	"constraint",
@@ -92,23 +86,14 @@ const VALID_PHASES = [
 ];
 // Note: phase ordering for next-action logic uses inline arrays in computeNextActions().
 // PHASE_ORDER was previously defined here but was unused — removed to avoid dead code.
-
 // Burn-residue ID prefix — synthetic claims from /control-burn must never persist
 const BURN_PREFIX = "burn-";
-
 // ─── Schema Migration Framework [r237] ──────────────────────────────────────
 const CURRENT_SCHEMA = "1.0";
-
-/**
- * Ordered list of migration functions. Each entry migrates from one version to the next.
- * Add new entries here as schema evolves: { from: '1.0', to: '1.1', migrate: fn }
- * The migrate function receives the full claimsData object and returns it mutated.
- */
 const SCHEMA_MIGRATIONS = [
 	// Example for future use:
 	// { from: '1.0', to: '1.1', migrate(data) { /* transform data */ return data; } },
 ];
-
 /**
  * Compare two semver-style version strings (e.g. '1.0', '2.1').
  * Returns -1 if a < b, 0 if equal, 1 if a > b.
@@ -124,15 +109,25 @@ function compareVersions(a, b) {
 	}
 	return 0;
 }
-
-/**
- * Validate and migrate schema version. Returns { data, errors }.
- * - Missing schema_version is treated as '1.0' (backwards compat).
- * - If schema_version > CURRENT_SCHEMA, returns a fatal error.
- * - If schema_version < CURRENT_SCHEMA, runs migrations in order.
- */
-function checkAndMigrateSchema(claimsData) {
-	if (Array.isArray(claimsData) || (claimsData?.schema_version && String(claimsData.schema_version).startsWith("grainulator.runtime")) || (claimsData?.schema && String(claimsData.schema).includes("runtime"))) return {data:claimsData,errors:[{code:"E_LEDGER_KIND",message:"Use grainulator runtime claims for a native execution ledger."}]};
+function checkAndMigrateSchema(input) {
+	// Version migration only reads envelope fields; claim validation happens later.
+	let claimsData = input;
+	if (
+		Array.isArray(claimsData) ||
+		(claimsData?.schema_version &&
+			String(claimsData.schema_version).startsWith("grainulator.runtime")) ||
+		(claimsData?.schema && String(claimsData.schema).includes("runtime"))
+	)
+		return {
+			data: claimsData,
+			errors: [
+				{
+					code: "E_LEDGER_KIND",
+					message:
+						"Use grainulator runtime claims for a native execution ledger.",
+				},
+			],
+		};
 	// schema_version lives at the JSON root (document envelope), not inside meta.
 	// init.js writes it at root; we read from root with fallback to meta for
 	// backwards compatibility with any files that stored it in meta.
@@ -140,7 +135,6 @@ function checkAndMigrateSchema(claimsData) {
 		claimsData.schema_version ||
 		(claimsData.meta || {}).schema_version ||
 		"1.0";
-
 	// Future version — this compiler cannot handle it
 	if (compareVersions(fileVersion, CURRENT_SCHEMA) > 0) {
 		return {
@@ -153,7 +147,6 @@ function checkAndMigrateSchema(claimsData) {
 			],
 		};
 	}
-
 	// Run migrations if file version is behind current
 	let currentVersion = fileVersion;
 	for (const migration of SCHEMA_MIGRATIONS) {
@@ -167,16 +160,12 @@ function checkAndMigrateSchema(claimsData) {
 			claimsData.schema_version = currentVersion;
 		}
 	}
-
 	return { data: claimsData, errors: [] };
 }
-
-export { CURRENT_SCHEMA, SCHEMA_MIGRATIONS, checkAndMigrateSchema };
-
+export { CURRENT_SCHEMA, checkAndMigrateSchema, SCHEMA_MIGRATIONS };
 // Internal utilities — exported for testing only. Not part of the public API
 // surface and may be removed or changed without notice.
 export const _internals = { compareVersions };
-
 // ─── Pass 1: Schema Validation (+ burn-residue safety check) ────────────────
 function validateSchema(claims) {
 	const errors = [];
@@ -189,7 +178,6 @@ function validateSchema(claims) {
 		"evidence",
 		"status",
 	];
-
 	claims.forEach((claim, i) => {
 		// Burn-residue safety check: reject claims with burn- prefix
 		if (claim.id && claim.id.startsWith(BURN_PREFIX)) {
@@ -199,7 +187,6 @@ function validateSchema(claims) {
 				claims: [claim.id],
 			});
 		}
-
 		requiredFields.forEach((field) => {
 			if (
 				claim[field] === undefined ||
@@ -208,14 +195,11 @@ function validateSchema(claims) {
 			) {
 				errors.push({
 					code: "E_SCHEMA",
-					message: `Claim ${
-						claim.id || `[index ${i}]`
-					} missing required field: ${field}`,
+					message: `Claim ${claim.id || `[index ${i}]`} missing required field: ${field}`,
 					claims: [claim.id || `index:${i}`],
 				});
 			}
 		});
-
 		// Check for duplicate IDs
 		const dupes = claims.filter((c) => c.id === claim.id);
 		if (dupes.length > 1 && claims.indexOf(claim) === i) {
@@ -226,49 +210,36 @@ function validateSchema(claims) {
 			});
 		}
 	});
-
 	return errors;
 }
-
 // ─── Pass 2: Type Checking ───────────────────────────────────────────────────
 function validateTypes(claims) {
 	const errors = [];
-
 	claims.forEach((claim) => {
 		if (!VALID_TYPES.includes(claim.type)) {
 			errors.push({
 				code: "E_TYPE",
-				message: `Claim ${claim.id}: invalid type "${
-					claim.type
-				}". Must be one of: ${VALID_TYPES.join(", ")}`,
+				message: `Claim ${claim.id}: invalid type "${claim.type}". Must be one of: ${VALID_TYPES.join(", ")}`,
 				claims: [claim.id],
 			});
 		}
-
 		if (!Object.keys(EVIDENCE_TIERS).includes(claim.evidence)) {
 			errors.push({
 				code: "E_EVIDENCE_TIER",
-				message: `Claim ${claim.id}: invalid evidence tier "${
-					claim.evidence
-				}". Must be one of: ${Object.keys(EVIDENCE_TIERS).join(", ")}`,
+				message: `Claim ${claim.id}: invalid evidence tier "${claim.evidence}". Must be one of: ${Object.keys(EVIDENCE_TIERS).join(", ")}`,
 				claims: [claim.id],
 			});
 		}
-
 		if (!VALID_STATUSES.includes(claim.status)) {
 			errors.push({
 				code: "E_STATUS",
-				message: `Claim ${claim.id}: invalid status "${
-					claim.status
-				}". Must be one of: ${VALID_STATUSES.join(", ")}`,
+				message: `Claim ${claim.id}: invalid status "${claim.status}". Must be one of: ${VALID_STATUSES.join(", ")}`,
 				claims: [claim.id],
 			});
 		}
 	});
-
 	return errors;
 }
-
 // ─── Pass 3: Evidence Tier Sorting (deterministic: tier → id) ────────────────
 function sortByEvidenceTier(claims) {
 	return [...claims].sort((a, b) => {
@@ -279,19 +250,16 @@ function sortByEvidenceTier(claims) {
 		return (a.id || "").localeCompare(b.id || "");
 	});
 }
-
 // ─── Pass 4: Conflict Detection ──────────────────────────────────────────────
 function detectConflicts(claims) {
 	const conflicts = [];
 	const activeClaims = claims.filter(
 		(c) => c.status === "active" || c.status === "conflicted",
 	);
-
 	for (let i = 0; i < activeClaims.length; i++) {
 		for (let j = i + 1; j < activeClaims.length; j++) {
 			const a = activeClaims[i];
 			const b = activeClaims[j];
-
 			// Same topic + explicitly marked as conflicting
 			if (a.conflicts_with && a.conflicts_with.includes(b.id)) {
 				conflicts.push({ claimA: a.id, claimB: b.id, topic: a.topic });
@@ -300,27 +268,21 @@ function detectConflicts(claims) {
 			}
 		}
 	}
-
 	return conflicts;
 }
-
 // ─── Pass 5: Auto-Resolution ─────────────────────────────────────────────────
 function autoResolve(claims, conflicts) {
 	const resolved = [];
 	const unresolved = [];
-
 	conflicts.forEach((conflict) => {
 		const claimA = claims.find((c) => c.id === conflict.claimA);
 		const claimB = claims.find((c) => c.id === conflict.claimB);
-
 		if (!claimA || !claimB) {
 			unresolved.push({ ...conflict, reason: "claim_not_found" });
 			return;
 		}
-
 		const tierA = EVIDENCE_TIERS[claimA.evidence] || 0;
 		const tierB = EVIDENCE_TIERS[claimB.evidence] || 0;
-
 		if (tierA > tierB) {
 			resolved.push({
 				winner: claimA.id,
@@ -349,20 +311,16 @@ function autoResolve(claims, conflicts) {
 			claimB.status = "conflicted";
 		}
 	});
-
 	return { resolved, unresolved };
 }
-
 // ─── Pass 6: Coverage Analysis (enhanced with source/type diversity + corroboration) ─
 function analyzeCoverage(claims) {
 	const coverage = {};
 	const activeClaims = claims.filter(
 		(c) => c.status === "active" || c.status === "resolved",
 	);
-
 	activeClaims.forEach((claim) => {
 		if (!claim.topic) return;
-
 		if (!coverage[claim.topic]) {
 			coverage[claim.topic] = {
 				claims: 0,
@@ -374,7 +332,6 @@ function analyzeCoverage(claims) {
 				source_origins: new Set(),
 			};
 		}
-
 		const entry = coverage[claim.topic];
 		entry.claims++;
 		entry.types.add(claim.type);
@@ -382,19 +339,16 @@ function analyzeCoverage(claims) {
 		if (claim.type === "constraint" || claim.type === "feedback") {
 			entry.constraint_count++;
 		}
-
 		// Track source diversity
-		if (claim.source && claim.source.origin) {
+		if (typeof claim.source === "object" && claim.source?.origin) {
 			entry.source_origins.add(claim.source.origin);
 		}
-
 		const tier = EVIDENCE_TIERS[claim.evidence] || 0;
 		if (tier > entry.max_evidence_rank) {
 			entry.max_evidence = claim.evidence;
 			entry.max_evidence_rank = tier;
 		}
 	});
-
 	// Compute corroboration: how many other claims reference/support each claim.
 	// Exclude superseded AND refuted claims — a disproven claim must not lend
 	// evidentiary weight to another.
@@ -408,8 +362,9 @@ function analyzeCoverage(claims) {
 	// A claim corroborates another if it has source.witnessed_claim or source.challenged_claim
 	// or shares the same topic and type with supporting relationship
 	allClaims.forEach((claim) => {
-		if (claim.source) {
+		if (typeof claim.source === "object" && claim.source) {
 			if (
+				typeof claim.source.witnessed_claim === "string" &&
 				claim.source.witnessed_claim &&
 				corroboration[claim.source.witnessed_claim] !== undefined
 			) {
@@ -422,7 +377,6 @@ function analyzeCoverage(claims) {
 			}
 		}
 	});
-
 	// Convert sets to arrays and compute status (deterministic key ordering)
 	const result = {};
 	Object.entries(coverage)
@@ -432,14 +386,11 @@ function analyzeCoverage(claims) {
 			if (entry.max_evidence_rank >= EVIDENCE_TIERS.tested) status = "strong";
 			else if (entry.max_evidence_rank >= EVIDENCE_TIERS.documented)
 				status = "moderate";
-
 			// Type diversity: how many of the 6 possible types are present
 			const allTypes = [...entry.types].sort();
 			const missingTypes = VALID_TYPES.filter((t) => !allTypes.includes(t));
-
 			// Source origins (sorted for determinism)
 			const sourceOrigins = [...entry.source_origins].sort();
-
 			result[topic] = {
 				claims: entry.claims,
 				max_evidence: entry.max_evidence,
@@ -455,10 +406,8 @@ function analyzeCoverage(claims) {
 				missing_types: missingTypes,
 			};
 		});
-
 	return { coverage: result, corroboration };
 }
-
 // ─── Pass 6b: Passage Integrity (audit only; never changes a winner) ─────────
 // A claim may cite `source.quote` from a passage stored at
 // evidence/passages/<source.passage_sha256>.txt. A record is valid when the
@@ -467,11 +416,11 @@ function analyzeCoverage(claims) {
 // eligibility is read from the input statuses, before auto-resolution.
 const SUPPORT_STATUSES = new Set(["active", "resolved"]);
 const hasPassageFields = (source) =>
+	typeof source === "object" &&
 	!!source &&
 	(source.quote !== undefined ||
 		source.passage_sha256 !== undefined ||
 		source.passage !== undefined);
-
 function auditPassages(claims, root) {
 	// Statuses as given, before auto-resolution changes any of them.
 	const inputStatus = new Map(claims.map((c) => [c.id, c.status]));
@@ -483,7 +432,9 @@ function auditPassages(claims, root) {
 	const digests = [
 		...new Set(
 			claims
-				.map((c) => c?.source?.passage_sha256)
+				.map((c) =>
+					typeof c?.source === "object" ? c.source?.passage_sha256 : undefined,
+				)
 				.filter((d) => isDigest(d)),
 		),
 	].sort();
@@ -495,7 +446,6 @@ function auditPassages(claims, root) {
 		budget -= result.bytes || 0;
 		reads.set(digest, result);
 	}
-
 	const integrity = {};
 	const observations = [];
 	const ordered = [...claims]
@@ -530,16 +480,16 @@ function auditPassages(claims, root) {
 			[
 				claim.id,
 				isDigest(digest) ? digest : "-",
-				observed ? observed.code || "ok" : "-",
+				observed ? ("code" in observed && observed.code) || "ok" : "-",
 				observed?.actual || "-",
 				reason || "ok",
 			].join(":"),
 		);
 	}
-
 	const byId = new Map(claims.map((c) => [c.id, c]));
 	const supports = (w, target) =>
 		w.id !== target &&
+		typeof w.source === "object" &&
 		w.source?.witnessed_claim === target &&
 		w.source.relationship === "full_support" &&
 		SUPPORT_STATUSES.has(inputStatus.get(w.id)) &&
@@ -563,10 +513,10 @@ function auditPassages(claims, root) {
 		for (const w of claims) if (supports(w, id)) items.push(record(w));
 		return items.sort((a, b) => a.claim.localeCompare(b.claim));
 	};
-
 	const distinct = {};
 	for (const w of claims) {
-		const target = w.source?.witnessed_claim;
+		if (typeof w.source !== "object" || !w.source) continue;
+		const target = w.source.witnessed_claim;
 		if (typeof target !== "string" || !byId.has(target) || !supports(w, target))
 			continue;
 		if (!distinct[target]) distinct[target] = new Set();
@@ -577,7 +527,6 @@ function auditPassages(claims, root) {
 			.sort()
 			.map((id) => [id, distinct[id].size]),
 	);
-
 	return {
 		integrity,
 		distinctSupportingPassages,
@@ -588,12 +537,10 @@ function auditPassages(claims, root) {
 			.digest("hex")}`,
 	};
 }
-
 /** Fingerprint of every referenced passage as it is on disk now. */
 export function passagesFingerprint(claimsData, root) {
 	return auditPassages(claimsData?.claims || [], root).fingerprint;
 }
-
 // Raw passage text never goes into compiled output; only the digest and quote.
 function compiledSource(source) {
 	if (!source || typeof source !== "object" || !("passage" in source))
@@ -601,11 +548,9 @@ function compiledSource(source) {
 	const { passage, ...rest } = source;
 	return rest;
 }
-
 // ─── Pass 7: Readiness Check ─────────────────────────────────────────────────
 function checkReadiness(errors, unresolvedConflicts, coverage) {
 	const blockers = [...errors];
-
 	// Unresolved conflicts are blockers
 	unresolvedConflicts.forEach((conflict) => {
 		blockers.push({
@@ -614,7 +559,6 @@ function checkReadiness(errors, unresolvedConflicts, coverage) {
 			claims: [conflict.claimA, conflict.claimB],
 		});
 	});
-
 	// Weak coverage is a warning, not a blocker (sorted for determinism)
 	const warnings = [];
 	Object.entries(coverage)
@@ -637,20 +581,14 @@ function checkReadiness(errors, unresolvedConflicts, coverage) {
 					});
 				}
 			}
-
 			// Type monoculture warning
 			if (entry.type_diversity < 2 && entry.claims >= 1) {
 				warnings.push({
 					code: "W_TYPE_MONOCULTURE",
-					message: `Topic "${topic}" has only ${
-						entry.type_diversity
-					} claim type(s): ${entry.types.join(
-						", ",
-					)}. Missing: ${entry.missing_types.join(", ")}`,
+					message: `Topic "${topic}" has only ${entry.type_diversity} claim type(s): ${entry.types.join(", ")}. Missing: ${entry.missing_types.join(", ")}`,
 					claims: entry.claim_ids,
 				});
 			}
-
 			// Echo chamber warning: all claims from single source origin
 			if (entry.source_count === 1 && entry.claims >= 3) {
 				warnings.push({
@@ -660,10 +598,8 @@ function checkReadiness(errors, unresolvedConflicts, coverage) {
 				});
 			}
 		});
-
 	return { blockers, warnings };
 }
-
 // ─── Phase Summary ───────────────────────────────────────────────────────────
 function summarizePhases(claims) {
 	const summary = {};
@@ -676,7 +612,6 @@ function summarizePhases(claims) {
 	});
 	return summary;
 }
-
 // ─── Canonical JSON — key-order-independent serialization ────────────────────
 function canonicalJSON(obj) {
 	if (obj === null || typeof obj !== "object") return JSON.stringify(obj);
@@ -688,33 +623,32 @@ function canonicalJSON(obj) {
 		"}"
 	);
 }
-
 // ─── Compilation Certificate ─────────────────────────────────────────────────
 export const COMPILER_VERSION = "0.4.0";
-export function generateCertificate(claimsData, compilerVersion = COMPILER_VERSION) {
+export function generateCertificate(
+	claimsData,
+	compilerVersion = COMPILER_VERSION,
+) {
 	const hash = crypto
 		.createHash("sha256")
 		.update(canonicalJSON(claimsData))
 		.digest("hex");
-
 	return {
 		input_hash: `sha256:${hash}`,
 		compiler_version: compilerVersion,
 		deterministic: true,
 		// Without external observations this projection is entirely ledger-derived.
 		// Observed files are fingerprinted later by compile with its explicit root.
-		...(Array.isArray(claimsData.claims) && !claimsData.claims.some(claim => claim?.observations?.length)
-			? { evidence_health_hash: healthFingerprint(evidenceHealth(claimsData, '.')) } : {}),
+		...(Array.isArray(claimsData.claims) &&
+		!claimsData.claims.some((claim) => claim?.observations?.length)
+			? {
+					evidence_health_hash: healthFingerprint(
+						evidenceHealth(claimsData, "."),
+					),
+				}
+			: {}),
 	};
 }
-
-// ─── diffCompilations — compare two compilation objects ─────────────────────
-/**
- * Compare two compilation objects and return a structured delta.
- * @param {object} before - Earlier compilation.json contents
- * @param {object} after - Later compilation.json contents
- * @returns {object} Delta with new/removed claims, coverage changes, conflict changes
- */
 function diffCompilations(before, after) {
 	const delta = {
 		new_claims: [],
@@ -729,18 +663,15 @@ function diffCompilations(before, after) {
 		},
 		meta_changes: {},
 	};
-
 	// Claim IDs
 	const beforeIds = new Set((before.resolved_claims || []).map((c) => c.id));
 	const afterIds = new Set((after.resolved_claims || []).map((c) => c.id));
-
 	afterIds.forEach((id) => {
 		if (!beforeIds.has(id)) delta.new_claims.push(id);
 	});
 	beforeIds.forEach((id) => {
 		if (!afterIds.has(id)) delta.removed_claims.push(id);
 	});
-
 	// Status changes on claims that exist in both
 	const beforeClaimsMap = {};
 	(before.resolved_claims || []).forEach((c) => {
@@ -750,7 +681,6 @@ function diffCompilations(before, after) {
 	(after.resolved_claims || []).forEach((c) => {
 		afterClaimsMap[c.id] = c;
 	});
-
 	for (const id of beforeIds) {
 		if (afterIds.has(id)) {
 			const bc = beforeClaimsMap[id];
@@ -760,7 +690,6 @@ function diffCompilations(before, after) {
 			}
 		}
 	}
-
 	// Coverage changes
 	const beforeCov = before.coverage || {};
 	const afterCov = after.coverage || {};
@@ -788,7 +717,6 @@ function diffCompilations(before, after) {
 			}
 		}
 	});
-
 	// Conflict graph changes
 	const beforeResolved = new Set(
 		(before.conflict_graph?.resolved || []).map(
@@ -808,7 +736,6 @@ function diffCompilations(before, after) {
 			(u) => `${u.claimA}|${u.claimB}`,
 		),
 	);
-
 	afterResolved.forEach((r) => {
 		if (!beforeResolved.has(r)) delta.conflict_changes.new_resolved.push(r);
 	});
@@ -822,7 +749,6 @@ function diffCompilations(before, after) {
 		if (!afterUnresolved.has(u))
 			delta.conflict_changes.removed_unresolved.push(u);
 	});
-
 	// Meta changes
 	if (before.status !== after.status)
 		delta.meta_changes.status = { from: before.status, to: after.status };
@@ -838,10 +764,8 @@ function diffCompilations(before, after) {
 			to: after.sprint_meta?.total_claims,
 		};
 	}
-
 	return delta;
 }
-
 // ─── Manifest Generation (topic map) ─────────────────────────────────────────
 /**
  * Generate .grainulator/evidence/manifest.json by calling buildManifest() directly.
@@ -860,10 +784,9 @@ function generateManifest(_compilation, dir, sprintsInfo) {
 		}
 	} catch (err) {
 		// Non-fatal: warn but don't block compilation
-		console.error(`Warning: manifest generation failed — ${err.message}`);
+		console.error(`Warning: manifest generation failed — ${errorMessage(err)}`);
 	}
 }
-
 // ─── Main Compilation Pipeline ───────────────────────────────────────────────
 /**
  * Run the full compilation pipeline: validate, sort, detect conflicts, resolve, compute coverage.
@@ -877,10 +800,10 @@ function compile(inputPath, outputPath, dir, opts = {}) {
 	projectConfig.assertMigrationReady(baseDir);
 	assertEvidenceTarget(baseDir);
 	const config = loadConfig(baseDir);
-	const claimsPath = inputPath || path.resolve(config.origin, config.compiler.claims);
+	const claimsPath =
+		inputPath || path.resolve(config.origin, config.compiler.claims);
 	const compilationOutputPath =
 		outputPath || path.resolve(config.origin, config.compiler.compilation);
-
 	// Read claims
 	if (!fs.existsSync(claimsPath)) {
 		// Throw instead of process.exit so callers (e.g. the MCP server in
@@ -891,14 +814,13 @@ function compile(inputPath, outputPath, dir, opts = {}) {
 			`${path.basename(claimsPath)} not found. Run "evidence init" to start a sprint.`,
 		);
 	}
-
 	const raw = fs.readFileSync(claimsPath, "utf8");
 	let claimsData;
 	try {
 		claimsData = JSON.parse(raw);
 	} catch (e) {
 		throw new Error(
-			`${path.basename(claimsPath)} is not valid JSON — ${e.message}`,
+			`${path.basename(claimsPath)} is not valid JSON — ${errorMessage(e)}`,
 		);
 	}
 	const certificate = generateCertificate(claimsData, compilerVersion);
@@ -911,33 +833,43 @@ function compile(inputPath, outputPath, dir, opts = {}) {
 		throw new Error(messages);
 	}
 	claimsData = migrationResult.data;
-
 	const claims = claimsData.claims || [];
 	const meta = claimsData.meta || {};
-
 	// Run passes
 	const schemaErrors = validateSchema(claims);
 	const typeErrors = validateTypes(claims);
 	const allValidationErrors = [...schemaErrors, ...typeErrors];
-
 	// Only run conflict/resolution if validation passes
-	let conflictGraph = { resolved: [], unresolved: [] };
-	let coverageResult = { coverage: {}, corroboration: {} };
-	let readiness = { blockers: allValidationErrors, warnings: [] };
+	let conflictGraph = {
+		resolved: [],
+		unresolved: [],
+	};
+	let coverageResult = {
+		coverage: {},
+		corroboration: {},
+	};
+	let readiness = {
+		blockers: allValidationErrors,
+		warnings: [],
+	};
 	let resolvedClaims = claims.filter(
 		(c) => c.status === "active" || c.status === "resolved",
 	);
-
 	// Audit before auto-resolution mutates statuses (support eligibility uses the
 	// input statuses). Passages live beside claims.json.
-	const passages = auditPassages(claims, path.dirname(path.resolve(claimsPath)));
+	const passages = auditPassages(
+		claims,
+		path.dirname(path.resolve(claimsPath)),
+	);
 	certificate.passages_hash = passages.fingerprint;
-	let health = evidenceHealth(claimsData, path.dirname(path.resolve(claimsPath)));
+	let health = evidenceHealth(
+		claimsData,
+		path.dirname(path.resolve(claimsPath)),
+	);
 	// Freshness binds the health of the input ledger. The emitted projection below
 	// must also account for premise statuses changed by compiler auto-resolution.
 	certificate.evidence_health_hash = healthFingerprint(health);
 	let conflictSupport = [];
-
 	if (allValidationErrors.length === 0) {
 		const sortedClaims = sortByEvidenceTier(claims);
 		const conflicts = detectConflicts(sortedClaims);
@@ -945,11 +877,18 @@ function compile(inputPath, outputPath, dir, opts = {}) {
 		for (const r of conflictGraph.resolved) r.basis = "tier";
 		conflictSupport = [
 			...conflictGraph.resolved.map((r) => ["resolved", r.winner, r.loser]),
-			...conflictGraph.unresolved.map((u) => ["unresolved", u.claimA, u.claimB]),
+			...conflictGraph.unresolved.map((u) => [
+				"unresolved",
+				u.claimA,
+				u.claimB,
+			]),
 		]
 			.map(([outcome, a, b]) => {
 				const [x, y] = [a, b].sort();
-				const support = { [x]: passages.supportOf(x), [y]: passages.supportOf(y) };
+				const support = {
+					[x]: passages.supportOf(x),
+					[y]: passages.supportOf(y),
+				};
 				return {
 					claims: [x, y],
 					outcome,
@@ -975,31 +914,37 @@ function compile(inputPath, outputPath, dir, opts = {}) {
 			(c) => c.status === "active" || c.status === "resolved",
 		);
 		if (conflictGraph.resolved.length || conflictGraph.unresolved.length)
-			health = evidenceHealth(claimsData, path.dirname(path.resolve(claimsPath)));
+			health = evidenceHealth(
+				claimsData,
+				path.dirname(path.resolve(claimsPath)),
+			);
 	}
-
-	readiness.blockers.push(...health.errors, ...health.needs_reverification.map(item => ({
-		code: 'E_REVERIFICATION_REQUIRED', claims: [item.claim_id],
-		message: `Claim ${item.claim_id} relies on changed premises or noncurrent observations. Inspect evidence health and re-verify explicitly.`,
-	})));
+	readiness.blockers.push(
+		...health.errors,
+		...health.needs_reverification.map((item) => ({
+			code: "E_REVERIFICATION_REQUIRED",
+			claims: [item.claim_id],
+			message: `Claim ${item.claim_id} relies on changed premises or noncurrent observations. Inspect evidence health and re-verify explicitly.`,
+		})),
+	);
 	const phaseSummary = summarizePhases(claims);
 	// Determine overall status
 	const status = readiness.blockers.length > 0 ? "blocked" : "ready";
-
 	// Determine current phase from meta or infer from claims
 	const currentPhase = meta.phase || inferPhase(phaseSummary);
-
 	// ── Sprint detection (git-based, non-fatal) ──────────────────────────────
-	let sprintsInfo = { active: null, sprints: [] };
+	let sprintsInfo = {
+		active: null,
+		sprints: [],
+	};
 	let sprintSummaries = [];
 	if (!opts.skipSprintDetection) {
 		try {
 			sprintsInfo = detectSprints(baseDir);
 		} catch (err) {
 			// Non-fatal: sprint detection failure should not block compilation
-			console.error(`Warning: sprint detection failed — ${err.message}`);
+			console.error(`Warning: sprint detection failed — ${errorMessage(err)}`);
 		}
-
 		// Build sprint summaries: active sprint gets full compilation, others get summary entries
 		sprintSummaries = sprintsInfo.sprints.map((s) => ({
 			name: s.name,
@@ -1013,8 +958,7 @@ function compile(inputPath, outputPath, dir, opts = {}) {
 			git_commit_count: s.git_commit_count,
 		}));
 	}
-
-	const compilation = {
+	const compiled = {
 		compiled_at: new Date().toISOString(), // Non-deterministic metadata (excluded from certificate)
 		claims_hash: certificate.input_hash.slice(7, 14),
 		compiler_version: compilerVersion,
@@ -1061,25 +1005,24 @@ function compile(inputPath, outputPath, dir, opts = {}) {
 			superseded_claims: claims.filter((c) => c.status === "superseded").length,
 			refuted_claims: claims.filter((c) => c.status === "refuted").length,
 			connectors: meta.connectors || [],
-			excluded_topics: Array.isArray(meta.excluded_topics) ? meta.excluded_topics : [],
+			excluded_topics: Array.isArray(meta.excluded_topics)
+				? meta.excluded_topics
+				: [],
 		},
 		compilation_certificate: certificate,
 	};
-
-	compilation.next_actions = nextActionsModule.nextActions(compilation);
-
+	const compilation = Object.assign(compiled, {
+		next_actions: nextActionsModule.nextActions(compiled),
+	});
 	// Write compilation output
 	atomicWriteJSON(compilationOutputPath, compilation, 2);
-
 	// Generate topic-map manifest (.grainulator/evidence/manifest.json)
 	// Pass sprintsInfo to avoid re-running detectSprints in manifest generator
 	if (!opts.skipSprintDetection) {
 		generateManifest(compilation, baseDir, sprintsInfo);
 	}
-
 	return compilation;
 }
-
 function inferPhase(phaseSummary) {
 	// Walk backwards through phases to find the latest completed one
 	const phases = ["evaluate", "prototype", "research", "define"];
@@ -1090,7 +1033,6 @@ function inferPhase(phaseSummary) {
 	}
 	return "init";
 }
-
 // ─── Self-Containment Scanner ────────────────────────────────────────────────
 function scanSelfContainment(dirs) {
 	const extPattern =
@@ -1103,10 +1045,15 @@ function scanSelfContainment(dirs) {
 			const raw = fs.readFileSync(path.join(dir, file), "utf8");
 			// Strip inline script/style bodies so URLs inside JS/CSS data aren't flagged.
 			// Preserve <script src="..."> tags (external scripts we DO want to detect).
-			const content = withoutElements(raw, ["script", "style"], { keepTags: true });
+			const content = withoutElements(raw, ["script", "style"], {
+				keepTags: true,
+			});
 			const matches = [];
-			let m;
-			while ((m = extPattern.exec(content)) !== null) {
+			for (
+				let m = extPattern.exec(content);
+				m !== null;
+				m = extPattern.exec(content)
+			) {
 				matches.push(m[1]);
 			}
 			results.push({ file: path.join(dir, file), external: matches });
@@ -1114,16 +1061,13 @@ function scanSelfContainment(dirs) {
 	}
 	return results;
 }
-
 // ─── CLI ─────────────────────────────────────────────────────────────────────
 const isMain =
 	process.argv[1] &&
 	fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
-
 if (isMain) {
 	const config = loadConfig(TARGET_DIR);
 	const args = process.argv.slice(2);
-
 	// --help / -h
 	if (args.includes("--help") || args.includes("-h")) {
 		console.log(`Grainulator Compiler v0.2.0 — Bran-based compilation for research claims
@@ -1145,7 +1089,6 @@ Options:
   --json        Output as JSON (works with --summary, --check, --gate, --scan, --next)`);
 		process.exit(0);
 	}
-
 	// --scan mode: check HTML artifacts for external dependencies
 	if (args.includes("--scan")) {
 		const scanDirs = ["output", "research", "evidence", "prototypes"].map((d) =>
@@ -1157,13 +1100,14 @@ Options:
 			if (fs.existsSync(d)) {
 				fs.readdirSync(d, { withFileTypes: true })
 					.filter((e) => e.isDirectory())
-					.forEach((e) => allDirs.push(path.join(d, e.name)));
+					.forEach((e) => {
+						allDirs.push(path.join(d, e.name));
+					});
 			}
 		}
 		const results = scanSelfContainment(allDirs);
 		const clean = results.filter((r) => r.external.length === 0);
 		const dirty = results.filter((r) => r.external.length > 0);
-
 		const scanJsonFlag = args.includes("--json");
 		if (scanJsonFlag) {
 			console.log(
@@ -1180,7 +1124,6 @@ Options:
 			);
 			process.exit(dirty.length > 0 ? 1 : 0);
 		}
-
 		console.log(`Self-Containment Scan`);
 		console.log("=".repeat(50));
 		console.log(`Scanned: ${results.length} HTML files`);
@@ -1190,7 +1133,9 @@ Options:
 			console.log("\nExternal dependencies found:");
 			dirty.forEach((r) => {
 				console.log(`  ${r.file}:`);
-				r.external.forEach((url) => console.log(`    → ${url}`));
+				r.external.forEach((url) => {
+					console.log(`    → ${url}`);
+				});
 			});
 			process.exit(1);
 		} else {
@@ -1198,7 +1143,6 @@ Options:
 		}
 		process.exit(0);
 	}
-
 	// --diff mode: compare two compilation files
 	if (args.includes("--diff")) {
 		const diffIdx = args.indexOf("--diff");
@@ -1214,20 +1158,19 @@ Options:
 		try {
 			before = JSON.parse(fs.readFileSync(fileA, "utf8"));
 		} catch (e) {
-			console.error(`Error: ${fileA} is not valid JSON — ${e.message}`);
+			console.error(`Error: ${fileA} is not valid JSON — ${errorMessage(e)}`);
 			process.exit(1);
 		}
 		try {
 			after = JSON.parse(fs.readFileSync(fileB, "utf8"));
 		} catch (e) {
-			console.error(`Error: ${fileB} is not valid JSON — ${e.message}`);
+			console.error(`Error: ${fileB} is not valid JSON — ${errorMessage(e)}`);
 			process.exit(1);
 		}
 		const delta = diffCompilations(before, after);
 		console.log(JSON.stringify(delta, null, 2));
 		process.exit(0);
 	}
-
 	// Parse --input and --output flags
 	let inputPath = null;
 	let outputPath = null;
@@ -1239,7 +1182,6 @@ Options:
 	if (outputIdx !== -1 && args[outputIdx + 1]) {
 		outputPath = path.resolve(args[outputIdx + 1]);
 	}
-
 	const jsonFlag = args.includes("--json");
 	const quietFlag = args.includes("--quiet") || args.includes("-q");
 	let compilation;
@@ -1251,18 +1193,15 @@ Options:
 		// CLI entry point: surface the error and exit with non-zero.
 		// The library path (called from lib/serve-mcp.js, lib/compiler.js)
 		// rethrows cleanly so MCP servers can catch it.
-		console.error(`Error: ${err.message}`);
+		console.error(`Error: ${errorMessage(err)}`);
 		process.exit(1);
 	}
-
 	// --quiet / -q: one-liner output for scripts and AI agents (~13 tokens vs ~4,600)
 	if (quietFlag && !args.includes("--summary")) {
 		const c = compilation;
 		const conflicts = c.sprint_meta.conflicted_claims || 0;
 		const suffix = conflicts > 0 ? ` (${conflicts} conflicts)` : "";
-		const line = `evidence: compiled ${c.sprint_meta.total_claims} claims, ${
-			Object.keys(c.coverage).length
-		} topics${suffix}`;
+		const line = `evidence: compiled ${c.sprint_meta.total_claims} claims, ${Object.keys(c.coverage).length} topics${suffix}`;
 		if (jsonFlag) {
 			console.log(
 				JSON.stringify({
@@ -1280,7 +1219,6 @@ Options:
 		}
 		process.exit(c.status === "blocked" ? 1 : 0);
 	}
-
 	if (args.includes("--summary")) {
 		const c = compilation;
 		const statusIcon = c.status === "ready" ? "\u2713" : "\u2717";
@@ -1292,20 +1230,16 @@ Options:
 		console.log(
 			`Claims: ${c.sprint_meta.total_claims} total, ${c.sprint_meta.active_claims} active, ${c.sprint_meta.conflicted_claims} conflicted`,
 		);
-
 		if (c.sprints && c.sprints.length > 0) {
 			console.log(`Sprints: ${c.sprints.length} detected`);
 			c.sprints.forEach((s) => {
 				const icon = s.status === "active" ? ">>" : "  ";
 				console.log(
-					`  ${icon} [${s.status.toUpperCase().padEnd(8)}] ${s.name} (${
-						s.phase
-					}, ${s.claims_count} claims)`,
+					`  ${icon} [${s.status.toUpperCase().padEnd(8)}] ${s.name} (${s.phase}, ${s.claims_count} claims)`,
 				);
 			});
 		}
 		console.log();
-
 		if (Object.keys(c.coverage).length > 0) {
 			console.log("Coverage:");
 			Object.entries(c.coverage).forEach(([topic, entry]) => {
@@ -1331,14 +1265,11 @@ Options:
 						? ` [${entry.type_diversity}/${VALID_TYPES.length} types]`
 						: "";
 				console.log(
-					`  ${icon} ${topic.padEnd(20)} ${bar} ${entry.max_evidence} (${
-						entry.claims
-					} claims)${srcInfo}${typeInfo}`,
+					`  ${icon} ${topic.padEnd(20)} ${bar} ${entry.max_evidence} (${entry.claims} claims)${srcInfo}${typeInfo}`,
 				);
 			});
 			console.log();
 		}
-
 		if (c.corroboration && Object.keys(c.corroboration).length > 0) {
 			const corroborated = Object.entries(c.corroboration).filter(
 				([, v]) => v > 0,
@@ -1351,12 +1282,12 @@ Options:
 				console.log();
 			}
 		}
-
 		if (c.errors.length > 0) {
 			console.log("Errors:");
-			c.errors.forEach((e) => console.log(`  ${e.code}: ${e.message}`));
+			c.errors.forEach((e) => {
+				console.log(`  ${e.code}: ${e.message}`);
+			});
 			console.log();
-
 			// Show expected shape if schema errors exist
 			const hasSchemaErrors = c.errors.some(
 				(e) =>
@@ -1394,22 +1325,20 @@ Options:
 				);
 			}
 		}
-
 		if (c.warnings.length > 0) {
 			console.log("Warnings:");
-			c.warnings.forEach((w) => console.log(`  ${w.code}: ${w.message}`));
+			c.warnings.forEach((w) => {
+				console.log(`  ${w.code}: ${w.message}`);
+			});
 			console.log();
 		}
-
 		console.log(
 			`Certificate: ${c.compilation_certificate.input_hash.slice(0, 20)}...`,
 		);
-
 		if (jsonFlag) {
 			console.log(JSON.stringify(c, null, 2));
 		}
 	}
-
 	if (args.includes("--check")) {
 		if (compilation.status === "blocked") {
 			if (jsonFlag) {
@@ -1424,9 +1353,9 @@ Options:
 				console.error(
 					`Compilation blocked: ${compilation.errors.length} error(s)`,
 				);
-				compilation.errors.forEach((e) =>
-					console.error(`  ${e.code}: ${e.message}`),
-				);
+				compilation.errors.forEach((e) => {
+					console.error(`  ${e.code}: ${e.message}`);
+				});
 			}
 			process.exit(1);
 		} else {
@@ -1438,16 +1367,13 @@ Options:
 			process.exit(0);
 		}
 	}
-
 	if (args.includes("--gate")) {
 		// Staleness check: is compilation.json older than claims.json?
 		const compilationPath = path.join(TARGET_DIR, config.compiler.compilation);
 		const claimsPath = path.join(TARGET_DIR, config.compiler.claims);
-
 		if (fs.existsSync(compilationPath) && fs.existsSync(claimsPath)) {
 			const compilationMtime = fs.statSync(compilationPath).mtimeMs;
 			const claimsMtime = fs.statSync(claimsPath).mtimeMs;
-
 			if (claimsMtime > compilationMtime) {
 				console.error(
 					"Gate FAILED: compilation.json is stale. Recompiling now...",
@@ -1455,7 +1381,6 @@ Options:
 				// The compile() call above already refreshed it, so this is informational
 			}
 		}
-
 		if (compilation.status === "blocked") {
 			if (jsonFlag) {
 				console.log(
@@ -1467,13 +1392,12 @@ Options:
 				);
 			} else {
 				console.error(`Gate FAILED: ${compilation.errors.length} blocker(s)`);
-				compilation.errors.forEach((e) =>
-					console.error(`  ${e.code}: ${e.message}`),
-				);
+				compilation.errors.forEach((e) => {
+					console.error(`  ${e.code}: ${e.message}`);
+				});
 			}
 			process.exit(1);
 		}
-
 		if (jsonFlag) {
 			console.log(
 				JSON.stringify(
@@ -1490,20 +1414,16 @@ Options:
 		} else {
 			// Print a one-line gate pass for audit
 			console.log(
-				`Gate PASSED: ${compilation.sprint_meta.active_claims} claims, ${
-					Object.keys(compilation.coverage).length
-				} topics, hash ${compilation.claims_hash}`,
+				`Gate PASSED: ${compilation.sprint_meta.active_claims} claims, ${Object.keys(compilation.coverage).length} topics, hash ${compilation.claims_hash}`,
 			);
 		}
 		process.exit(0);
 	}
-
 	// ─── --next: Data-driven next action recommendation ──────────────────────────
 	if (args.includes("--next")) {
 		const n = parseInt(args[args.indexOf("--next") + 1]) || 1;
 		const actions = computeNextActions(compilation);
 		const top = actions.slice(0, n);
-
 		if (top.length === 0) {
 			console.log("\nNo actions recommended — sprint looks complete.");
 			console.log(
@@ -1511,9 +1431,7 @@ Options:
 			);
 		} else {
 			console.log(
-				`\nNext ${
-					top.length === 1 ? "action" : top.length + " actions"
-				} (by Bran priority):`,
+				`\nNext ${top.length === 1 ? "action" : top.length + " actions"} (by Bran priority):`,
 			);
 			console.log("=".repeat(50));
 			top.forEach((a, i) => {
@@ -1530,12 +1448,6 @@ Options:
 		process.exit(0);
 	}
 } // end if (isMain)
-
-/**
- * Suggest next actions based on compilation state (gaps, conflicts, weak evidence).
- * @param {object} comp - A compilation.json object
- * @returns {Array<{action: string, priority: string, target: string}>} Ordered action suggestions
- */
 function computeNextActions(comp) {
 	const actions = [];
 	const coverage = comp.coverage || {};
@@ -1543,7 +1455,6 @@ function computeNextActions(comp) {
 	const phase = comp.sprint_meta?.phase || "init";
 	const phases = comp.phase_summary || {};
 	const corroboration = comp.corroboration || {};
-
 	// ── Priority 0: Conflicts with quoted passage support on both sides ─────
 	// Same policy as lib/next-actions.cjs: the user decides these.
 	const userDecides = new Set();
@@ -1555,10 +1466,10 @@ function computeNextActions(comp) {
 			score: 1001,
 			command: `/resolve ${c.claims[0]} ${c.claims[1]}`,
 			reason: `Both ${c.claims[0]} and ${c.claims[1]} quote a stored source passage; compare both quotes and decide (${c.outcome}).`,
-			impact: "A person, not the evidence tier or a model, settles the disagreement.",
+			impact:
+				"A person, not the evidence tier or a model, settles the disagreement.",
 		});
 	}
-
 	// ── Priority 1: Unresolved conflicts (blocks compilation) ──────────────
 	if (conflicts.unresolved.length > 0) {
 		conflicts.unresolved.forEach((c) => {
@@ -1572,11 +1483,9 @@ function computeNextActions(comp) {
 			});
 		});
 	}
-
 	// ── Priority 2: Phase progression ──────────────────────────────────────
 	const phaseFlow = ["init", "define", "research", "prototype", "evaluate"];
 	const phaseIdx = phaseFlow.indexOf(phase);
-
 	if (phase === "init") {
 		actions.push({
 			priority: "P1-PHASE",
@@ -1587,7 +1496,6 @@ function computeNextActions(comp) {
 			impact: "Establishes sprint question and seeds constraint claims.",
 		});
 	}
-
 	// If in define, push toward research
 	if (
 		phase === "define" &&
@@ -1601,7 +1509,6 @@ function computeNextActions(comp) {
 			.sort((a, b) => a[1].claims - b[1].claims)
 			.filter(([t]) => !constraintTopics.includes(t) || coverage[t].claims <= 1)
 			.map(([t]) => t)[0];
-
 		actions.push({
 			priority: "P1-PHASE",
 			score: 850,
@@ -1610,15 +1517,13 @@ function computeNextActions(comp) {
 			impact: "Adds web-level evidence. Moves sprint into research phase.",
 		});
 	}
-
 	// If lots of research but no prototypes
 	if (phaseIdx >= 2 && (!phases.prototype || phases.prototype.claims === 0)) {
 		// Find topic with most web claims — best candidate to upgrade
 		const webHeavy = Object.entries(coverage)
 			.filter(([, e]) => e.max_evidence === "web" && e.claims >= 2)
 			.sort((a, b) => b[1].claims - a[1].claims);
-
-		if (webHeavy.length > 0) {
+		if (webHeavy[0]) {
 			actions.push({
 				priority: "P1-PHASE",
 				score: 800,
@@ -1628,7 +1533,6 @@ function computeNextActions(comp) {
 			});
 		}
 	}
-
 	// ── Priority 3: Weak evidence topics ───────────────────────────────────
 	const evidenceRank = {
 		stated: 1,
@@ -1644,18 +1548,14 @@ function computeNextActions(comp) {
 		evaluate: 4,
 	};
 	const expected = phaseExpectation[phase] || 2;
-
 	Object.entries(coverage).forEach(([topic, entry]) => {
 		const rank = evidenceRank[entry.max_evidence] || 1;
 		const constraintRatio = (entry.constraint_count || 0) / entry.claims;
-
 		// Skip constraint-dominated topics
 		if (constraintRatio > 0.5) return;
-
 		if (rank < expected) {
 			const gap = expected - rank;
 			const score = 600 + gap * 50 + entry.claims * 5;
-
 			if (rank <= 2 && expected >= 4) {
 				actions.push({
 					priority: "P2-EVIDENCE",
@@ -1675,12 +1575,10 @@ function computeNextActions(comp) {
 			}
 		}
 	});
-
 	// ── Priority 4: Type monoculture ───────────────────────────────────────
 	Object.entries(coverage).forEach(([topic, entry]) => {
 		const constraintRatio = (entry.constraint_count || 0) / entry.claims;
 		if (constraintRatio > 0.5) return;
-
 		if ((entry.type_diversity || 0) < 2 && entry.claims >= 2) {
 			const missing = (entry.missing_types || []).slice(0, 3).join(", ");
 			actions.push({
@@ -1691,7 +1589,6 @@ function computeNextActions(comp) {
 				impact: "Adds risk/recommendation claims. Improves type diversity.",
 			});
 		}
-
 		// Missing risk claims specifically
 		if (entry.claims >= 3 && !(entry.types || []).includes("risk")) {
 			actions.push({
@@ -1703,7 +1600,6 @@ function computeNextActions(comp) {
 			});
 		}
 	});
-
 	// ── Priority 5: Echo chambers ──────────────────────────────────────────
 	Object.entries(coverage).forEach(([topic, entry]) => {
 		if (entry.claims >= 3 && (entry.source_count || 1) === 1) {
@@ -1711,26 +1607,21 @@ function computeNextActions(comp) {
 				priority: "P4-CORROBORATION",
 				score: 300 + entry.claims * 2,
 				command: `/witness ${entry.claim_ids?.[0] || ""} <url>`,
-				reason: `Topic "${topic}" has ${entry.claims} claims all from "${
-					(entry.source_origins || ["unknown"])[0]
-				}". Single source.`,
+				reason: `Topic "${topic}" has ${entry.claims} claims all from "${(entry.source_origins || ["unknown"])[0]}". Single source.`,
 				impact: "Adds external corroboration. Breaks echo chamber.",
 			});
 		}
 	});
-
 	// ── Priority 6: Zero corroboration on high-value claims ────────────────
 	const uncorroborated = Object.entries(corroboration)
 		.filter(([, count]) => count === 0)
 		.map(([id]) => id);
-
 	// Find tested claims with zero corroboration — highest value to witness
 	if (uncorroborated.length > 0) {
 		const testedUncorroborated = (comp.resolved_claims || [])
 			.filter((c) => c.evidence === "tested" && uncorroborated.includes(c.id))
 			.slice(0, 1);
-
-		if (testedUncorroborated.length > 0) {
+		if (testedUncorroborated[0]) {
 			actions.push({
 				priority: "P4-CORROBORATION",
 				score: 250,
@@ -1740,13 +1631,11 @@ function computeNextActions(comp) {
 			});
 		}
 	}
-
 	// ── Priority 7: Sprint completion suggestions ──────────────────────────
 	const hasEvaluate = phases.evaluate && phases.evaluate.claims > 0;
 	const allTopicsTested = Object.entries(coverage)
 		.filter(([, e]) => (e.constraint_count || 0) / e.claims <= 0.5)
 		.every(([, e]) => evidenceRank[e.max_evidence] >= 4);
-
 	if (hasEvaluate && allTopicsTested && conflicts.unresolved.length === 0) {
 		actions.push({
 			priority: "P5-SHIP",
@@ -1766,10 +1655,8 @@ function computeNextActions(comp) {
 				"Validates claims, resolves conflicts, produces portable evidence data.",
 		});
 	}
-
 	// Sort by score descending
 	actions.sort((a, b) => b.score - a.score);
-
 	// Deduplicate by command
 	const seen = new Set();
 	return actions.filter((a) => {
@@ -1779,15 +1666,14 @@ function computeNextActions(comp) {
 		return true;
 	});
 }
-
 // Export for use as a library
 export {
 	compile,
-	diffCompilations,
 	computeNextActions,
+	detectSprints,
+	diffCompilations,
+	EVIDENCE_TIERS,
 	generateManifest,
 	loadConfig,
-	detectSprints,
-	EVIDENCE_TIERS,
 	VALID_TYPES,
 };

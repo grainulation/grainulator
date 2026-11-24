@@ -1,0 +1,850 @@
+import {
+	decodeEntities as decodeHtmlEntities,
+	withoutElements,
+} from "../../shared/lib/html.cjs";
+
+/**
+ * smart-fetch.js — Size-efficient web fetch with semantic extraction
+ *
+ * Reduces fetch+parse cost 80-99% for blog/docs/wiki sites by:
+ *   1. Skipping <head> bulk (scripts, styles, fonts, preloads)
+ *   2. Targeting <main> / <article> semantic regions
+ *   3. Preserving metadata (title, og:*, description, ld+json)
+ *   4. Quality-checking extraction and falling back to full on failure
+ *
+ * Phase 1: core extraction + fetch, no cache. Opt-in via explicit call.
+ * Zero runtime dependencies (node:https, node:crypto only).
+ */
+
+import dns from "node:dns/promises";
+import type { IncomingMessage } from "node:http";
+import http from "node:http";
+import https from "node:https";
+import net from "node:net";
+import { URL } from "node:url";
+import zlib from "node:zlib";
+import { FetchCache } from "./fetch-cache.js";
+
+type FetchMode = "auto" | "full" | "concise" | "meta-only";
+type FetchQuality = "high" | "degraded" | "failed";
+
+export interface SmartFetchOptions {
+	mode?: string | true | undefined;
+	timeout?: number | undefined;
+	userAgent?: string | undefined;
+	privacy?: boolean | undefined;
+	maxBytes?: number | undefined;
+	cache?: boolean | undefined;
+	cacheInstance?: Pick<FetchCache, "get" | "set"> | undefined;
+	allowPrivate?: boolean | undefined;
+}
+
+export interface CachedFetchResponse {
+	ok: boolean;
+	url: string;
+	quality: FetchQuality;
+	final_url?: string;
+	status?: number | undefined;
+	content_type?: string;
+	charset?: string;
+	mode_used?: Exclude<FetchMode, "auto"> | null;
+	truncated?: boolean;
+	title?: string;
+	description?: string;
+	content?: string;
+	metadata?: {
+		headings: { level: number; text: string }[];
+		word_count: number;
+		og: { title: string; description: string; image: string };
+		ld_json_count: number;
+	};
+	cached?: boolean;
+	size?: { full: number; extracted: number };
+	reduction_pct?: number;
+	warnings?: string[];
+	error?: string;
+	etag?: string | null;
+	elapsed_ms?: number;
+}
+
+export interface SmartFetchResponse extends CachedFetchResponse {
+	elapsed_ms: number;
+}
+
+interface RequestOptions {
+	timeout: number;
+	userAgent: string;
+	maxBytes: number;
+	allowPrivate: boolean;
+	forceFull?: boolean;
+}
+
+interface HeadResult {
+	status: number | undefined;
+	contentType: string;
+	contentLength: number | null;
+}
+
+interface BodyResult {
+	status: number | undefined;
+	contentType: string;
+	finalUrl: string;
+	body: string;
+	size: number;
+	truncated: boolean;
+	sawCloseTag?: boolean;
+}
+
+// ─── SSRF guard ─────────────────────────────────────────────────────────────
+// Block fetches that would resolve to internal / link-local / loopback /
+// cloud-metadata IP space. A single unguarded fetch from an LLM-driven MCP
+// call can exfiltrate cloud credentials (AWS IMDS at 169.254.169.254) or
+// pivot into the operator's internal network. Applies on every redirect.
+//
+// Override: pass { allowPrivate: true } in smartFetch options for local dev.
+
+const PRIVATE_IPV4_RANGES: readonly (readonly [string, number])[] = [
+	// [network, prefix_bits] — RFC1918 + special-use
+	["10.0.0.0", 8],
+	["172.16.0.0", 12],
+	["192.168.0.0", 16],
+	["127.0.0.0", 8], // loopback
+	["169.254.0.0", 16], // link-local (includes AWS IMDS 169.254.169.254)
+	["100.64.0.0", 10], // CGNAT
+	["0.0.0.0", 8], // "this network"
+	["224.0.0.0", 4], // multicast
+	["240.0.0.0", 4], // reserved
+];
+
+function ipv4InRange(ip: string, networkStr: string, prefix: number) {
+	const toInt = (s: string) =>
+		s.split(".").reduce((acc, o) => (acc << 8) + Number(o), 0) >>> 0;
+	const ipInt = toInt(ip);
+	const netInt = toInt(networkStr);
+	const mask = prefix === 0 ? 0 : (~0 << (32 - prefix)) >>> 0;
+	return (ipInt & mask) === (netInt & mask);
+}
+
+function isPrivateIPv4(ip: string) {
+	return PRIVATE_IPV4_RANGES.some(([net, bits]) => ipv4InRange(ip, net, bits));
+}
+
+function isPrivateIPv6(ip: string) {
+	const lower = ip.toLowerCase();
+	// Loopback, unspecified, link-local, unique-local.
+	if (lower === "::1" || lower === "::") return true;
+	if (lower.startsWith("fe80:") || lower.startsWith("fe80::")) return true;
+	if (/^f[cd][0-9a-f]{2}:/.test(lower)) return true; // fc00::/7
+	// IPv4-mapped (::ffff:a.b.c.d) — check the embedded v4.
+	const v4mapped = lower.match(/^::ffff:([0-9.]+)$/);
+	if (v4mapped && net.isIPv4(v4mapped[1]!)) return isPrivateIPv4(v4mapped[1]!);
+	return false;
+}
+
+/**
+ * Resolve `hostname` and return true when the result refers to private
+ * address space. IP literals are checked directly; names go through DNS.
+ * A hostname that resolves to MULTIPLE addresses is unsafe if ANY is
+ * private — defeats DNS-rebinding bait.
+ */
+async function hostnameIsPrivate(hostname: string) {
+	if (net.isIPv4(hostname)) return isPrivateIPv4(hostname);
+	if (net.isIPv6(hostname)) return isPrivateIPv6(hostname);
+	// "localhost" resolves differently on different systems; block explicitly.
+	if (hostname === "localhost" || hostname.endsWith(".localhost")) return true;
+	try {
+		const records = await dns.lookup(hostname, { all: true });
+		return records.some(({ address, family }) =>
+			family === 4 ? isPrivateIPv4(address) : isPrivateIPv6(address),
+		);
+	} catch {
+		// DNS failure — treat as unsafe; the fetch would fail anyway.
+		return true;
+	}
+}
+
+/**
+ * Validate a URL against SSRF rules. Throws a descriptive Error when
+ * the URL would hit private / reserved space; returns silently otherwise.
+ * `allowPrivate` escape hatch for local-dev use.
+ */
+async function assertSafeUrl(
+	url: string,
+	{ allowPrivate = false }: { allowPrivate?: boolean } = {},
+) {
+	const parsed = new URL(url);
+	if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+		throw new Error(`blocked-scheme: ${parsed.protocol}`);
+	}
+	if (allowPrivate) return;
+	if (await hostnameIsPrivate(parsed.hostname)) {
+		throw new Error(
+			`blocked-private-address: ${parsed.hostname} resolves to a private / reserved IP range`,
+		);
+	}
+}
+
+const DEFAULT_UA = "Mozilla/5.0 (compatible; GrainulationSmartFetch/1.0)";
+const DEFAULT_TIMEOUT = 15000;
+function isWikiOrDocsUrl(value: string) {
+	const { hostname, pathname } = new URL(value);
+	return (
+		hostname === "wikipedia.org" ||
+		hostname.endsWith(".wikipedia.org") ||
+		hostname === "developer.mozilla.org" ||
+		(hostname === "nodejs.org" && pathname.startsWith("/api/")) ||
+		pathname.includes("/wiki/") ||
+		pathname.includes("/doc/") ||
+		pathname.includes("/docs/")
+	);
+}
+
+/**
+ * Fetch and extract. Opt-in; no default behavior changes elsewhere.
+ *
+ * @param {string} url
+ * @param {object} [options]
+ * @param {"auto"|"full"|"concise"|"meta-only"} [options.mode="auto"]
+ * @param {number} [options.timeout=15000]
+ * @param {string} [options.userAgent]
+ * @param {boolean} [options.privacy=false] If true, no caching downstream.
+ * @param {number} [options.maxBytes=500000] Hard ceiling on body size.
+ * @returns {Promise<SmartFetchResponse>}
+ */
+export async function smartFetch(
+	url: string,
+	options: SmartFetchOptions = {},
+): Promise<SmartFetchResponse> {
+	const VALID_MODES: readonly (string | true)[] = [
+		"auto",
+		"full",
+		"concise",
+		"meta-only",
+	];
+	const mode = options.mode || "auto";
+	if (!VALID_MODES.includes(mode)) {
+		return {
+			ok: false,
+			url,
+			quality: "failed",
+			warnings: [`invalid-mode: ${mode} (valid: ${VALID_MODES.join(", ")})`],
+			elapsed_ms: 0,
+		};
+	}
+	const opts = {
+		mode: mode as FetchMode,
+		timeout: options.timeout || DEFAULT_TIMEOUT,
+		userAgent: options.userAgent || DEFAULT_UA,
+		privacy: options.privacy === true,
+		maxBytes: options.maxBytes || 500000,
+		cache: options.cache !== false && options.privacy !== true,
+		cacheInstance: options.cacheInstance,
+		allowPrivate: options.allowPrivate === true,
+	};
+
+	const warnings: string[] = [];
+	const started = Date.now();
+
+	// SSRF guard — reject private / loopback / link-local URLs up-front so
+	// the rest of the pipeline (cache, content-type check, extraction) never
+	// sees a request that would hit internal network or cloud metadata.
+	try {
+		await assertSafeUrl(url, { allowPrivate: opts.allowPrivate });
+	} catch (err) {
+		return {
+			ok: false,
+			url,
+			quality: "failed",
+			warnings: [(err as Error).message],
+			error: (err as Error).message,
+			elapsed_ms: Date.now() - started,
+		};
+	}
+
+	// Detect potentially sensitive query params → disable cache for this call
+	// to avoid writing tokens to disk. User can opt out via explicit cache: true,
+	// but the default is safe.
+	if (opts.cache && hasSensitiveParams(url)) {
+		warnings.push("cache-disabled-sensitive-params");
+		opts.cache = false;
+	}
+
+	// Cache lookup (before any network)
+	let cache: Pick<FetchCache, "get" | "set"> | null = null;
+	if (opts.cache) {
+		cache = opts.cacheInstance || new FetchCache();
+		try {
+			const cached = cache.get(url, opts.mode);
+			if (cached) {
+				return { ...cached, cached: true, elapsed_ms: Date.now() - started };
+			}
+		} catch (err) {
+			warnings.push(`cache-read-error: ${(err as Error).message}`);
+		}
+	}
+
+	let fetched: BodyResult;
+	try {
+		fetched = await fetchWithStrategy(url, opts, warnings);
+	} catch (err) {
+		return {
+			ok: false,
+			url,
+			quality: "failed",
+			mode_used: null,
+			warnings: [...warnings, `fetch-error: ${(err as Error).message}`],
+			error: (err as Error).message,
+			elapsed_ms: Date.now() - started,
+		};
+	}
+
+	// Content-Type gate
+	const ct = (fetched.contentType || "").toLowerCase();
+	if (!/text\/html|application\/xhtml/.test(ct)) {
+		return {
+			ok: false,
+			url,
+			final_url: fetched.finalUrl,
+			status: fetched.status,
+			content_type: fetched.contentType,
+			quality: "failed",
+			mode_used: null,
+			warnings: [...warnings, `unsupported-content-type: ${ct || "unknown"}`],
+			elapsed_ms: Date.now() - started,
+		};
+	}
+
+	// Charset gate — we only decode UTF-8 bodies in Phase 1
+	const charset = extractCharset(ct);
+	if (charset && !/utf-?8/i.test(charset)) {
+		warnings.push(`charset-unsupported: ${charset} (treating as utf-8)`);
+	}
+
+	const meta = extractMeta(fetched.body);
+	const bodyExtract = extractBody(fetched.body);
+
+	// Quality check
+	let quality = assessQuality(bodyExtract);
+	let modeUsed = opts.mode === "auto" ? "concise" : opts.mode;
+
+	// Auto mode: retry with full fetch if quality is bad AND we didn't already do a full fetch
+	if (opts.mode === "auto" && quality === "failed" && fetched.truncated) {
+		warnings.push("auto-retry: full fetch after failed concise");
+		try {
+			const full = await fetchRaw(url, { ...opts, forceFull: true }, warnings);
+			fetched = full;
+			const retryExtract = extractBody(full.body);
+			if (retryExtract.length > bodyExtract.length) {
+				bodyExtract.splice(0, bodyExtract.length, ...retryExtract);
+			}
+			quality = assessQuality(retryExtract);
+			modeUsed = "full";
+		} catch (err) {
+			warnings.push(`auto-retry-failed: ${(err as Error).message}`);
+		}
+	}
+
+	// Build response per mode
+	const content = shapeContent(
+		opts.mode === "auto" ? modeUsed || "concise" : opts.mode,
+		meta,
+		bodyExtract,
+	);
+
+	// Surface truncation so consumers don't think mode=full returned everything.
+	if (fetched.truncated) {
+		warnings.push(`body-truncated-at-${opts.maxBytes}-bytes`);
+	}
+
+	const fullBytes = fetched.size;
+	const extractedSerialized = Buffer.byteLength(
+		JSON.stringify({
+			title: meta.title,
+			description: meta.description,
+			content,
+		}),
+		"utf8",
+	);
+
+	const response = {
+		ok: quality !== "failed",
+		url,
+		final_url: fetched.finalUrl,
+		status: fetched.status,
+		content_type: fetched.contentType,
+		charset: charset || "utf-8",
+		mode_used: modeUsed,
+		quality,
+		truncated:
+			fetched.truncated || content.length < bodyExtract.join("\n\n").length,
+		title: meta.title,
+		description: meta.description,
+		content,
+		metadata: {
+			headings: meta.headings.slice(0, 25),
+			word_count: bodyExtract.join(" ").split(/\s+/).filter(Boolean).length,
+			og: meta.og,
+			ld_json_count: meta.ldJsonCount,
+		},
+		cached: false,
+		size: { full: fullBytes, extracted: extractedSerialized },
+		reduction_pct:
+			fullBytes > 0
+				? Math.round((1 - extractedSerialized / fullBytes) * 100)
+				: 0,
+		warnings,
+	};
+
+	// Cache successful fetches only (don't cache errors or failed quality).
+	// Safety: skip caching when the fetch went through a redirect
+	// (final_url !== url). This prevents both directions of cache poisoning:
+	//   1. Attacker redirect → target: would cache under target's slot
+	//   2. Target redirect → attacker: would cache attacker content under target's URL
+	// Genuine non-redirected responses still cache normally.
+	if (cache && opts.cache && response.ok && quality !== "failed") {
+		if (response.final_url && response.final_url !== url) {
+			response.warnings.push("cache-skipped-redirect");
+		} else {
+			try {
+				cache.set(url, opts.mode, response);
+			} catch (err) {
+				response.warnings.push(`cache-write-error: ${(err as Error).message}`);
+			}
+		}
+	}
+
+	return { ...response, elapsed_ms: Date.now() - started };
+}
+
+// ─── Fetch strategies ────────────────────────────────────────────────────────
+
+async function fetchWithStrategy(
+	url: string,
+	opts: RequestOptions,
+	warnings: string[],
+): Promise<BodyResult> {
+	const isWikiOrDocs = isWikiOrDocsUrl(url);
+
+	// HEAD first to check Content-Type + size (when possible)
+	let headInfo: HeadResult | null = null;
+	try {
+		headInfo = await fetchHead(url, opts);
+	} catch {
+		// HEAD failures are common (not all servers support HEAD); proceed with GET
+	}
+
+	if (headInfo && headInfo.contentLength) {
+		// If small, full fetch — not worth the range dance
+		if (headInfo.contentLength < 300 * 1024) {
+			const r = await fetchRaw(url, opts, warnings);
+			return { ...r, truncated: false };
+		}
+	}
+
+	// Wiki/docs: stream with cap, stop after </main> or </article> discovered
+	if (isWikiOrDocs) {
+		const r = await fetchStream(url, opts, warnings);
+		return r;
+	}
+
+	// Default: full fetch capped at maxBytes
+	const r = await fetchRaw(url, opts, warnings);
+	return r;
+}
+
+function fetchHead(url: string, opts: RequestOptions): Promise<HeadResult> {
+	return new Promise((resolve, reject) => {
+		const parsed = new URL(url);
+		const client = parsed.protocol === "http:" ? http : https;
+		const req = client.request(
+			{
+				method: "HEAD",
+				hostname: parsed.hostname,
+				port: parsed.port,
+				path: parsed.pathname + parsed.search,
+				timeout: opts.timeout,
+				headers: { "User-Agent": opts.userAgent, Accept: "text/html,*/*" },
+			},
+			(res) => {
+				res.resume();
+				resolve({
+					status: res.statusCode,
+					contentType: res.headers["content-type"] || "",
+					contentLength: res.headers["content-length"]
+						? Number(res.headers["content-length"])
+						: null,
+				});
+			},
+		);
+		req.on("error", reject);
+		req.on("timeout", () => {
+			req.destroy();
+			reject(new Error("head-timeout"));
+		});
+		req.end();
+	});
+}
+
+// Wrap res stream with decompression if needed. Returns the stream to read
+// text from, plus a warning if encoding was unsupported.
+function decompressedStream(res: IncomingMessage, warnings: string[]) {
+	const encoding = (res.headers["content-encoding"] || "").toLowerCase();
+	if (!encoding || encoding === "identity") return res;
+	if (encoding === "gzip") return res.pipe(zlib.createGunzip());
+	if (encoding === "deflate") return res.pipe(zlib.createInflate());
+	if (encoding === "br") return res.pipe(zlib.createBrotliDecompress());
+	warnings.push(`unsupported-content-encoding: ${encoding}`);
+	return res;
+}
+
+function fetchRaw(
+	url: string,
+	opts: RequestOptions,
+	warnings: string[],
+	redirects = 0,
+): Promise<BodyResult> {
+	return new Promise((resolve, reject) => {
+		if (redirects > 5) return reject(new Error("too-many-redirects"));
+		const parsed = new URL(url);
+		const client = parsed.protocol === "http:" ? http : https;
+		const req = client.get(
+			{
+				hostname: parsed.hostname,
+				port: parsed.port,
+				path: parsed.pathname + parsed.search,
+				timeout: opts.timeout,
+				headers: {
+					"User-Agent": opts.userAgent,
+					Accept: "text/html,*/*",
+					"Accept-Encoding": "gzip, deflate, br",
+				},
+			},
+			(res) => {
+				if (
+					res.statusCode! >= 300 &&
+					res.statusCode! < 400 &&
+					res.headers.location
+				) {
+					res.resume();
+					const next = new URL(res.headers.location, url).href;
+					// Re-check the redirect target against SSRF rules. An attacker
+					// controlling the upstream response can 302 us into private
+					// address space even if the initial URL was safe.
+					assertSafeUrl(next, { allowPrivate: opts.allowPrivate }).then(
+						() => resolve(fetchRaw(next, opts, warnings, redirects + 1)),
+						reject,
+					);
+					return;
+				}
+				if (
+					res.statusCode === 429 ||
+					(res.statusCode! >= 500 && res.statusCode! < 600)
+				) {
+					res.resume();
+					return reject(new Error(`http-${res.statusCode}`));
+				}
+				if (res.statusCode !== 200 && res.statusCode !== 206) {
+					res.resume();
+					return reject(new Error(`http-${res.statusCode}`));
+				}
+				const stream = decompressedStream(res, warnings);
+				let body = "";
+				let truncated = false;
+				stream.setEncoding("utf8");
+				stream.on("data", (c: string) => {
+					body += c;
+					if (Buffer.byteLength(body, "utf8") >= opts.maxBytes) {
+						truncated = true;
+						res.destroy();
+					}
+				});
+				stream.on("end", () =>
+					resolve({
+						status: res.statusCode,
+						contentType: res.headers["content-type"] || "",
+						finalUrl: url,
+						body,
+						size: Buffer.byteLength(body, "utf8"),
+						truncated,
+					}),
+				);
+				stream.on("close", () =>
+					resolve({
+						status: res.statusCode,
+						contentType: res.headers["content-type"] || "",
+						finalUrl: url,
+						body,
+						size: Buffer.byteLength(body, "utf8"),
+						truncated,
+					}),
+				);
+				stream.on("error", (err: Error) => {
+					warnings.push(`decompress-error: ${err.message}`);
+					resolve({
+						status: res.statusCode,
+						contentType: res.headers["content-type"] || "",
+						finalUrl: url,
+						body,
+						size: Buffer.byteLength(body, "utf8"),
+						truncated,
+					});
+				});
+			},
+		);
+		req.on("error", reject);
+		req.on("timeout", () => {
+			req.destroy();
+			reject(new Error("timeout"));
+		});
+	});
+}
+
+// Stream until </main> or </article> close tag detected, or cap hit
+function fetchStream(
+	url: string,
+	opts: RequestOptions,
+	warnings: string[],
+	redirects = 0,
+): Promise<BodyResult> {
+	return new Promise((resolve, reject) => {
+		if (redirects > 5) return reject(new Error("too-many-redirects"));
+		const parsed = new URL(url);
+		const client = parsed.protocol === "http:" ? http : https;
+		const req = client.get(
+			{
+				hostname: parsed.hostname,
+				port: parsed.port,
+				path: parsed.pathname + parsed.search,
+				timeout: opts.timeout,
+				headers: {
+					"User-Agent": opts.userAgent,
+					Accept: "text/html,*/*",
+					"Accept-Encoding": "gzip, deflate, br",
+				},
+			},
+			(res) => {
+				if (
+					res.statusCode! >= 300 &&
+					res.statusCode! < 400 &&
+					res.headers.location
+				) {
+					res.resume();
+					const next = new URL(res.headers.location, url).href;
+					assertSafeUrl(next, { allowPrivate: opts.allowPrivate }).then(
+						() => resolve(fetchStream(next, opts, warnings, redirects + 1)),
+						reject,
+					);
+					return;
+				}
+				if (res.statusCode !== 200 && res.statusCode !== 206) {
+					res.resume();
+					return reject(new Error(`http-${res.statusCode}`));
+				}
+				const stream = decompressedStream(res, warnings);
+				let body = "";
+				let truncated = false;
+				let sawCloseTag = false;
+				stream.setEncoding("utf8");
+				stream.on("data", (c: string) => {
+					body += c;
+					if (!sawCloseTag && /<\/main>|<\/article>/i.test(body.slice(-2048))) {
+						sawCloseTag = true;
+						// Grab a little more to not cut mid-paragraph
+						setTimeout(() => {
+							if (!res.destroyed) res.destroy();
+						}, 100);
+					}
+					if (Buffer.byteLength(body, "utf8") >= opts.maxBytes) {
+						truncated = true;
+						res.destroy();
+					}
+				});
+				stream.on("end", () =>
+					resolve({
+						status: res.statusCode,
+						contentType: res.headers["content-type"] || "",
+						finalUrl: url,
+						body,
+						size: Buffer.byteLength(body, "utf8"),
+						truncated,
+						sawCloseTag,
+					}),
+				);
+				stream.on("close", () =>
+					resolve({
+						status: res.statusCode,
+						contentType: res.headers["content-type"] || "",
+						finalUrl: url,
+						body,
+						size: Buffer.byteLength(body, "utf8"),
+						truncated,
+						sawCloseTag,
+					}),
+				);
+				stream.on("error", (err: Error) => {
+					warnings.push(`decompress-error: ${err.message}`);
+					resolve({
+						status: res.statusCode,
+						contentType: res.headers["content-type"] || "",
+						finalUrl: url,
+						body,
+						size: Buffer.byteLength(body, "utf8"),
+						truncated,
+						sawCloseTag,
+					});
+				});
+			},
+		);
+		req.on("error", reject);
+		req.on("timeout", () => {
+			req.destroy();
+			reject(new Error("timeout"));
+		});
+	});
+}
+
+// ─── Extraction ──────────────────────────────────────────────────────────────
+
+function extractCharset(contentType: string) {
+	const m = /charset=["']?([^"';\s]+)/i.exec(contentType);
+	return m ? m[1]! : null;
+}
+
+function extractMeta(html: string) {
+	const title = decodeEntities(
+		(/<title[^>]*>([\s\S]*?)<\/title>/i.exec(html) || [])[1]?.trim() || "",
+	);
+	const ogTitle = attr(
+		html,
+		/<meta\s+property=["']og:title["']\s+content=["']([^"']+)/i,
+	);
+	const ogDesc = attr(
+		html,
+		/<meta\s+property=["']og:description["']\s+content=["']([^"']+)/i,
+	);
+	const description = attr(
+		html,
+		/<meta\s+name=["']description["']\s+content=["']([^"']+)/i,
+	);
+	const ogImage = attr(
+		html,
+		/<meta\s+property=["']og:image["']\s+content=["']([^"']+)/i,
+	);
+	const ldJsonCount = (
+		html.match(/<script\s+type=["']application\/ld\+json["']/gi) || []
+	).length;
+
+	const headings = [];
+	const hRegex = /<h([1-3])[^>]*>([\s\S]*?)<\/h\1>/gi;
+	for (
+		let m = hRegex.exec(html);
+		m !== null && headings.length < 30;
+		m = hRegex.exec(html)
+	) {
+		const text = decodeEntities(
+			m[2]!
+				.replace(/<[^>]+>/g, " ")
+				.replace(/\s+/g, " ")
+				.trim(),
+		);
+		if (text.length > 0) headings.push({ level: Number(m[1]), text });
+	}
+
+	return {
+		title: title || ogTitle,
+		description: description || ogDesc,
+		og: { title: ogTitle, description: ogDesc, image: ogImage },
+		headings,
+		ldJsonCount,
+	};
+}
+
+function extractBody(html: string) {
+	const stripped = withoutElements(html, [
+		"script",
+		"style",
+		"nav",
+		"footer",
+		"aside",
+		"header",
+		"iframe",
+		"form",
+	]);
+
+	let target = "";
+	const m1 = /<main[^>]*>([\s\S]*?)<\/main>/i.exec(stripped);
+	if (m1) {
+		target = m1[1]!;
+	} else {
+		const m2 = /<article[^>]*>([\s\S]*?)<\/article>/i.exec(stripped);
+		if (m2) target = m2[1]!;
+		else target = stripped;
+	}
+
+	const pieces = [];
+	const tagRegex = /<(p|h[1-6]|li|blockquote|pre|code)[^>]*>([\s\S]*?)<\/\1>/gi;
+	for (let m = tagRegex.exec(target); m !== null; m = tagRegex.exec(target)) {
+		const text = decodeEntities(
+			m[2]!
+				.replace(/<[^>]+>/g, " ")
+				.replace(/\s+/g, " ")
+				.trim(),
+		);
+		if (text.length > 15) pieces.push(text);
+	}
+	return pieces;
+}
+
+function assessQuality(pieces: readonly string[]): FetchQuality {
+	const total = pieces.join(" ").length;
+	if (total >= 100 && pieces.length >= 2) return "high";
+	if (total >= 20) return "degraded";
+	return "failed";
+}
+
+function shapeContent(
+	mode: Exclude<FetchMode, "auto">,
+	_meta: ReturnType<typeof extractMeta>,
+	bodyPieces: readonly string[],
+) {
+	if (mode === "meta-only") return "";
+	const joined = bodyPieces.join("\n\n");
+	if (mode === "concise") return joined.slice(0, 2048);
+	return joined; // "full"
+}
+
+function attr(html: string, regex: RegExp) {
+	const m = regex.exec(html);
+	return m ? decodeEntities(m[1]!) : "";
+}
+
+// Param names that commonly carry secrets. Presence of any of these in
+// the query string → we refuse to cache this URL on disk.
+const SENSITIVE_PARAM_REGEX =
+	/(^|&|\?)(token|access_token|api[-_]?key|auth|password|secret|sig|signature|sas[-_]?token|bearer)=/i;
+
+function hasSensitiveParams(url: string) {
+	try {
+		const u = new URL(url);
+		return SENSITIVE_PARAM_REGEX.test(u.search);
+	} catch {
+		return false;
+	}
+}
+
+function decodeEntities(value: string): string;
+function decodeEntities(value: null): null;
+function decodeEntities(value: undefined): undefined;
+function decodeEntities(
+	value: string | null | undefined,
+): string | null | undefined {
+	return value ? decodeHtmlEntities(value) : value;
+}
+
+// Exposed for unit tests:
+export {
+	assessQuality as _assessQuality,
+	decodeEntities as _decodeEntities,
+	extractBody as _extractBody,
+	extractMeta as _extractMeta,
+};

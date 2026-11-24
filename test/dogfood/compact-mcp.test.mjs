@@ -1,3 +1,4 @@
+// Generated from typescript/test/dogfood/compact-mcp.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -18,13 +19,11 @@ import { correctClaim } from "../../packages/evidence/lib/maintenance.js";
 import { handleRequest as evidenceRequest } from "../../packages/evidence/lib/serve-mcp.js";
 import { Confluence } from "../../packages/memory/lib/confluence.js";
 import { mcp } from "../../scripts/lib/local-checks.mjs";
-
 const initializeParams = (protocolVersion = "2025-06-18") => ({
 	protocolVersion,
 	capabilities: {},
 	clientInfo: { name: "compact-test", version: "1" },
 });
-
 function readArtifactSnapshot(file) {
 	const fd = fs.openSync(file, fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW);
 	try {
@@ -36,7 +35,6 @@ function readArtifactSnapshot(file) {
 		fs.closeSync(fd);
 	}
 }
-
 async function fixture(t, toolset = "compact", protocolVersion = "2025-06-18") {
 	const base = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-compact-"));
 	t.after(() => fs.rmSync(base, { recursive: true, force: true }));
@@ -68,7 +66,8 @@ async function call(handler, name, args = {}) {
 	const seen = emittedFields.get(name) ?? new Set();
 	for (const field of Object.keys(value)) seen.add(field);
 	emittedFields.set(name, seen);
-	// Every advertised operation-specific field must occur on its successful path.
+	// Every top-level operation-specific field must occur on its successful path.
+	// Nested properties may be optional; the schema required list governs presence.
 	// Composite tools publish unions whose alternatives are covered separately.
 	if (
 		!["configure_sprint", "search_memory", "export_document"].includes(name)
@@ -77,15 +76,20 @@ async function call(handler, name, args = {}) {
 	}
 	return value;
 }
-function assertDeclaredFields(value, schema, location) {
+function assertDeclaredFields(
+	value,
+	schema,
+	location,
+	requireAdvertised = true,
+) {
 	for (const [field, child] of Object.entries(schema.properties || {})) {
 		if (["status", "message", "error", "output"].includes(field)) continue;
-		assert.ok(
-			Object.hasOwn(value, field),
-			`${location} advertises absent ${field}`,
-		);
+		const present = Object.hasOwn(value, field);
+		if (requireAdvertised || schema.required?.includes(field))
+			assert.ok(present, `${location} advertises absent ${field}`);
+		if (!present) continue;
 		if (child.properties)
-			assertDeclaredFields(value[field], child, `${location}/${field}`);
+			assertDeclaredFields(value[field], child, `${location}/${field}`, false);
 	}
 }
 const claim = {
@@ -112,7 +116,6 @@ const names = [
 	"store_memory",
 	"export_document",
 ];
-
 test("compact profile advertises exactly fifteen operations and rejects unadvertised legacy calls", async (t) => {
 	const { dir, handler } = await fixture(t);
 	assert.deepEqual(
@@ -138,7 +141,6 @@ test("compact profile advertises exactly fifteen operations and rejects unadvert
 	assert.deepEqual(fs.readdirSync(dir), []);
 	assert.throws(() => createHandler({ toolset: "unknown" }), /toolset/);
 });
-
 test("protocol negotiation is per connection and old hosts retain text-only contracts", async (t) => {
 	const legacy = (await fixture(t, "legacy", null)).handler;
 	const modern = (await fixture(t, "legacy", null)).handler;
@@ -213,7 +215,6 @@ test("protocol negotiation is per connection and old hosts retain text-only cont
 		/contract violation/,
 	);
 });
-
 for (const toolset of ["legacy", "compact"]) {
 	for (const version of ["2024-11-05", "2025-03-26", "2025-06-18"]) {
 		test(`${toolset} commits ${version} once despite repeated initialization`, async (t) => {
@@ -248,7 +249,6 @@ for (const toolset of ["legacy", "compact"]) {
 		});
 	}
 }
-
 // Evaluate the JSON Schema keywords used by compact tools independently of
 // the dispatcher's validation. Boolean schemas prohibit cross-mode properties.
 function accepts(schema, value) {
@@ -296,7 +296,6 @@ function accepts(schema, value) {
 	}
 	return true;
 }
-
 test("configure discovery and dispatch agree on mode-specific arguments", async (t) => {
 	const { dir, handler } = await fixture(t);
 	const schema = (await rpc(handler, "tools/list")).result.tools.find(
@@ -343,7 +342,6 @@ test("configure discovery and dispatch agree on mode-specific arguments", async 
 		await call(handler, "configure_sprint", args);
 	}
 });
-
 test("compact compiler failures preserve backend fields and exact text in both protocols", async (t) => {
 	for (const protocolVersion of ["2024-11-05", "2025-06-18"]) {
 		const { dir, handler } = await fixture(t, "compact", protocolVersion);
@@ -376,12 +374,11 @@ test("compact compiler failures preserve backend fields and exact text in both p
 		else assert.equal(Object.hasOwn(actual, "structuredContent"), false);
 	}
 });
-
 test("correction and preview discovery describe successful results in both profiles", async (t) => {
 	for (const profile of ["legacy", "compact"]) {
 		const { handler } = await fixture(t, profile);
 		const tools = (await rpc(handler, "tools/list")).result.tools;
-		const run = async (name, args) => {
+		async function run(name, args) {
 			const response = (
 				await rpc(handler, "tools/call", {
 					name,
@@ -394,7 +391,7 @@ test("correction and preview discovery describe successful results in both profi
 				JSON.parse(response.content[0].text),
 			);
 			return response.structuredContent;
-		};
+		}
 		await run(profile === "compact" ? "configure_sprint" : "init", {
 			mode: "create",
 			question: "Contracts",
@@ -442,7 +439,6 @@ test("correction and preview discovery describe successful results in both profi
 		}
 	}
 });
-
 test("Confluence discovery reports retrieved claimCount independently of import deduplication", async (t) => {
 	t.mock.method(Confluence.prototype, "isConfigured", () => true);
 	t.mock.method(Confluence.prototype, "pull", async () => ({
@@ -492,11 +488,11 @@ test("Confluence discovery reports retrieved claimCount independently of import 
 			);
 	}
 	assert.equal(
-		JSON.parse(fs.readFileSync(path.join(dir, "claims.json"))).claims.length,
+		JSON.parse(fs.readFileSync(path.join(dir, "claims.json"), "utf8")).claims
+			.length,
 		1,
 	);
 });
-
 test("inspection bounds all arrays including truncation paths and reports omitted path counts", async (t) => {
 	const { handler } = await fixture(t);
 	await call(handler, "configure_sprint", {
@@ -510,15 +506,18 @@ test("inspection bounds all arrays including truncation paths and reports omitte
 			topic: `topic${index}`,
 		});
 	await call(handler, "compile_sprint");
-	const full = await call(handler, "inspect_sprint", { limit: 100 });
+	const full = await call(handler, "inspect_sprint", {
+		limit: 100,
+	});
 	const small = await call(handler, "inspect_sprint", { limit: 1 });
 	const shortened = [];
 	function inspect(value, bounded, location = "") {
 		if (Array.isArray(value)) {
-			assert.ok(bounded.length <= 1, location);
+			const items = bounded;
+			assert.ok(items.length <= 1, location);
 			if (value.length > 1) shortened.push(location);
 			value.slice(0, 1).forEach((item, index) => {
-				inspect(item, bounded[index], `${location}/${index}`);
+				inspect(item, items[index], `${location}/${index}`);
 			});
 		} else if (value && typeof value === "object") {
 			for (const [key, item] of Object.entries(value))
@@ -533,7 +532,6 @@ test("inspection bounds all arrays including truncation paths and reports omitte
 	assert.deepEqual(small.truncated_paths, shortened.slice(0, 1));
 	assert.equal(full.truncated_path_count, 0);
 });
-
 test("compact evidence operations preserve import provenance, corrections and revision guards", async (t) => {
 	const { dir, handler } = await fixture(t);
 	await call(handler, "configure_sprint", {
@@ -593,7 +591,11 @@ test("compact evidence operations preserve import provenance, corrections and re
 		observation_id: observation.id,
 	});
 	assert.equal(
-		(await call(handler, "search_claims", { verdict: "confirmed" })).count,
+		(
+			await call(handler, "search_claims", {
+				verdict: "confirmed",
+			})
+		).count,
 		1,
 	);
 	const stale = await rpc(handler, "tools/call", {
@@ -612,8 +614,11 @@ test("compact evidence operations preserve import provenance, corrections and re
 		content: "An explicitly corrected claim.",
 		reason: "Rechecked the premise",
 	});
-	records = (await call(handler, "search_claims", { include_inactive: true }))
-		.claims;
+	records = (
+		await call(handler, "search_claims", {
+			include_inactive: true,
+		})
+	).claims;
 	assert.equal(
 		records.find((record) => record.id === "r1").status,
 		"superseded",
@@ -626,13 +631,17 @@ test("compact evidence operations preserve import provenance, corrections and re
 	});
 	assert.equal(
 		(
-			await call(handler, "search_claims", { include_inactive: true })
+			await call(handler, "search_claims", {
+				include_inactive: true,
+			})
 		).claims.find((record) => record.id === "r2").content,
 		"An explicitly corrected claim.",
 	);
 	await call(handler, "compile_sprint");
 	const before = fs.readFileSync(path.join(dir, "claims.json"), "utf8");
-	const inspection = await call(handler, "inspect_sprint", { limit: 1 });
+	const inspection = await call(handler, "inspect_sprint", {
+		limit: 1,
+	});
 	assert.ok(
 		inspection.sprint &&
 			inspection.evidence &&
@@ -641,7 +650,6 @@ test("compact evidence operations preserve import provenance, corrections and re
 	);
 	assert.equal(fs.readFileSync(path.join(dir, "claims.json"), "utf8"), before);
 });
-
 test("compact memory, exports and catalogs remain usable without relaxing output confinement", async (t) => {
 	const { base, dir, handler } = await fixture(t);
 	await call(handler, "configure_sprint", {
@@ -664,12 +672,20 @@ test("compact memory, exports and catalogs remain usable without relaxing output
 		question: "Reuse stored evidence",
 	});
 	assert.equal(
-		(await call(handler, "import_memory", { dir: "child", pack: "Reusable" }))
-			.imported,
+		(
+			await call(handler, "import_memory", {
+				dir: "child",
+				pack: "Reusable",
+			})
+		).imported,
 		1,
 	);
 	assert.match(
-		(await call(handler, "export_document", { format: "markdown" })).output,
+		(
+			await call(handler, "export_document", {
+				format: "markdown",
+			})
+		).output,
 		/locally recorded/,
 	);
 	assert.ok(
@@ -736,7 +752,6 @@ test("compact memory, exports and catalogs remain usable without relaxing output
 		assert.deepEqual(readArtifactSnapshot(ledger), previous);
 	}
 });
-
 test("CLI compact startup performs real stdio discovery and calls", async (t) => {
 	const { dir } = await fixture(t);
 	const client = mcp(
@@ -767,7 +782,6 @@ test("CLI compact startup performs real stdio discovery and calls", async (t) =>
 	});
 	assert.equal(result.structuredContent.status, "ok");
 });
-
 test("malformed initialize never pins either profile before a valid old handshake", async (t) => {
 	for (const profile of ["legacy", "compact"]) {
 		const { handler } = await fixture(t, profile, null);
@@ -832,7 +846,6 @@ test("malformed initialize never pins either profile before a valid old handshak
 		assert.equal(Object.hasOwn(result, "structuredContent"), false);
 	}
 });
-
 test("initialize accepts known nested capabilities and extension fields in both profiles", async (t) => {
 	for (const profile of ["legacy", "compact"]) {
 		for (const listChanged of [undefined, false, true]) {
@@ -867,7 +880,6 @@ test("initialize accepts known nested capabilities and extension fields in both 
 		}
 	}
 });
-
 test("catalog and query/render schemas agree with dispatch including tool-only formats", async (t) => {
 	const { handler } = await fixture(t);
 	const tools = (await rpc(handler, "tools/list")).result.tools;
@@ -915,7 +927,9 @@ test("catalog and query/render schemas agree with dispatch including tool-only f
 			);
 		}
 	}
-	const catalog = await call(handler, "export_document", { dir: "." });
+	const catalog = await call(handler, "export_document", {
+		dir: ".",
+	});
 	assert.equal(catalog.count, catalog.formats.length);
 	assert.ok(catalog.count > 0);
 	for (const format of catalog.formats) {
@@ -950,7 +964,6 @@ test("catalog and query/render schemas agree with dispatch including tool-only f
 		assert.deepEqual(JSON.parse(resource.contents[0].text), catalog.formats);
 	}
 });
-
 test("omitted done reports its acceptance gap and criteria updates preserve history", async (t) => {
 	const { handler } = await fixture(t);
 	const tool = (await rpc(handler, "tools/list")).result.tools.find(
@@ -984,7 +997,9 @@ test("omitted done reports its acceptance gap and criteria updates preserve hist
 		mode: "create",
 		question: "Explicit acceptance",
 	});
-	const inspection = await call(handler, "inspect_sprint", { dir: "." });
+	const inspection = await call(handler, "inspect_sprint", {
+		dir: ".",
+	});
 	assert.equal(inspection.acceptance.clarification_needed, true);
 	assert.deepEqual(
 		inspection.acceptance.questions.map((item) => item.field),
@@ -1016,7 +1031,10 @@ test("omitted done reports its acceptance gap and criteria updates preserve hist
 		assert.equal(response.result.isError, true);
 	}
 	const criteria = (
-		await call(handler, "search_claims", { dir: ".", include_inactive: true })
+		await call(handler, "search_claims", {
+			dir: ".",
+			include_inactive: true,
+		})
 	).claims.filter((item) => item.topic === "done-criteria");
 	assert.equal(
 		criteria.find((item) => item.content === "First").status,
@@ -1032,7 +1050,6 @@ test("omitted done reports its acceptance gap and criteria updates preserve hist
 		false,
 	);
 });
-
 test("compact search projects the selected snapshot when a correction interleaves", async (t) => {
 	for (const verdict of [undefined, "confirmed"]) {
 		const { dir, handler } = await fixture(t);
@@ -1058,13 +1075,14 @@ test("compact search projects the selected snapshot when a correction interleave
 			observation_id: observation.id,
 		});
 		const selected = searchClaims(dir, { full: true }).claims[0];
+		const legacyAuditArgs = { full: true, includeAudit: true };
 		assert.equal(
 			Object.hasOwn(selected, "verification_observation_status"),
 			false,
 		);
 		assert.equal(
 			Object.hasOwn(
-				searchClaims(dir, { full: true, includeAudit: true }).claims[0],
+				searchClaims(dir, legacyAuditArgs).claims[0],
 				"verification_observation_status",
 			),
 			false,
@@ -1082,7 +1100,13 @@ test("compact search projects the selected snapshot when a correction interleave
 				return evidenceRequest(
 					dir,
 					method,
-					{ ...params, arguments: { ...params.arguments, dir } },
+					{
+						...params,
+						arguments: {
+							...params.arguments,
+							dir,
+						},
+					},
 					id,
 					{
 						includeAudit: true,
@@ -1117,7 +1141,6 @@ test("compact search projects the selected snapshot when a correction interleave
 		);
 	}
 });
-
 test("initialization returns configured artifact paths and confines writes in both profiles", async (t) => {
 	for (const profile of ["legacy", "compact"]) {
 		for (const custom of [false, true]) {
@@ -1146,7 +1169,9 @@ test("initialization returns configured artifact paths and confines writes in bo
 			for (const file of result.files_created) {
 				assert.ok(
 					JSON.parse(
-						readArtifactSnapshot(path.resolve(result.directory, file)).bytes,
+						readArtifactSnapshot(
+							path.resolve(result.directory, file),
+						).bytes.toString("utf8"),
 					),
 				);
 			}
@@ -1185,7 +1210,6 @@ test("initialization returns configured artifact paths and confines writes in bo
 		}
 	}
 });
-
 test("historical verified and unaudited findings retain shared defaults and freshness", async (t) => {
 	const { dir, handler } = await fixture(t);
 	await call(handler, "configure_sprint", {
@@ -1285,7 +1309,6 @@ test("historical verified and unaudited findings retain shared defaults and fres
 		false,
 	);
 });
-
 test("historical projections and catalog fallback retain project scope and confinement", async (t) => {
 	const { base, dir, handler } = await fixture(t);
 	fs.writeFileSync(
@@ -1344,10 +1367,9 @@ test("historical projections and catalog fallback retain project scope and confi
 	}
 	assert.deepEqual(fs.readdirSync(outside), []);
 });
-
 test("memory graph discovery names the actual results of every supported action", async (t) => {
 	const { handler } = await fixture(t, "legacy");
-	const run = async (name, args = {}) => {
+	async function run(name, args = {}) {
 		const result = (
 			await rpc(handler, "tools/call", {
 				name,
@@ -1356,7 +1378,7 @@ test("memory graph discovery names the actual results of every supported action"
 		).result;
 		assert.equal(result.isError, false, result.content[0].text);
 		return result.structuredContent;
-	};
+	}
 	await run("init", { question: "Graph contracts" });
 	for (let index = 0; index < 21; index++)
 		await run("add_claim", {
@@ -1382,8 +1404,9 @@ test("memory graph discovery names the actual results of every supported action"
 			assert.ok(Object.hasOwn(result, field), field);
 		}
 		if (args.action === "clusters") {
-			assert.equal(result.clusters.length, 20);
-			assert.ok(result.count > 20);
+			const clustered = result;
+			assert.equal(clustered.clusters.length, 20);
+			assert.ok(clustered.count > 20);
 			assert.match(
 				schema.properties.count.description,
 				/total clusters found before.*20/,
@@ -1391,7 +1414,6 @@ test("memory graph discovery names the actual results of every supported action"
 		}
 	}
 });
-
 test("every compact output field has a successful runtime example, including composite modes", () => {
 	for (const tool of COMPACT_TOOLS) {
 		const seen = emittedFields.get(tool.name);
@@ -1402,7 +1424,6 @@ test("every compact output field has a successful runtime example, including com
 		}
 	}
 });
-
 for (const toolset of ["legacy", "compact"]) {
 	test(`${toolset}: invalid request metadata does not negotiate a protocol`, async (t) => {
 		for (const bad of [
@@ -1464,7 +1485,7 @@ for (const toolset of ["legacy", "compact"]) {
 			arguments: args,
 		});
 		assert.equal(response.result.isError, true);
-		const message = JSON.parse(response.result.content[0].text).message;
+		const { message } = JSON.parse(response.result.content[0].text);
 		assert.match(message, /existing evidence was preserved/i);
 		assert.doesNotMatch(message, /Continue with compile/);
 		assert.deepEqual(fs.readFileSync(path.join(dir, "claims.json")), before);
@@ -1481,7 +1502,6 @@ test("legacy init describes configured artifact paths as defaults", async (t) =>
 	);
 	assert.match(tool.description, /files_created/);
 });
-
 for (const toolset of ["legacy", "compact"]) {
 	test(`${toolset}: invalid request IDs cannot commit negotiation`, async (t) => {
 		for (const id of [false, true, {}, [], NaN, Infinity, 1.5]) {
@@ -1584,4 +1604,55 @@ test("criteria discovery and dispatch reject blank and oversized reasons", async
 		arguments: create,
 	});
 	assert.notEqual(response.result.isError, true);
+});
+test("Docker discovery selects the supported compact profile while CLI compatibility stays legacy", async (t) => {
+	const root = path.resolve(import.meta.dirname, "../..");
+	const dockerfile = fs.readFileSync(path.join(root, "Dockerfile"), "utf8");
+	const commandLine = dockerfile.match(/^CMD (\[[^\n]+\])$/m)?.[1];
+	assert.ok(
+		commandLine,
+		"Docker must expose an explicit inspectable JSON command",
+	);
+	const parsed = JSON.parse(commandLine);
+	assert.ok(
+		Array.isArray(parsed) && parsed.every((value) => typeof value === "string"),
+	);
+	const command = parsed;
+	assert.deepEqual(command, ["mcp", "--dir", "/app", "--toolset", "compact"]);
+	const dir = fs.mkdtempSync(
+		path.join(os.tmpdir(), "grainulator-docker-discovery-"),
+	);
+	t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+	const client = mcp(
+		[
+			process.execPath,
+			path.join(root, "bin/grainulator.js"),
+			...command.map((arg) => (arg === "/app" ? dir : arg)),
+		],
+		{ cwd: dir },
+	);
+	t.after(() => client.close());
+	await client.request("initialize", {
+		protocolVersion: "2025-06-18",
+		capabilities: {},
+		clientInfo: { name: "docker-command-contract", version: "1" },
+	});
+	const listed = (await client.request("tools/list")).tools;
+	assert.deepEqual(
+		listed.map((tool) => tool.name),
+		COMPACT_TOOLS.map((tool) => tool.name),
+	);
+	assert.equal(listed.length, 15);
+	const legacy = createHandler({ dir });
+	const discovered = await rpc(legacy, "tools/list");
+	assert.deepEqual(
+		discovered.result.tools.map((tool) => tool.name),
+		TOOLS.map((tool) => tool.name),
+	);
+	assert.equal(discovered.result.tools.length, 29);
+	assert.deepEqual(
+		fs.readdirSync(dir),
+		[],
+		"discovery must not create a sprint or memory",
+	);
 });

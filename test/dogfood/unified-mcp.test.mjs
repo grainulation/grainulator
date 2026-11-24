@@ -1,3 +1,4 @@
+// Generated from typescript/test/dogfood/unified-mcp.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -9,7 +10,6 @@ import outputSafety from "../../packages/exports/lib/output-safety.js";
 import sharedPathsCjs from "../../packages/shared/lib/paths.cjs";
 import * as sharedPaths from "../../packages/shared/lib/paths.js";
 import { command, mcp, toolJSON } from "../../scripts/lib/local-checks.mjs";
-
 const root = fileURLToPath(new URL("../../", import.meta.url));
 function fixture(t) {
 	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-unified-"));
@@ -37,10 +37,17 @@ const claim = {
 		"Wheat, Silo, and Mill are literal user content; preserve these words.",
 	evidence: "tested",
 };
-function rpc(handler, method, params = {}) {
-	return handler(method, params, 1).then(JSON.parse);
+function toolResult(response) {
+	return toolJSON(response);
 }
-
+async function rpc(handler, method, params = {}) {
+	const response = await handler(method, params, 1);
+	assert.equal(typeof response, "string");
+	return JSON.parse(response);
+}
+async function request(client, method, params = {}) {
+	return await client.request(method, params);
+}
 test("one server exposes canonical metadata with no startup filesystem writes", async (t) => {
 	const { workspace, memoryDir } = fixture(t);
 	const handle = createHandler({ dir: workspace, memoryDir });
@@ -71,7 +78,6 @@ test("one server exposes canonical metadata with no startup filesystem writes", 
 	);
 	assert.deepEqual(fs.readdirSync(workspace), []);
 });
-
 test("stdio performs evidence, reusable memory, exports and resources with canonical names end to end", async (t) => {
 	const { workspace, memoryDir } = fixture(t);
 	seed(workspace);
@@ -90,7 +96,7 @@ test("stdio performs evidence, reusable memory, exports and resources with canon
 	t.after(() => client.close());
 	assert.equal(
 		(
-			await client.request("initialize", {
+			await request(client, "initialize", {
 				protocolVersion: "2024-11-05",
 				capabilities: {},
 				clientInfo: { name: "dogfood-test", version: "1" },
@@ -99,7 +105,7 @@ test("stdio performs evidence, reusable memory, exports and resources with canon
 		"grainulator",
 	);
 	client.notify("notifications/initialized");
-	const names = (await client.request("tools/list")).tools.map(
+	const names = (await request(client, "tools/list")).tools.map(
 		(tool) => tool.name,
 	);
 	assert.ok(
@@ -109,7 +115,7 @@ test("stdio performs evidence, reusable memory, exports and resources with canon
 	);
 	assert.ok(names.every((name) => !name.includes("/")));
 	const call = async (name, args = {}) =>
-		toolJSON(await client.request("tools/call", { name, arguments: args }));
+		toolResult(await request(client, "tools/call", { name, arguments: args }));
 	assert.equal((await call("add_claim", claim)).status, "ok");
 	const compilation = await call("compile");
 	assert.ok(Array.isArray(compilation.next_actions.auto));
@@ -156,19 +162,19 @@ test("stdio performs evidence, reusable memory, exports and resources with canon
 		/Wheat, Silo, and Mill/,
 	);
 	assert.equal(
-		(await client.request("resources/read", { uri: "grainulator://claims" }))
+		(await request(client, "resources/read", { uri: "grainulator://claims" }))
 			.contents[0].uri,
 		"grainulator://claims",
 	);
 	assert.equal(
-		(await client.request("resources/read", { uri: "grainulator://claims" }))
+		(await request(client, "resources/read", { uri: "grainulator://claims" }))
 			.contents[0].uri,
 		"grainulator://claims",
 	);
 	assert.equal(
 		JSON.parse(
 			(
-				await client.request("resources/read", {
+				await request(client, "resources/read", {
 					uri: "grainulator://memory/index",
 				})
 			).contents[0].text,
@@ -178,14 +184,13 @@ test("stdio performs evidence, reusable memory, exports and resources with canon
 	assert.ok(
 		JSON.parse(
 			(
-				await client.request("resources/read", {
+				await request(client, "resources/read", {
 					uri: "grainulator://exports/formats",
 				})
 			).contents[0].text,
 		).length > 0,
 	);
 });
-
 test("all components reject outside paths, including new children beneath symlinks", async (t) => {
 	const { dir, workspace, memoryDir } = fixture(t);
 	seed(workspace);
@@ -234,7 +239,6 @@ test("all components reject outside paths, including new children beneath symlin
 		-32602,
 	);
 });
-
 test("separate in-process handlers do not share configured memory", async (t) => {
 	const { workspace, memoryDir } = fixture(t);
 	seed(workspace);
@@ -244,7 +248,7 @@ test("separate in-process handlers do not share configured memory", async (t) =>
 		memoryDir: `${memoryDir}-second`,
 	});
 	const call = async (handle, name, args = {}) =>
-		toolJSON(
+		toolResult(
 			(await rpc(handle, "tools/call", { name, arguments: args })).result,
 		);
 	await call(first, "add_claim", claim);
@@ -252,7 +256,6 @@ test("separate in-process handlers do not share configured memory", async (t) =>
 	assert.equal((await call(first, "memory_list")).count, 1);
 	assert.equal((await call(second, "memory_list")).count, 0);
 });
-
 test("connect prints only the unified local server without changing host settings", (t) => {
 	const { workspace } = fixture(t);
 	const config = JSON.parse(
@@ -271,7 +274,6 @@ test("connect prints only the unified local server without changing host setting
 	assert.equal(config.mcpServers.grainulator.args.at(-1), workspace);
 	assert.deepEqual(fs.readdirSync(workspace), []);
 });
-
 test("canonical CLI and MCP init create data only, preserve settings, and require force for replacement", async (t) => {
 	const { workspace, memoryDir } = fixture(t);
 	const settings = {
@@ -282,7 +284,7 @@ test("canonical CLI and MCP init create data only, preserve settings, and requir
 	for (const [name, value] of Object.entries(settings))
 		fs.writeFileSync(path.join(workspace, name), value);
 	const handle = createHandler({ dir: workspace, memoryDir });
-	const initial = toolJSON(
+	const initial = toolResult(
 		(
 			await rpc(handle, "tools/call", {
 				name: "init",
@@ -331,7 +333,7 @@ test("canonical CLI and MCP init create data only, preserve settings, and requir
 	for (const [name, value] of Object.entries(settings))
 		assert.equal(fs.readFileSync(path.join(workspace, name), "utf8"), value);
 	assert.equal(fs.existsSync(path.join(workspace, ".claude")), false);
-	const child = toolJSON(
+	const child = toolResult(
 		(
 			await rpc(handle, "tools/call", {
 				name: "init",
@@ -345,13 +347,12 @@ test("canonical CLI and MCP init create data only, preserve settings, and requir
 		"compilation.json",
 	]);
 });
-
 test("provenance survives add/search/compile and independent sources clear single-origin warning", async (t) => {
 	const { workspace, memoryDir } = fixture(t);
 	seed(workspace);
 	const handle = createHandler({ dir: workspace, memoryDir });
 	const call = async (name, args = {}) =>
-		toolJSON(
+		toolResult(
 			(await rpc(handle, "tools/call", { name, arguments: args })).result,
 		);
 	for (const [id, origin] of [
@@ -435,7 +436,6 @@ test("provenance survives add/search/compile and independent sources clear singl
 	assert.equal(fromCLI.claim.source.origin, "Test suite");
 	assert.equal(fromCLI.claim.source.artifact, "test/results.json");
 });
-
 test("exports preserve ledgers, host settings, sources, and symlink aliases", async (t) => {
 	const { workspace, memoryDir } = fixture(t);
 	seed(workspace);
@@ -475,10 +475,9 @@ test("exports preserve ledgers, host settings, sources, and symlink aliases", as
 		assert.equal(response.result.isError, true, output);
 		assert.match(response.result.content[0].text, /Protected output/);
 	}
-	fs.writeFileSync(
-		path.join(workspace, "source.json"),
-		original["claims.json"],
-	);
+	const originalClaims = original["claims.json"];
+	assert.ok(originalClaims !== undefined);
+	fs.writeFileSync(path.join(workspace, "source.json"), originalClaims);
 	assert.equal(
 		(
 			await rpc(handle, "tools/call", {
@@ -508,7 +507,7 @@ test("exports preserve ledgers, host settings, sources, and symlink aliases", as
 	for (const [name, value] of Object.entries(original))
 		assert.equal(fs.readFileSync(path.join(workspace, name), "utf8"), value);
 	assert.equal(
-		toolJSON(
+		toolResult(
 			(
 				await rpc(handle, "tools/call", {
 					name: "exports_convert",
@@ -519,7 +518,6 @@ test("exports preserve ledgers, host settings, sources, and symlink aliases", as
 		"ok",
 	);
 });
-
 test("exports protect native manifests and new host configuration through directory aliases", async (t) => {
 	const { workspace, memoryDir } = fixture(t);
 	seed(workspace);
@@ -589,7 +587,6 @@ test("exports protect native manifests and new host configuration through direct
 		false,
 	);
 });
-
 test("sync-log tools and resource reads reject an outside file symlink", async (t) => {
 	const { dir, workspace, memoryDir } = fixture(t);
 	seed(workspace);
@@ -612,11 +609,10 @@ test("sync-log tools and resource reads reject an outside file symlink", async (
 			(await rpc(handle, "resources/read", { uri })).error.code,
 			-32602,
 		);
-	assert.deepEqual(JSON.parse(fs.readFileSync(external)), [
+	assert.deepEqual(JSON.parse(fs.readFileSync(external, "utf8")), [
 		{ secret: "outside-private-fixture" },
 	]);
 });
-
 test("exports protect only known native workspace configuration paths and their aliases", async (t) => {
 	const { workspace, memoryDir } = fixture(t);
 	seed(workspace);
@@ -685,11 +681,12 @@ test("exports protect only known native workspace configuration paths and their 
 		),
 	);
 });
-
 test("memory collection identity and integrity cannot be overridden by sprint metadata", async (t) => {
 	const { workspace, memoryDir } = fixture(t);
 	seed(workspace);
-	const data = JSON.parse(fs.readFileSync(path.join(workspace, "claims.json")));
+	const data = JSON.parse(
+		fs.readFileSync(path.join(workspace, "claims.json"), "utf8"),
+	);
 	data.meta = {
 		...data.meta,
 		id: "external-id",
@@ -701,7 +698,7 @@ test("memory collection identity and integrity cannot be overridden by sprint me
 	fs.writeFileSync(path.join(workspace, "claims.json"), JSON.stringify(data));
 	const handle = createHandler({ dir: workspace, memoryDir });
 	const call = async (name, args = {}) =>
-		toolJSON(
+		toolResult(
 			(await rpc(handle, "tools/call", { name, arguments: args })).result,
 		);
 	const saved = await call("memory_store", { name: "Saved Sprint" });
@@ -717,12 +714,11 @@ test("memory collection identity and integrity cannot be overridden by sprint me
 		1,
 	);
 	const stored = JSON.parse(
-		fs.readFileSync(path.join(memoryDir, "claims", `${saved.id}.json`)),
+		fs.readFileSync(path.join(memoryDir, "claims", `${saved.id}.json`), "utf8"),
 	);
 	assert.equal(stored.meta.sourceMeta.id, "external-id");
 	assert.equal(stored.meta.sourceMeta.hash, "incorrect");
 });
-
 test("both shared path helpers handle missing descendants and dangling symlinks", (t) => {
 	const { dir, workspace } = fixture(t);
 	const outside = path.join(dir, "outside");
@@ -750,7 +746,6 @@ test("both shared path helpers handle missing descendants and dangling symlinks"
 		);
 	}
 });
-
 test("CLI CSV exports preserve canonical claim content and evidence", (t) => {
 	const { workspace } = fixture(t);
 	fs.writeFileSync(
@@ -784,7 +779,6 @@ test("CLI CSV exports preserve canonical claim content and evidence", (t) => {
 	assert.match(csv, /2026-09-07T00:00:00Z/);
 	assert.doesNotMatch(csv, /\[object Object\]/);
 });
-
 test("old prefixes reject unknown words without writes; root init creates canonical evidence state", (t) => {
 	const { workspace } = fixture(t);
 	for (const args of [

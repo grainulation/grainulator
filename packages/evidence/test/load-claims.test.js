@@ -1,3 +1,4 @@
+// Generated from typescript/packages/evidence/test/load-claims.test.ts; edit that source and run npm run build:types.
 /**
  * Unit tests: lib/load-claims.js
  *
@@ -11,42 +12,37 @@
  *
  * All disk I/O uses a per-test tempdir — no user-state pollution.
  */
-
-import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import path from "node:path";
 import os from "node:os";
-import { loadClaims } from "../lib/load-claims.js";
+import path from "node:path";
+import { afterEach, beforeEach, describe, it } from "node:test";
 import { CURRENT_SCHEMA } from "../compiler/evidence-compiler.js";
-
+import { loadClaims } from "../lib/load-claims.js";
 describe("load-claims", () => {
 	let dir;
-
 	beforeEach(() => {
 		dir = fs.mkdtempSync(path.join(os.tmpdir(), "wheat-load-claims-"));
 	});
-
 	afterEach(() => {
 		fs.rmSync(dir, { recursive: true, force: true });
 	});
-
 	it("returns { data: null, errors: [] } when claims.json is missing", () => {
 		const result = loadClaims(dir);
 		assert.equal(result.data, null);
 		assert.deepEqual(result.errors, []);
 		assert.equal(result.path, path.join(dir, "claims.json"));
 	});
-
 	it("returns E_PARSE error on malformed JSON", () => {
 		fs.writeFileSync(path.join(dir, "claims.json"), "{not json}");
 		const result = loadClaims(dir);
 		assert.equal(result.data, null);
 		assert.equal(result.errors.length, 1);
-		assert.equal(result.errors[0].code, "E_PARSE");
-		assert.match(result.errors[0].message, /not valid JSON/);
+		const error = result.errors[0];
+		assert.ok(error);
+		assert.equal(error.code, "E_PARSE");
+		assert.match(error.message, /not valid JSON/);
 	});
-
 	it("loads a valid current-version claims doc (happy path)", () => {
 		const doc = {
 			schema_version: "1.0",
@@ -60,10 +56,10 @@ describe("load-claims", () => {
 		const result = loadClaims(dir);
 		assert.deepEqual(result.errors, []);
 		assert.ok(result.data);
-		assert.equal(result.data.schema_version, "1.0");
-		assert.equal(result.data.meta.question, "q");
+		const data = result.data;
+		assert.equal(data.schema_version, "1.0");
+		assert.equal(data.meta?.question, "q");
 	});
-
 	it("treats missing schema_version as 1.0 (backwards compat)", () => {
 		const doc = { meta: { question: "q" }, claims: [] };
 		fs.writeFileSync(
@@ -75,7 +71,6 @@ describe("load-claims", () => {
 		assert.ok(result.data);
 		assert.deepEqual(result.data.claims, []);
 	});
-
 	it("returns E_SCHEMA_VERSION when file schema is newer than compiler", () => {
 		const doc = {
 			schema_version: "99.99",
@@ -89,9 +84,8 @@ describe("load-claims", () => {
 		const result = loadClaims(dir);
 		assert.equal(result.data, null);
 		assert.equal(result.errors.length, 1);
-		assert.equal(result.errors[0].code, "E_SCHEMA_VERSION");
+		assert.equal(result.errors[0]?.code, "E_SCHEMA_VERSION");
 	});
-
 	it("respects opts.filename override", () => {
 		const doc = { schema_version: CURRENT_SCHEMA, meta: {}, claims: [] };
 		fs.writeFileSync(
@@ -103,12 +97,10 @@ describe("load-claims", () => {
 		assert.ok(result.data);
 		assert.equal(result.path, path.join(dir, "alternate.json"));
 	});
-
 	it("returns the resolved path even when file is absent", () => {
 		const result = loadClaims(dir);
 		assert.equal(result.path, path.join(dir, "claims.json"));
 	});
-
 	it("handles a non-object JSON root without throwing (returns data as-is)", () => {
 		// Arrays and nulls aren't valid claims docs, but the loader should not crash.
 		fs.writeFileSync(path.join(dir, "claims.json"), "[]");

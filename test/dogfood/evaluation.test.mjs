@@ -1,10 +1,11 @@
+// Generated from typescript/test/dogfood/evaluation.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { score, semanticScore, tasks } from "../../evals/tasks.mjs";
-
 test("primary scoring distinguishes format failures from the post-hoc semantic diagnostic", () => {
-	const task = tasks[0],
-		correct = JSON.stringify(task.expected);
+	const task = tasks[0];
+	assert.ok(task);
+	const correct = JSON.stringify(task.expected);
 	assert.equal(score(task, correct).passed, true);
 	assert.equal(score(task, `Explanation\n${correct}`).passed, false);
 	assert.equal(semanticScore(task, `Explanation\n${correct}`).passed, true);

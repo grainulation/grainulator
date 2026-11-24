@@ -1,3 +1,4 @@
+// Generated from typescript/packages/evidence/test/status.test.ts; edit that source and run npm run build:types.
 /**
  * Unit tests: lib/status.js
  *
@@ -13,20 +14,16 @@
  *
  * All disk I/O uses a per-test tempdir.
  */
-
-import { describe, it, before, after } from "node:test";
 import assert from "node:assert/strict";
-import fs from "node:fs";
-import path from "node:path";
-import os from "node:os";
 import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { after, before, describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 const STATUS_MODULE = path.resolve(__dirname, "..", "lib", "status.js");
-
 function runStatus(dir, args = []) {
 	// Spawn node with a short runner that imports status.run and invokes it.
 	// Using file:// URL so the ES module import works on all platforms.
@@ -55,7 +52,6 @@ function runStatus(dir, args = []) {
 		stderr: result.stderr || "",
 	};
 }
-
 function baseClaimsDoc(overrides = {}) {
 	return {
 		schema_version: "1.0",
@@ -70,7 +66,6 @@ function baseClaimsDoc(overrides = {}) {
 		...overrides,
 	};
 }
-
 function makeClaim(id, overrides = {}) {
 	return {
 		id,
@@ -88,24 +83,19 @@ function makeClaim(id, overrides = {}) {
 		...overrides,
 	};
 }
-
 describe("status: no-sprint behaviour", () => {
 	let dir;
-
 	before(() => {
 		dir = fs.mkdtempSync(path.join(os.tmpdir(), "wheat-status-empty-"));
 	});
-
 	after(() => {
 		fs.rmSync(dir, { recursive: true, force: true });
 	});
-
 	it("prints no-sprint message (human mode) and exits 0", () => {
 		const { code, stdout } = runStatus(dir, []);
 		assert.equal(code, 0);
 		assert.match(stdout, /No sprint found/);
 	});
-
 	it("emits JSON error shape with --json and exits 0", () => {
 		const { code, stdout } = runStatus(dir, ["--json"]);
 		assert.equal(code, 0);
@@ -114,10 +104,8 @@ describe("status: no-sprint behaviour", () => {
 		assert.match(payload.message, /No sprint/);
 	});
 });
-
 describe("status: happy path (--json)", () => {
 	let dir;
-
 	before(() => {
 		dir = fs.mkdtempSync(path.join(os.tmpdir(), "wheat-status-json-"));
 		fs.writeFileSync(
@@ -145,20 +133,22 @@ describe("status: happy path (--json)", () => {
 			) + "\n",
 		);
 	});
-
 	after(() => {
 		fs.rmSync(dir, { recursive: true, force: true });
 	});
-
 	it("emits valid JSON with expected top-level fields", () => {
 		const { code, stdout } = runStatus(dir, ["--json"]);
 		assert.equal(code, 0);
 		const payload = JSON.parse(stdout);
 		assert.equal(payload.question, "Is SSE the right fit?");
 		assert.equal(payload.phase, "research");
-		assert.equal(payload.status, "unknown", "inspection does not compile missing evidence");
-		assert.equal(fs.existsSync(path.join(dir,"compilation.json")),false);
-		assert.equal(fs.existsSync(path.join(dir,".grainulator")),false);
+		assert.equal(
+			payload.status,
+			"unknown",
+			"inspection does not compile missing evidence",
+		);
+		assert.equal(fs.existsSync(path.join(dir, "compilation.json")), false);
+		assert.equal(fs.existsSync(path.join(dir, ".grainulator")), false);
 		assert.equal(payload.claims.total, 3);
 		assert.equal(payload.claims.active, 2);
 		assert.equal(payload.claims.superseded, 1);
@@ -169,10 +159,8 @@ describe("status: happy path (--json)", () => {
 		assert.ok(payload.age && typeof payload.age.days === "number");
 	});
 });
-
 describe("status: happy path (human mode)", () => {
 	let dir;
-
 	before(() => {
 		dir = fs.mkdtempSync(path.join(os.tmpdir(), "wheat-status-tty-"));
 		fs.writeFileSync(
@@ -186,11 +174,9 @@ describe("status: happy path (human mode)", () => {
 			) + "\n",
 		);
 	});
-
 	after(() => {
 		fs.rmSync(dir, { recursive: true, force: true });
 	});
-
 	it("prints question, phase, claims summary and exits 0", () => {
 		const { code, stdout } = runStatus(dir, []);
 		assert.equal(code, 0);
@@ -199,18 +185,14 @@ describe("status: happy path (human mode)", () => {
 		assert.match(stdout, /Claims:\s+1 total/);
 	});
 });
-
 describe("status: error paths", () => {
 	let dir;
-
 	before(() => {
 		dir = fs.mkdtempSync(path.join(os.tmpdir(), "wheat-status-bad-"));
 	});
-
 	after(() => {
 		fs.rmSync(dir, { recursive: true, force: true });
 	});
-
 	it("exits non-zero when claims.json is malformed", () => {
 		fs.writeFileSync(path.join(dir, "claims.json"), "{not json");
 		const { code, stderr } = runStatus(dir, []);

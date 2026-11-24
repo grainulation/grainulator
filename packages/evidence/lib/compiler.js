@@ -1,3 +1,4 @@
+// Generated from typescript/packages/evidence/lib/compiler.ts; edit that source and run npm run build:types.
 /**
  * grainulator compile — delegates to evidence-compiler.js via direct import
  *
@@ -7,27 +8,24 @@
  *
  * Zero npm dependencies.
  */
-
-import projectConfig from "../../shared/lib/project-config.cjs";
 import fs from "fs";
-import nextActionsModule from "./next-actions.cjs";
 import path from "path";
+import projectConfig from "../../shared/lib/project-config.cjs";
 import { compile } from "../compiler/evidence-compiler.js";
-
+import nextActionsModule from "./next-actions.cjs";
 export async function run(dir, args) {
-	const config=projectConfig.evidenceConfig(dir);
-	const claimsPath=path.resolve(config.origin,config.compiler.claims);
-	const compilationPath=path.resolve(config.origin,config.compiler.compilation);
-
+	const config = projectConfig.evidenceConfig(dir);
+	const claimsPath = path.resolve(config.origin, config.compiler.claims);
+	const compilationPath = path.resolve(
+		config.origin,
+		config.compiler.compilation,
+	);
 	if (!fs.existsSync(claimsPath)) {
-		throw new Error('No evidence ledger found. Run grainulator init first.');
+		throw new Error("No evidence ledger found. Run grainulator init first.");
 	}
-
 	const summaryMode = args.includes("--summary");
 	const checkMode = args.includes("--check");
-
 	const result = compile(claimsPath, compilationPath, dir);
-
 	if (args.includes("--json")) {
 		console.log(JSON.stringify(result, null, 2));
 	} else if (summaryMode) {
@@ -49,10 +47,8 @@ export async function run(dir, args) {
 			}
 		}
 	}
-
 	if (!args.includes("--json") && !args.includes("--quiet"))
 		console.log(nextActionsModule.formatNextActions(result.next_actions));
-
 	if (checkMode && result.status === "blocked") {
 		process.exit(1);
 	}

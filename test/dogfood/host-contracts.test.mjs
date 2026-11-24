@@ -1,8 +1,8 @@
+// Generated from typescript/test/dogfood/host-contracts.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-
 const guard = fileURLToPath(
 	new URL("../../hooks/write-guard.cjs", import.meta.url),
 );

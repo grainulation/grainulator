@@ -1,16 +1,15 @@
+// Generated from typescript/test/dogfood/mcp-roots.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import readline from "node:readline";
-import test from "node:test";
+import test, {} from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
-
 const plugin = fileURLToPath(
 	new URL("../../bin/grainulator-plugin.js", import.meta.url),
 );
-
 // Drive the plugin entry like an agent: answer roots/list the way `roots` says.
 async function session({
 	env,
@@ -73,7 +72,6 @@ async function session({
 		else prelude.push(await call(request.method, request.params));
 	}
 	await call("ping", {});
-
 	const init = await call("tools/call", {
 		name: "init",
 		arguments: { question: "Which database?" },
@@ -82,7 +80,6 @@ async function session({
 	await new Promise((resolve) => child.on("close", resolve));
 	return { init, asked, prelude };
 }
-
 function setup(t) {
 	const dir = fs.realpathSync(
 		fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-roots-")),
@@ -107,9 +104,7 @@ function setup(t) {
 		},
 	};
 }
-
 const created = (folder) => fs.existsSync(path.join(folder, "claims.json"));
-
 test("plugin uses the project folder the agent shares", async (t) => {
 	const s = setup(t);
 	const { init, asked } = await session({
@@ -123,7 +118,6 @@ test("plugin uses the project folder the agent shares", async (t) => {
 	assert.ok(created(s.project), "research is saved in the shared project");
 	assert.ok(!created(s.saved) && !created(s.cwd), "nothing lands elsewhere");
 });
-
 test("an explicit GRAINULATOR_WORKSPACE wins and roots are never requested", async (t) => {
 	const s = setup(t);
 	const { init, asked } = await session({
@@ -136,7 +130,6 @@ test("an explicit GRAINULATOR_WORKSPACE wins and roots are never requested", asy
 	assert.deepEqual(asked, []);
 	assert.ok(created(s.explicit));
 });
-
 test("agents without roots fall back to the saved default", async (t) => {
 	const s = setup(t);
 	const { init, asked } = await session({
@@ -148,7 +141,6 @@ test("agents without roots fall back to the saved default", async (t) => {
 	assert.deepEqual(asked, []);
 	assert.ok(created(s.saved));
 });
-
 test("unusable roots fall back to the saved default", async (t) => {
 	for (const roots of [
 		"error",
@@ -168,7 +160,6 @@ test("unusable roots fall back to the saved default", async (t) => {
 		assert.ok(!created(s.cwd));
 	}
 });
-
 test("no shared folder and no saved default reports how to fix it and touches nothing", async (t) => {
 	const s = setup(t);
 	const { init } = await session({
@@ -183,13 +174,11 @@ test("no shared folder and no saved default reports how to fix it and touches no
 	);
 	assert.ok(!created(s.cwd), "the plugin folder is never used as the project");
 });
-
 const initialize = (capabilities) => ({
 	protocolVersion: "2025-06-18",
 	capabilities,
 	clientInfo: { name: "repeat", version: "1" },
 });
-
 test("stdio preserves falsy params for validation before any dispatch", async (t) => {
 	const s = setup(t);
 	const { prelude } = await session({
@@ -205,7 +194,6 @@ test("stdio preserves falsy params for validation before any dispatch", async (t
 	for (const response of prelude)
 		assert.equal(response.error?.code, -32602, JSON.stringify(response));
 });
-
 test("rejected and repeated initialize cannot change negotiated roots", async (t) => {
 	for (const repeat of [
 		{ ...initialize({ roots: {} }), clientInfo: null },
@@ -237,7 +225,6 @@ test("rejected and repeated initialize cannot change negotiated roots", async (t
 	assert.ok(created(s.project));
 	assert.equal(created(s.saved), false);
 });
-
 test("only negotiated valid roots notifications invalidate the cached workspace", async (t) => {
 	for (const [listChanged, params, expectedRequests] of [
 		[false, {}, 1],

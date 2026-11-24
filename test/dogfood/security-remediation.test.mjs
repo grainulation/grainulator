@@ -1,3 +1,4 @@
+// Generated from typescript/test/dogfood/security-remediation.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { createRequire } from "node:module";
@@ -21,7 +22,6 @@ import {
 	withoutElements,
 } from "../../packages/shared/lib/html.cjs";
 import { withFileTransaction } from "../../packages/shared/lib/transaction.js";
-
 const require = createRequire(import.meta.url);
 const {
 	htmlToMarkdown,
@@ -31,7 +31,6 @@ function fixture(t) {
 	t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
 	return dir;
 }
-
 test("all writers preserve files targeted by the old predictable temp symlinks", (t) => {
 	const dir = fixture(t),
 		now = Date.now;
@@ -69,9 +68,11 @@ test("all writers preserve files targeted by the old predictable temp symlinks",
 			assert.equal(fs.lstatSync(file).isSymbolicLink(), false);
 			assert.equal(fs.lstatSync(file + suffix).isSymbolicLink(), true);
 		}
-		const templates = new Templates({});
+		const templates = new Templates(new Store(path.join(dir, "memory")));
 		templates.get = () => ({
 			id: "fixture",
+			name: "Fixture",
+			savedAt: "2026-11-24T00:00:00Z",
 			question: "Question?",
 			seedClaims: [{ content: "evidence" }],
 		});
@@ -94,7 +95,6 @@ test("all writers preserve files targeted by the old predictable temp symlinks",
 		Date.now = now;
 	}
 });
-
 test("atomic replacement preserves the old target on rename failure and cleans owned temp files", (t) => {
 	const dir = fixture(t),
 		target = path.join(dir, "existing-directory");
@@ -104,7 +104,6 @@ test("atomic replacement preserves the old target on rename failure and cleans o
 	assert.equal(fs.readFileSync(path.join(target, "keep"), "utf8"), "original");
 	assert.deepEqual(fs.readdirSync(dir), ["existing-directory"]);
 });
-
 test("new and append operations do not overwrite or follow existing links", (t) => {
 	const dir = fixture(t),
 		file = path.join(dir, "file"),
@@ -117,7 +116,6 @@ test("new and append operations do not overwrite or follow existing links", (t) 
 	appendRegularFile(file, " appended");
 	assert.equal(readRegularFile(file, "utf8"), "original appended");
 });
-
 test("regular reads reject symlinks, nonregular files and oversized content", (t) => {
 	const dir = fixture(t),
 		file = path.join(dir, "data"),
@@ -129,7 +127,6 @@ test("regular reads reject symlinks, nonregular files and oversized content", (t
 	assert.throws(() => readRegularFile(link));
 	assert.throws(() => readRegularFile(dir));
 });
-
 test("transactions do not take an old lock from another writer or run unlocked", (t) => {
 	const dir = fixture(t),
 		file = path.join(dir, "index.json");
@@ -154,24 +151,22 @@ test("transactions do not take an old lock from another writer or run unlocked",
 		"other",
 	);
 });
-
 test("exported YAML scalars preserve hostile metadata as one quoted value", () => {
 	const value = 'safe\\"\ninjected: true\n#\r\t';
 	const markdown = obsidian({
 		meta: { sprint: value, question: value, audience: value },
 		claims: [],
 	});
-	const front = markdown.split("---\n")[1].trim().split("\n");
-	for (const key of ["sprint", "question", "audience"])
-		assert.equal(
-			JSON.parse(
-				front.find((line) => line.startsWith(`${key}: `)).slice(key.length + 2),
-			),
-			value,
-		);
+	const frontmatter = markdown.split("---\n")[1];
+	assert.ok(frontmatter !== undefined);
+	const front = frontmatter.trim().split("\n");
+	for (const key of ["sprint", "question", "audience"]) {
+		const line = front.find((entry) => entry.startsWith(`${key}: `));
+		assert.ok(line !== undefined);
+		assert.equal(JSON.parse(line.slice(key.length + 2)), value);
+	}
 	assert.equal(front.length, 5);
 });
-
 test("HTML conversion retains supported formatting without activating encoded HTML or unsafe URLs", () => {
 	const result = htmlToMarkdown(
 		'<h2>Heading</h2><p>&lt;img src=x onerror=alert(1)&gt;</p><a href="jav&#x61;script:alert(1)">bad</a><a href="https://example.com/a(b)">good</a><img src="pic.png" alt="photo"><pre><code>```\n&lt;tag&gt;</code></pre>',
@@ -193,7 +188,6 @@ test("HTML conversion retains supported formatting without activating encoded HT
 		'<script src="app.js"></script>',
 	);
 });
-
 test("entity and BibTeX escaping each transform input only once", () => {
 	assert.equal(decodeEntities("&amp;lt;tag&amp;gt;"), "&lt;tag&gt;");
 	assert.equal(decodeEntities("&#x1f600;"), "😀");

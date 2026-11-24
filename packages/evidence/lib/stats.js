@@ -1,3 +1,4 @@
+// Generated from typescript/packages/evidence/lib/stats.ts; edit that source and run npm run build:types.
 /**
  * evidence stats — Local sprint statistics (self-inspection only)
  *
@@ -8,23 +9,18 @@
  * LOCAL only — no phone-home, no analytics, no network calls.
  * Zero npm dependencies.
  */
-
 import fs from "fs";
 import path from "path";
 import { loadClaims } from "./load-claims.js";
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
 /** Find all claims.json files in repo (root + examples/). */
 function findAllClaims(dir) {
 	const results = [];
-
 	// Root-level claims.json
 	const rootClaims = path.join(dir, "claims.json");
 	if (fs.existsSync(rootClaims)) {
 		results.push({ path: rootClaims, label: "." });
 	}
-
 	// examples/<name>/claims.json
 	const examplesDir = path.join(dir, "examples");
 	if (fs.existsSync(examplesDir)) {
@@ -42,24 +38,28 @@ function findAllClaims(dir) {
 			/* skip if unreadable */
 		}
 	}
-
 	return results;
 }
-
 // ─── Main ─────────────────────────────────────────────────────────────────────
-
 export async function run(dir, args) {
 	const sprintFiles = findAllClaims(dir);
-
 	if (sprintFiles.length === 0) {
-		if(args.includes("--json")){console.log(JSON.stringify({schema_version:"grainulator.stats.v1",sprints:[],total_claims:0}));return;}
+		if (args.includes("--json")) {
+			console.log(
+				JSON.stringify({
+					schema_version: "grainulator.stats.v1",
+					sprints: [],
+					total_claims: 0,
+				}),
+			);
+			return;
+		}
 		console.log();
 		console.log("  No sprints found in this directory.");
 		console.log('  Run "grainulator init" to start a research sprint.');
 		console.log();
 		process.exit(0);
 	}
-
 	// Aggregate all claims across sprints
 	let totalClaims = 0;
 	let earliestDate = null;
@@ -67,42 +67,34 @@ export async function run(dir, args) {
 	const byType = {};
 	const byEvidence = {};
 	const sprintSummaries = [];
-
 	for (const sf of sprintFiles) {
 		const sfDir = path.dirname(sf.path);
 		const sfFilename = path.basename(sf.path);
 		const { data } = loadClaims(sfDir, { filename: sfFilename });
 		if (!data) continue;
-
 		const meta = data.meta || {};
 		const claims = data.claims || [];
 		const active = claims.filter((c) => c.status === "active");
-
 		totalClaims += claims.length;
-
 		// Track earliest sprint initiation
 		if (meta.initiated) {
 			const d = new Date(meta.initiated);
 			if (!earliestDate || d < earliestDate) earliestDate = d;
 		}
-
 		// Accumulate by phase_added
 		for (const c of claims) {
 			const phase = c.phase_added || "unknown";
 			byPhase[phase] = (byPhase[phase] || 0) + 1;
 		}
-
 		// Accumulate by type
 		for (const c of claims) {
 			byType[c.type || "unknown"] = (byType[c.type || "unknown"] || 0) + 1;
 		}
-
 		// Accumulate by evidence tier
 		for (const c of claims) {
 			byEvidence[c.evidence || "unknown"] =
 				(byEvidence[c.evidence || "unknown"] || 0) + 1;
 		}
-
 		sprintSummaries.push({
 			label: sf.label,
 			question: (meta.question || "").slice(0, 60),
@@ -111,20 +103,27 @@ export async function run(dir, args) {
 			active: active.length,
 		});
 	}
-
-	if(args.includes("--json")){console.log(JSON.stringify({schema_version:"grainulator.stats.v1",sprints:sprintSummaries,total_claims:totalClaims,by_phase:byPhase,by_type:byType,by_evidence:byEvidence}));return;}
-
+	if (args.includes("--json")) {
+		console.log(
+			JSON.stringify({
+				schema_version: "grainulator.stats.v1",
+				sprints: sprintSummaries,
+				total_claims: totalClaims,
+				by_phase: byPhase,
+				by_type: byType,
+				by_evidence: byEvidence,
+			}),
+		);
+		return;
+	}
 	// ─── Print ────────────────────────────────────────────────────────────────
-
 	console.log();
 	console.log("  \x1b[1mgrainulator stats\x1b[0m — local sprint statistics");
 	console.log(`  ${"─".repeat(50)}`);
 	console.log();
-
 	// Sprint count
 	console.log(`  Sprints:     ${sprintFiles.length}`);
 	console.log(`  Claims:      ${totalClaims} total`);
-
 	// Age
 	if (earliestDate) {
 		const days = Math.floor((Date.now() - earliestDate.getTime()) / 86400000);
@@ -134,9 +133,7 @@ export async function run(dir, args) {
 				.slice(0, 10)})`,
 		);
 	}
-
 	console.log();
-
 	// By phase
 	console.log("  \x1b[1mClaims by phase:\x1b[0m");
 	const phaseOrder = [
@@ -152,9 +149,7 @@ export async function run(dir, args) {
 			console.log(`    ${p.padEnd(12)} ${byPhase[p]}`);
 		}
 	}
-
 	console.log();
-
 	// By type
 	console.log("  \x1b[1mClaims by type:\x1b[0m");
 	const typeOrder = [
@@ -171,9 +166,7 @@ export async function run(dir, args) {
 			console.log(`    ${t.padEnd(16)} ${byType[t]}`);
 		}
 	}
-
 	console.log();
-
 	// By evidence tier
 	console.log("  \x1b[1mClaims by evidence:\x1b[0m");
 	const evidenceOrder = ["stated", "web", "documented", "tested", "production"];
@@ -185,17 +178,13 @@ export async function run(dir, args) {
 			console.log(`    ${e.padEnd(14)} ${byEvidence[e]}`);
 		}
 	}
-
 	console.log();
-
 	// Per-sprint table
 	if (sprintFiles.length > 1) {
 		console.log("  \x1b[1mPer-sprint breakdown:\x1b[0m");
 		for (const s of sprintSummaries) {
 			console.log(
-				`    ${s.label.padEnd(30)} ${String(s.claims).padStart(4)} claims  (${
-					s.active
-				} active)  [${s.phase}]`,
+				`    ${s.label.padEnd(30)} ${String(s.claims).padStart(4)} claims  (${s.active} active)  [${s.phase}]`,
 			);
 			if (s.question) {
 				console.log(
@@ -205,7 +194,6 @@ export async function run(dir, args) {
 		}
 		console.log();
 	}
-
 	console.log(
 		"  No data leaves your machine. This is local self-inspection only.",
 	);

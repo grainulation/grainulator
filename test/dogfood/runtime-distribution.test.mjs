@@ -1,3 +1,4 @@
+// Generated from typescript/test/dogfood/runtime-distribution.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -26,7 +27,6 @@ import {
 	reviewRuntimeMigration,
 	rollbackRuntimeEnrollment,
 } from "../../lib/runtime-enrollment.js";
-
 // Synthetic executable-format headers make the archive parser tests independent
 // of a Rust toolchain. Native candidate acceptance executes the real binaries.
 function fixture({ version = runtimeVersion() } = {}) {
@@ -129,7 +129,6 @@ const claim = {
 	content: "A typed native claim.",
 	evidence: "documented",
 };
-
 test("native install requires independent manifest pin and refuses self-consistent replacement", () => {
 	const f = fixture();
 	try {
@@ -212,8 +211,12 @@ test("installed verification binds file bytes and metadata to the approved relea
 	try {
 		const installed = f.install();
 		assert.equal(installed.installed, true);
-		assert.equal(f.install().unchanged, true);
-		const file = path.join(installed.asset_directory, RUNTIME_BINARIES[0]);
+		const repeated = f.install();
+		assert.ok("unchanged" in repeated);
+		assert.equal(repeated.unchanged, true);
+		const binary = RUNTIME_BINARIES[0];
+		assert.ok(binary !== undefined);
+		const file = path.join(installed.asset_directory, binary);
 		fs.appendFileSync(file, "changed");
 		assert.throws(
 			() => verifyInstalledAsset(installed.asset_directory, f.options),
@@ -223,9 +226,11 @@ test("installed verification binds file bytes and metadata to the approved relea
 			installed.asset_directory,
 			"runtime-asset.json",
 		);
-		const forged = JSON.parse(readRegular(metadataFile));
-		forged.files[RUNTIME_BINARIES[0]].sha256 = sha256(readRegular(file));
-		forged.files[RUNTIME_BINARIES[0]].size = readRegular(file).length;
+		const forged = JSON.parse(readRegular(metadataFile).toString());
+		const entry = forged.files[binary];
+		assert.ok(entry);
+		entry.sha256 = sha256(readRegular(file));
+		entry.size = readRegular(file).length;
 		fs.writeFileSync(metadataFile, JSON.stringify(forged));
 		assert.throws(
 			() => verifyInstalledAsset(installed.asset_directory, f.options),
@@ -239,14 +244,20 @@ test("installed verification binds file bytes and metadata to the approved relea
 test("native archive rejects mismatched CPU and externally linked binary formats", () => {
 	const f = fixture();
 	try {
-		const file = f.files.get(RUNTIME_BINARIES[0]);
+		const binary = RUNTIME_BINARIES[0];
+		assert.ok(binary !== undefined);
+		const file = f.files.get(binary);
+		const entry = f.metadata.files[binary];
+		assert.ok(file && entry);
 		file.bytes[0] = 0;
-		f.metadata.files[RUNTIME_BINARIES[0]].sha256 = sha256(file.bytes);
+		entry.sha256 = sha256(file.bytes);
 		const metadata = Buffer.from(JSON.stringify(f.metadata));
 		f.files.set("runtime-asset.json", { bytes: metadata, mode: 0o644 });
 		const archive = encodeRuntimeArchive(f.files);
 		fs.writeFileSync(f.options.archive, archive);
-		Object.assign(f.manifest.assets[0], {
+		const asset = f.manifest.assets[0];
+		assert.ok(asset);
+		Object.assign(asset, {
 			sha256: sha256(archive),
 			bytes: archive.length,
 			metadata_sha256: sha256(metadata),
@@ -299,7 +310,10 @@ test("native typed mutation preserves history, refuses invalid updates and share
 		fs.rmdirSync(path.join(directory, ".write.lock"));
 		mutateRuntimeClaim(f.workspace, "add", { ...claim, id: "c2" });
 		mutateRuntimeClaim(f.workspace, "supersede", null, { id: "c1", by: "c2" });
-		assert.equal(JSON.parse(readRegular(file)).claims[0].resolved_by, "c2");
+		assert.equal(
+			JSON.parse(readRegular(file).toString()).claims[0].resolved_by,
+			"c2",
+		);
 		assert.throws(() => initializeRuntime(f.workspace), /already exists/);
 	} finally {
 		f.cleanup();
@@ -323,7 +337,7 @@ test("explicit enrollment preserves unrelated settings and supports hash-bound r
 			expectedSettingsHash: sha256(original),
 			home: f.home,
 		});
-		const current = JSON.parse(readRegular(settings));
+		const current = JSON.parse(readRegular(settings).toString());
 		assert.equal(current.theme, "dark");
 		assert.equal(current.hooks.Stop[0].hooks[0].command, "unrelated");
 		const receipt = path.join(
@@ -397,7 +411,7 @@ test("host changes, malformed settings and later native writes cannot be overwri
 			/settings changed/,
 		);
 		assert.deepEqual(readRegular(receipt), before);
-		assert.equal(JSON.parse(readRegular(settings)).concurrent, true);
+		assert.equal(JSON.parse(readRegular(settings).toString()).concurrent, true);
 	} finally {
 		f.cleanup();
 	}
@@ -444,14 +458,13 @@ test("converted runtime review is explicit, hash-bound and never executes retain
 		assert.equal(reviewed.oracles_executed, false);
 		assert.equal(fs.existsSync(sentinel), false);
 		assert.equal(
-			JSON.parse(readRegular(marker)).reviewed_run_sha256,
+			JSON.parse(readRegular(marker).toString()).reviewed_run_sha256,
 			sha256(readRegular(run)),
 		);
 	} finally {
 		f.cleanup();
 	}
 });
-
 function enrollmentPaths(workspace, config, host = "codex") {
 	return {
 		receipt: path.join(workspace, ".grainulator/runtime/enrollment.json"),
@@ -476,11 +489,11 @@ async function versionedEnrollmentModule(f, version) {
 			fileURLToPath(new URL(`../../lib/${name}`, import.meta.url)),
 			path.join(directory, "lib", name),
 		);
-	fs.copyFileSync(
-		fileURLToPath(
-			new URL("../../packages/shared/lib/project-config.cjs", import.meta.url),
-		),
-		path.join(directory, "packages/shared/lib/project-config.cjs"),
+	// Preserve the packaged helper dependency graph, including errors.cjs.
+	fs.cpSync(
+		fileURLToPath(new URL("../../packages/shared/lib/", import.meta.url)),
+		path.join(directory, "packages/shared/lib"),
+		{ recursive: true },
 	);
 	return import(
 		pathToFileURL(path.join(directory, "lib/runtime-enrollment.js")).href
@@ -549,7 +562,7 @@ test("one host refuses a second workspace before changing either enrollment or s
 			false,
 		);
 		assert.equal(fs.existsSync(path.join(otherState, "host-backups")), false);
-		assert.equal(JSON.parse(settings).hooks.Stop.length, 1);
+		assert.equal(JSON.parse(settings.toString()).hooks.Stop.length, 1);
 	} finally {
 		f.cleanup();
 	}
@@ -636,7 +649,9 @@ test("different release cohorts cannot share a host, while an owned release hand
 			home: a.home,
 		});
 		assert.equal(upgraded.asset_version, nextVersion);
-		const groups = JSON.parse(readRegular(files.settings)).hooks.Stop;
+		const {
+			hooks: { Stop: groups },
+		} = JSON.parse(readRegular(files.settings).toString());
 		assert.equal(groups.length, 1);
 		assert.equal(groups[0].hooks.length, 1);
 		assert.notEqual(groups[0].hooks[0].command, first.hook_command);
@@ -667,7 +682,7 @@ test("detach cannot remove a duplicated or foreign active runtime cohort", () =>
 			home: f.home,
 		});
 		const receipt = readRegular(files.receipt),
-			settings = JSON.parse(readRegular(files.settings));
+			settings = JSON.parse(readRegular(files.settings).toString());
 		settings.hooks.Stop.push({
 			hooks: [
 				{
@@ -709,7 +724,7 @@ test("rollback rejects missing, malformed, oversized or changed archived setting
 		});
 		const receipt = readRegular(files.receipt),
 			settings = readRegular(files.settings),
-			originalBackup = JSON.parse(readRegular(enrolled.backup));
+			originalBackup = JSON.parse(readRegular(enrolled.backup).toString());
 		for (const corrupt of [
 			(backup) => {
 				backup.settings = null;
@@ -768,8 +783,10 @@ test("rollback validates archived enrollment ownership even with a self-consiste
 			expectedEnrollmentHash: sha256(readRegular(files.receipt)),
 			home: f.home,
 		});
-		const originalReceipt = JSON.parse(readRegular(files.receipt)),
-			originalBackup = JSON.parse(readRegular(originalReceipt.backup)),
+		const originalReceipt = JSON.parse(readRegular(files.receipt).toString()),
+			originalBackup = JSON.parse(
+				readRegular(originalReceipt.backup).toString(),
+			),
 			settings = readRegular(files.settings);
 		for (const mutate of [
 			(prior) => {
@@ -785,7 +802,7 @@ test("rollback validates archived enrollment ownership even with a self-consiste
 		]) {
 			const backup = structuredClone(originalBackup),
 				receipt = structuredClone(originalReceipt),
-				prior = JSON.parse(Buffer.from(backup.enrollment, "base64"));
+				prior = JSON.parse(Buffer.from(backup.enrollment, "base64").toString());
 			mutate(prior);
 			const payload = Buffer.from(JSON.stringify(prior));
 			backup.enrollment = payload.toString("base64");
@@ -821,7 +838,7 @@ test("only an actually absent archived preimage permits removal of newly created
 			expectedSettingsHash: "absent",
 			home: f.home,
 		});
-		const backup = JSON.parse(readRegular(enrolled.backup)),
+		const backup = JSON.parse(readRegular(enrolled.backup).toString()),
 			receipt = readRegular(files.receipt),
 			settings = readRegular(files.settings);
 		fs.writeFileSync(
@@ -856,7 +873,6 @@ test("only an actually absent archived preimage permits removal of newly created
 		f.cleanup();
 	}
 });
-
 test("immutable runtime history reuses exact snapshots and rejects collisions, links and create errors before claims change", () => {
 	for (const kind of [
 		"matching",

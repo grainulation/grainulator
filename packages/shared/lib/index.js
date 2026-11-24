@@ -1,3 +1,4 @@
+// Generated from typescript/packages/shared/lib/index.ts; edit that source and run npm run build:types.
 /**
  * @grainulation/grainulator-shared — public API surface
  *
@@ -6,63 +7,53 @@
  *   detectSprints(root)    — git-based sprint detection (re-export)
  *   generateManifest(opts) — build .grainulator/evidence/manifest.json topic map (re-export)
  */
-
 import { readFileSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(
-  readFileSync(join(__dirname, "..", "package.json"), "utf8"),
+	readFileSync(join(__dirname, "..", "package.json"), "utf8"),
 );
-
 export const name = pkg.name;
 export const version = pkg.version;
-
 // Re-export tools
 export { detectSprints } from "../tools/detect-sprints.js";
 export { generateManifest } from "../tools/generate-manifest.js";
-
+export { atomicWrite, atomicWriteJSON } from "./atomic.js";
+export {
+	flag,
+	flagList,
+	isFlag,
+	loadJSON,
+	parseFlags,
+	setVerbose,
+	vlog,
+} from "./cli.js";
 // Shared utilities — absorbed from duplicated code across the ecosystem.
 // See claims r100–r117 in the dedup-shared-absorb sprint.
 export {
-  jsonRpcResponse,
-  jsonRpcError,
-  JSON_RPC_ERRORS,
-  parseJsonRpc,
-  buildInitializeResult,
+	buildInitializeResult,
+	JSON_RPC_ERRORS,
+	jsonRpcError,
+	jsonRpcResponse,
+	parseJsonRpc,
 } from "./mcp.js";
-
 export {
-  isInsideDir,
-  resolveSafe,
-  assertInsideDir,
-  relativeInside,
+	assertInsideDir,
+	isInsideDir,
+	relativeInside,
+	resolveSafe,
 } from "./paths.js";
-
-export { atomicWrite, atomicWriteJSON } from "./atomic.js";
-
 export {
-  parseFlags,
-  flag,
-  flagList,
-  loadJSON,
-  setVerbose,
-  vlog,
-  isFlag,
-} from "./cli.js";
-
-export {
-  PHASE_PREFIXES,
-  PHASE_NAMES,
-  isValidPhase,
-  phaseFromClaimId,
-  prefixForPhase,
+	isValidPhase,
+	PHASE_NAMES,
+	PHASE_PREFIXES,
+	phaseFromClaimId,
+	prefixForPhase,
 } from "./phases.js";
-
 export {
-  loadSprintClaims,
-  loadSprintCompilation,
-  sprintSummary,
-  summarize,
+	loadSprintClaims,
+	loadSprintCompilation,
+	sprintSummary,
+	summarize,
 } from "./sprints.js";

@@ -1,20 +1,20 @@
 #!/usr/bin/env node
+// Generated from typescript/scripts/verify-release.mts; edit that source and run npm run build:types.
 // Publication consumes only files bound by the independently carried manifest pin.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+	decodeRuntimeArchive,
 	NATIVE_TARGETS,
 	readRegular,
 	sha256,
-	decodeRuntimeArchive,
 	verifyAssetFiles,
 } from "../lib/runtime-assets.js";
 import {
 	verifyBaseArchive,
 	verifyMigrationArchive,
 } from "./release-archive.mjs";
-
 export function verifyRelease({
 	directory,
 	manifestSha256,
@@ -31,7 +31,7 @@ export function verifyRelease({
 		sha256(manifestBytes) !== manifestSha256
 	)
 		throw Error("Release manifest differs from trusted pin");
-	const m = JSON.parse(manifestBytes);
+	const m = JSON.parse(String(manifestBytes));
 	if (
 		m.schema !== "grainulator.release.v1" ||
 		!/^3\.\d+\.\d+$/.test(m.version) ||
@@ -102,12 +102,16 @@ export function verifyRelease({
 				version: m.version,
 				sourceCommit: m.source_commit,
 			});
-		if (item.target) {
+		if (
+			"target" in item &&
+			"metadata_sha256" in item &&
+			typeof item.target === "string"
+		) {
 			const files = decodeRuntimeArchive(bytes),
 				metadataBytes = files.get("runtime-asset.json")?.bytes;
 			if (!metadataBytes || sha256(metadataBytes) !== item.metadata_sha256)
 				throw Error("Native metadata pin mismatch");
-			const metadata = JSON.parse(metadataBytes);
+			const metadata = JSON.parse(String(metadataBytes));
 			if (metadata.source_dirty !== false)
 				throw Error("Dirty native source cannot be published");
 			verifyAssetFiles(metadata, files, {
@@ -164,7 +168,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 			o[k] = v;
 		}
 		console.log(JSON.stringify(verifyRelease(o), null, 2));
-	} catch (e) {
+	} catch (_e) {
+		const e = _e;
 		console.error("Release verification: " + e.message);
 		process.exitCode = 1;
 	}

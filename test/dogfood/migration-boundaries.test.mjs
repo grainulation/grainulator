@@ -1,3 +1,4 @@
+// Generated from typescript/test/dogfood/migration-boundaries.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import crypto from "node:crypto";
@@ -16,7 +17,6 @@ import {
 import protection from "../../packages/exports/lib/output-safety.js";
 import { Confluence } from "../../packages/memory/lib/confluence.js";
 import remoteGate from "../../packages/shared/lib/remote-migration.cjs";
-
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const digest = (bytes) =>
 	crypto.createHash("sha256").update(bytes).digest("hex");
@@ -31,6 +31,10 @@ function file(target, data) {
 		target,
 		typeof data === "string" ? data : JSON.stringify(data),
 	);
+}
+function parseToolResponse(response) {
+	assert.ok(typeof response === "string");
+	return JSON.parse(response);
 }
 function evidence(dir) {
 	file(path.join(dir, "claims.json"), {
@@ -224,7 +228,7 @@ test("confirmed receipt binds site, space, page ID and exact source/role invento
 				remoteGate.assertRemoteMigrationReady(dir, { destination: different }),
 			/reconciled/,
 		);
-	const changed = JSON.parse(fs.readFileSync(markerFile));
+	const changed = JSON.parse(fs.readFileSync(markerFile, "utf8"));
 	changed.pages[0].scope.role = "brief";
 	file(markerFile, changed);
 	assert.throws(
@@ -277,7 +281,7 @@ test("CLI and MCP exports refuse migration journals, original state and configur
 		);
 		assert.equal(cli.status, 1, cli.stdout + cli.stderr);
 		assert.equal(fs.readFileSync(target, "utf8"), "ORIGINAL");
-		const response = JSON.parse(
+		const response = parseToolResponse(
 			await handler(
 				"tools/call",
 				{
@@ -317,7 +321,6 @@ test("custom original roots from canonical migration receipt remain protected", 
 		"ORIGINAL",
 	);
 });
-
 test("MCP remote publication keeps trusted project scope and never calls the connector through a nested sprint", async (t) => {
 	const dir = fixture(t),
 		sprint = path.join(dir, "sprints", "a");
@@ -349,7 +352,7 @@ test("MCP remote publication keeps trusted project scope and never calls the con
 	};
 	try {
 		const handler = createHandler({ dir });
-		const response = JSON.parse(
+		const response = parseToolResponse(
 			await handler(
 				"tools/call",
 				{

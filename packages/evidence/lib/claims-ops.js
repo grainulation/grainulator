@@ -1,3 +1,4 @@
+// Generated from typescript/packages/evidence/lib/claims-ops.ts; edit that source and run npm run build:types.
 import projectConfig from "../../shared/lib/project-config.cjs";
 import { assertEvidenceMutation } from "./evidence-target.js";
 /**
@@ -10,15 +11,14 @@ import { assertEvidenceMutation } from "./evidence-target.js";
  *
  * Zero npm dependencies.
  */
-
 import fs from "node:fs";
-import { compilationFreshness } from "./freshness.js";
-import nextActionsModule from "./next-actions.cjs";
 import path from "node:path";
 import { atomicWriteJSON } from "../../shared/lib/atomic.js";
 import { withFileTransaction } from "../../shared/lib/transaction.js";
-import { loadClaims } from "./load-claims.js";
 import { inspectFinding } from "./evidence-health.js";
+import { compilationFreshness } from "./freshness.js";
+import { loadClaims } from "./load-claims.js";
+import nextActionsModule from "./next-actions.cjs";
 import {
 	isDigest,
 	normalizeStored,
@@ -29,9 +29,7 @@ import {
 	readPassage,
 	storePassage,
 } from "./passages.js";
-
 // --- Constants ---------------------------------------------------------------
-
 const VALID_TYPES = [
 	"constraint",
 	"factual",
@@ -41,12 +39,9 @@ const VALID_TYPES = [
 	"feedback",
 ];
 const VALID_EVIDENCE = ["stated", "web", "documented", "tested", "production"];
-
-// --- Paths -------------------------------------------------------------------
-
 function resolvePaths(dir) {
 	assertEvidenceMutation(dir);
-	const config=projectConfig.evidenceConfig(dir);
+	const config = projectConfig.evidenceConfig(dir);
 	return {
 		claims: path.resolve(config.origin, config.compiler.claims),
 		compilation: path.resolve(config.origin, config.compiler.compilation),
@@ -54,14 +49,11 @@ function resolvePaths(dir) {
 		compiler: path.join(dir, "evidence-compiler.js"),
 	};
 }
-
 // --- Quoted passages ---------------------------------------------------------
-
 function withoutPassageInput(source) {
 	const { quote, passage, passage_sha256, ...rest } = source;
 	return rest;
 }
-
 // Validates source.quote with source.passage (stored now) or
 // source.passage_sha256 (stored earlier). The quote must occur in the passage.
 // Returns the fields to keep on the claim; passage text never enters claims.json.
@@ -69,7 +61,10 @@ function sealPassage(dir, source) {
 	const { quote, passage, passage_sha256: digest } = source;
 	if (quote === undefined && passage === undefined && digest === undefined)
 		return { status: "ok", fields: {} };
-	const fail = (message) => ({ status: "error", message });
+	const fail = (message) => ({
+		status: "error",
+		message,
+	});
 	if (passage !== undefined && digest !== undefined)
 		return fail("Give source.passage or source.passage_sha256, not both.");
 	const problem = quoteProblem(quote);
@@ -105,7 +100,7 @@ function sealPassage(dir, source) {
 		return {
 			status: "ok",
 			fields: {
-				quote,
+				quote: quote,
 				passage_sha256:
 					passage !== undefined ? storePassage(dir, passage) : digest,
 			},
@@ -114,9 +109,6 @@ function sealPassage(dir, source) {
 		return fail(`Could not store the passage: ${err.message}`);
 	}
 }
-
-// --- Operations --------------------------------------------------------------
-
 function addClaimUnlocked(dir, args, prepared = {}) {
 	const paths = resolvePaths(dir);
 	if (!fs.existsSync(paths.claims)) {
@@ -125,14 +117,17 @@ function addClaimUnlocked(dir, args, prepared = {}) {
 			message: "No claims.json found. Run grainulator init first.",
 		};
 	}
-
 	const { id, type, topic, content, evidence, tags } = args;
-
 	// Validate
 	if (
-		![id, type, topic, content].every(
-			(value) => typeof value === "string" && value.trim(),
-		)
+		typeof id !== "string" ||
+		!id.trim() ||
+		typeof type !== "string" ||
+		!type.trim() ||
+		typeof topic !== "string" ||
+		!topic.trim() ||
+		typeof content !== "string" ||
+		!content.trim()
 	) {
 		return {
 			status: "error",
@@ -148,12 +143,9 @@ function addClaimUnlocked(dir, args, prepared = {}) {
 	if (evidence && !VALID_EVIDENCE.includes(evidence)) {
 		return {
 			status: "error",
-			message: `Invalid evidence "${evidence}". Valid: ${VALID_EVIDENCE.join(
-				", ",
-			)}`,
+			message: `Invalid evidence "${evidence}". Valid: ${VALID_EVIDENCE.join(", ")}`,
 		};
 	}
-
 	for (const key of ["tags", "conflicts_with"]) {
 		if (
 			args[key] !== undefined &&
@@ -221,21 +213,20 @@ function addClaimUnlocked(dir, args, prepared = {}) {
 					"source.source_role must be primary_evidence or secondary_citation.",
 			};
 	}
-
-		const { data, errors: loadErrors } = prepared.data ? { data: prepared.data, errors: [] } : loadClaims(dir);
+	const { data, errors: loadErrors } = prepared.data
+		? { data: prepared.data, errors: [] }
+		: loadClaims(dir);
 	if (!data) {
 		return {
 			status: "error",
 			message: loadErrors[0]?.message || "Failed to load claims.json",
 		};
 	}
-
 	// Check for duplicate ID
 	const claims = data.claims || [];
 	if (claims.some((c) => c.id === id)) {
 		return { status: "error", message: `Claim ID "${id}" already exists.` };
 	}
-
 	if (args.calibration !== undefined) {
 		const cal = args.calibration;
 		const target = claims.find(
@@ -286,8 +277,8 @@ function addClaimUnlocked(dir, args, prepared = {}) {
 		tags: tags || [],
 		...(args.calibration ? { calibration: { ...args.calibration } } : {}),
 	};
-
-	(data.claims || (data.claims = [])).push(claim);
+	if (!data.claims) data.claims = [];
+	data.claims.push(claim);
 	try {
 		if (prepared.persist !== false) atomicWriteJSON(paths.claims, data, 2);
 	} catch (err) {
@@ -296,10 +287,8 @@ function addClaimUnlocked(dir, args, prepared = {}) {
 			message: `Failed to write claims.json: ${err.message}`,
 		};
 	}
-
 	return { status: "ok", message: `Claim ${id} added.`, claim };
 }
-
 function mutate(dir, args, operation) {
 	try {
 		return withFileTransaction(path.join(dir, "claims.json"), () =>
@@ -323,7 +312,6 @@ function prepareClaim(dir, args, data) {
 function resolveClaim(dir, args) {
 	return mutate(dir, args, resolveClaimUnlocked);
 }
-
 function searchClaims(dir, args, { includeAudit = false, afterSelect } = {}) {
 	const { data, errors: loadErrors } = loadClaims(dir);
 	if (!data) {
@@ -336,7 +324,6 @@ function searchClaims(dir, args, { includeAudit = false, afterSelect } = {}) {
 		(c) => args.include_inactive || c.status === "active",
 	);
 	if (args.id) results = results.filter((c) => c.id === args.id);
-
 	if (args.topic) {
 		results = results.filter((c) => c.topic === args.topic);
 	}
@@ -354,10 +341,13 @@ function searchClaims(dir, args, { includeAudit = false, afterSelect } = {}) {
 	afterSelect?.();
 	const selected = results.map((c) => {
 		if (!includeAudit) return c;
-		const { claim_id: _id, content: _content, ...audit } = inspectFinding(dir, c);
+		const {
+			claim_id: _id,
+			content: _content,
+			...audit
+		} = inspectFinding(dir, c);
 		return { ...c, ...audit };
 	});
-
 	return {
 		status: "ok",
 		count: results.length,
@@ -381,18 +371,15 @@ function searchClaims(dir, args, { includeAudit = false, afterSelect } = {}) {
 		),
 	};
 }
-
 function resolveClaimUnlocked(dir, args) {
 	const paths = resolvePaths(dir);
 	if (!fs.existsSync(paths.claims)) {
 		return { status: "error", message: "No claims.json found." };
 	}
-
 	const { winner, loser, reason } = args;
 	if (!winner || !loser) {
 		return { status: "error", message: "Required fields: winner, loser" };
 	}
-
 	const { data, errors: loadErrors } = loadClaims(dir);
 	if (!data) {
 		return {
@@ -402,12 +389,10 @@ function resolveClaimUnlocked(dir, args) {
 	}
 	const winnerClaim = data.claims.find((c) => c.id === winner);
 	const loserClaim = data.claims.find((c) => c.id === loser);
-
 	if (!winnerClaim)
 		return { status: "error", message: `Claim "${winner}" not found.` };
 	if (!loserClaim)
 		return { status: "error", message: `Claim "${loser}" not found.` };
-
 	const winnerConflicts = winnerClaim.conflicts_with || [];
 	const loserConflicts = loserClaim.conflicts_with || [];
 	if (!winnerConflicts.includes(loser) && !loserConflicts.includes(winner)) {
@@ -416,7 +401,6 @@ function resolveClaimUnlocked(dir, args) {
 			message: `Cannot resolve: "${winner}" and "${loser}" have no conflicts_with relationship.`,
 		};
 	}
-
 	// Clear conflict references
 	winnerClaim.conflicts_with = (winnerClaim.conflicts_with || []).filter(
 		(cid) => cid !== loser,
@@ -429,7 +413,6 @@ function resolveClaimUnlocked(dir, args) {
 		winner,
 		resolved_at: new Date().toISOString(),
 	};
-
 	try {
 		atomicWriteJSON(paths.claims, data, 2);
 	} catch (err) {
@@ -438,17 +421,13 @@ function resolveClaimUnlocked(dir, args) {
 			message: `Failed to write claims.json: ${err.message}`,
 		};
 	}
-
 	return {
 		status: "ok",
-		message: `Resolved: ${winner} wins over ${loser}${
-			reason ? ` (${reason})` : ""
-		}.`,
+		message: `Resolved: ${winner} wins over ${loser}${reason ? ` (${reason})` : ""}.`,
 		winner: winnerClaim.id,
 		loser: loserClaim.id,
 	};
 }
-
 function getStatus(dir) {
 	const { data, errors: loadErrors } = loadClaims(dir);
 	if (!data) {
@@ -459,7 +438,6 @@ function getStatus(dir) {
 				"No claims.json found. Run evidence init to start a sprint.",
 		};
 	}
-
 	const claims = data.claims || [];
 	const active = claims.filter((c) => c.status === "active");
 	const conflicted = claims.filter(
@@ -474,7 +452,6 @@ function getStatus(dir) {
 	active.forEach((c) => {
 		types[c.type] = (types[c.type] || 0) + 1;
 	});
-
 	const activeIds = new Set(active.map((c) => c.id));
 	const edges = new Map();
 	for (const c of active)
@@ -515,7 +492,6 @@ function getStatus(dir) {
 			/* ignore */
 		}
 	}
-
 	return {
 		status: "ok",
 		dir: path.resolve(dir),
@@ -534,11 +510,10 @@ function getStatus(dir) {
 		next_actions_instruction: nextActionsModule.nextActionsInstruction,
 	};
 }
-
 export {
-	prepareClaim,
 	addClaim,
 	getStatus,
+	prepareClaim,
 	resolveClaim,
 	resolvePaths,
 	searchClaims,

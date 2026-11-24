@@ -1,3 +1,4 @@
+// Generated from typescript/test/dogfood/build-info.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import crypto from "node:crypto";
 import fs from "node:fs";
@@ -5,7 +6,6 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { inspectBuild, portableMcpBytes } from "../../lib/build-info.js";
-
 test("build verification distinguishes unidentified, unchanged, changed and missing files", () => {
 	const root = fs.mkdtempSync(
 		path.join(os.tmpdir(), "grainulator-build-info-"),
@@ -27,7 +27,6 @@ test("build verification distinguishes unidentified, unchanged, changed and miss
 		fs.rmSync(root, { recursive: true, force: true });
 	}
 });
-
 test("host wrapper is reported separately only when its original server definition matches", () => {
 	const root = fs.mkdtempSync(
 		path.join(os.tmpdir(), "grainulator-build-wrapper-"),
@@ -71,7 +70,6 @@ test("host wrapper is reported separately only when its original server definiti
 		fs.rmSync(root, { recursive: true, force: true });
 	}
 });
-
 test("native MCP host wrappers verify only when the complete launch configuration matches", () => {
 	const root = fs.mkdtempSync(
 		path.join(os.tmpdir(), "grainulator-native-wrapper-"),

@@ -1,3 +1,4 @@
+// Generated from typescript/test/dogfood/native-plugin.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -6,7 +7,6 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { saveWorkspace } from "../../lib/workspace-config.js";
 import { mcp, toolJSON } from "../../scripts/lib/local-checks.mjs";
-
 const root = fileURLToPath(new URL("../../", import.meta.url));
 function fixture(t) {
 	const dir = fs.mkdtempSync(
@@ -21,8 +21,9 @@ async function connect(
 	workspace,
 	config = path.join(dir, "workspace.json"),
 ) {
-	const server = JSON.parse(fs.readFileSync(path.join(root, "mcp.json")))
-		.mcpServers.grainulator;
+	const {
+		mcpServers: { grainulator: server },
+	} = JSON.parse(fs.readFileSync(path.join(root, "mcp.json")).toString());
 	const pluginData = path.join(dir, "plugin-data");
 	const expand = (value) =>
 		value
@@ -49,9 +50,11 @@ async function connect(
 	return { client, pluginData };
 }
 test("native Agent Plugin manifest and Codex overlay register portable components", () => {
-	const manifest = JSON.parse(fs.readFileSync(path.join(root, "plugin.json")));
+	const manifest = JSON.parse(
+		fs.readFileSync(path.join(root, "plugin.json")).toString(),
+	);
 	const overlay = JSON.parse(
-		fs.readFileSync(path.join(root, ".codex-plugin/plugin.json")),
+		fs.readFileSync(path.join(root, ".codex-plugin/plugin.json")).toString(),
 	);
 	assert.equal(
 		manifest.$schema,
@@ -60,7 +63,8 @@ test("native Agent Plugin manifest and Codex overlay register portable component
 	assert.equal(manifest.name, "grainulator");
 	assert.equal(
 		manifest.version,
-		JSON.parse(fs.readFileSync(path.join(root, "package.json"))).version,
+		JSON.parse(fs.readFileSync(path.join(root, "package.json")).toString())
+			.version,
 	);
 	assert.equal(overlay.version, manifest.version);
 	assert.ok(fs.existsSync(path.join(root, overlay.skills, "status/SKILL.md")));
@@ -68,8 +72,9 @@ test("native Agent Plugin manifest and Codex overlay register portable component
 		"GRAINULATOR_WORKSPACE",
 		"GRAINULATOR_CONFIG",
 	]);
-	const server = JSON.parse(fs.readFileSync(path.join(root, "mcp.json")))
-		.mcpServers.grainulator;
+	const {
+		mcpServers: { grainulator: server },
+	} = JSON.parse(fs.readFileSync(path.join(root, "mcp.json")).toString());
 	assert.equal(server.command, "node");
 	assert.doesNotMatch(
 		JSON.stringify(server),
@@ -139,7 +144,6 @@ test("missing or relative native workspace binding exposes tools but cannot acce
 		assert.equal(fs.existsSync(pluginData), false);
 	}
 });
-
 test("native launcher uses a saved workspace without launch environment binding", async (t) => {
 	const dir = fixture(t),
 		workspace = path.join(dir, "project");

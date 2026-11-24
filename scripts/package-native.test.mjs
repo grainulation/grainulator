@@ -1,11 +1,11 @@
+// Generated from typescript/scripts/package-native.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { readBuildBinary } from "./package-native.mjs";
 import { readRegular } from "../lib/runtime-assets.js";
-
+import { readBuildBinary } from "./package-native.mjs";
 test("Cargo hardlinks are copied as build inputs while installed assets reject them", () => {
 	const root = fs.mkdtempSync(
 		path.join(fs.realpathSync(os.tmpdir()), "grainulator-cargo-input-"),
@@ -30,8 +30,7 @@ test("Cargo hardlinks are copied as build inputs while installed assets reject t
 		fs.rmSync(root, { recursive: true, force: true });
 	}
 });
-
-test("build and installed readers reject files modified during their descriptor snapshot", () => {
+test("build and installed readers reject files modified during their descriptor snapshot", (t) => {
 	const root = fs.mkdtempSync(
 		path.join(fs.realpathSync(os.tmpdir()), "grainulator-changing-input-"),
 	);
@@ -41,19 +40,19 @@ test("build and installed readers reject files modified during their descriptor 
 			const file = path.join(root, reader.name);
 			fs.writeFileSync(file, "before");
 			let changed = false;
-			fs.readSync = function (...args) {
-				const count = originalRead.apply(this, args);
+			t.mock.method(fs, "readSync", (fd, ...args) => {
+				const count = originalRead(fd, ...args);
 				if (!changed) {
 					changed = true;
 					fs.appendFileSync(file, " changed");
 				}
 				return count;
-			};
+			});
 			assert.throws(() => reader(file), /changed while reading/);
-			fs.readSync = originalRead;
+			t.mock.restoreAll();
 		}
 	} finally {
-		fs.readSync = originalRead;
+		t.mock.restoreAll();
 		fs.rmSync(root, { recursive: true, force: true });
 	}
 });

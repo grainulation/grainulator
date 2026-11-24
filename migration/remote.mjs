@@ -1,9 +1,10 @@
+// Generated from typescript/migration/remote.mts; edit that source and run npm run build:types.
 /** Separately distributed remote identity converter. No transport, credentials or discovery. */
-
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-
+const object = (value) =>
+	value !== null && typeof value === "object" && !Array.isArray(value);
 const hash = (value) =>
 	crypto
 		.createHash("sha256")
@@ -84,7 +85,8 @@ function createOrMatchHistory(file, bytes) {
 				fs.constants.O_NOFOLLOW,
 			0o600,
 		);
-	} catch (error) {
+	} catch (_error) {
+		const error = _error;
 		if (error.code !== "EEXIST") throw error;
 		if (!readSnapshot(file).bytes.equals(bytes))
 			throw new Error("Historical inventory collision.");
@@ -288,11 +290,12 @@ function receiptRead(file, plan, withSnapshot = false) {
 	let snapshot;
 	try {
 		snapshot = readSnapshot(file);
-	} catch (error) {
+	} catch (_error) {
+		const error = _error;
 		if (error.code === "ENOENT") return null;
 		throw error;
 	}
-	const receipt = JSON.parse(snapshot.bytes);
+	const receipt = JSON.parse(String(snapshot.bytes.toString()));
 	if (
 		receipt.schema !== "grainulator.remote-receipt.v1" ||
 		receipt.plan_id !== plan.id ||
@@ -311,8 +314,16 @@ function receiptRead(file, plan, withSnapshot = false) {
 function persist(file, receipt, create = false, expectedSnapshot) {
 	const bytes = JSON.stringify(receipt, null, 2) + "\n";
 	const selected = create ? file : `${file}.${crypto.randomUUID()}.tmp`;
-	let fd,
-		owned = false;
+	let fd;
+	let owned = false;
+	const cleanup = () => {
+		if (!create && owned)
+			try {
+				fs.unlinkSync(selected);
+			} catch (error) {
+				if (error.code !== "ENOENT") throw error;
+			}
+	};
 	try {
 		fd = fs.openSync(selected, "wx", 0o600);
 		owned = true;
@@ -333,12 +344,7 @@ function persist(file, receipt, create = false, expectedSnapshot) {
 		}
 	} finally {
 		if (fd !== undefined) fs.closeSync(fd);
-		if (!create && owned)
-			try {
-				fs.unlinkSync(selected);
-			} catch (error) {
-				if (error.code !== "ENOENT") throw error;
-			}
+		cleanup();
 	}
 }
 function transition(file, receipt, index, state) {
@@ -492,7 +498,6 @@ export async function reconcileRemoteMigration({
 		return receipt;
 	});
 }
-
 /** Explicitly finalize a complete, unambiguous inventory. No remote requests. */
 export function completeRemoteMigration({
 	plan,
@@ -512,7 +517,7 @@ export function completeRemoteMigration({
 			throw new Error(
 				"Inspect the exact remote migration marker before finalization; its hash changed or is missing.",
 			);
-		const marker = JSON.parse(markerBytes);
+		const marker = JSON.parse(String(markerBytes.toString()));
 		if (
 			marker.schema !== "grainulator.remote-migration.v1" ||
 			marker.ambiguity ||
@@ -586,7 +591,6 @@ export function completeRemoteMigration({
 		return result;
 	});
 }
-
 /** Explicit local review of an ambiguous legacy inventory. No adapter or network is used. */
 export function resolveRemoteInventory({
 	markerFile,
@@ -616,7 +620,7 @@ export function resolveRemoteInventory({
 			throw new Error(
 				"Remote inventory changed; supply the inspected marker hash.",
 			);
-		const marker = JSON.parse(bytes);
+		const marker = JSON.parse(String(bytes.toString()));
 		if (
 			marker.schema !== "grainulator.remote-migration.v1" ||
 			!["pending", "uncertain"].includes(marker.state)
@@ -815,7 +819,8 @@ export function resolveRemoteInventory({
 			history = path.join(directory, "remote-history");
 		try {
 			fs.mkdirSync(history, { mode: 0o700 });
-		} catch (error) {
+		} catch (_error) {
+			const error = _error;
 			if (error.code !== "EEXIST") throw error;
 			const descriptor = fs.openSync(
 				history,
@@ -852,11 +857,12 @@ export function resolveRemoteInventory({
 		);
 		try {
 			persist(receiptFile, receipt, true);
-		} catch (error) {
+		} catch (_error) {
+			const error = _error;
 			if (error.code !== "EEXIST") throw error;
 		}
 		const resolutionSnapshot = readSnapshot(receiptFile),
-			savedReceipt = JSON.parse(resolutionSnapshot.bytes);
+			savedReceipt = JSON.parse(String(resolutionSnapshot.bytes));
 		const stable = (value) => {
 			const intent = { ...value };
 			delete intent.at;
@@ -872,7 +878,6 @@ export function resolveRemoteInventory({
 			);
 		if (!readSnapshot(historical).bytes.equals(bytes))
 			throw new Error("Historical inventory changed before resolution.");
-
 		const result = {
 			...marker,
 			state: pages.length ? "pending" : "complete",

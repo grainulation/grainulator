@@ -10,9 +10,15 @@
 		"newLine": "lf",
 		"noEmitOnError": true,
 		"forceConsistentCasingInFileNames": true,
-		"types": [],
+		"types": ["node"],
 		"rootDir": "typescript",
-		"skipLibCheck": true
+		"skipLibCheck": true,
+		"moduleDetection": "force",
+		"lib": ["ES2022", "DOM", "DOM.Iterable"]
 	},
-	"include": ["typescript/**/*.ts"]
+	"include": [
+		"typescript/**/*.ts",
+		"typescript/**/*.mts",
+		"typescript/**/*.cts"
+	]
 }

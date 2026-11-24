@@ -1,3 +1,4 @@
+// Generated from typescript/packages/evidence/lib/cli-resolve.ts; edit that source and run npm run build:types.
 /**
  * grainulator resolve — Resolve a conflict between two claims
  *
@@ -5,15 +6,12 @@
  *
  * Zero npm dependencies.
  */
-
 import { resolveClaim } from "./claims-ops.js";
-
 function parseFlag(args, flag) {
 	const idx = args.indexOf(flag);
 	if (idx === -1 || idx + 1 >= args.length) return undefined;
 	return args[idx + 1];
 }
-
 export async function run(dir, args) {
 	if (args.includes("--help") || args.includes("-h")) {
 		console.log(`grainulator resolve — Resolve a conflict between two claims
@@ -36,15 +34,11 @@ Examples:
   grainulator resolve --winner r001 --loser r002 --json`);
 		return;
 	}
-
 	const jsonMode = args.includes("--json");
-
 	const winner = parseFlag(args, "--winner");
 	const loser = parseFlag(args, "--loser");
 	const reason = parseFlag(args, "--reason");
-
 	const result = resolveClaim(dir, { winner, loser, reason });
-
 	if (jsonMode) {
 		console.log(JSON.stringify(result, null, 2));
 		if (result.status !== "ok") process.exitCode = 1;

@@ -48,7 +48,7 @@ The plugin config starts only this server. Its `deepwiki` tool fetches public re
 
 Every tool accepts an optional `dir`, resolved relative to the startup workspace. A directory override cannot escape that workspace. File inputs and outputs are also contained; symlinks cannot redirect them outside it. A configured memory store is separate from sprint directories and is shared only where you explicitly configure the same location.
 
-The CLI and MCP use the same memory location: `--memory-dir`, then `GRAINULATOR_MEMORY_DIR`, then legacy `SILO_STORE`. The default is `~/.grainulator/memory`; if its index does not exist and an existing `~/.memory/index.json` does, the existing legacy store is reused. Nothing is automatically moved or merged. The plugin uses its explicitly configured data directory. Starting the server or listing tools does not initialize a sprint or create a memory store. Memory operations create the store when needed.
+The CLI and MCP use the same memory location: `--memory-dir`, then `GRAINULATOR_MEMORY_DIR`, then `~/.grainulator/memory`. Historical environment variables and store directories are not probed; use the separate converter for a reviewed migration. The plugin uses its explicitly configured data directory. Starting the server or listing tools does not initialize a sprint or create a memory store. Memory operations create the store when needed.
 
 Shared local memory writers serialize index initialization, collection updates, and removal through the same filesystem lock. A crashed writer leaves a lock for inspection instead of permitting automatic lock stealing. Memory search returns source provenance alongside findings, so reuse retains the evidence reference.
 
@@ -84,7 +84,7 @@ Version 3 uses the exact canonical names listed above. Historical component-pref
 
 Changing source code does not update a plugin that is already running. To test these tools, point your agent at this checkout or a local archive, then restart its connection. You do not need to install or publish anything globally.
 
-## Compact profile preview
+## Compact profile and container discovery
 
 The default `legacy` toolset preserves all 29 current tool names. An explicit compact profile provides **15 tools** for evidence, local memory and exports within the same server:
 
@@ -93,7 +93,7 @@ node bin/grainulator.js mcp --dir /absolute/workspace --toolset compact
 node bin/grainulator.js connect --dir /absolute/workspace --toolset compact
 ```
 
-`connect` prints a registration; it does not change host settings. Bundled plugins continue to select the default legacy toolset. Test a separate compact registration in a fresh host session before migrating allowlists or workflows. Changing default discovery or retiring legacy names requires a documented breaking release.
+`connect` prints a registration; it does not change host settings. Bundled plugins continue to select the default legacy toolset. The Docker image explicitly selects compact discovery by default; an explicit Docker command replaces that default, so include `--toolset compact` when supplying a different workspace. Test a separate compact registration in a fresh host session before migrating allowlists or workflows. CLI/plugin default discovery and the legacy names remain unchanged; the container's explicit compact selection is described in the [upgrade guide](UPGRADING.md).
 
 | Compact tool | Existing capability |
 | --- | --- |
@@ -119,7 +119,7 @@ Compact calls reject unadvertised legacy names; there is no hidden fallback rout
 
 `search_memory` catalog mode accepts only `dir`; search filters require `query`. Tool-only clients can call `export_document` with `{ "dir": "." }` to receive `formats` and `count`. Each format has `id`, `name`, `extension`, `mimeType`, and `description`. Rendering requires `format`; `source`, `lines`, and `output` are forbidden without it. Export `lines` and `output` cannot be combined. Unknown-format errors direct both profiles to `grainulator://exports/formats`. The export tool conservatively advertises mutation and replacement capability even though catalog and inline calls write no file.
 
-Compact deliberately excludes network retrieval, Confluence, graph building and sync-log tools. Those capabilities remain available through the legacy MCP toolset and the existing CLI (`grainulator memory --help` and `grainulator search --help`). The sync-log resource remains readable. This is a real scope difference, not an alternate listing of hidden tools. A full legacy profile's score cannot be represented as the compact profile's score, or vice versa. Fifteen tools permit testing the TDQS count target; they do not establish a numeric score or eliminate completeness requirements.
+Compact deliberately excludes network retrieval, Confluence, graph building and sync-log tools. Those capabilities remain available through the legacy MCP toolset and the existing CLI (`grainulator memory --help` and `grainulator search --help`). The sync-log resource remains readable. This is a real scope difference, not an alternate listing of hidden tools. A full legacy profile's score cannot be represented as the compact profile's score, or vice versa. The registry/container profile exposes fifteen supported operations; that count does not establish a TDQS score or eliminate completeness requirements. See [tool-definition quality](TDQS.md) for the primary rubric, profile boundaries and verification process.
 
 ## MCP protocol and result contracts
 

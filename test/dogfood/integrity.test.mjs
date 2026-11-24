@@ -1,3 +1,4 @@
+// Generated from typescript/test/dogfood/integrity.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import fs from "node:fs";
@@ -12,7 +13,7 @@ import {
 import { guard } from "../../packages/evidence/lib/guard.js";
 import { loadClaims } from "../../packages/evidence/lib/load-claims.js";
 import { ImportExport } from "../../packages/memory/lib/import-export.js";
-
+import { Store } from "../../packages/memory/lib/store.js";
 function sprint(t) {
 	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-integrity-"));
 	t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
@@ -34,7 +35,7 @@ const claim = (id) => ({
 	evidence: "tested",
 });
 const read = (dir) =>
-	JSON.parse(fs.readFileSync(path.join(dir, "claims.json")));
+	JSON.parse(fs.readFileSync(path.join(dir, "claims.json"), "utf8"));
 test("acknowledged concurrent mutations all survive", async (t) => {
 	const dir = sprint(t);
 	const module = new URL(
@@ -117,7 +118,7 @@ test("memory imports preserve metadata and do not reuse existing IDs", (t) => {
 	const dir = sprint(t),
 		file = path.join(dir, "claims.json");
 	addClaim(dir, claim("imp001"));
-	const importer = new ImportExport({});
+	const importer = new ImportExport(new Store(path.join(dir, "memory")));
 	importer._resolveSource = () => [
 		{ ...claim("source1"), content: "Imported evidence" },
 	];

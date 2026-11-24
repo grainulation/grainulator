@@ -1,3 +1,4 @@
+// Generated from typescript/test/dogfood/next-actions.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -9,7 +10,6 @@ import { compile } from "../../packages/evidence/compiler/evidence-compiler.js";
 import { addClaim, getStatus } from "../../packages/evidence/lib/claims-ops.js";
 import nextActionsModule from "../../packages/evidence/lib/next-actions.cjs";
 import { handleRequest } from "../../packages/evidence/lib/serve-mcp.js";
-
 const { nextActions, formatNextActions } = nextActionsModule;
 const root = fileURLToPath(new URL("../../", import.meta.url));
 function fixture(t, meta = {}) {
@@ -56,7 +56,6 @@ const hook = (dir, level = "on") =>
 		input: JSON.stringify({ tool_input: { dir } }),
 		env: { ...process.env, CLAUDE_PLUGIN_OPTION_TIPS_LEVEL: level },
 	});
-
 test("blockers precede research and neither group invents a user approval", () => {
 	const groups = nextActions({
 		errors: [{ code: "E_CONFLICT" }],
@@ -70,7 +69,6 @@ test("blockers precede research and neither group invents a user approval", () =
 	assert.deepEqual(groups.auto[0].claim_ids, ["r001", "r002"]);
 	assert.deepEqual(groups.manual, []);
 });
-
 test("retired topics and stated user constraints do not create research chores", (t) => {
 	const dir = fixture(t, { excluded_topics: ["retired-app"] });
 	add(dir, "r001", "retired-app", "risk");
@@ -80,7 +78,6 @@ test("retired topics and stated user constraints do not create research chores",
 	assert.equal(groups.auto[0].command, "/research <topic>");
 	assert.ok(groups.auto.length >= 2 && groups.auto.length <= 3);
 });
-
 test("formatter displays only Auto and Manual lists, without diagnostic reasons", () => {
 	assert.equal(
 		formatNextActions({
@@ -100,7 +97,6 @@ test("formatter displays only Auto and Manual lists, without diagnostic reasons"
 		"Auto\n\n- None.\n\nManual\n\n- None.",
 	);
 });
-
 test("CLI, compiled artifact and MCP return the same grouped actions", async (t) => {
 	const dir = fixture(t);
 	add(dir, "r001", "session-export", "risk");
@@ -118,12 +114,12 @@ test("CLI, compiled artifact and MCP return the same grouped actions", async (t)
 			{ name, arguments: { dir } },
 			1,
 		);
-		const value = JSON.parse(JSON.parse(response).result.content[0].text);
+		const { result } = JSON.parse(response);
+		const value = JSON.parse(result.content[0].text);
 		assert.deepEqual(value.next_actions, expected);
 		assert.match(value.next_actions_instruction, /Auto and Manual/);
 	}
 });
-
 test("status detects stale evidence without writing the ledger or trusting old advice", (t) => {
 	const dir = fixture(t);
 	add(dir, "r001", "old-risk", "risk");
@@ -141,17 +137,15 @@ test("status detects stale evidence without writing the ledger or trusting old a
 	assert.deepEqual(fs.readFileSync(path.join(dir, "claims.json")), before);
 	assert.deepEqual(fs.readFileSync(path.join(dir, "compilation.json")), stale);
 });
-
 test("legacy schema migration does not make a fresh compilation appear stale", (t) => {
 	const dir = fixture(t);
 	const file = path.join(dir, "claims.json");
-	const data = JSON.parse(fs.readFileSync(file));
+	const data = JSON.parse(fs.readFileSync(file, "utf8"));
 	delete data.schema_version;
 	fs.writeFileSync(file, JSON.stringify(data));
 	compileDir(dir);
 	assert.notEqual(getStatus(dir).compilation_status, "stale");
 });
-
 test("hook refreshes consecutive mutations even when compilation is less than five seconds old", (t) => {
 	const dir = fixture(t);
 	add(dir, "r001", "first-risk", "risk");
@@ -161,7 +155,9 @@ test("hook refreshes consecutive mutations even when compilation is less than fi
 	fs.utimesSync(path.join(dir, "compilation.json"), new Date(), new Date());
 	const context = JSON.parse(hook(dir)).hookSpecificOutput.additionalContext;
 	assert.match(context, /second-risk/);
-	const saved = JSON.parse(fs.readFileSync(path.join(dir, "compilation.json")));
+	const saved = JSON.parse(
+		fs.readFileSync(path.join(dir, "compilation.json"), "utf8"),
+	);
 	assert.equal(saved.resolved_claims.length, 2);
 	const lists = formatNextActions(saved.next_actions);
 	assert.ok(context.endsWith(lists));
@@ -171,7 +167,6 @@ test("hook refreshes consecutive mutations even when compilation is less than fi
 	);
 	assert.doesNotMatch(context, /all clear/i);
 });
-
 test("hook respects off and quiet without claiming product acceptance", (t) => {
 	const dir = fixture(t);
 	assert.equal(hook(dir, "off"), "");
@@ -183,7 +178,6 @@ test("hook respects off and quiet without claiming product acceptance", (t) => {
 	assert.match(context, /Manual\n/);
 	assert.doesNotMatch(context, /all clear/i);
 });
-
 test("hook resolves relative sprint directories against host cwd, not its process cwd", (t) => {
 	const host = fixture(t);
 	const caller = fixture(t);

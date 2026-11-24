@@ -1,13 +1,14 @@
-import test from "node:test";
+// Generated from typescript/scripts/release-artifacts.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import test from "node:test";
 import {
+	encodeRuntimeArchive,
+	NATIVE_TARGETS,
 	RUNTIME_FILES,
 	RUNTIME_SCHEMAS,
-	NATIVE_TARGETS,
-	encodeRuntimeArchive,
 	sha256,
 } from "../lib/runtime-assets.js";
 import { assembleRelease } from "./assemble-release.mjs";
@@ -232,7 +233,7 @@ test("missing, duplicate, dirty, mismatched and modified native candidates canno
 	);
 	const file = f.assetRecords[0],
 		original = fs.readFileSync(file),
-		record = JSON.parse(original);
+		record = JSON.parse(String(original));
 	fs.writeFileSync(file, JSON.stringify({ ...record, source_dirty: true }));
 	assert.throws(
 		() => assembleRelease({ ...f, out: path.join(f.dir, "dirty") }),
@@ -253,7 +254,6 @@ test("missing, duplicate, dirty, mismatched and modified native candidates canno
 		/changed/,
 	);
 });
-
 test("publisher rejects modified bytes plus rewritten adjacent checksums, extras and missing assets", (t) => {
 	const f = fixture(t),
 		out = path.join(f.dir, "release");
@@ -287,7 +287,6 @@ test("publisher rejects modified bytes plus rewritten adjacent checksums, extras
 	fs.unlinkSync(migration);
 	assert.throws(() => verifyRelease(options), /ENOENT/);
 });
-
 test("assembly rejects unusable archive identities before creating output", (t) => {
 	const f = fixture(t);
 	for (const [label, recordFile, updates] of [
@@ -312,7 +311,7 @@ test("assembly rejects unusable archive identities before creating output", (t) 
 		["converter-size", f.migrationRecord, { bytes: 32 * 1024 * 1024 + 1 }],
 	]) {
 		const original = fs.readFileSync(recordFile),
-			record = JSON.parse(original);
+			record = JSON.parse(String(original));
 		if (updates.filename) {
 			fs.copyFileSync(
 				path.join(path.dirname(recordFile), record.filename),
@@ -336,14 +335,13 @@ test("assembly rejects unusable archive identities before creating output", (t) 
 		}
 	}
 });
-
 test("pinned publication independently binds the base archive build ID and converter inventory", (t) => {
 	const f = fixture(t),
 		out = path.join(f.dir, "release");
 	assembleRelease({ ...f, out });
 	const manifestFile = path.join(out, "release-manifest.json");
 	const original = fs.readFileSync(manifestFile),
-		manifest = JSON.parse(original);
+		manifest = JSON.parse(String(original));
 	manifest.base.build_id = `release-${version}-${"f".repeat(16)}`;
 	fs.writeFileSync(manifestFile, JSON.stringify(manifest));
 	assert.throws(
@@ -355,7 +353,7 @@ test("pinned publication independently binds the base archive build ID and conve
 		/Base archive identity/,
 	);
 	fs.writeFileSync(manifestFile, original);
-	const record = JSON.parse(fs.readFileSync(f.migrationRecord));
+	const record = JSON.parse(String(fs.readFileSync(f.migrationRecord)));
 	const invalid = encodeRuntimeArchive(
 		new Map([
 			[
@@ -383,7 +381,6 @@ test("pinned publication independently binds the base archive build ID and conve
 	);
 	assert.equal(fs.existsSync(rejected), false);
 });
-
 test("publication checks peeled live tag identity and refuses ambiguous release lookup", async (t) => {
 	const { publishRelease } = await import("./publish-release.mjs");
 	const f = fixture(t),
@@ -450,7 +447,6 @@ test("publication checks peeled live tag identity and refuses ambiguous release 
 		);
 	}
 });
-
 test("release archive inspection rejects unsafe paths, aliases and modes before extraction", async () => {
 	const { readReleaseArchive } = await import("./release-archive.mjs");
 	for (const name of [

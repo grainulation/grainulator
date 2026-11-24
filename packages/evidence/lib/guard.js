@@ -1,3 +1,4 @@
+// Generated from typescript/packages/evidence/lib/guard.ts; edit that source and run npm run build:types.
 /**
  * evidence guard — PreToolUse hook for Claude Code
  *
@@ -13,23 +14,21 @@
  *
  * Zero npm dependencies.
  */
-
-import projectConfig from "../../shared/lib/project-config.cjs";
 import fs from "fs";
 import path from "path";
+import projectConfig from "../../shared/lib/project-config.cjs";
 import { COMPILER_VERSION } from "../compiler/evidence-compiler.js";
 import { compilationFreshness } from "./freshness.js";
-
 // ─── Config ──────────────────────────────────────────────────────────────────
-
 const loadConfig = projectConfig.evidenceConfig;
-
-// ─── Guard logic ─────────────────────────────────────────────────────────────
-
 export function guard(dir, toolInput) {
 	let config;
-	try { projectConfig.assertMigrationReady(dir); config = loadConfig(dir); } catch (error) { return {allow:false,reason:`BLOCKED: ${error.message}`}; }
-
+	try {
+		projectConfig.assertMigrationReady(dir);
+		config = loadConfig(dir);
+	} catch (error) {
+		return { allow: false, reason: `BLOCKED: ${error.message}` };
+	}
 	let input;
 	try {
 		input = JSON.parse(toolInput);
@@ -37,16 +36,21 @@ export function guard(dir, toolInput) {
 		// Not JSON — allow
 		return { allow: true };
 	}
-
 	const filePath = input?.tool_input?.file_path || input?.file_path || "";
 	input = input?.tool_input || input || {};
-	const rel = path.relative(path.resolve(dir), path.resolve(dir, filePath)).split(path.sep).join("/");
-
+	const rel = path
+		.relative(path.resolve(dir), path.resolve(dir, filePath))
+		.split(path.sep)
+		.join("/");
 	// Guard 1: Writes to output/ require fresh compilation
-	if ((path.resolve(dir, filePath).startsWith(path.resolve(config.origin, config.dirs.output) + path.sep)) && !rel.endsWith(".gitkeep")) {
+	if (
+		path
+			.resolve(dir, filePath)
+			.startsWith(path.resolve(config.origin, config.dirs.output) + path.sep) &&
+		!rel.endsWith(".gitkeep")
+	) {
 		const compilationPath = path.join(dir, config.compiler.compilation);
 		const claimsPath = path.join(dir, config.compiler.claims);
-
 		if (!fs.existsSync(compilationPath)) {
 			return {
 				allow: false,
@@ -55,19 +59,23 @@ export function guard(dir, toolInput) {
 					"Grainulator output requires: claims.json -> compiler -> compilation.json -> artifact",
 			};
 		}
-
 		if (!fs.existsSync(claimsPath)) {
 			return {
 				allow: false,
 				reason: `BLOCKED: No ${config.compiler.claims} found. Run "grainulator init" to bootstrap the sprint first.`,
 			};
 		}
-
-
 		try {
 			const compilation = JSON.parse(fs.readFileSync(compilationPath, "utf8"));
-			if (!["ready", "blocked"].includes(compilation?.status) || !Array.isArray(compilation.errors)) {
-				return { allow: false, reason: "BLOCKED: Invalid compilation status or schema. Run grainulator compile." };
+			if (
+				!["ready", "blocked"].includes(compilation?.status) ||
+				!Array.isArray(compilation.errors)
+			) {
+				return {
+					allow: false,
+					reason:
+						"BLOCKED: Invalid compilation status or schema. Run grainulator compile.",
+				};
 			}
 			if (compilation.status === "blocked") {
 				const errors = (compilation.errors || [])
@@ -79,10 +87,17 @@ export function guard(dir, toolInput) {
 				};
 			}
 			const certificate = compilation.compilation_certificate;
-			if (compilation.errors.length || certificate?.compiler_version !== COMPILER_VERSION || !compilationFreshness(claimsPath, compilation).fresh) {
-				return { allow: false, reason: "BLOCKED: Compilation is stale or uncertified. Run grainulator compile." };
+			if (
+				compilation.errors.length ||
+				certificate?.compiler_version !== COMPILER_VERSION ||
+				!compilationFreshness(claimsPath, compilation).fresh
+			) {
+				return {
+					allow: false,
+					reason:
+						"BLOCKED: Compilation is stale or uncertified. Run grainulator compile.",
+				};
 			}
-
 		} catch {
 			return {
 				allow: false,
@@ -90,9 +105,12 @@ export function guard(dir, toolInput) {
 			};
 		}
 	}
-
 	// Guard 2: claims.json writes must maintain meta fields
-	if (path.resolve(dir,filePath) === path.resolve(config.origin,config.compiler.claims) && input.content) {
+	if (
+		path.resolve(dir, filePath) ===
+			path.resolve(config.origin, config.compiler.claims) &&
+		input.content
+	) {
 		try {
 			const newClaims = JSON.parse(input.content);
 			if (!newClaims.meta || !newClaims.meta.question) {
@@ -108,15 +126,15 @@ export function guard(dir, toolInput) {
 				};
 			}
 		} catch {
-			return { allow: false, reason: "BLOCKED: claims.json content is not valid JSON." };
+			return {
+				allow: false,
+				reason: "BLOCKED: claims.json content is not valid JSON.",
+			};
 		}
 	}
-
 	return { allow: true };
 }
-
 // ─── CLI handler ─────────────────────────────────────────────────────────────
-
 export async function run(dir, args) {
 	// Read tool input from stdin or first arg
 	let toolInput;
@@ -130,13 +148,10 @@ export async function run(dir, args) {
 			toolInput = "{}";
 		}
 	}
-
 	const result = guard(dir, toolInput);
-
 	if (!result.allow) {
 		process.stderr.write(result.reason);
 		process.exit(2);
 	}
-
 	process.exit(0);
 }

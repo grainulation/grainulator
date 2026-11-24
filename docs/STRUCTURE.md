@@ -25,7 +25,10 @@ grainulator/
 │   └── shared/          Shared utilities and schemas
 ├── scripts/             Audits and acceptance checks
 ├── skills/              Portable and host workflow instructions
-├── test/                Plugin and regression tests
+├── test/                Generated plugin and regression tests
+├── typescript/          Canonical TypeScript sources mirroring runtime paths
+│   └── outputs.json     Complete source/output inventory
+├── tsconfig.json        Strict checking for the complete TypeScript graph
 ├── migration/           Separate offline conversion artifact, excluded from base
 ├── share/               Generated manpage and completions
 ├── package.json
@@ -33,3 +36,5 @@ grainulator/
 ```
 
 The former permission dashboard and component browser apps are no longer part of Grainulator. Analytics reports use Markdown, and JSON/Markdown exports preserve evidence for other tools. Presentation templates and renderers are retired. Local build files, caches, and test reports are omitted from this map.
+
+First-party JavaScript in the runtime directories is generated from the mirrored `typescript/` tree. Edit the canonical source and run `npm run build:types`; see [TYPESCRIPT.md](TYPESCRIPT.md) for the generation and verification workflow. Rust, shell, schemas and other data stay in their native directories.

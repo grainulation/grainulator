@@ -1,3 +1,4 @@
+// Generated from typescript/test/dogfood/runner.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -5,7 +6,6 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { execute, runTask } from "../../lib/runner.js";
-
 const fixture = (name) => [
 	process.execPath,
 	fileURLToPath(new URL(`../../evals/fixtures/${name}.mjs`, import.meta.url)),
@@ -30,8 +30,8 @@ test("feedback corrects an answer; independent verification establishes success"
 	const result = await runTask(options(t));
 	assert.equal(result.status, "verified");
 	assert.equal(result.rounds.length, 2);
-	assert.equal(result.rounds[0].verification.passed, false);
-	assert.equal(result.rounds[1].answer, "42");
+	assert.equal(result.rounds[0]?.verification?.passed, false);
+	assert.equal(result.rounds[1]?.answer, "42");
 	assert.ok(fs.existsSync(result.trace));
 });
 test("model assertion alone remains unverified", async (t) => {
@@ -57,6 +57,7 @@ test("malformed adapter response becomes an explicit error", async (t) => {
 		adapter: [process.execPath, "-e", 'console.log("not json")'],
 	});
 	assert.equal(result.status, "error");
+	assert.equal(typeof result.error, "string");
 	assert.match(result.error, /JSON/);
 });
 test("a hung adapter is terminated by the timeout", async (t) => {
@@ -66,9 +67,9 @@ test("a hung adapter is terminated by the timeout", async (t) => {
 		adapter: [process.execPath, "-e", "setInterval(()=>{},1000)"],
 	});
 	assert.equal(result.status, "error");
+	assert.equal(typeof result.error, "string");
 	assert.match(result.error, /timed out/);
 });
-
 test("known environment credentials stay out of results, callbacks, and traces without changing verification inputs", async (t) => {
 	const keyName = "GRAINULATOR_TEST_API_KEY";
 	const secret = `fixture-credential-${Date.now()}`;
@@ -120,11 +121,11 @@ test("known environment credentials stay out of results, callbacks, and traces w
 		],
 	});
 	assert.equal(failed.status, "error");
+	assert.equal(typeof failed.error, "string");
 	assert.match(failed.error, /\[REDACTED\]/);
 	assert.ok(!JSON.stringify(failed).includes(secret));
 	assert.ok(!fs.readFileSync(failed.trace, "utf8").includes(secret));
 });
-
 test("cancellation kills a descendant even when its parent exits first", {
 	skip: process.platform === "win32",
 }, async (t) => {

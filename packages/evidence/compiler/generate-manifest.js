@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Generated from typescript/packages/evidence/compiler/generate-manifest.ts; edit that source and run npm run build:types.
 /**
  * .grainulator/evidence/manifest.json generator
  *
@@ -10,27 +11,20 @@
  * Based on research claims r011 (single machine-readable manifest) and
  * r017 (topic map structure over file tree).
  */
-
 import fs from "fs";
 import path from "path";
-
 import { fileURLToPath } from "url";
 import { detectSprints } from "../../shared/tools/detect-sprints.js";
 import { env } from "../lib/defaults.js";
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 // ─── Target directory ────────────────────────────────────────────────────────
-
 const _dirIdx = process.argv.indexOf("--dir");
 const ROOT =
 	_dirIdx !== -1 && process.argv[_dirIdx + 1]
 		? path.resolve(process.argv[_dirIdx + 1])
 		: __dirname;
-
 // --- Helpers ---
-
 /** Safely parse JSON from a file path; returns null on failure. */
 export function loadJSON(filePath) {
 	try {
@@ -39,7 +33,6 @@ export function loadJSON(filePath) {
 		return null;
 	}
 }
-
 /** Recursively list files under dir, returning paths relative to ROOT. */
 export function walk(dir, filter) {
 	const results = [];
@@ -57,7 +50,6 @@ export function walk(dir, filter) {
 	}
 	return results;
 }
-
 /** Determine file type from its path. */
 export function classifyFile(relPath) {
 	const normalized = relPath.split(path.sep).join("/");
@@ -75,7 +67,6 @@ export function classifyFile(relPath) {
 	if (relPath.endsWith(".md")) return "docs";
 	return "other";
 }
-
 /** Compute highest evidence tier from a list of claims. */
 export function highestEvidence(claims) {
 	const tiers = ["stated", "web", "documented", "tested", "production"];
@@ -86,7 +77,6 @@ export function highestEvidence(claims) {
 	}
 	return tiers[max];
 }
-
 /**
  * Detect sprints using detect-sprints.js (git-based, no config pointer).
  * Falls back to a minimal scan if detect-sprints.js is unavailable.
@@ -114,12 +104,12 @@ function detectSprintsForManifest() {
 			/* fall through to live detection */
 		}
 	}
-
 	// Try to use the exported function directly
 	try {
 		const parsed = detectSprints(ROOT);
 		const sprints = {};
-		for (const s of parsed.sprints || []) {
+		for (const detected of parsed.sprints || []) {
+			const s = detected;
 			sprints[s.name] = {
 				question: s.question || "",
 				phase: s.phase || "unknown",
@@ -135,7 +125,6 @@ function detectSprintsForManifest() {
 	} catch {
 		// Fall through to naive fallback
 	}
-
 	// Fallback: minimal scan without git info
 	const sprints = {};
 	const currentClaims = loadJSON(path.join(ROOT, "claims.json"));
@@ -166,9 +155,7 @@ function detectSprintsForManifest() {
 	}
 	return sprints;
 }
-
 // --- Callable manifest generation ---
-
 /**
  * Generate the manifest. Can be called directly (no subprocess needed).
  * @param {string} dir - Root directory of the sprint
@@ -180,9 +167,7 @@ export function buildManifest(dir, opts = {}) {
 	const rootDir = dir || ROOT;
 	const claims = loadJSON(path.join(rootDir, "claims.json"));
 	const compilation = loadJSON(path.join(rootDir, "compilation.json"));
-
 	if (!claims) return null;
-
 	// 1. Build topic map from claims
 	const topicMap = {};
 	for (const claim of claims.claims) {
@@ -197,13 +182,11 @@ export function buildManifest(dir, opts = {}) {
 		}
 		topicMap[topic].claims.push(claim.id);
 	}
-
 	// Compute evidence levels per topic
 	for (const topic of Object.keys(topicMap)) {
 		const topicClaims = claims.claims.filter((c) => c.topic === topic);
 		topicMap[topic].evidence_level = highestEvidence(topicClaims);
 	}
-
 	// 2. Scan current sprint directories for files
 	const scanDirs = [
 		"research",
@@ -215,7 +198,6 @@ export function buildManifest(dir, opts = {}) {
 		"docs",
 	];
 	const allFiles = {};
-
 	for (const d of scanDirs) {
 		const files = walk(path.join(rootDir, d));
 		for (const f of files) {
@@ -223,7 +205,6 @@ export function buildManifest(dir, opts = {}) {
 			allFiles[f] = { topics: [], type };
 		}
 	}
-
 	// Also include root-level scripts/configs
 	try {
 		for (const entry of fs.readdirSync(rootDir)) {
@@ -243,7 +224,6 @@ export function buildManifest(dir, opts = {}) {
 	} catch {
 		/* skip */
 	}
-
 	// 3. Map files to topics using claim source artifacts and keyword heuristics
 	const topicKeywords = {
 		"multi-session": [
@@ -258,16 +238,13 @@ export function buildManifest(dir, opts = {}) {
 		performance: ["performance", "evaluation"],
 		compatibility: ["compat"],
 	};
-
 	for (const [filePath, fileInfo] of Object.entries(allFiles)) {
 		const lower = filePath.toLowerCase();
-
 		for (const [topic, keywords] of Object.entries(topicKeywords)) {
 			if (keywords.some((kw) => lower.includes(kw))) {
 				if (!fileInfo.topics.includes(topic)) fileInfo.topics.push(topic);
 			}
 		}
-
 		for (const claim of claims.claims) {
 			if (
 				claim.source?.artifact &&
@@ -283,24 +260,25 @@ export function buildManifest(dir, opts = {}) {
 				}
 			}
 		}
-
 		for (const topic of fileInfo.topics) {
 			if (topicMap[topic]) {
 				topicMap[topic].files.add(filePath);
 			}
 		}
 	}
-
 	// 4. Convert Sets to arrays for JSON serialization
-	for (const topic of Object.keys(topicMap)) {
-		topicMap[topic].files = [...topicMap[topic].files].sort();
-	}
-
+	const topics = Object.fromEntries(
+		Object.entries(topicMap).map(([name, topic]) => [
+			name,
+			{ ...topic, files: [...topic.files].sort() },
+		]),
+	);
 	// 5. Detect sprints (use cached data if provided)
 	let sprints;
 	if (opts.sprintsInfo) {
 		sprints = {};
-		for (const s of opts.sprintsInfo.sprints || []) {
+		for (const detected of opts.sprintsInfo.sprints || []) {
+			const s = detected;
 			sprints[s.name] = {
 				question: s.question || "",
 				phase: s.phase || "unknown",
@@ -315,7 +293,6 @@ export function buildManifest(dir, opts = {}) {
 	} else {
 		sprints = detectSprintsForManifest();
 	}
-
 	// 6. Build final manifest
 	const topicFiles = {};
 	for (const [filePath, mInfo] of Object.entries(allFiles)) {
@@ -323,20 +300,22 @@ export function buildManifest(dir, opts = {}) {
 			topicFiles[filePath] = mInfo;
 		}
 	}
-
 	const manifest = {
 		generated: new Date().toISOString(),
 		generator: "generate-manifest.js",
 		claims_hash: compilation?.claims_hash || null,
-		topics: topicMap,
+		topics,
 		sprints,
 		files: topicFiles,
 	};
-
-	const outPath = path.join(rootDir, ".grainulator", "evidence", "manifest.json");
-	fs.mkdirSync(path.dirname(outPath), {recursive:true});
+	const outPath = path.join(
+		rootDir,
+		".grainulator",
+		"evidence",
+		"manifest.json",
+	);
+	fs.mkdirSync(path.dirname(outPath), { recursive: true });
 	fs.writeFileSync(outPath, JSON.stringify(manifest, null, 2) + "\n");
-
 	return {
 		manifest,
 		topicCount: Object.keys(topicMap).length,
@@ -344,16 +323,12 @@ export function buildManifest(dir, opts = {}) {
 		sprintCount: Object.keys(sprints).length,
 	};
 }
-
 // --- Main (only when run directly) ---
-
 const isMain =
 	process.argv[1] &&
 	fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
-
 if (isMain) {
 	const t0 = performance.now();
-
 	const result = buildManifest(ROOT);
 	if (!result) {
 		console.error(
@@ -362,15 +337,10 @@ if (isMain) {
 		);
 		process.exit(1);
 	}
-
 	const elapsed = (performance.now() - t0).toFixed(1);
 	const sizeBytes = Buffer.byteLength(JSON.stringify(result.manifest, null, 2));
 	console.log(`.grainulator/evidence/manifest.json generated in ${elapsed}ms`);
 	console.log(
-		`  Topics: ${result.topicCount}  |  Files: ${
-			result.fileCount
-		}  |  Sprints: ${result.sprintCount}  |  Size: ${(sizeBytes / 1024).toFixed(
-			1,
-		)}KB`,
+		`  Topics: ${result.topicCount}  |  Files: ${result.fileCount}  |  Sprints: ${result.sprintCount}  |  Size: ${(sizeBytes / 1024).toFixed(1)}KB`,
 	);
 }

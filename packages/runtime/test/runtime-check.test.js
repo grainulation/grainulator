@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Generated from typescript/packages/runtime/test/runtime-check.test.ts; edit that source and run npm run build:types.
 // @ts-check
 /**
  * Behavioral test for grainulator-runtime-check — the convergence compiler.
@@ -8,15 +9,13 @@
  * dir so state writes never touch the repo. Zero dependencies.
  */
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const BIN = path.join(root, "bin", "runtime-check.js");
-
 let passed = 0;
 /** @param {string} name @param {() => void} fn */
 const check = (name, fn) => {
@@ -24,7 +23,6 @@ const check = (name, fn) => {
 	passed++;
 	console.log(`  ok  ${name}`);
 };
-
 /**
  * @param {string} dir
  * @param {string[]} [extra]
@@ -41,17 +39,17 @@ const run = (dir, extra = []) => {
 	if (r.error) throw r.error;
 	return { exit: r.status ?? -1, result: JSON.parse(r.stdout) };
 };
-
 /** @param {Record<string, unknown>} files @returns {string} */
 const tmpFixture = (files) => {
-	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-runtime-check-"));
+	const dir = fs.mkdtempSync(
+		path.join(os.tmpdir(), "grainulator-runtime-check-"),
+	);
 	const runtime = path.join(dir, ".grainulator/runtime");
-	fs.mkdirSync(runtime, {recursive:true});
+	fs.mkdirSync(runtime, { recursive: true });
 	for (const [name, body] of Object.entries(files))
 		fs.writeFileSync(path.join(runtime, name), JSON.stringify(body, null, 2));
 	return dir;
 };
-
 // --- static gates (curated fixtures, --no-state) ---
 /** @type {Array<{ f: string, status: string, exit: number, code?: string }>} */
 const cases = [
@@ -94,7 +92,6 @@ for (const c of cases)
 				`expected blocker ${c.code}`,
 			);
 	});
-
 // --- determinism: same active claim set -> same certificate ---
 check("certificate is deterministic for the same claim set", () => {
 	const a = run(path.join(root, "test", "fixtures", "converged"), [
@@ -105,7 +102,6 @@ check("certificate is deterministic for the same claim set", () => {
 	]);
 	assert.equal(a.result.certificate, b.result.certificate);
 });
-
 check("certificate distinguishes different ledgers", () => {
 	const a = run(path.join(root, "test", "fixtures", "converged"), [
 		"--no-state",
@@ -115,7 +111,6 @@ check("certificate distinguishes different ledgers", () => {
 	]);
 	assert.notEqual(a.result.certificate, b.result.certificate);
 });
-
 // --- conflict resolution: strict-dominance hint vs genuine tie (fail-closed both ways) ---
 check("dominance conflict -> blocked WITH a belief-revision hint", () => {
 	const { exit, result } = run(
@@ -140,7 +135,6 @@ check("equal-tier conflict -> genuine tie (never auto-resolvable)", () => {
 		"equal-tier conflict must stay a genuine tie",
 	);
 });
-
 // --- temporal: budget exceeded -> exit 2 ---
 check("budget exceeded -> budget-exceeded (exit 2)", () => {
 	const dir = tmpFixture({
@@ -166,7 +160,6 @@ check("budget exceeded -> budget-exceeded (exit 2)", () => {
 	assert.equal(result.status, "budget-exceeded");
 	assert.equal(exit, 2);
 });
-
 // --- temporal: a second run with no new claims is a dry round ---
 check("dry round detected on a converged ledger", () => {
 	const dir = tmpFixture({
@@ -187,7 +180,6 @@ check("dry round detected on a converged ledger", () => {
 	assert.equal(second.result.status, "ready");
 	assert.ok(second.result.notes.includes("DRY_ROUND_CONVERGED"));
 });
-
 // --- temporal: dry round with an open blocker is flagged stuck ---
 check("dry round with an open risk is flagged stuck", () => {
 	const dir = tmpFixture({
@@ -206,7 +198,6 @@ check("dry round with an open risk is flagged stuck", () => {
 	assert.equal(second.result.status, "blocked");
 	assert.ok(second.result.notes.some((n) => n.startsWith("DRY_ROUND_STUCK")));
 });
-
 // --- 1.1.2 regressions (found by the Codex review) ---
 check("partial run.json does not disable the other evidence bar", () => {
 	const dir = tmpFixture({
@@ -226,7 +217,6 @@ check("partial run.json does not disable the other evidence bar", () => {
 	assert.ok(result.blockers.some((b) => b.code === "E_WEAK_LOADBEARING"));
 	assert.equal(exit, 1);
 });
-
 check("malformed claims yield E_SCHEMA, not a crash", () => {
 	const dir = tmpFixture({
 		"claims.json": [
@@ -247,7 +237,6 @@ check("malformed claims yield E_SCHEMA, not a crash", () => {
 	assert.ok(result.blockers.some((b) => b.code === "E_SCHEMA"));
 	assert.equal(exit, 1);
 });
-
 check("in-place revision counts as progress (not a dry round)", () => {
 	const dir = tmpFixture({
 		"claims.json": [
@@ -285,7 +274,6 @@ check("in-place revision counts as progress (not a dry round)", () => {
 	);
 	assert.equal(second.result.round, 2);
 });
-
 check("over budget with an open blocker -> budget-exceeded (exit 2)", () => {
 	const dir = tmpFixture({
 		"claims.json": [
@@ -313,14 +301,12 @@ check("over budget with an open blocker -> budget-exceeded (exit 2)", () => {
 		"the blocker is still reported",
 	);
 });
-
 check("--dir with a missing value exits 3 (not a stack trace)", () => {
 	const r = spawnSync(process.execPath, [BIN, "--dir", "--json"], {
 		encoding: "utf8",
 	});
 	assert.equal(r.status, 3);
 });
-
 // --- 1.2.0 regressions: depends_on edge cases (found by Codex review) ---
 check("non-array depends_on does not fail open (E_SCHEMA)", () => {
 	const dir = tmpFixture({
@@ -366,5 +352,4 @@ check("self depends_on is stale (E_STALE_DEPENDENT)", () => {
 	assert.ok(result.blockers.some((b) => b.code === "E_STALE_DEPENDENT"));
 	assert.equal(exit, 1);
 });
-
 console.log(`\n${passed} checks passed`);

@@ -1,9 +1,9 @@
+// Generated from typescript/test/dogfood/research-security.test.mts; edit that source and run npm run build:types.
 import assert from "node:assert/strict";
 import http from "node:http";
 import test from "node:test";
 import { DEFAULTS } from "../../lib/research/session.js";
 import { completeResearch } from "../../lib/research-provider.js";
-
 async function listen(t, listener) {
 	const server = http.createServer(listener);
 	await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -13,15 +13,19 @@ async function listen(t, listener) {
 	});
 	return server;
 }
+function port(server) {
+	const address = server.address();
+	assert.ok(address && typeof address !== "string");
+	return address.port;
+}
 const custom = (server) => ({
 	...DEFAULTS,
 	provider: "custom",
-	baseUrl: `http://127.0.0.1:${server.address().port}/v1`,
+	baseUrl: `http://127.0.0.1:${port(server)}/v1`,
 	webSearch: false,
 	reasoning: "default",
 	retries: 0,
 });
-
 test("oversized research input is rejected before provider access", async () => {
 	let calls = 0;
 	await assert.rejects(
@@ -39,7 +43,6 @@ test("oversized research input is rejected before provider access", async () => 
 	);
 	assert.equal(calls, 0);
 });
-
 test("authenticated provider redirects are not followed and response errors do not expose credentials", async (t) => {
 	let targetCalls = 0;
 	const target = await listen(t, (_req, res) => {
@@ -50,7 +53,7 @@ test("authenticated provider redirects are not followed and response errors do n
 	const redirect = await listen(t, (req, res) => {
 		assert.equal(req.headers.authorization, `Bearer ${key}`);
 		res.writeHead(307, {
-			Location: `http://127.0.0.1:${target.address().port}/collect`,
+			Location: `http://127.0.0.1:${port(target)}/collect`,
 		});
 		res.end(key);
 	});
@@ -62,6 +65,7 @@ test("authenticated provider redirects are not followed and response errors do n
 			apiKey: key,
 		}),
 		(error) => {
+			assert.ok(error instanceof Error);
 			assert.ok(!error.message.includes(key));
 			assert.match(error.message, /Could not connect/);
 			return true;
@@ -78,13 +82,13 @@ test("authenticated provider redirects are not followed and response errors do n
 				new Response(`Authorization: Bearer ${key}`, { status: 401 }),
 		}),
 		(error) => {
+			assert.ok(error instanceof Error);
 			assert.ok(!error.message.includes(key));
 			assert.match(error.message, /rejected this API key/);
 			return true;
 		},
 	);
 });
-
 test("cancelling a streaming provider request closes its upstream connection", {
 	timeout: 5000,
 }, async (t) => {
@@ -112,7 +116,6 @@ test("cancelling a streaming provider request closes its upstream connection", {
 	);
 	await disconnected;
 });
-
 test("oversized provider bodies are cancelled before becoming session results", async () => {
 	let cancelled = false;
 	const body = new ReadableStream({

@@ -1,0 +1,594 @@
+import type {
+	AdfNode,
+	ExportDocument,
+} from "../packages/exports/lib/export-types.js";
+import remoteMigration from "../packages/shared/lib/remote-migration.cjs";
+/**
+ * confluence-sync.js -- Publish sprint data to Confluence via the Atlassian MCP pattern.
+ *
+ * Reads compilation.json (never claims.json directly) and publishes to Confluence.
+ * Creates a parent page per sprint, with child pages for claims table + brief.
+ * Dual-format pages: human-readable table at top, collapsed JSON code block at bottom.
+ * Tracks sync state in .grainulator/evidence/sync-state.json.
+ * Label lifecycle: grainulator-active on publish, grainulator-archived on sprint close.
+ *
+ * Zero dependencies -- uses only Node.js built-ins + Atlassian MCP tool calls.
+ */
+
+import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
+
+// ── Sync state persistence ──────────────────────────────────────────────────
+
+/**
+ * Load sync state from .grainulator/evidence/sync-state.json.
+ * Returns an object keyed by sprint slug.
+ */
+type SyncState = Record<
+	string,
+	{
+		lastHash?: string;
+		lastSyncTimestamp?: number;
+		pages?: Record<string, unknown>;
+	}
+>;
+type TableClaim = {
+	id: string;
+	type: string;
+	topic: string;
+	status: string;
+	evidence: string;
+	content: string;
+};
+type BriefSnapshot = {
+	status?: string;
+	errors?: (string | { message?: string })[];
+	warnings?: unknown[];
+	brief?: unknown;
+	summary?: unknown;
+};
+type Snapshot = ExportDocument & BriefSnapshot & { status: string };
+type Destination = {
+	site: string;
+	space: string;
+	pageId?: string;
+	sourceId?: string;
+	newSource?: string;
+};
+interface PublicationConnector {
+	formats: readonly string[];
+	read(destination: Destination): Promise<unknown>;
+	write(request: {
+		destination: Destination;
+		format: string;
+		body: unknown;
+		version?: number;
+	}): Promise<unknown>;
+}
+function isDestination(value: unknown): value is Destination {
+	if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+	const fields = value as Record<string, unknown>;
+	return (
+		typeof fields.site === "string" &&
+		Boolean(fields.site) &&
+		typeof fields.space === "string" &&
+		Boolean(fields.space) &&
+		["pageId", "sourceId", "newSource"].every(
+			(key) => fields[key] === undefined || typeof fields[key] === "string",
+		)
+	);
+}
+function isPage(value: unknown): value is { id: string; version: number } {
+	if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+	const fields = value as Record<string, unknown>;
+	return (
+		typeof fields.id === "string" &&
+		typeof fields.version === "number" &&
+		Number.isInteger(fields.version) &&
+		fields.version >= 1
+	);
+}
+function isPublicationResult(
+	value: unknown,
+): value is { status: "ok"; id: string; url: string } {
+	if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+	const fields = value as Record<string, unknown>;
+	return (
+		fields.status === "ok" &&
+		typeof fields.id === "string" &&
+		Boolean(fields.id) &&
+		typeof fields.url === "string" &&
+		/^https?:\/\//.test(fields.url)
+	);
+}
+export function loadSyncState(evidenceRoot: string): SyncState {
+	const statePath = path.join(evidenceRoot, "sync-state.json");
+	if (fs.existsSync(statePath)) {
+		return JSON.parse(fs.readFileSync(statePath, "utf8"));
+	}
+	return {};
+}
+
+/**
+ * Persist sync state to .grainulator/evidence/sync-state.json.
+ */
+export function saveSyncState(evidenceRoot: string, state: unknown) {
+	const statePath = path.join(evidenceRoot, "sync-state.json");
+	fs.mkdirSync(path.dirname(statePath), { recursive: true });
+	fs.writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`, "utf8");
+}
+
+// ── Content hash ────────────────────────────────────────────────────────────
+
+/**
+ * Compute a SHA-256 hash of a string. Used to detect changes since last sync.
+ */
+export function contentHash(content: string) {
+	return crypto.createHash("sha256").update(content, "utf8").digest("hex");
+}
+
+// ── Confluence storage format builders ──────────────────────────────────────
+
+/**
+ * Escape HTML entities for safe embedding in Confluence storage format (XHTML).
+ */
+function escapeHtml(str: unknown) {
+	return String(str)
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;");
+}
+
+/**
+ * Build a status badge in Confluence storage format.
+ */
+function statusBadge(status: string) {
+	const colors: Record<string, string> = {
+		active: "Green",
+		superseded: "Grey",
+		conflicted: "Red",
+		resolved: "Blue",
+	};
+	const color = colors[status] || "Grey";
+	return `<ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">${color}</ac:parameter><ac:parameter ac:name="title">${escapeHtml(status)}</ac:parameter></ac:structured-macro>`;
+}
+
+/**
+ * Build evidence tier badge.
+ */
+function evidenceBadge(tier: string) {
+	const colors: Record<string, string> = {
+		stated: "Grey",
+		web: "Blue",
+		documented: "Green",
+		tested: "Purple",
+		production: "Green",
+	};
+	const color = colors[tier] || "Grey";
+	return `<ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">${color}</ac:parameter><ac:parameter ac:name="title">${escapeHtml(tier)}</ac:parameter></ac:structured-macro>`;
+}
+
+/**
+ * Build the human-readable claims table in Confluence storage format (XHTML).
+ */
+export function buildClaimsTable(
+	claims: readonly TableClaim[] | null | undefined,
+) {
+	if (!claims || claims.length === 0) {
+		return "<p><em>No claims in this sprint.</em></p>";
+	}
+
+	let html = "";
+	// Auto-generated banner
+	html += '<ac:structured-macro ac:name="info"><ac:rich-text-body>';
+	html += "<p>This page is auto-generated by Grainulator <code>/sync</code>. ";
+	html +=
+		"Do not edit the rendered section -- edits will be overwritten on next sync. ";
+	html +=
+		"The JSON code block at the bottom is the machine-readable source.</p>";
+	html += "</ac:rich-text-body></ac:structured-macro>\n";
+
+	html += "<table><thead><tr>";
+	html += "<th>ID</th><th>Type</th><th>Topic</th><th>Status</th>";
+	html += "<th>Evidence</th><th>Content</th>";
+	html += "</tr></thead><tbody>\n";
+
+	for (const claim of claims) {
+		html += "<tr>";
+		html += `<td><code>${escapeHtml(claim.id)}</code></td>`;
+		html += `<td>${escapeHtml(claim.type)}</td>`;
+		html += `<td>${escapeHtml(claim.topic)}</td>`;
+		html += `<td>${statusBadge(claim.status)}</td>`;
+		html += `<td>${evidenceBadge(claim.evidence)}</td>`;
+		html += `<td>${escapeHtml(claim.content)}</td>`;
+		html += "</tr>\n";
+	}
+
+	html += "</tbody></table>";
+	return html;
+}
+
+/**
+ * Build a collapsed JSON code block in Confluence storage format.
+ * This is the machine-readable payload used for backfill/roundtrip.
+ */
+export function buildJsonCodeBlock(data: unknown) {
+	const jsonStr = JSON.stringify(data, null, 2).replaceAll(
+		"]]>",
+		"]]]]><![CDATA[>",
+	);
+	let html = '<ac:structured-macro ac:name="expand">';
+	html +=
+		'<ac:parameter ac:name="title">Machine-readable JSON (do not edit)</ac:parameter>';
+	html += "<ac:rich-text-body>";
+	html += '<ac:structured-macro ac:name="code">';
+	html += '<ac:parameter ac:name="language">json</ac:parameter>';
+	html += `<ac:plain-text-body><![CDATA[${jsonStr}]]></ac:plain-text-body>`;
+	html += "</ac:structured-macro>";
+	html += "</ac:rich-text-body>";
+	html += "</ac:structured-macro>";
+	return html;
+}
+
+/**
+ * Build the sync-age banner showing when the page was last synced.
+ */
+export function buildSyncBanner(timestamp: number | string) {
+	const isoTime = new Date(timestamp).toISOString();
+	return `<ac:structured-macro ac:name="note"><ac:rich-text-body><p>Last synced: ${escapeHtml(isoTime)}</p></ac:rich-text-body></ac:structured-macro>\n`;
+}
+
+/**
+ * Build the full claims page body: banner + table + JSON block.
+ */
+export function buildClaimsPageBody(
+	claims: readonly TableClaim[],
+	claimsJson: unknown,
+	syncTimestamp: number | string,
+) {
+	let body = "";
+	body += buildSyncBanner(syncTimestamp);
+	body += buildClaimsTable(claims);
+	body += "\n";
+	body += buildJsonCodeBlock(claimsJson);
+	return body;
+}
+
+/**
+ * Build the brief page body from compilation.json output.
+ */
+export function buildBriefPageBody(
+	compilation: BriefSnapshot,
+	syncTimestamp: number | string,
+) {
+	let body = "";
+	body += `<h2>Compilation status: ${escapeHtml(compilation.status || "unknown")}</h2>`;
+	if (compilation.errors?.length) {
+		body += "<h3>Unresolved findings</h3><ul>";
+		for (const error of compilation.errors)
+			body += `<li>${escapeHtml(typeof error === "string" ? error : error.message || JSON.stringify(error))}</li>`;
+		body += "</ul>";
+	}
+	body += buildSyncBanner(syncTimestamp);
+
+	if (compilation.brief) {
+		body += `<h2>Brief</h2>\n<p>${escapeHtml(compilation.brief)}</p>\n`;
+	}
+
+	if (compilation.summary) {
+		body += `<h2>Summary</h2>\n<p>${escapeHtml(compilation.summary)}</p>\n`;
+	}
+
+	if (compilation.warnings && compilation.warnings.length > 0) {
+		body += "<h2>Warnings</h2>\n<ul>\n";
+		for (const w of compilation.warnings) {
+			body += `<li>${escapeHtml(w)}</li>\n`;
+		}
+		body += "</ul>\n";
+	}
+
+	body += "\n";
+	body += buildJsonCodeBlock(compilation);
+	return body;
+}
+
+// ── MCP tool call builders ──────────────────────────────────────────────────
+
+/**
+ * Build the MCP tool call descriptor to create a Confluence page.
+ */
+export function mcpCreatePage({
+	spaceKey,
+	title,
+	body,
+	parentPageId,
+	labels,
+}: {
+	spaceKey: string;
+	title: string;
+	body: string;
+	parentPageId?: string;
+	labels?: string[];
+}) {
+	return {
+		tool: "mcp__claude_ai_Atlassian__createConfluencePage",
+		params: {
+			spaceKey,
+			title,
+			body,
+			...(parentPageId ? { parentPageId } : {}),
+			...(labels ? { labels: labels.join(",") } : {}),
+		},
+	};
+}
+
+/**
+ * Build the MCP tool call descriptor to update a Confluence page.
+ */
+export function mcpUpdatePage({
+	pageId,
+	title,
+	body,
+	version,
+}: {
+	pageId: string;
+	title: string;
+	body: string;
+	version: number;
+}) {
+	return {
+		tool: "mcp__claude_ai_Atlassian__updateConfluencePage",
+		params: {
+			pageId,
+			title,
+			body,
+			version,
+		},
+	};
+}
+
+/**
+ * Build the MCP tool call descriptor to search for existing sprint pages.
+ */
+export function mcpSearchPages({
+	spaceKey,
+	label,
+	title,
+}: {
+	spaceKey?: string;
+	label?: string;
+	title?: string;
+}) {
+	const cqlParts = [];
+	if (spaceKey) cqlParts.push(`space = "${spaceKey}"`);
+	if (label) cqlParts.push(`label = "${label}"`);
+	if (title) cqlParts.push(`title = "${title}"`);
+	return {
+		tool: "mcp__claude_ai_Atlassian__searchConfluenceUsingCql",
+		params: {
+			cql: cqlParts.join(" AND "),
+		},
+	};
+}
+
+// ── Sync orchestration ──────────────────────────────────────────────────────
+
+/**
+ * Plan a sync operation. Reads local state and returns a sync plan
+ * describing what MCP calls need to be made.
+ *
+ * @param {object} opts
+ * @param {string} opts.evidenceRoot - Path to .grainulator/evidence directory
+ * @param {string} opts.sprintSlug - Sprint slug
+ * @param {string} opts.spaceKey - Confluence space key
+ * @param {string} [opts.parentPageId] - Optional parent page ID
+ * @param {boolean} [opts.archive] - If true, swap labels to grainulator-archived
+ * @returns {object} Sync plan with page descriptors and MCP call list
+ */
+export function planSync({
+	evidenceRoot,
+	sprintSlug,
+	spaceKey,
+	parentPageId,
+	archive = false,
+}: {
+	evidenceRoot: string;
+	sprintSlug: string;
+	spaceKey: string;
+	parentPageId?: string;
+	archive?: boolean;
+}) {
+	const sprintDir = path.join(evidenceRoot, "sprints", sprintSlug);
+	const compilationPath = path.join(sprintDir, "compilation.json");
+	const claimsPath = path.join(sprintDir, "claims.json");
+
+	if (!fs.existsSync(compilationPath)) {
+		throw new Error(
+			`No compilation.json found at ${compilationPath}. Run grainulator compile first.`,
+		);
+	}
+
+	const compilation = JSON.parse(fs.readFileSync(compilationPath, "utf8"));
+	const claimsJson = fs.existsSync(claimsPath)
+		? JSON.parse(fs.readFileSync(claimsPath, "utf8"))
+		: null;
+
+	const claims = claimsJson ? claimsJson.claims || [] : [];
+	const now = Date.now();
+	const hash = contentHash(JSON.stringify({ compilation, claimsJson }));
+
+	// Check sync state for skip-if-unchanged
+	const syncState = loadSyncState(evidenceRoot);
+	const sprintState = syncState[sprintSlug] || {};
+
+	const unchanged = sprintState.lastHash === hash;
+
+	const labels = archive ? ["grainulator-archived"] : ["grainulator-active"];
+	const parentTitle = `Grainulator: ${sprintSlug}`;
+	const claimsTitle = `${sprintSlug} -- Claims`;
+	const briefTitle = `${sprintSlug} -- Brief`;
+
+	return {
+		sprintSlug,
+		spaceKey,
+		parentPageId,
+		parentTitle,
+		claimsTitle,
+		briefTitle,
+		labels,
+		hash,
+		unchanged,
+		syncTimestamp: now,
+		claimsPageBody: buildClaimsPageBody(claims, claimsJson, now),
+		briefPageBody: buildBriefPageBody(compilation, now),
+		existingState: sprintState,
+	};
+}
+
+/**
+ * Record a completed sync in sync-state.json.
+ */
+export function recordSync(
+	evidenceRoot: string,
+	sprintSlug: string,
+	{
+		hash,
+		syncTimestamp,
+		pages,
+	}: { hash: string; syncTimestamp: number; pages?: Record<string, unknown> },
+) {
+	const syncState = loadSyncState(evidenceRoot);
+	syncState[sprintSlug] = {
+		lastHash: hash,
+		lastSyncTimestamp: syncTimestamp,
+		pages: pages || {},
+	};
+	saveSyncState(evidenceRoot, syncState);
+}
+
+/** Adapter-neutral, single-attempt publication. The host supplies a connector
+ * using its discovered schema; this function never discovers credentials or
+ * grants destination authorization. Failed/ambiguous writes are not retried.
+ */
+export async function publishSnapshot({
+	dir = process.cwd(),
+	workspace,
+	authorized,
+	destination,
+	compilation,
+	connector,
+}: {
+	dir?: string;
+	workspace?: string;
+	authorized?: boolean;
+	destination?: unknown;
+	compilation?: Snapshot;
+	connector?: PublicationConnector;
+}) {
+	if (authorized !== true)
+		return {
+			status: "error",
+			message: "Destination publication is not authorized.",
+			written: false,
+		};
+	if (!isDestination(destination))
+		return {
+			status: "error",
+			message: "A single resolved site and space are required.",
+			written: false,
+		};
+	if (!compilation || !["ready", "blocked"].includes(compilation.status))
+		return {
+			status: "error",
+			message: "Refresh compilation before publishing.",
+			written: false,
+		};
+	const format = ["storage", "adf", "markdown"].find((value) =>
+		connector?.formats?.includes(value),
+	);
+	if (!format || !connector)
+		return {
+			status: "error",
+			message: "No supported connector representation.",
+			written: false,
+		};
+	let attempted = false;
+	try {
+		remoteMigration.assertRemoteMigrationReady(dir, {
+			workspace,
+			destination,
+			sourceId: destination?.sourceId,
+			newSource: destination?.newSource,
+		});
+		const current = destination.pageId
+			? await connector.read(destination)
+			: null;
+		if (
+			destination.pageId &&
+			(!isPage(current) || current.id !== destination.pageId)
+		)
+			throw new Error("Existing page identity/version could not be verified.");
+		let body: string | AdfNode;
+		if (format === "storage")
+			body = buildBriefPageBody(compilation, Date.now());
+		else if (format === "adf") {
+			const { convert } = await import(
+				"../packages/exports/lib/formats/confluence-adf.mjs"
+			);
+			const adfBody: AdfNode = JSON.parse(convert(compilation));
+			if (!adfBody.content)
+				throw new Error("Invalid generated Confluence document.");
+			adfBody.content.unshift({
+				type: "paragraph",
+				content: [
+					{
+						type: "text",
+						text: `Compilation status: ${compilation.status}. Unresolved findings: ${JSON.stringify(compilation.errors || [])}`,
+					},
+				],
+			});
+			body = adfBody;
+		} else {
+			const { convert } = await import(
+				"../packages/exports/lib/formats/markdown.mjs"
+			);
+			body = `Compilation status: ${compilation.status}\n\n${convert({ ...compilation, claims: [...(compilation.claims || []), ...(compilation.errors || []).map((error, i) => ({ id: `unresolved-${i}`, type: "risk", content: typeof error === "string" ? error : error.message || JSON.stringify(error) }))] })}`;
+		}
+		attempted = true;
+		const result = await connector.write({
+			destination,
+			format,
+			body,
+			...(isPage(current) ? { version: current.version + 1 } : {}),
+		});
+		if (
+			!isPublicationResult(result) ||
+			(destination.pageId && result.id !== destination.pageId)
+		)
+			return {
+				status: "error",
+				message:
+					"Publication not confirmed; inspect the destination before retrying.",
+				written: "unknown",
+			};
+		return {
+			status: "ok",
+			id: result.id,
+			url: result.url,
+			compilation_status: compilation.status,
+			written: true,
+		};
+	} catch {
+		// Connector failures can contain tokens or request headers. Keep diagnostics
+		// at the host boundary and do not leak them into a publication result.
+		return {
+			status: "error",
+			message: attempted
+				? "Publication failed or conflicted; reread the destination before retrying."
+				: "Could not verify the destination page.",
+			written: attempted ? "unknown" : false,
+		};
+	}
+}

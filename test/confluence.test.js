@@ -1,3 +1,4 @@
+// Generated from typescript/test/confluence.test.ts; edit that source and run npm run build:types.
 /**
  * Tests for lib/confluence-sync.js and lib/confluence-pull.js.
  *
@@ -6,7 +7,6 @@
  *
  * Uses node:test + node:assert -- zero dependencies.
  */
-
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -36,9 +36,7 @@ import {
 	recordSync,
 	saveSyncState,
 } from "../lib/confluence-sync.js";
-
 // ── Test fixtures ───────────────────────────────────────────────────────────
-
 const SAMPLE_CLAIMS = [
 	{
 		id: "r001",
@@ -73,7 +71,6 @@ const SAMPLE_CLAIMS = [
 		tags: ["test", "risk"],
 	},
 ];
-
 const SAMPLE_CLAIMS_JSON = {
 	schema_version: "1.0",
 	meta: {
@@ -85,7 +82,6 @@ const SAMPLE_CLAIMS_JSON = {
 	},
 	claims: SAMPLE_CLAIMS,
 };
-
 const SAMPLE_COMPILATION = {
 	schema_version: "1.0",
 	sprint: "test-sprint",
@@ -93,24 +89,18 @@ const SAMPLE_COMPILATION = {
 	warnings: ["Low evidence coverage on test-topic"],
 	claims_hash: "abc123",
 };
-
 // ── Temp directory management ───────────────────────────────────────────────
-
 let tmpDir;
-
 function createTmpDir() {
 	tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "wheat-test-"));
 	return tmpDir;
 }
-
 function cleanupTmpDir() {
 	if (tmpDir && fs.existsSync(tmpDir)) {
 		fs.rmSync(tmpDir, { recursive: true, force: true });
 	}
 }
-
 // ── confluence-sync.js tests ────────────────────────────────────────────────
-
 describe("confluence-sync", () => {
 	describe("contentHash", () => {
 		it("produces consistent SHA-256 hashes", () => {
@@ -119,20 +109,17 @@ describe("confluence-sync", () => {
 			assert.equal(h1, h2);
 			assert.equal(h1.length, 64);
 		});
-
 		it("produces different hashes for different content", () => {
 			const h1 = contentHash("hello");
 			const h2 = contentHash("world");
 			assert.notEqual(h1, h2);
 		});
 	});
-
 	describe("buildClaimsTable", () => {
 		it("returns empty message for no claims", () => {
 			const html = buildClaimsTable([]);
 			assert.ok(html.includes("No claims"));
 		});
-
 		it("renders claims as HTML table", () => {
 			const html = buildClaimsTable(SAMPLE_CLAIMS);
 			assert.ok(html.includes("<table>"));
@@ -141,27 +128,23 @@ describe("confluence-sync", () => {
 			assert.ok(html.includes("factual"));
 			assert.ok(html.includes("risk"));
 		});
-
 		it("escapes HTML entities in claim content", () => {
 			const html = buildClaimsTable(SAMPLE_CLAIMS);
 			assert.ok(html.includes("&lt;html&gt;"));
 			assert.ok(html.includes("&amp;"));
 			assert.ok(html.includes("&quot;quotes&quot;"));
 		});
-
 		it("includes auto-generated banner warning", () => {
 			const html = buildClaimsTable(SAMPLE_CLAIMS);
 			assert.ok(html.includes("auto-generated"));
 			assert.ok(html.includes("Do not edit"));
 		});
-
 		it("includes status badges", () => {
 			const html = buildClaimsTable(SAMPLE_CLAIMS);
 			assert.ok(html.includes("Green"));
 			assert.ok(html.includes("Grey"));
 		});
 	});
-
 	describe("buildJsonCodeBlock", () => {
 		it("wraps JSON in expand + code macros with CDATA", () => {
 			const html = buildJsonCodeBlock({ test: true });
@@ -173,7 +156,6 @@ describe("confluence-sync", () => {
 			assert.ok(html.includes('"test": true'));
 		});
 	});
-
 	describe("buildSyncBanner", () => {
 		it("includes timestamp in ISO format", () => {
 			const html = buildSyncBanner(1710936000000);
@@ -181,7 +163,6 @@ describe("confluence-sync", () => {
 			assert.ok(html.includes("2024-03-20"));
 		});
 	});
-
 	describe("buildClaimsPageBody", () => {
 		it("combines banner + table + JSON block", () => {
 			const body = buildClaimsPageBody(
@@ -194,7 +175,6 @@ describe("confluence-sync", () => {
 			assert.ok(body.includes("CDATA"));
 		});
 	});
-
 	describe("buildBriefPageBody", () => {
 		it("renders summary and warnings", () => {
 			const body = buildBriefPageBody(SAMPLE_COMPILATION, Date.now());
@@ -202,16 +182,13 @@ describe("confluence-sync", () => {
 			assert.ok(body.includes("Low evidence"));
 		});
 	});
-
 	describe("sync state persistence", () => {
 		beforeEach(() => createTmpDir());
 		afterEach(() => cleanupTmpDir());
-
 		it("returns empty object when no state file exists", () => {
 			const state = loadSyncState(tmpDir);
 			assert.deepEqual(state, {});
 		});
-
 		it("round-trips state through save/load", () => {
 			const state = {
 				"test-sprint": {
@@ -224,13 +201,11 @@ describe("confluence-sync", () => {
 			const loaded = loadSyncState(tmpDir);
 			assert.deepEqual(loaded, state);
 		});
-
 		it("creates parent directories if needed", () => {
 			saveSyncState(tmpDir, { test: true });
 			assert.ok(fs.existsSync(path.join(tmpDir, "sync-state.json")));
 		});
 	});
-
 	describe("planSync", () => {
 		beforeEach(() => {
 			createTmpDir();
@@ -248,7 +223,6 @@ describe("confluence-sync", () => {
 			);
 		});
 		afterEach(() => cleanupTmpDir());
-
 		it("produces a valid sync plan", () => {
 			const plan = planSync({
 				evidenceRoot: tmpDir,
@@ -262,7 +236,6 @@ describe("confluence-sync", () => {
 			assert.ok(plan.hash);
 			assert.equal(plan.unchanged, false);
 		});
-
 		it("detects unchanged content", () => {
 			const plan1 = planSync({
 				evidenceRoot: tmpDir,
@@ -281,7 +254,6 @@ describe("confluence-sync", () => {
 			});
 			assert.equal(plan2.unchanged, true);
 		});
-
 		it("throws when compilation.json is missing", () => {
 			fs.unlinkSync(
 				path.join(tmpDir, "sprints", "test-sprint", "compilation.json"),
@@ -294,7 +266,6 @@ describe("confluence-sync", () => {
 				});
 			}, /compilation\.json/);
 		});
-
 		it("sets archive labels when archive flag is true", () => {
 			const plan = planSync({
 				evidenceRoot: tmpDir,
@@ -305,11 +276,9 @@ describe("confluence-sync", () => {
 			assert.deepEqual(plan.labels, ["grainulator-archived"]);
 		});
 	});
-
 	describe("recordSync", () => {
 		beforeEach(() => createTmpDir());
 		afterEach(() => cleanupTmpDir());
-
 		it("persists sync record", () => {
 			recordSync(tmpDir, "test-sprint", {
 				hash: "abc",
@@ -317,11 +286,12 @@ describe("confluence-sync", () => {
 				pages: { parent: { pageId: "1", version: 1 } },
 			});
 			const state = loadSyncState(tmpDir);
-			assert.equal(state["test-sprint"].lastHash, "abc");
-			assert.equal(state["test-sprint"].lastSyncTimestamp, 123);
+			const saved = state["test-sprint"];
+			assert.ok(saved);
+			assert.equal(saved.lastHash, "abc");
+			assert.equal(saved.lastSyncTimestamp, 123);
 		});
 	});
-
 	describe("MCP tool call builders", () => {
 		it("mcpCreatePage builds correct descriptor", () => {
 			const call = mcpCreatePage({
@@ -334,7 +304,6 @@ describe("confluence-sync", () => {
 			assert.equal(call.params.spaceKey, "RES");
 			assert.equal(call.params.labels, "grainulator-active");
 		});
-
 		it("mcpUpdatePage builds correct descriptor", () => {
 			const call = mcpUpdatePage({
 				pageId: "123",
@@ -345,7 +314,6 @@ describe("confluence-sync", () => {
 			assert.equal(call.tool, "mcp__claude_ai_Atlassian__updateConfluencePage");
 			assert.equal(call.params.version, 2);
 		});
-
 		it("mcpSearchPages builds CQL query", () => {
 			const call = mcpSearchPages({
 				spaceKey: "RES",
@@ -357,9 +325,7 @@ describe("confluence-sync", () => {
 		});
 	});
 });
-
 // ── confluence-pull.js tests ────────────────────────────────────────────────
-
 describe("confluence-pull", () => {
 	describe("extractJsonFromStorage", () => {
 		it("extracts JSON from CDATA block", () => {
@@ -367,24 +333,25 @@ describe("confluence-pull", () => {
 			const extracted = extractJsonFromStorage(body);
 			assert.deepEqual(extracted, SAMPLE_CLAIMS_JSON);
 		});
-
 		it("returns null for empty input", () => {
 			assert.equal(extractJsonFromStorage(""), null);
 			assert.equal(extractJsonFromStorage(null), null);
 		});
-
 		it("returns null when no CDATA block found", () => {
 			assert.equal(extractJsonFromStorage("<p>No code blocks here</p>"), null);
 		});
-
 		it("skips non-JSON CDATA blocks", () => {
 			const body =
 				"<![CDATA[not json]]>" +
 				buildJsonCodeBlock({ schema_version: "1.0", meta: {}, claims: [] });
 			const extracted = extractJsonFromStorage(body);
+			assert.ok(
+				extracted &&
+					typeof extracted === "object" &&
+					"schema_version" in extracted,
+			);
 			assert.equal(extracted.schema_version, "1.0");
 		});
-
 		it("handles full page body with table + JSON block", () => {
 			const body = buildClaimsPageBody(
 				SAMPLE_CLAIMS,
@@ -395,38 +362,32 @@ describe("confluence-pull", () => {
 			assert.deepEqual(extracted, SAMPLE_CLAIMS_JSON);
 		});
 	});
-
 	describe("validateClaimsStructure", () => {
 		it("validates a correct structure", () => {
 			const result = validateClaimsStructure(SAMPLE_CLAIMS_JSON);
 			assert.equal(result.valid, true);
 		});
-
 		it("rejects null", () => {
 			assert.equal(validateClaimsStructure(null).valid, false);
 		});
-
 		it("rejects missing schema_version", () => {
 			assert.equal(
 				validateClaimsStructure({ meta: {}, claims: [] }).valid,
 				false,
 			);
 		});
-
 		it("rejects missing meta", () => {
 			assert.equal(
 				validateClaimsStructure({ schema_version: "1.0", claims: [] }).valid,
 				false,
 			);
 		});
-
 		it("rejects missing claims array", () => {
 			assert.equal(
 				validateClaimsStructure({ schema_version: "1.0", meta: {} }).valid,
 				false,
 			);
 		});
-
 		it("rejects claims missing id", () => {
 			const data = {
 				schema_version: "1.0",
@@ -435,14 +396,12 @@ describe("confluence-pull", () => {
 			};
 			const result = validateClaimsStructure(data);
 			assert.equal(result.valid, false);
-			assert.ok(result.reason.includes("missing id"));
+			assert.ok(result.reason?.includes("missing id"));
 		});
 	});
-
 	describe("writeLocalClaims", () => {
 		beforeEach(() => createTmpDir());
 		afterEach(() => cleanupTmpDir());
-
 		it("writes claims.json to sprint directory", () => {
 			const result = writeLocalClaims(
 				tmpDir,
@@ -457,16 +416,13 @@ describe("confluence-pull", () => {
 			);
 			assert.equal(result.written, expected);
 			assert.ok(fs.existsSync(expected));
-
 			const written = JSON.parse(fs.readFileSync(expected, "utf8"));
 			assert.deepEqual(written, SAMPLE_CLAIMS_JSON);
 		});
-
 		it("creates sprint directory if it does not exist", () => {
 			writeLocalClaims(tmpDir, "new-sprint", SAMPLE_CLAIMS_JSON);
 			assert.ok(fs.existsSync(path.join(tmpDir, "sprints", "new-sprint")));
 		});
-
 		it("backs up existing file when backup option is true", () => {
 			writeLocalClaims(tmpDir, "test-sprint", SAMPLE_CLAIMS_JSON);
 			const result = writeLocalClaims(
@@ -481,7 +437,6 @@ describe("confluence-pull", () => {
 			assert.ok(fs.existsSync(result.backed_up));
 		});
 	});
-
 	describe("planPull", () => {
 		it("extracts and validates from page body", () => {
 			const body = buildClaimsPageBody(
@@ -498,7 +453,6 @@ describe("confluence-pull", () => {
 			assert.equal(plan.claimCount, 2);
 			assert.deepEqual(plan.claimsData, SAMPLE_CLAIMS_JSON);
 		});
-
 		it("throws on missing JSON", () => {
 			assert.throws(() => {
 				planPull({
@@ -508,7 +462,6 @@ describe("confluence-pull", () => {
 				});
 			}, /Could not extract JSON/);
 		});
-
 		it("throws on invalid claims structure", () => {
 			const body = buildJsonCodeBlock({ not_a_sprint: true });
 			assert.throws(() => {
@@ -520,11 +473,9 @@ describe("confluence-pull", () => {
 			}, /not a valid claims structure/);
 		});
 	});
-
 	describe("executePull", () => {
 		beforeEach(() => createTmpDir());
 		afterEach(() => cleanupTmpDir());
-
 		it("writes claims to local filesystem", () => {
 			const result = executePull({
 				evidenceRoot: tmpDir,
@@ -535,14 +486,12 @@ describe("confluence-pull", () => {
 			assert.ok(fs.existsSync(result.written));
 		});
 	});
-
 	describe("MCP tool call builders", () => {
 		it("mcpGetPage builds correct descriptor", () => {
 			const call = mcpGetPage({ pageId: "456" });
 			assert.equal(call.tool, "mcp__claude_ai_Atlassian__getConfluencePage");
 			assert.equal(call.params.pageId, "456");
 		});
-
 		it("mcpSearchGrainulatorPages builds CQL with grainulator-active label", () => {
 			const call = mcpSearchGrainulatorPages({
 				spaceKey: "RES",
@@ -553,19 +502,15 @@ describe("confluence-pull", () => {
 		});
 	});
 });
-
 // ── Cross-platform path tests ───────────────────────────────────────────────
-
 describe("cross-platform paths", () => {
 	beforeEach(() => createTmpDir());
 	afterEach(() => cleanupTmpDir());
-
 	it("sync state uses path.join for filesystem operations", () => {
 		saveSyncState(tmpDir, { test: true });
 		const statePath = path.join(tmpDir, "sync-state.json");
 		assert.ok(fs.existsSync(statePath));
 	});
-
 	it("writeLocalClaims creates nested dirs with path.join", () => {
 		writeLocalClaims(tmpDir, "deep-sprint", SAMPLE_CLAIMS_JSON);
 		const claimsPath = path.join(
@@ -576,7 +521,6 @@ describe("cross-platform paths", () => {
 		);
 		assert.ok(fs.existsSync(claimsPath));
 	});
-
 	it("planSync uses path.join for all filesystem access", () => {
 		const sprintDir = path.join(tmpDir, "sprints", "path-test");
 		fs.mkdirSync(sprintDir, { recursive: true });
@@ -590,7 +534,6 @@ describe("cross-platform paths", () => {
 			JSON.stringify(SAMPLE_CLAIMS_JSON),
 			"utf8",
 		);
-
 		const plan = planSync({
 			evidenceRoot: tmpDir,
 			sprintSlug: "path-test",
