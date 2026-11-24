@@ -1,0 +1,14 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      dir:
+        type: string
+        description: "Path to the project workspace directory (default: current working directory)"
+  commandFunction: |-
+    (config) => ({
+      command: 'npx',
+      args: ['-y', '@grainulation/grainulator', 'mcp', ...(config?.dir ? ['--dir', config.dir] : [])]
+    })
