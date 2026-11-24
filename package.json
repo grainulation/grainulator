@@ -165,7 +165,7 @@
 		"grainulator": "bin/grainulator.js"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.6.7",
+		"@biomejs/biome": "2.6.8",
 		"playwright": "1.65.1"
 	}
 }
