@@ -14,6 +14,30 @@ function normalizeSource(data) {
     }
   }
   const claims = data.claims?.length ? data.claims : data.resolved_claims ?? data.claims;
+  if (data.conflicts !== undefined && !Array.isArray(data.conflicts)) {
+    throw new Error("conflicts must be an array. Export valid sprint JSON or recompile the sprint.");
+  }
+  let graph = data.conflict_graph;
+  if (graph !== undefined && !Array.isArray(graph)) {
+    if (!graph || typeof graph !== "object") throw new Error("conflict_graph must be an array or a compiler graph object.");
+    for (const field of ["resolved", "unresolved"]) {
+      if (graph[field] !== undefined && !Array.isArray(graph[field])) throw new Error(`conflict_graph.${field} must be an array.`);
+    }
+    const rows = [];
+    for (const [field, entries] of [["unresolved", graph.unresolved || []], ["resolved", graph.resolved || []]]) {
+      for (const entry of entries) {
+        if (!entry || typeof entry !== "object" || Array.isArray(entry)) throw new Error("Conflict entries must be objects.");
+        rows.push({ ...entry, ids: entry.ids || (field === "resolved" ? [entry.winner, entry.loser] : [entry.claimA, entry.claimB]),
+          ...(field === "resolved" ? { resolution: entry.resolution || entry.reason || "resolved" } : {}) });
+      }
+    }
+    graph = rows;
+  }
+  const conflicts = data.conflicts?.length ? data.conflicts : graph ?? data.conflicts ?? [];
+  for (const conflict of conflicts) {
+    if (!conflict || typeof conflict !== "object" || Array.isArray(conflict)) throw new Error("Conflict entries must be objects.");
+    if (conflict.ids !== undefined && (!Array.isArray(conflict.ids) || conflict.ids.some(id => typeof id !== "string"))) throw new Error("Conflict ids must be an array of strings.");
+  }
   if (!claims) {
     throw new Error("No claims array found. Export claims.json, or run grainulator compile --dir <sprint> to regenerate compilation.json.");
   }
@@ -27,7 +51,7 @@ function normalizeSource(data) {
     ...data,
     claims,
     meta: data.meta || data.sprint_meta || {},
-    conflicts: data.conflicts || data.conflict_graph || [],
+    conflicts,
     certificate: data.certificate || data.compilation_certificate || {},
   };
 }

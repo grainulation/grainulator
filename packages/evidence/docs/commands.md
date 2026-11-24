@@ -120,7 +120,7 @@ Claims produced: none (read-only)
 
 ### `/brief`
 
-Compile the decision document. A structured recommendation backed by your evidence, with confidence levels and caveats.
+Compile the Markdown decision document at `output/brief.md`. A structured recommendation backed by your evidence, with confidence levels and caveats.
 
 ```
 /brief
@@ -128,15 +128,7 @@ Compile the decision document. A structured recommendation backed by your eviden
 
 Claims produced: none (consumes compilation.json)
 
-### `/present`
-
-Generate a stakeholder presentation. Scroll-snap slides with key findings, risks, and the recommendation.
-
-```
-/present
-```
-
-Claims produced: none (consumes compilation.json)
+Presentation rendering is delegated to external tools consuming Markdown or JSON exports.
 
 ### `/handoff`
 

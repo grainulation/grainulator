@@ -12,7 +12,13 @@ const plugin = fileURLToPath(
 );
 
 // Drive the plugin entry like an agent: answer roots/list the way `roots` says.
-async function session({ env, capabilities, roots, cwd }) {
+async function session({
+	env,
+	capabilities,
+	roots,
+	cwd,
+	afterInitialize = [],
+}) {
 	const child = spawn(process.execPath, [plugin], {
 		cwd,
 		env: { ...process.env, GRAINULATOR_WORKSPACE: "", ...env },
@@ -25,12 +31,14 @@ async function session({ env, capabilities, roots, cwd }) {
 		const message = JSON.parse(line);
 		if (message.method === "roots/list") {
 			asked.push(message.method);
+			const sharedRoots =
+				typeof roots === "function" ? roots(asked.length) : roots;
 			const reply =
-				roots === "error"
+				sharedRoots === "error"
 					? { error: { code: -32601, message: "Method not found" } }
-					: roots === "silent"
+					: sharedRoots === "silent"
 						? null
-						: { result: { roots } };
+						: { result: { roots: sharedRoots } };
 			if (reply)
 				child.stdin.write(
 					`${JSON.stringify({ jsonrpc: "2.0", id: message.id, ...reply })}\n`,
@@ -56,13 +64,23 @@ async function session({ env, capabilities, roots, cwd }) {
 	child.stdin.write(
 		`${JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" })}\n`,
 	);
+	const prelude = [];
+	for (const request of afterInitialize) {
+		if (request.notification)
+			child.stdin.write(
+				`${JSON.stringify({ jsonrpc: "2.0", method: request.method, ...(Object.hasOwn(request, "params") ? { params: request.params } : {}) })}\n`,
+			);
+		else prelude.push(await call(request.method, request.params));
+	}
+	await call("ping", {});
+
 	const init = await call("tools/call", {
 		name: "init",
 		arguments: { question: "Which database?" },
 	});
 	child.stdin.end();
 	await new Promise((resolve) => child.on("close", resolve));
-	return { init, asked };
+	return { init, asked, prelude };
 }
 
 function setup(t) {
@@ -164,4 +182,114 @@ test("no shared folder and no saved default reports how to fix it and touches no
 		/did not share a project folder.*setup --dir/,
 	);
 	assert.ok(!created(s.cwd), "the plugin folder is never used as the project");
+});
+
+const initialize = (capabilities) => ({
+	protocolVersion: "2025-06-18",
+	capabilities,
+	clientInfo: { name: "repeat", version: "1" },
+});
+
+test("stdio preserves falsy params for validation before any dispatch", async (t) => {
+	const s = setup(t);
+	const { prelude } = await session({
+		cwd: s.cwd,
+		env: s.withConfig(),
+		capabilities: {},
+		afterInitialize: [null, false, 0, ""].flatMap((params) => [
+			{ method: "ping", params },
+			{ method: "tools/call", params },
+		]),
+	});
+	assert.equal(prelude.length, 8);
+	for (const response of prelude)
+		assert.equal(response.error?.code, -32602, JSON.stringify(response));
+});
+
+test("rejected and repeated initialize cannot change negotiated roots", async (t) => {
+	for (const repeat of [
+		{ ...initialize({ roots: {} }), clientInfo: null },
+		initialize({ roots: { listChanged: true } }),
+	]) {
+		const s = setup(t);
+		const { init, asked } = await session({
+			cwd: s.cwd,
+			env: s.withConfig(),
+			capabilities: {},
+			roots: [{ uri: pathToFileURL(s.project).href }],
+			afterInitialize: [{ method: "initialize", params: repeat }],
+		});
+		assert.equal(init.result.isError, false);
+		assert.deepEqual(asked, []);
+		assert.ok(created(s.saved));
+		assert.equal(created(s.project), false);
+	}
+	const s = setup(t);
+	const { init, asked } = await session({
+		cwd: s.cwd,
+		env: s.withConfig(),
+		capabilities: { roots: {} },
+		roots: [{ uri: pathToFileURL(s.project).href }],
+		afterInitialize: [{ method: "initialize", params: initialize({}) }],
+	});
+	assert.equal(init.result.isError, false);
+	assert.deepEqual(asked, ["roots/list"]);
+	assert.ok(created(s.project));
+	assert.equal(created(s.saved), false);
+});
+
+test("only negotiated valid roots notifications invalidate the cached workspace", async (t) => {
+	for (const [listChanged, params, expectedRequests] of [
+		[false, {}, 1],
+		[true, null, 1],
+		[true, [], 1],
+		[true, { _meta: false }, 1],
+		[true, { _meta: { progressToken: false } }, 1],
+		[true, {}, 2],
+	]) {
+		const s = setup(t);
+		const { asked } = await session({
+			cwd: s.cwd,
+			env: s.withConfig(),
+			capabilities: { roots: { listChanged } },
+			roots: (count) => [
+				{ uri: pathToFileURL(count === 1 ? s.project : s.explicit).href },
+			],
+			afterInitialize: [
+				{
+					method: "tools/call",
+					params: { name: "init", arguments: { question: "First workspace" } },
+				},
+				{
+					notification: true,
+					method: "notifications/roots/list_changed",
+					params,
+				},
+			],
+		});
+		assert.equal(
+			asked.length,
+			expectedRequests,
+			JSON.stringify({ listChanged, params }),
+		);
+		assert.ok(created(s.project));
+		assert.equal(created(s.explicit), expectedRequests === 2);
+	}
+	const s = setup(t);
+	const { asked } = await session({
+		cwd: s.cwd,
+		env: s.withConfig(),
+		capabilities: {},
+		roots: [{ uri: pathToFileURL(s.project).href }],
+		afterInitialize: [
+			{
+				notification: true,
+				method: "notifications/roots/list_changed",
+				params: {},
+			},
+		],
+	});
+	assert.deepEqual(asked, []);
+	assert.ok(created(s.saved));
+	assert.equal(created(s.project), false);
 });

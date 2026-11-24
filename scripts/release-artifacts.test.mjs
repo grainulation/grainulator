@@ -36,13 +36,31 @@ function fixture(t) {
 	t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
 	const baseDir = path.join(dir, "base");
 	fs.mkdirSync(baseDir);
+	const packageBytes = Buffer.from(
+		JSON.stringify({ name: "@grainulation/grainulator", version }),
+	);
+	const sourceHash = sha256(
+		Buffer.concat([
+			Buffer.from("package.json\0"),
+			packageBytes,
+			Buffer.from("\0"),
+		]),
+	);
+	const buildId = `release-${version}-${sourceHash.slice(0, 16)}`;
 	const baseArchive = encodeRuntimeArchive(
 		new Map([
+			["package/package.json", { bytes: packageBytes, mode: 0o644 }],
 			[
-				"package/package.json",
+				"package/build-info.json",
 				{
 					bytes: Buffer.from(
-						JSON.stringify({ name: "@grainulation/grainulator", version }),
+						JSON.stringify({
+							schema: 1,
+							id: buildId,
+							version,
+							source_sha256: sourceHash,
+							files: { "package.json": sha256(packageBytes) },
+						}),
 					),
 					mode: 0o644,
 				},
@@ -56,7 +74,7 @@ function fixture(t) {
 		filename: "grainulator-3.0.0.tgz",
 		bytes: baseArchive.length,
 		sha256: sha256(baseArchive),
-		build_id: "release-3.0.0-" + "a".repeat(16),
+		build_id: buildId,
 	};
 	fs.writeFileSync(path.join(baseDir, base.filename), baseArchive);
 	const baseRecord = path.join(baseDir, "base-record.json");
@@ -122,8 +140,33 @@ function fixture(t) {
 	}
 	const migrationDir = path.join(dir, "migration");
 	fs.mkdirSync(migrationDir);
-	const converter = Buffer.from("separate converter fixture"),
-		migrationRecord = path.join(migrationDir, "migration-record.json");
+	const migrationRecord = path.join(migrationDir, "migration-record.json");
+	const converterFiles = new Map(
+		["converter.mjs", "remote.mjs", "README.md", "LICENSE"].map((name) => [
+			`grainulator-migrate-${version}/${name}`,
+			{
+				bytes: Buffer.from(name.endsWith(".mjs") ? "export {};\n" : name),
+				mode: name === "converter.mjs" ? 0o755 : 0o644,
+			},
+		]),
+	);
+	converterFiles.set(`grainulator-migrate-${version}/manifest.json`, {
+		bytes: Buffer.from(
+			JSON.stringify({
+				schema: "grainulator.migration-asset.v1",
+				version,
+				source_commit: commit,
+				files: Object.fromEntries(
+					[...converterFiles].map(([name, file]) => [
+						name.split("/").pop(),
+						sha256(file.bytes),
+					]),
+				),
+			}),
+		),
+		mode: 0o644,
+	});
+	const converter = encodeRuntimeArchive(converterFiles);
 	fs.writeFileSync(
 		path.join(migrationDir, "grainulator-migrate-3.0.0.tar.gz"),
 		converter,
@@ -162,7 +205,8 @@ test("frozen candidate set yields pinned release without publication", (t) => {
 	);
 	fs.appendFileSync(path.join(out, "grainulator-3.0.0.tgz"), "changed");
 	assert.throws(
-		() => verifyRelease({ directory: out, manifestSha256: result.manifest_sha256 }),
+		() =>
+			verifyRelease({ directory: out, manifestSha256: result.manifest_sha256 }),
 		/differ/,
 	);
 });
@@ -242,4 +286,207 @@ test("publisher rejects modified bytes plus rewritten adjacent checksums, extras
 	const migration = path.join(out, "grainulator-migrate-3.0.0.tar.gz");
 	fs.unlinkSync(migration);
 	assert.throws(() => verifyRelease(options), /ENOENT/);
+});
+
+test("assembly rejects unusable archive identities before creating output", (t) => {
+	const f = fixture(t);
+	for (const [label, recordFile, updates] of [
+		["base-name", f.baseRecord, { filename: "other-base.tgz" }],
+		[
+			"base-build",
+			f.baseRecord,
+			{ build_id: "release-3.0.1-" + "a".repeat(16) },
+		],
+		[
+			"base-archive-build",
+			f.baseRecord,
+			{ build_id: "release-3.0.0-" + "f".repeat(16) },
+		],
+		["base-size", f.baseRecord, { bytes: 5 * 1024 * 1024 + 1 }],
+		["native-name", f.assetRecords[0], { filename: "other-native.tar.gz" }],
+		[
+			"converter-name",
+			f.migrationRecord,
+			{ filename: "other-converter.tar.gz" },
+		],
+		["converter-size", f.migrationRecord, { bytes: 32 * 1024 * 1024 + 1 }],
+	]) {
+		const original = fs.readFileSync(recordFile),
+			record = JSON.parse(original);
+		if (updates.filename) {
+			fs.copyFileSync(
+				path.join(path.dirname(recordFile), record.filename),
+				path.join(path.dirname(recordFile), updates.filename),
+			);
+		}
+		fs.writeFileSync(recordFile, JSON.stringify({ ...record, ...updates }));
+		const out = path.join(f.dir, label);
+		try {
+			assert.throws(
+				() => assembleRelease({ ...f, out }),
+				/identity|candidate/i,
+			);
+			assert.equal(
+				fs.existsSync(out),
+				false,
+				"invalid candidates cannot leave partial output",
+			);
+		} finally {
+			fs.writeFileSync(recordFile, original);
+		}
+	}
+});
+
+test("pinned publication independently binds the base archive build ID and converter inventory", (t) => {
+	const f = fixture(t),
+		out = path.join(f.dir, "release");
+	assembleRelease({ ...f, out });
+	const manifestFile = path.join(out, "release-manifest.json");
+	const original = fs.readFileSync(manifestFile),
+		manifest = JSON.parse(original);
+	manifest.base.build_id = `release-${version}-${"f".repeat(16)}`;
+	fs.writeFileSync(manifestFile, JSON.stringify(manifest));
+	assert.throws(
+		() =>
+			verifyRelease({
+				directory: out,
+				manifestSha256: sha256(fs.readFileSync(manifestFile)),
+			}),
+		/Base archive identity/,
+	);
+	fs.writeFileSync(manifestFile, original);
+	const record = JSON.parse(fs.readFileSync(f.migrationRecord));
+	const invalid = encodeRuntimeArchive(
+		new Map([
+			[
+				`grainulator-migrate-${version}/converter.mjs`,
+				{ bytes: Buffer.from("export {};"), mode: 0o755 },
+			],
+		]),
+	);
+	fs.writeFileSync(
+		path.join(path.dirname(f.migrationRecord), record.filename),
+		invalid,
+	);
+	fs.writeFileSync(
+		f.migrationRecord,
+		JSON.stringify({
+			...record,
+			bytes: invalid.length,
+			sha256: sha256(invalid),
+		}),
+	);
+	const rejected = path.join(f.dir, "missing-converter-member");
+	assert.throws(
+		() => assembleRelease({ ...f, out: rejected }),
+		/Converter archive inventory/,
+	);
+	assert.equal(fs.existsSync(rejected), false);
+});
+
+test("publication checks peeled live tag identity and refuses ambiguous release lookup", async (t) => {
+	const { publishRelease } = await import("./publish-release.mjs");
+	const f = fixture(t),
+		out = path.join(f.dir, "release");
+	const result = assembleRelease({ ...f, out });
+	const options = {
+		directory: out,
+		manifestSha256: result.manifest_sha256,
+		version,
+		sourceCommit: commit,
+		tag: "v" + version,
+		repository: "grainulation/grainulator",
+	};
+	for (const annotated of [false, true]) {
+		const calls = [];
+		const run = (argv) => {
+			calls.push(argv);
+			if (argv[0] === "release") return { status: 0, stdout: "published" };
+			if (argv[1] === "--include")
+				return {
+					status: 1,
+					stdout: 'HTTP/2.0 404 Not Found\n\n{"message":"Not Found"}',
+				};
+			const object =
+				annotated && argv[1].includes("/git/ref/")
+					? { type: "tag", sha: "b".repeat(40) }
+					: { type: "commit", sha: commit };
+			return { status: 0, stdout: JSON.stringify({ object }) };
+		};
+		assert.equal(publishRelease({ ...options, run }).status, "published");
+		assert.equal(calls.at(-1)[0], "release");
+		assert.equal(calls.at(-2)[0], "api");
+		if (annotated)
+			assert.ok(calls.some((argv) => argv[1].includes("/git/tags/")));
+	}
+	for (const failure of ["moved", "lookup", "existing", "cycle"]) {
+		const calls = [];
+		const run = (argv) => {
+			calls.push(argv);
+			if (argv[1] === "--include")
+				return failure === "lookup"
+					? { status: 1, stdout: "" }
+					: failure === "existing"
+						? { status: 0, stdout: "HTTP/2.0 200 OK" }
+						: { status: 1, stdout: "HTTP/2.0 404 Not Found" };
+			return {
+				status: 0,
+				stdout: JSON.stringify({
+					object: {
+						type: failure === "cycle" ? "tag" : "commit",
+						sha: "c".repeat(40),
+					},
+				}),
+			};
+		};
+		assert.throws(
+			() => publishRelease({ ...options, run }),
+			/Live release tag differs|absence|annotated tag chain/,
+		);
+		assert.equal(
+			calls.some((argv) => argv[0] === "release"),
+			false,
+			"Rejected publication must never reach create",
+		);
+	}
+});
+
+test("release archive inspection rejects unsafe paths, aliases and modes before extraction", async () => {
+	const { readReleaseArchive } = await import("./release-archive.mjs");
+	for (const name of [
+		"../escape",
+		"package/../escape",
+		"/absolute",
+		"package\\escape",
+		"package//double",
+	]) {
+		const archive = encodeRuntimeArchive(
+			new Map([[name, { bytes: Buffer.from("data"), mode: 0o644 }]]),
+		);
+		assert.throws(
+			() => readReleaseArchive(archive),
+			/Unsafe release archive path/,
+		);
+	}
+	assert.throws(
+		() =>
+			readReleaseArchive(
+				encodeRuntimeArchive(
+					new Map([
+						["package/file", { bytes: Buffer.from("a"), mode: 0o644 }],
+						["package/FILE", { bytes: Buffer.from("b"), mode: 0o644 }],
+					]),
+				),
+			),
+		/Duplicate release archive path/,
+	);
+	assert.throws(
+		() =>
+			readReleaseArchive(
+				encodeRuntimeArchive(
+					new Map([["package/file", { bytes: Buffer.from("a"), mode: 0o777 }]]),
+				),
+			),
+		/Unsafe release archive mode/,
+	);
 });

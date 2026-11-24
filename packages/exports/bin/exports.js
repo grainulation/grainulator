@@ -3,6 +3,7 @@
 "use strict";
 
 const path = require("node:path");
+const fs = require("node:fs");
 const { pathToFileURL } = require("node:url");
 const { parseArgs } = require("node:util");
 
@@ -80,6 +81,28 @@ Examples:
   grainulator export ci-artifacts compilation.json -o ./artifacts
 `.trim();
 
+// Preflight predictable target failures without truncating or writing destination bytes.
+// This is not a filesystem transaction against concurrent external path changes.
+function inspectArtifactTarget(file, requireParent = false) {
+  let descriptor;
+  try {
+    descriptor = fs.openSync(file, fs.constants.O_WRONLY | fs.constants.O_APPEND | fs.constants.O_NONBLOCK);
+    const stat = fs.fstatSync(descriptor);
+    if (!stat.isFile()) throw new Error(`Artifact destination is not a regular file: ${file}`);
+    return;
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+    if (requireParent) {
+      const parent = fs.openSync(path.dirname(file), fs.constants.O_RDONLY | fs.constants.O_NONBLOCK);
+      try {
+        if (!fs.fstatSync(parent).isDirectory()) throw new Error(`Artifact parent is not a directory: ${file}`);
+        fs.accessSync(path.dirname(file), fs.constants.W_OK);
+      } finally { fs.closeSync(parent); }
+    }
+    return;
+  } finally { if (descriptor !== undefined) fs.closeSync(descriptor); }
+}
+
 function main() {
   const args = process.argv.slice(2);
   if (args[0] === "serve") {
@@ -95,7 +118,7 @@ function main() {
   }
 
   const command = args[0];
-  const handler = COMMANDS[command];
+  const handler = Object.hasOwn(COMMANDS, command) ? COMMANDS[command] : null;
 
   if (command === "help") {
     console.log(USAGE);
@@ -286,6 +309,13 @@ async function runConvert(args) {
   const inputPath = path.resolve(baseDir, inputFile);
   const outputPath = values.output ? path.resolve(baseDir, values.output) : null;
 
+  const supportedSources = values.to === "markdown" ? ["json", "html"] : ["json"];
+  if (!supportedSources.includes(values.from)) {
+    console.error(`grainulator export: unsupported source format: ${values.from}. Supported for ${values.to}: ${supportedSources.join(", ")}`);
+    process.exitCode = 1;
+    return;
+  }
+
   // Convert is sugar: detect source, export to target
   const formats = require("../lib/formats.js");
   const exporter = await formats.resolveFormat(values.to);
@@ -336,7 +366,6 @@ function runFormats(args) {
 }
 
 async function runCiArtifacts(args) {
-  const fs = require("node:fs");
 
   let values, positionals;
   try {
@@ -409,59 +438,65 @@ async function runCiArtifacts(args) {
     console.error(`grainulator export: unknown format: ${unknownFormats.join(", ")}`);
     process.exit(1);
   }
-  // Validate the complete request before creating files, including mixed retired formats.
+  // Prepare every conversion and protected target before creating the output directory.
+  const prepared = [];
+  try {
+    for (const fmt of requestedFormats) {
+      const mod = formatMap[fmt];
+      const output = mod.convert(data);
+      const outFile = path.join(outputDir, fmt + (mod.extension || ".txt"));
+      assertSafeOutput(outFile, [inputPath]);
+      inspectArtifactTarget(outFile);
+      prepared.push({ fmt, output, outFile });
+    }
+  } catch (err) {
+    console.error(`grainulator export: artifact preparation failed: ${err.message}`);
+    process.exitCode = 1;
+    return;
+  }
+  const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+  let summary;
+  try {
+    if (values.summary || summaryPath) {
+      const output = formatMap.markdown.convert(data);
+      const outFile = path.join(outputDir, "step-summary.md");
+      const artifactPaths = prepared.map(item => item.outFile);
+      assertSafeOutput(outFile, [inputPath, ...artifactPaths]);
+      if (summaryPath) {
+        assertSafeOutput(summaryPath, [inputPath, outFile, ...artifactPaths]);
+        inspectArtifactTarget(summaryPath, true);
+      }
+      inspectArtifactTarget(outFile);
+      summary = { output, outFile };
+    }
+  } catch (err) {
+    console.error(`grainulator export: step summary preparation failed: ${err.message}`);
+    process.exitCode = 1;
+    return;
+  }
   fs.mkdirSync(outputDir, { recursive: true });
   const results = [];
-
-  for (const fmt of requestedFormats) {
-    const mod = formatMap[fmt];
-    if (!mod || typeof mod.convert !== "function") {
-      console.error(`grainulator export: unknown format: ${fmt}`);
-      continue;
+  const stage = fs.mkdtempSync(path.join(outputDir, ".grainulator-export-"));
+  try {
+    const staged = [...prepared, ...(summary ? [{ ...summary, fmt: "markdown" }] : [])];
+    // Write all bytes privately first. Publication starts only after every stage write succeeds.
+    for (const [index, item] of staged.entries()) {
+      item.stagedFile = path.join(stage, String(index));
+      fs.writeFileSync(item.stagedFile, item.output, { flag: "wx", mode: 0o600 });
     }
-
-    try {
-      const output = mod.convert(data);
-      const ext = mod.extension || ".txt";
-      const outFile = path.join(outputDir, fmt + ext);
-      assertSafeOutput(outFile, [inputPath]);
-      fs.writeFileSync(outFile, output);
-      results.push({
-        format: fmt,
-        file: outFile,
-        bytes: Buffer.byteLength(output),
-      });
-      vlog(`wrote ${fmt} -> ${outFile}`);
-    } catch (err) {
-      console.error(`grainulator export: ${fmt} conversion failed: ${err.message}`);
+    for (const item of staged) {
+      // Copy preserves existing destination modes and the CLI's existing artifact-link behavior.
+      fs.copyFileSync(item.stagedFile, item.outFile);
+      results.push({ format: item.fmt, file: item.outFile, bytes: Buffer.byteLength(item.output) });
+      vlog(`wrote ${item.fmt} -> ${item.outFile}`);
     }
-  }
-
-  // Generate step summary (markdown) if --summary or GITHUB_STEP_SUMMARY is set
-  const summaryPath = process.env.GITHUB_STEP_SUMMARY;
-  if (values.summary || summaryPath) {
-    const mdMod = formatMap["markdown"];
-    if (mdMod && typeof mdMod.convert === "function") {
-      try {
-        const md = mdMod.convert(data);
-        if (summaryPath) {
-          assertSafeOutput(summaryPath, [inputPath]);
-          fs.appendFileSync(summaryPath, md + "\n");
-          vlog("appended markdown to GITHUB_STEP_SUMMARY");
-        }
-        // Also write to output dir
-        const mdFile = path.join(outputDir, "step-summary.md");
-        assertSafeOutput(mdFile, [inputPath]);
-        fs.writeFileSync(mdFile, md);
-        results.push({
-          format: "markdown",
-          file: mdFile,
-          bytes: Buffer.byteLength(md),
-        });
-      } catch (err) {
-        console.error(`grainulator export: step summary generation failed: ${err.message}`);
-      }
-    }
+    if (summaryPath && summary) fs.appendFileSync(summaryPath, summary.output + "\n");
+  } catch (err) {
+    console.error(`grainulator export: artifact or step summary publication failed: ${err.message}`);
+    process.exitCode = 1;
+    return;
+  } finally {
+    fs.rmSync(stage, { recursive: true, force: true });
   }
 
   if (values.json) {

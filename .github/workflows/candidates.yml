@@ -33,6 +33,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/release-inputs"
           node scripts/package-release.mjs --revision "$GITHUB_SHA" --out "$RUNNER_TEMP/release-inputs/base"
           node scripts/package-migration.mjs --revision "$GITHUB_SHA" --out "$RUNNER_TEMP/release-inputs/migration"
+          node scripts/migration-candidate-check.mjs --candidate-dir "$RUNNER_TEMP/release-inputs/migration"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: base-candidate
@@ -65,7 +66,10 @@ jobs:
       - name: Offline install and exercise the identical base archive
         run: |
           candidate_archive=$(node --input-type=module -e 'import fs from "node:fs";import path from "node:path";const folder=path.join(process.env.RUNNER_TEMP,"base-input/base");console.log(path.join(folder,JSON.parse(fs.readFileSync(path.join(folder,"base-record.json"))).filename))')
-          GRAINULATOR_TEST_ARCHIVE="$candidate_archive" node scripts/package-isolation-check.mjs
+          candidate_record="$RUNNER_TEMP/base-input/base/base-record.json"
+          expected_build=$(node --input-type=module -e 'import fs from "node:fs";console.log(JSON.parse(fs.readFileSync(process.argv[1])).build_id)' "$candidate_record")
+          expected_version=$(node --input-type=module -e 'import fs from "node:fs";console.log(JSON.parse(fs.readFileSync(process.argv[1])).version)' "$candidate_record")
+          GRAINULATOR_TEST_ARCHIVE="$candidate_archive" GRAINULATOR_EXPECTED_BUILD_ID="$expected_build" GRAINULATOR_EXPECTED_VERSION="$expected_version" node scripts/package-isolation-check.mjs
 
   native:
     uses: ./.github/workflows/native-candidates.yml

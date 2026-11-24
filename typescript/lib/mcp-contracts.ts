@@ -209,11 +209,18 @@ const fields: Record<string, Record<string, OutputSchema>> = {
 	exports_preview: {
 		format: text("Resolved format identifier."),
 		preview: text("Bounded rendered preview."),
-		totalLines: number("Lines in the bounded inline conversion."),
+		totalLines: number(
+			"Lines in the complete rendered export before preview limits.",
+		),
 		showing: number("Returned preview lines."),
 		hasMore: {
 			type: "boolean",
-			description: "Whether more lines exist in the bounded inline conversion.",
+			description:
+				"Whether the complete rendered export has more lines than shown.",
+		},
+		truncated: {
+			type: "boolean",
+			description: "Whether the preview was shortened by its byte limit.",
 		},
 	},
 };
@@ -264,12 +271,16 @@ export function withStructuredResult(
 	schema?: OutputSchema,
 ): string {
 	const response: unknown = JSON.parse(serialized);
+	// JSON-RPC errors have no tool result to convert. A present but malformed
+	// result must fail instead of bypassing the structured-output boundary.
 	if (
-		!isRecord(response) ||
-		!isRecord(response.result) ||
-		!response.result.content
+		isRecord(response) &&
+		Object.hasOwn(response, "error") &&
+		!Object.hasOwn(response, "result")
 	)
 		return serialized;
+	if (!isRecord(response) || !isRecord(response.result))
+		throw new Error("Expected one JSON tool result.");
 	const content = response.result.content;
 	if (!Array.isArray(content))
 		throw new Error("Expected one JSON tool result.");
@@ -284,6 +295,26 @@ export function withStructuredResult(
 	if (schema) validateOutput(value, schema);
 	response.result.structuredContent = value;
 	return JSON.stringify(response);
+}
+
+/** JSON Schema enum values compare by JSON structure, not object identity. */
+function equalJson(left: unknown, right: unknown): boolean {
+	if (left === right) return true;
+	if (Array.isArray(left) && Array.isArray(right))
+		return (
+			left.length === right.length &&
+			left.every((item: unknown, index) => equalJson(item, right[index]))
+		);
+	if (isRecord(left) && isRecord(right)) {
+		const keys = Object.keys(left);
+		return (
+			keys.length === Object.keys(right).length &&
+			keys.every(
+				(key) => Object.hasOwn(right, key) && equalJson(left[key], right[key]),
+			)
+		);
+	}
+	return false;
 }
 
 /** Validate the published field contracts before advertising structured output. */
@@ -314,7 +345,10 @@ export function validateOutput(
 		throw new Error(
 			`Output contract violation at ${location}: expected ${types.join(" or ")}.`,
 		);
-	if (schema.enum && !schema.enum.includes(value))
+	if (
+		schema.enum &&
+		!schema.enum.some((candidate) => equalJson(value, candidate))
+	)
 		throw new Error(
 			`Output contract violation at ${location}: unsupported value.`,
 		);
@@ -330,8 +364,11 @@ export function validateOutput(
 					`Output contract violation at ${location}: missing ${key}.`,
 				);
 		for (const [key, item] of Object.entries(value)) {
-			if (schema.properties?.[key])
-				validateOutput(item, schema.properties[key], `${location}/${key}`);
+			const property =
+				schema.properties && Object.hasOwn(schema.properties, key)
+					? schema.properties[key]
+					: undefined;
+			if (property) validateOutput(item, property, `${location}/${key}`);
 			else if (schema.additionalProperties === false)
 				throw new Error(
 					`Output contract violation at ${location}: unexpected ${key}.`,

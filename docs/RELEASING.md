@@ -6,9 +6,11 @@ a release manifest and checksums. The base archive is a public GitHub release as
 component workspaces remain private and are not published to the npm registry.
 
 The candidate workflow builds from one immutable Git commit. It exercises the
-same base archive on Node 24 and 26 and runs each native archive on its own
+same base archive and exact recorded build ID on Node 24 and 26, runs an
+isolated inspect/apply/verify/rollback smoke test from the packaged converter,
+and runs each native archive on its own
 OS/CPU runner. It does not tag or publish. Passing a cross-build alone is not
-platform acceptance. Homebrew recipe generation and channel acceptance belong
+platform acceptance. Homebrew formula changes and channel acceptance belong
 to the separate [shared tap](https://github.com/grainulation/homebrew).
 
 ## Prepare candidates
@@ -70,20 +72,22 @@ rewriting adjacent checksums cannot replace the independently carried pin.
 
 ## Homebrew distribution boundary
 
-[grainulation/homebrew](https://github.com/grainulation/homebrew) owns formula
-generation, Ruby recipe tests, installation, upgrades and package-manager
-cleanup checks. Grainulator owns the portable application, matching native
-archives and release manifest consumed by that channel. Keep the stable
+[grainulation/homebrew](https://github.com/grainulation/homebrew) owns the checked-in
+formulae, reviewed recipe installation, upgrades and package-manager cleanup checks.
+Formula updates are a separate reviewed change; there is no automatic formula
+generator or private-prefix candidate workflow in the supported release process.
+
+Grainulator owns the portable application, matching native archives and release manifest consumed by that channel. Keep the stable
 installation instructions pointed at the tap; removing product-repository
 Homebrew tooling does not remove installation through Homebrew.
 
 The tap already checks reviewed recipes, fresh public-main installs and an
 upgrade with user-data preservation and a stable MCP launcher on macOS ARM64.
-Private-prefix candidate checks establish a separate result and must run from
-the tap tooling before a formula update is accepted. They are no longer a
-Grainulator release-candidate job. Record the tap revision, candidate source
-commit and manifest pin with distribution acceptance; application CI does not
-establish Homebrew channel acceptance.
+Those are the tap's current acceptance jobs. The Grainulator candidate workflow
+does not depend on unpublished local transfer scripts or claim private-prefix
+recipe acceptance. Record the reviewed tap revision, release source commit and
+manifest pin with distribution acceptance; application CI does not establish
+Homebrew channel acceptance.
 
 Required native hooks use a separate explicit user-cache installation and
 per-enrollment release receipt. They must survive package upgrades, cleanup and
@@ -96,12 +100,34 @@ Only after source, conversion, native and installed-package checks pass, obtain
 release authorization and push the reviewed v3 tag. The
 release workflow reruns required checks, binds the exact candidate source to
 the tag, verifies checksums and attaches the passing bytes. It refuses to
-overwrite an existing release. Never rebuild or move a published tag merely to
+overwrite an existing release and compares the live, peeled remote tag commit
+with the frozen source immediately before creating the release. Keep release
+tags immutable: that live check does not make a concurrently mutable tag atomic. Never rebuild or move a published tag merely to
 include a generated formula or its own archive hashes.
 
-Generate and advance the formula separately in
-[grainulation/homebrew](https://github.com/grainulation/homebrew). This repository
-has no homebrew- prefix, so installation requires the explicit tap URL:
+Update the formula separately in
+[grainulation/homebrew](https://github.com/grainulation/homebrew) after immutable
+release assets exist:
+
+1. Download the release attachments and obtain the approved manifest SHA-256
+   independently. Run `scripts/verify-release.mjs` from this source checkout with
+   that pin, the release version and source commit, as shown above.
+2. In the tap's `Formula/grainulator.rb`, update the version and frozen source
+   comment, base archive URL and SHA-256, manifest resource URL and SHA-256,
+   all four native resource URLs and SHA-256 values, and the manifest pin in the
+   install receipt. Copy these values from the verified manifest and attachment
+   hashes. Preserve the explicit Node launcher, immutable application bytes and
+   retained-runtime behavior; do not substitute moving source branches.
+3. Update the expected Grainulator version in the tap's reviewed/public install
+   matrix. Advance the upgrade fixture deliberately: its previous formula commit,
+   digest and expected old version must refer to an existing immutable published
+   release, while the new expected version must match the reviewed formula.
+4. Run Ruby syntax checks and the tap's reviewed recipe/upgrade CI. After that
+   separate change reaches tap `main`, verify its fresh public-main installation.
+   Keep the tap commit and logs with the distribution acceptance record.
+
+No product-repository Ruby generator or unmerged local tooling is required.
+This repository has no homebrew- prefix, so installation requires the explicit tap URL:
 
     brew tap grainulation/homebrew https://github.com/grainulation/homebrew
 

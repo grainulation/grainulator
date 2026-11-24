@@ -12,6 +12,7 @@ const SERVER_NAME = "grainulator";
 const SERVER_VERSION = require("../package.json").version;
 const { assertSafeOutput } = require("./output-safety.js");
 const { loadSource } = require("./source-data.js");
+const projectConfig = require("../../shared/lib/project-config.cjs");
 const PROTOCOL_VERSION = "2024-11-05";
 
 const FORMATS_DIR = path.join(__dirname, "formats");
@@ -51,7 +52,7 @@ async function discoverFormats() {
 
 // ─── Tool implementations ───────────────────────────────────────────────────
 
-async function toolConvert(dir, args) {
+async function toolConvert(dir, args, previewLines) {
   const { format, source, output } = args;
   if (!format) {
     return {
@@ -75,18 +76,17 @@ async function toolConvert(dir, args) {
     };
   }
 
-  // Resolve source file
-  const sourceFile = source
-    ? path.resolve(dir, source)
-    : path.join(dir, "compilation.json");
-  // Prevent path traversal — source must stay within workspace
+  // The same canonical evidence configuration selects the compiler and exports.
+  let configured;
+  try { configured = projectConfig.evidenceConfig(dir); }
+  catch (error) { return { status: "error", message: error.message }; }
+  const compilationFile = path.resolve(configured.origin, configured.compiler.compilation);
+  const fallbackFile = path.resolve(configured.origin, configured.compiler.claims);
+  const sourceFile = source ? path.resolve(dir, source) : compilationFile;
+  // Explicit and implicit source paths retain the existing sprint boundary.
   if (!isInsideDir(sourceFile, dir)) {
-    return {
-      status: "error",
-      message: `Source path escapes workspace directory.`,
-    };
+    return { status: "error", message: "Source path escapes workspace directory." };
   }
-  const fallbackFile = path.join(dir, "claims.json");
   let dataPath = sourceFile;
 
   if (!fs.existsSync(dataPath)) {
@@ -119,14 +119,28 @@ async function toolConvert(dir, args) {
     return { status: "error", message: `Conversion failed: ${err.message}` };
   }
 
+  if (previewLines !== undefined) {
+    const outputLines = result.split("\n");
+    const selected = outputLines.slice(0, previewLines).join("\n");
+    const truncated = selected.length > 10000;
+    const preview = selected.slice(0, 10000);
+    return {
+      status: "ok", format: fmt.id, preview,
+      totalLines: outputLines.length,
+      showing: Math.min(previewLines, preview.split("\n").length),
+      hasMore: outputLines.length > previewLines || truncated,
+      truncated,
+    };
+  }
+
   // Write output if path provided
   if (output) {
     const outPath = path.resolve(dir, output);
     try {
       assertSafeOutput(outPath, [
         dataPath,
-        path.join(dir, "claims.json"),
-        path.join(dir, "compilation.json"),
+        fallbackFile,
+        compilationFile,
       ],{workspace:args.workspace});
     } catch (error) {
       return { status: "error", message: error.message };
@@ -138,9 +152,12 @@ async function toolConvert(dir, args) {
         message: `Output path "${output}" escapes workspace directory.`,
       };
     }
-    const outDir = path.dirname(outPath);
-    if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
-    fs.writeFileSync(outPath, result);
+    try {
+      fs.mkdirSync(path.dirname(outPath), { recursive: true });
+      fs.writeFileSync(outPath, result);
+    } catch (error) {
+      return { status: "error", message: `Cannot write export to ${outPath}: ${error.message}` };
+    }
     return {
       status: "ok",
       message: `Converted to ${format}. Written to ${outPath}`,
@@ -187,23 +204,12 @@ async function toolPreview(dir, args) {
     return { status: "error", message: "Required field: format" };
   }
 
-  // Run the same conversion but only return first N lines
-  const result = await toolConvert(dir, { format, source });
-  if (result.status === "error") return result;
-
-  const maxLines = lines || 30;
-  const outputLines = (result.output || "").split("\n");
-  const preview = outputLines.slice(0, maxLines).join("\n");
-  const hasMore = outputLines.length > maxLines;
-
-  return {
-    status: "ok",
-    format: result.format,
-    preview,
-    totalLines: outputLines.length,
-    showing: Math.min(maxLines, outputLines.length),
-    hasMore,
-  };
+  const maxLines = lines === undefined ? 30 : lines;
+  if (!Number.isInteger(maxLines) || maxLines < 1 || maxLines > 200) {
+    return { status: "error", message: "lines must be an integer from 1 to 200." };
+  }
+  // Bound the preview after selecting lines from the full conversion, preserving honest totals.
+  return toolConvert(dir, { format, source }, maxLines);
 }
 
 // ─── Tool & Resource definitions ────────────────────────────────────────────
@@ -224,7 +230,7 @@ const TOOLS = [
         source: {
           type: "string",
           description:
-            "Source file path (default: ./compilation.json, falls back to ./claims.json)",
+            "Source file path (default: configured compilation, falls back to configured claims)",
         },
         output: {
           type: "string",
@@ -250,11 +256,13 @@ const TOOLS = [
         format: { type: "string", description: "Target format ID" },
         source: {
           type: "string",
-          description: "Source file path (default: ./compilation.json)",
+          description: "Source file path (default: configured compilation, falls back to configured claims)",
         },
         lines: {
-          type: "number",
-          description: "Number of lines to preview (default: 30)",
+          type: "integer",
+          minimum: 1,
+          maximum: 200,
+          description: "Number of lines to preview, from 1 to 200 (default: 30)",
         },
       },
       required: ["format"],

@@ -40,13 +40,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           EXPECTED_MANIFEST_SHA256: ${{ needs.candidates.outputs.manifest_sha256 }}
-        run: |
-          node --input-type=module <<'JS'
-          import {spawnSync} from 'node:child_process';
-          import {verifyRelease} from './scripts/verify-release.mjs';
-          const tag=process.env.GITHUB_REF_NAME;
-          const verified=verifyRelease({directory:'release-input',manifestSha256:process.env.EXPECTED_MANIFEST_SHA256,version:tag.slice(1),sourceCommit:process.env.GITHUB_SHA});
-          if(spawnSync('gh',['release','view',tag],{stdio:'ignore'}).status===0)throw Error('Release already exists; refusing overwrite or rebuild');
-          const result=spawnSync('gh',['release','create',tag,...verified.files,'--verify-tag','--title',tag,'--generate-notes'],{stdio:'inherit'});
-          if(result.error||result.status!==0)throw Error('Release creation failed or outcome unknown; reconcile before retry');
-          JS
+        run: node scripts/publish-release.mjs

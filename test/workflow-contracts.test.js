@@ -214,6 +214,34 @@ test("write guard retains environment context fallback and malformed-input diagn
 	assert.doesNotMatch(malformed.stderr, /BLOCKED/);
 });
 
+test("write guard treats nonobject JSON envelopes as malformed context without crashing", () => {
+	for (const context of [
+		null,
+		[],
+		false,
+		0,
+		"text",
+		{ tool_input: null },
+		{ tool_input: [] },
+		{ tool_input: "claims.json" },
+	]) {
+		const result = spawnSync(
+			process.execPath,
+			[path.join(root, "hooks/write-guard.cjs")],
+			{
+				input: JSON.stringify(context),
+				encoding: "utf8",
+			},
+		);
+		assert.equal(result.status, 0, result.stderr);
+		assert.match(
+			result.stderr,
+			/malformed hook context; no file decision made/,
+		);
+		assert.doesNotMatch(result.stderr, /TypeError|Unhandled|BLOCKED/);
+	}
+});
+
 test("packaged Claude agent permits direct and plugin-prefixed core MCP tools", async () => {
 	const { TOOLS } = await import("../lib/grainulator-mcp.js");
 	const source = read("agents/grainulator.md");

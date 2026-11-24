@@ -10,21 +10,32 @@ import {
 	verifyAssetFiles,
 } from "../lib/runtime-assets.js";
 
+import {
+	verifyBaseArchive,
+	verifyMigrationArchive,
+} from "./release-archive.mjs";
+
 function record(file) {
 	return JSON.parse(readRegular(path.resolve(file), 1024 * 1024));
 }
-function artifact(recordFile, value) {
+function artifact(recordFile, value, maxBytes = 64 * 1024 * 1024) {
 	if (
 		typeof value.filename !== "string" ||
 		path.basename(value.filename) !== value.filename ||
 		!/^[a-zA-Z0-9._-]+$/.test(value.filename)
 	)
 		throw Error("Unsafe artifact filename");
+	if (
+		!Number.isSafeInteger(value.bytes) ||
+		value.bytes <= 0 ||
+		value.bytes > maxBytes
+	)
+		throw Error("Invalid candidate artifact size");
 	const file = path.join(
 			path.dirname(path.resolve(recordFile)),
 			value.filename,
 		),
-		bytes = readRegular(file);
+		bytes = readRegular(file, maxBytes);
 	if (
 		!/^[a-f0-9]{64}$/.test(value.sha256 || "") ||
 		sha256(bytes) !== value.sha256 ||
@@ -41,22 +52,26 @@ export function assembleRelease({
 }) {
 	if (!migrationRecord)
 		throw Error("A separately packaged migration converter is required");
-	const base = record(baseRecord),
-		baseBytes = artifact(baseRecord, base);
+	const base = record(baseRecord);
 	if (
 		base.schema !== "grainulator.base-record.v1" ||
 		!/^3\.\d+\.\d+$/.test(base.version) ||
 		!/^[a-f0-9]{40}$/.test(base.source_commit) ||
-		base.bytes > 5 * 1024 * 1024
+		base.filename !== `grainulator-${base.version}.tgz` ||
+		!new RegExp(
+			`^release-${base.version.replaceAll(".", "\\.")}-[a-f0-9]{16}$`,
+		).test(base.build_id || "")
 	)
-		throw Error("Invalid frozen base candidate");
+		throw Error("Invalid frozen base candidate identity");
+	const baseBytes = artifact(baseRecord, base, 5 * 1024 * 1024);
+	verifyBaseArchive(baseBytes.bytes, {
+		version: base.version,
+		buildId: base.build_id,
+	});
 	const assets = [],
 		copies = [{ name: base.filename, bytes: baseBytes.bytes }];
 	for (const file of assetRecords || []) {
-		const item = record(file),
-			content = artifact(file, item),
-			files = decodeRuntimeArchive(content.bytes);
-		const metadataBytes = files.get("runtime-asset.json")?.bytes;
+		const item = record(file);
 		if (
 			!NATIVE_TARGETS.includes(item.target) ||
 			assets.some((a) => a.target === item.target) ||
@@ -64,6 +79,14 @@ export function assembleRelease({
 			item.source_commit !== base.source_commit
 		)
 			throw Error("Dirty, duplicate or mismatched native candidate");
+		if (
+			item.filename !==
+			`grainulator-runtime-${base.version}-${item.target}.tar.gz`
+		)
+			throw Error("Invalid native candidate archive identity");
+		const content = artifact(file, item),
+			files = decodeRuntimeArchive(content.bytes);
+		const metadataBytes = files.get("runtime-asset.json")?.bytes;
 		if (!metadataBytes || sha256(metadataBytes) !== item.metadata_sha256)
 			throw Error("Unbound runtime metadata");
 		const metadata = JSON.parse(metadataBytes);
@@ -98,14 +121,19 @@ export function assembleRelease({
 		assets: assets.sort((a, b) => a.target.localeCompare(b.target)),
 	};
 	if (migrationRecord) {
-		const migration = record(migrationRecord),
-			content = artifact(migrationRecord, migration);
+		const migration = record(migrationRecord);
 		if (
 			migration.schema !== "grainulator.migration-record.v1" ||
 			migration.version !== base.version ||
-			migration.source_commit !== base.source_commit
+			migration.source_commit !== base.source_commit ||
+			migration.filename !== `grainulator-migrate-${base.version}.tar.gz`
 		)
 			throw Error("Migration converter identity differs");
+		const content = artifact(migrationRecord, migration, 32 * 1024 * 1024);
+		verifyMigrationArchive(content.bytes, {
+			version: base.version,
+			sourceCommit: base.source_commit,
+		});
 		manifest.migration = {
 			filename: migration.filename,
 			sha256: migration.sha256,

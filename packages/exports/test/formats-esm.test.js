@@ -62,6 +62,45 @@ async function run() {
   assert.ok(literalMarkdown.includes("&lt;script&gt;prose&lt;/script&gt; &amp; text"), "Prose must still escape raw HTML");
   assert.ok(!literalMarkdown.split("\n").some(line => /^(?:<script>|```|# forged)/i.test(line)), "References cannot escape their code blocks");
 
+  const statuses = ["active", "rejected", "resolved", "conflicted", "refuted", "superseded", "reverted"];
+  const lifecycle = { claims: statuses.map((status, index) => ({ id: `s${index}`, type: "factual", content: `Evidence ${status}`, status })) };
+  const lifecycleSnapshot = JSON.stringify(lifecycle);
+  const lifecycleMarkdown = markdown.convert(lifecycle);
+  for (const status of statuses.filter(status => status !== "active")) {
+    const line = lifecycleMarkdown.split("\n").find(line => line.startsWith(`- **s${statuses.indexOf(status)}**`));
+    assert.ok(line.includes(`[status: ${status}]`), `Nonactive claim status must remain visible: ${status}`);
+  }
+  assert.strictEqual(JSON.stringify(lifecycle), lifecycleSnapshot, "Rendering lifecycle must not change evidence");
+  for (const type of ["__proto__", "constructor", "toString"]) {
+    const output = markdown.convert({ claims: [{ id: "custom", type, content: "Custom source type" }] });
+    assert.ok(output.includes("Custom source type"), `Arbitrary source type ${type} must not access object prototypes`);
+  }
+
+  const { normalizeSource } = (await import("../lib/source-data.js")).default;
+  const conflicts = [{ ids: ["A", "B"], reason: "different measurements" }];
+  const mixed = normalizeSource({ claims: [
+    { id: "A", type: "factual", content: "   ", text: "Measured 42 units", status: "reverted", source: "interview", evidence: { tier: "documented", source: "transcript" } },
+    { id: "A", type: "factual", content: "Second account", status: "active" },
+    { id: "B", type: "factual", content: "Other measurement", status: "active" },
+  ], conflicts: [], conflict_graph: conflicts });
+  const mixedMarkdown = markdown.convert(mixed);
+  assert.deepStrictEqual(mixed.conflicts, conflicts, "Empty conflicts alias must not hide a populated graph");
+  assert.match(mixedMarkdown, /different measurements/);
+  for (const expected of ["Measured 42 units", "interview", "transcript", "evidence.source", "[status: reverted]", "Second account", "Duplicate claim IDs", "ambiguous"]) {
+    assert.ok(mixedMarkdown.includes(expected), `Markdown must preserve meaningful evidence: ${expected}`);
+  }
+  assert.ok(!mixedMarkdown.includes(":    "), "Whitespace content must not hide the nonblank text alias");
+  assert.deepStrictEqual(JSON.parse(json.convert(mixed)).claims[0].evidence.source, "transcript");
+  for (const invalid of [{ conflicts: {} }, { conflict_graph: "bad" }, { conflict_graph: { unresolved: "bad" } }]) {
+    assert.throws(() => normalizeSource({ claims: [], ...invalid }), /must be an array/);
+  }
+  const compilerGraph = { unresolved: [{ claimA: "A", claimB: "B", reason: "same evidence tier" }], resolved: [{ winner: "B", loser: "C", reason: "stronger evidence" }] };
+  const compilerData = normalizeSource({ resolved_claims: mixed.claims, conflict_graph: compilerGraph });
+  const compilerMarkdown = markdown.convert(compilerData);
+  assert.match(compilerMarkdown, /A vs B.*same evidence tier/);
+  assert.match(compilerMarkdown, /B vs C.*resolved.*stronger evidence/);
+  assert.deepStrictEqual(compilerData.conflict_graph, compilerGraph, "Raw compiler graph must stay intact");
+
   let passed = 0;
   let failed = 0;
 

@@ -34,8 +34,8 @@ export interface ResearchClaim {
 
 export interface ClaimSource {
 	origin: string;
-	artifact?: string;
-	connector?: string;
+	artifact?: string | null;
+	connector?: string | null;
 	urls?: string[];
 }
 
@@ -85,7 +85,10 @@ export interface ProviderResult {
 	text: string;
 	model: string;
 	sources: { url: string; title: string }[];
-	usage: { inputTokens?: number; outputTokens?: number };
+	usage: {
+		inputTokens?: number | undefined;
+		outputTokens?: number | undefined;
+	};
 }
 
 export interface VerifierResult {

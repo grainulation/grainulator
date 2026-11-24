@@ -10,6 +10,11 @@ import {
 	decodeRuntimeArchive,
 	verifyAssetFiles,
 } from "../lib/runtime-assets.js";
+import {
+	verifyBaseArchive,
+	verifyMigrationArchive,
+} from "./release-archive.mjs";
+
 export function verifyRelease({
 	directory,
 	manifestSha256,
@@ -87,6 +92,16 @@ export function verifyRelease({
 			throw Error(
 				"Release artifact differs from trusted manifest: " + item.filename,
 			);
+		if (item === m.base)
+			verifyBaseArchive(bytes, {
+				version: m.version,
+				buildId: m.base.build_id,
+			});
+		if (item === m.migration)
+			verifyMigrationArchive(bytes, {
+				version: m.version,
+				sourceCommit: m.source_commit,
+			});
 		if (item.target) {
 			const files = decodeRuntimeArchive(bytes),
 				metadataBytes = files.get("runtime-asset.json")?.bytes;

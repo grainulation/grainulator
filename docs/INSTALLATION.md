@@ -102,7 +102,7 @@ Run `node bin/grainulator.js doctor` from the release folder. If you built a loc
 
 ## Homebrew and stable registration
 
-The [shared tap repository](https://github.com/grainulation/homebrew) owns Homebrew formulas and installation/upgrade tests. Grainulator supplies immutable application and native runtime archives with a pinned release manifest. Candidate recipe tooling is transferred separately to the tap; see the [release boundary](RELEASING.md#homebrew-distribution-boundary).
+The [shared tap repository](https://github.com/grainulation/homebrew) owns Homebrew formulas and installation/upgrade tests. Grainulator supplies immutable application and native runtime archives with a pinned release manifest. Formula updates use a separately reviewed change in the tap, populated from verified release assets; see the [manual update procedure](RELEASING.md#homebrew-distribution-boundary). No unpublished transfer tooling is required.
 
 The shared tap is `grainulation/homebrew`. Its [installation guide](https://github.com/grainulation/homebrew#install) and version table identify the formulas currently available. Use the explicit repository URL when adding this tap. Homebrew owns package upgrades, not workspace enrollment or user memory. Its wrapper uses the tested Node 24 dependency and a stable `opt/bin/grainulator` launcher. `grainulator connect` uses that launcher when invoked through the explicit Homebrew wrapper; other channels can select `--launcher <absolute-path>` themselves. Register the printed literal command in the authorized host scope; connect changes no host settings.
 

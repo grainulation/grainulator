@@ -55,7 +55,7 @@ try {
   });
   check('CLI help',()=>assert.match(run(['--help']),/Grainulator/));
   check('doctor validates the required runtime and packaged components',()=>{const checks=JSON.parse(run(['doctor','--json'])).checks;assert.ok(checks.every(c=>c.available));assert.equal(checks.find(c=>c.component==='node').required,JSON.parse(fs.readFileSync(path.join(installed,'package.json'))).engines.node);});
-  check('identified build verifies all recorded files',()=>{const build=JSON.parse(run(['doctor','--json'])).build;assert.equal(build.verified,true);assert.match(build.id,/^(?:local-|release-[^-]+-)[a-f0-9]{16}$/);});
+  check('identified build verifies all recorded files',()=>{const build=JSON.parse(run(['doctor','--json'])).build;assert.equal(build.verified,true);assert.match(build.id,/^(?:local-|release-[^-]+-)[a-f0-9]{16}$/);if(process.env.GRAINULATOR_EXPECTED_BUILD_ID)assert.equal(build.id,process.env.GRAINULATOR_EXPECTED_BUILD_ID,'Installed candidate build differs from frozen record');if(process.env.GRAINULATOR_EXPECTED_VERSION)assert.equal(build.version,process.env.GRAINULATOR_EXPECTED_VERSION,'Installed candidate version differs from frozen record');});
   // Use the real installed package in a path requiring file-URL encoding, never a source symlink.
   const corpus=JSON.parse(fs.readFileSync(path.join(installed,'evals/rejected-claims/corpus.json'),'utf8'));
   const verifier=path.join(installed,'evals/rejected-claims/verifier.mjs');

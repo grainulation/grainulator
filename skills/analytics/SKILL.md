@@ -16,7 +16,7 @@ The user wants quantitative analysis of the current sprint: claim type distribut
 
 $ARGUMENTS
 
-Optional: `--full` to generate an HTML retrospective report. `--calibrate` to run prediction scoring.
+Optional: `--full` to generate a Markdown retrospective report. `--calibrate` to run prediction scoring.
 
 ## Instructions
 
@@ -63,7 +63,7 @@ Optional: `--full` to generate an HTML retrospective report. `--calibrate` to ru
    ```
 
 5. **Suggest full retrospective**:
-   - Tell the user they can generate a full HTML retrospective report:
+   - Tell the user they can generate a full Markdown retrospective report:
      ```
      For a full retrospective report:
        grainulator analytics report <dir> -o <dir>/output/analytics.md

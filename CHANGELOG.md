@@ -14,6 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Introduce strict TypeScript contracts and migrate MCP result validation and research evidence parsing. Checked-in generated JavaScript preserves direct CLI and installed-package execution without a runtime compiler dependency. CI checks types and generated-file freshness.
 - Fix the compact MCP regression tests' filesystem races by reading bytes and metadata through one file descriptor, retaining content, timestamp and file-identity assertions.
 
+### Premortem corrections
+
+- Reject orphan generated JavaScript and malformed structured MCP results; enforce own-property schemas, structural JSON enums and compact conditional arguments before dispatch.
+- Commit MCP roots capabilities only after the first accepted initialization, preserve explicit invalid stdio params, and honor only negotiated valid roots-change notifications.
+- Preserve compiler conflict graphs, claim statuses and distinct evidence sources in Markdown; honor configured source paths and report full-document preview limits accurately.
+- Refuse failed or colliding CI artifact/summary outputs and return structured MCP filesystem errors.
+- Bind release identities to exact base/converter archive contents, exercise the archived converter before acceptance, and verify the peeled live tag before publication.
+- Correct retired command references and document the actual supported manual Homebrew update procedure.
+
 ### Added
 
 - Opt-in `mcp --toolset compact` discovery with 15 tools for evidence, local memory and exports. Authored claims and document imports remain separate; the legacy 29-tool inventory and bundled plugin registrations remain the default.

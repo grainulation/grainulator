@@ -58,10 +58,17 @@ export function convert(compilation) {
   if (conflicts.length) lines.push(`- **Conflicts:** ${conflicts.length}`);
   lines.push("");
 
+  const counts = new Map();
+  for (const claim of claims) if (typeof claim.id === "string") counts.set(claim.id, (counts.get(claim.id) || 0) + 1);
+  const duplicates = [...counts].filter(([, count]) => count > 1).map(([id]) => id);
+  if (duplicates.length) {
+    lines.push("## Export warnings", "", "Duplicate claim IDs make ID-only conflict references ambiguous:", "");
+    lines.push(...JSON.stringify(duplicates, null, 2).split("\n").map(line => `    ${line}`), "");
+  }
+
   // Group claims by type
-  const byType = {};
+  const byType = Object.create(null);
   for (const claim of claims) {
-    if (claim.status === "reverted") continue;
     const type = claim.type || "unknown";
     if (!byType[type]) byType[type] = [];
     byType[type].push(claim);
@@ -98,12 +105,18 @@ export function convert(compilation) {
           ? claim.evidence
           : claim.evidence?.tier;
       const tier = evidenceStr ? ` (${evidenceStr})` : "";
-      const status = claim.status === "superseded" ? " ~~superseded~~" : "";
-      const body = claim.content || claim.text || "";
+      const status = claim.status && claim.status !== "active"
+        ? ` [status: ${claim.status}]`
+        : "";
+      const body = [claim.content, claim.text].find(value => typeof value === "string" && value.trim()) || "";
       lines.push(`- **${claim.id}**${conf}${tier}${status}: ${body}`);
       // Preserve exact reference bytes in indented code; prose escaping would alter URLs.
-      for (const field of ["source", "sources", "provenance", "verified_by", "verification"]) {
-        const value = originalClaim[field] ?? (field === "source" ? originalClaim.evidence?.source : undefined);
+      const references = [
+        ["source", originalClaim.source],
+        ["evidence.source", originalClaim.evidence?.source],
+        ...["sources", "provenance", "verified_by", "verification"].map(field => [field, originalClaim[field]]),
+      ];
+      for (const [field, value] of references) {
         if (value === undefined || value === null) continue;
         lines.push(`  - ${field}:`, "");
         lines.push(...JSON.stringify(value, null, 2).split("\n").map(line => `        ${line}`), "");

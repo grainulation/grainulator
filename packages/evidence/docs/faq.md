@@ -86,24 +86,18 @@ Not currently in a single directory — each sprint expects its own `claims.json
 
 ### Can I use evidence without Claude Code?
 
-Grainulator is designed for Claude Code, but the claim format and compiler are standalone. Use the typed root CLI to add claims to `claims.json` and run `grainulator compile` from the command line. You'd lose the slash commands and intent routing, but the evidence-tracking and compilation pipeline still work.
+Use the Grainulator CLI or unified MCP server with a compatible host. Native Claude Code and Codex integrations are documented in the [agent setup guide](../../../docs/AGENT-SETUP.md). Record findings through the evidence tools and compile with `grainulator compile --dir <sprint>`.
 
 ## Troubleshooting
 
 ### The pre-commit hook is rejecting my commits
 
-The hook validates `claims.json` on every commit. If it's rejecting:
-
-1. Run `grainulator compile --summary` to see what's wrong
-2. Fix the reported issues (usually malformed JSON or structural errors)
-3. Try your commit again
-
-To bypass temporarily: `git commit --no-verify` (but fix the issue before your next sprint command).
+The product does not install a Git pre-commit hook. If your project has its own validation hook, run `grainulator compile --dir <sprint>` and fix the reported structural or evidence issues through the CLI/MCP tools before committing. The native write guard applies only in hosts that load it; host permissions remain authoritative.
 
 ### Commands aren't showing up in Claude Code
 
-Make sure `.claude/commands/` exists and contains the `.md` files. If you cloned the repo, you may need to run `grainulator init` again to regenerate them.
+Follow the current [agent setup guide](../../../docs/AGENT-SETUP.md) to load the plugin. `grainulator init` creates sprint data; it does not install a plugin or change host settings. Direct CLI/MCP access is available independently of native plugin discovery.
 
 ### The compiler says "stale compilation"
 
-This means claims changed since the last compile. Run `grainulator compile` to refresh. Output commands (`/brief`, `/present`) do this automatically, but the guard hook may catch staleness on manual operations.
+This means claims changed since the last compile. Run `grainulator compile` to refresh. Output commands (`/brief`) do this automatically, but the guard hook may catch staleness on manual operations.

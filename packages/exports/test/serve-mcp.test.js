@@ -503,3 +503,64 @@ describe("export source integrity", () => {
     } finally { cleanup(child); }
   });
 });
+
+
+describe("export premortem regressions", () => {
+  it("selects configured compilation and claims paths instead of default decoys", async () => {
+    const dir = makeWorkspace("grainulator-export-configured-");
+    fs.mkdirSync(path.join(dir, "data"));
+    fs.writeFileSync(path.join(dir, "grainulator.config.json"), JSON.stringify({ schema_version: 1, evidence: { compiler: { claims: "data/ledger.json", compilation: "data/compiled.json" } } }));
+    fs.writeFileSync(path.join(dir, "data/ledger.json"), JSON.stringify({ claims: [{ id: "configured", type: "factual", content: "Configured ledger content" }] }));
+    const { child } = await spawnAndInitialize(dir);
+    try {
+      const fallback = await callTool(child, 601, "exports_convert", { format: "markdown" });
+      assert.equal(fallback.payload.status, "ok", fallback.payload.message);
+      assert.match(fallback.payload.output, /Configured ledger content/);
+      assert.doesNotMatch(fallback.payload.output, /A sample claim/);
+      fs.writeFileSync(path.join(dir, "data/compiled.json"), JSON.stringify({ resolved_claims: [{ id: "compiled", type: "factual", content: "Configured compilation content" }] }));
+      const preferred = await callTool(child, 602, "exports_convert", { format: "markdown" });
+      assert.equal(preferred.payload.status, "ok", preferred.payload.message);
+      assert.match(preferred.payload.output, /Configured compilation content/);
+      assert.doesNotMatch(preferred.payload.output, /Configured ledger content/);
+    } finally { cleanup(child); fs.rmSync(dir, { recursive: true, force: true }); }
+  });
+
+  it("returns structured tool errors for unwritable output destinations", async () => {
+    const dir = makeWorkspace("grainulator-export-io-");
+    fs.writeFileSync(path.join(dir, "blocker"), "keep me");
+    const { child } = await spawnAndInitialize(dir);
+    try {
+      const failed = await callTool(child, 605, "exports_convert", { format: "markdown", output: "blocker/report.md" });
+      assert.equal(failed.response.result.isError, true);
+      assert.equal(failed.payload.status, "error");
+      assert.match(failed.payload.message, /Cannot write export|ENOTDIR/);
+      fs.mkdirSync(path.join(dir, "occupied-directory"));
+      const server = (await import("../lib/serve-mcp.js")).default;
+      const direct = JSON.parse(await server.handleRequest(dir, "tools/call", { name: "exports_convert", arguments: { format: "markdown", output: "occupied-directory" } }, 606));
+      assert.equal(direct.result.isError, true);
+      assert.match(JSON.parse(direct.result.content[0].text).message, /Cannot write export/);
+      assert.equal(fs.readFileSync(path.join(dir, "blocker"), "utf8"), "keep me");
+    } finally { cleanup(child); fs.rmSync(dir, { recursive: true, force: true }); }
+  });
+
+  it("preview reports full line counts and character truncation without writing", async () => {
+    const dir = makeWorkspace("grainulator-export-preview-");
+    const data = { claims: Array.from({ length: 600 }, (_, index) => ({ id: `r${index}`, type: "factual", content: "x".repeat(100), status: "active" })) };
+    fs.writeFileSync(path.join(dir, "many.json"), JSON.stringify(data));
+    fs.writeFileSync(path.join(dir, "long.json"), JSON.stringify({ claims: [{ id: "long", content: "漢字".repeat(10000) }] }));
+    const ndjson = await import("../lib/formats/ndjson.mjs");
+    const { child } = await spawnAndInitialize(dir);
+    try {
+      const many = await callTool(child, 603, "exports_preview", { format: "ndjson", source: "many.json", lines: 200 });
+      assert.equal(many.payload.status, "ok", many.payload.message);
+      assert.equal(many.payload.totalLines, ndjson.convert(data).split("\n").length);
+      assert.equal(many.payload.hasMore, true);
+      assert.equal(many.payload.truncated, true);
+      assert.ok(many.payload.preview.length <= 10000);
+      const long = await callTool(child, 604, "exports_preview", { format: "ndjson", source: "long.json", lines: 200 });
+      assert.equal(long.payload.hasMore, true, "A single shortened source line must not look complete");
+      assert.equal(long.payload.truncated, true);
+      assert.deepEqual(fs.readdirSync(dir).sort(), ["claims.json", "compilation.json", "long.json", "many.json"]);
+    } finally { cleanup(child); fs.rmSync(dir, { recursive: true, force: true }); }
+  });
+});

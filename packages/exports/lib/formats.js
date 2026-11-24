@@ -43,7 +43,7 @@ function detectFormat(filePath) {
 }
 
 function getExporter(name) {
-  return EXPORTERS[name] || null;
+  return Object.hasOwn(EXPORTERS, name) ? EXPORTERS[name] : null;
 }
 
 /**
@@ -56,7 +56,7 @@ function getExporter(name) {
  * listExportFormats().
  */
 async function resolveFormat(name) {
-  const cjs = EXPORTERS[name];
+  const cjs = Object.hasOwn(EXPORTERS, name) ? EXPORTERS[name] : null;
   if (cjs) return cjs;
   if (!listExportFormats().includes(name)) return null;
   const esmPath = path.join(FORMATS_DIR, `${name}.mjs`);
@@ -93,7 +93,7 @@ async function resolveFormat(name) {
 }
 
 function getPublisher(name) {
-  return PUBLISHERS[name] || null;
+  return Object.hasOwn(PUBLISHERS, name) ? PUBLISHERS[name] : null;
 }
 
 function listExportFormats() {

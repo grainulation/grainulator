@@ -546,6 +546,75 @@ test("ci-artifacts prints human-readable output", () => {
   assert.ok(out.includes("artifacts"), "mentions artifacts");
 });
 
+test("ci-artifacts rejects an invalid first target before publishing artifacts", () => {
+  const outDir = path.join(tmpDir, "unwritable-artifact");
+  fs.mkdirSync(path.join(outDir, "markdown.md"), { recursive: true });
+  const result = spawnSync(process.execPath, [MILL, "ci-artifacts", path.join(FIXTURES, "claims.json"), "-o", outDir, "--json"], { encoding: "utf8" });
+  assert.notEqual(result.status, 0, result.stdout + result.stderr);
+  assert.ok(!fs.existsSync(path.join(outDir, "json.json")), "must not create later artifacts after preflight fails");
+  assert.ok(!fs.existsSync(path.join(outDir, "csv.csv")), "must not create later artifacts after preflight fails");
+});
+
+test("ci-artifacts preflights later invalid targets before changing any artifact", () => {
+  for (const prior of [false, true]) {
+    const outDir = path.join(tmpDir, `late-target-${prior}`);
+    fs.mkdirSync(path.join(outDir, "json.json"), { recursive: true });
+    const markdown = path.join(outDir, "markdown.md");
+    if (prior) fs.writeFileSync(markdown, "prior report must survive");
+    const result = spawnSync(process.execPath, [MILL, "ci-artifacts", path.join(FIXTURES, "claims.json"), "-o", outDir, "--formats", "markdown,json", "--json"], { encoding: "utf8" });
+    assert.notEqual(result.status, 0, result.stdout + result.stderr);
+    if (prior) assert.strictEqual(fs.readFileSync(markdown, "utf8"), "prior report must survive");
+    else assert.strictEqual(fs.existsSync(markdown), false);
+    assert.deepStrictEqual(fs.readdirSync(outDir).sort(), prior ? ["json.json", "markdown.md"] : ["json.json"]);
+  }
+});
+
+test("ci-artifacts refuses direct, symlink and hardlink step-summary aliases before publishing", () => {
+  for (const kind of ["direct", "symlink", "hardlink"]) {
+    const outDir = path.join(tmpDir, `summary-alias-${kind}`);
+    fs.mkdirSync(outDir);
+    const artifact = path.join(outDir, "json.json");
+    fs.writeFileSync(artifact, "existing artifact");
+    let summary = artifact;
+    if (kind !== "direct") {
+      summary = path.join(tmpDir, `summary-${kind}.md`);
+      if (kind === "symlink") fs.symlinkSync(artifact, summary);
+      else fs.linkSync(artifact, summary);
+    }
+    const result = spawnSync(process.execPath, [MILL, "ci-artifacts", path.join(FIXTURES, "claims.json"), "-o", outDir, "--formats", "json", "--json"], { encoding: "utf8", env: { ...process.env, GITHUB_STEP_SUMMARY: summary } });
+    assert.notEqual(result.status, 0, result.stdout + result.stderr);
+    assert.strictEqual(fs.readFileSync(artifact, "utf8"), "existing artifact");
+    assert.deepStrictEqual(fs.readdirSync(outDir), ["json.json"]);
+  }
+});
+
+test("ci-artifacts reports a requested summary write failure instead of success", () => {
+  const outDir = path.join(tmpDir, "summary-error-artifacts");
+  const summary = path.join(tmpDir, "summary-is-directory"); fs.mkdirSync(summary);
+  const result = spawnSync(process.execPath, [MILL, "ci-artifacts", path.join(FIXTURES, "claims.json"), "-o", outDir, "--formats", "json", "--json"], { encoding: "utf8", env: { ...process.env, GITHUB_STEP_SUMMARY: summary } });
+  assert.notEqual(result.status, 0, result.stdout + result.stderr);
+  assert.match(result.stderr, /step summary/);
+  assert.ok(!fs.existsSync(outDir), "Invalid requested summary must fail before artifact creation");
+});
+
+test("unsupported inherited names and source formats reject before creating output", () => {
+  const formats = require("../lib/formats.js");
+  for (const name of ["constructor", "__proto__", "toString"]) {
+    assert.strictEqual(formats.getExporter(name), null);
+    assert.strictEqual(formats.getPublisher(name), null);
+    const result = spawnSync(process.execPath, [MILL, name], { encoding: "utf8" });
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /unknown command/);
+  }
+  const output = path.join(tmpDir, "invalid-source.json");
+  for (const source of ["nonexistent", "csv", "json-ld"]) {
+    const result = spawnSync(process.execPath, [MILL, "convert", "--from", source, "--to", "json", path.join(FIXTURES, "claims.json"), "-o", output], { encoding: "utf8" });
+    assert.notEqual(result.status, 0, source);
+    assert.match(result.stderr, /unsupported source format/);
+    assert.ok(!fs.existsSync(output));
+  }
+});
+
 // Exercise the public CLI using actual compiler output, from outside the sprint.
 const ROOT_CLI = path.resolve(__dirname, "../../../bin/grainulator.js");
 function publicCli(args) {

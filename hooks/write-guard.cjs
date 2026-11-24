@@ -16,6 +16,16 @@ async function guard() {
 		context = JSON.parse(
 			input.trim() || process.env.CLAUDE_HOOK_CONTEXT || "{}",
 		);
+		if (
+			context === null ||
+			typeof context !== "object" ||
+			Array.isArray(context) ||
+			(context.tool_input !== undefined &&
+				(context.tool_input === null ||
+					typeof context.tool_input !== "object" ||
+					Array.isArray(context.tool_input)))
+		)
+			throw new Error("Invalid hook context shape.");
 	} catch {
 		process.stderr.write(
 			"Grainulator write guard: malformed hook context; no file decision made.\n",

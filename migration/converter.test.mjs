@@ -1,4 +1,4 @@
-import test from "node:test";
+import test, { after } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -14,6 +14,25 @@ import {
 	resumeMigration,
 	rollbackMigration,
 } from "./converter.mjs";
+
+// Crash fixtures must never leave fences in a real converter's per-user registry.
+// Every converter in this test process, including children, still shares one
+// registry so the overlap and dead-owner recovery checks retain their meaning.
+const temporaryKeys = ["TMPDIR", "TMP", "TEMP"];
+const originalTemporary = Object.fromEntries(
+	temporaryKeys.map((key) => [key, process.env[key]]),
+);
+const suiteTemporary = fs.mkdtempSync(
+	path.join(fs.realpathSync(os.tmpdir()), "grainulator-converter-suite-"),
+);
+for (const key of temporaryKeys) process.env[key] = suiteTemporary;
+after(() => {
+	for (const key of temporaryKeys) {
+		if (originalTemporary[key] === undefined) delete process.env[key];
+		else process.env[key] = originalTemporary[key];
+	}
+	fs.rmSync(suiteTemporary, { recursive: true, force: true });
+});
 
 const hash = (value) => crypto.createHash("sha256").update(value).digest("hex");
 function fixtureBytes(file, encoding) {
