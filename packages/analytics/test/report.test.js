@@ -120,7 +120,7 @@ describe("report: generateReport (literal evidence data)", () => {
     assert.equal(blocks.length, 1);
     const restored = JSON.parse(blocks[0][0].split("\n").filter(Boolean).map(line => line.slice(4)).join("\n"));
     assert.deepEqual(restored, payload);
-    assert.ok(!report.split("\n").some(line => /^(?:<script>|```|# forged)/.test(line)));
+    assert.ok(!report.split("\n").some(line => /^(?:<script>|```|# forged)/i.test(line)));
   });
 
   it("escapes user-authored summary prose while preserving the code payload", () => {

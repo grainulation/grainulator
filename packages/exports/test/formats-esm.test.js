@@ -60,7 +60,7 @@ async function run() {
     .map(match => JSON.parse(match[0].split("\n").filter(Boolean).map(line => line.slice(8)).join("\n")));
   assert.deepStrictEqual(referenceBlocks, [reference.url, [reference], reference], "Indented reference JSON must roundtrip without entity encoding");
   assert.ok(literalMarkdown.includes("&lt;script&gt;prose&lt;/script&gt; &amp; text"), "Prose must still escape raw HTML");
-  assert.ok(!literalMarkdown.split("\n").some(line => /^(?:<script>|```|# forged)/.test(line)), "References cannot escape their code blocks");
+  assert.ok(!literalMarkdown.split("\n").some(line => /^(?:<script>|```|# forged)/i.test(line)), "References cannot escape their code blocks");
 
   let passed = 0;
   let failed = 0;
