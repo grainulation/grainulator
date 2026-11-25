@@ -21,6 +21,8 @@
 !skills/**
 !templates/**
 !docs/**
+!share/**
+!packages/shared/schemas/**
 !packages/*/package.json
 !packages/evidence/.mcp.json
 !packages/*/*.md

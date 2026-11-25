@@ -282,6 +282,17 @@ test("artifact inventory rejects a missing compiled entry independently of ident
 		() =>
 			assertPackageInventory(
 				root,
+				selected.filter(
+					(file) => !file.path.startsWith("packages/shared/schemas/"),
+				),
+			),
+		/Declared package input is missing: packages\/shared\/schemas/,
+	);
+
+	assert.throws(
+		() =>
+			assertPackageInventory(
+				root,
 				selected.filter((file) => file.path !== "bin/grainulator.js"),
 			),
 		/missing bin\/grainulator\.js/,

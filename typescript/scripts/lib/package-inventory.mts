@@ -13,6 +13,17 @@ export function assertPackageInventory(
 		fs.readFileSync(path.join(root, "typescript/outputs.json"), "utf8"),
 	) as { modules: { output: string }[] };
 	const files = new Map(packed.map((file) => [file.path, file]));
+	for (const declared of pkg.files) {
+		// Identity is generated after this audit; archive/check-package verify it separately.
+		if (declared === "build-info.json") continue;
+		const prefix = declared.replace(/\/$/, "") + "/";
+		assert.ok(
+			[...files.keys()].some(
+				(name) => name === declared || name.startsWith(prefix),
+			),
+			`Declared package input is missing: ${declared}`,
+		);
+	}
 	const selected = (name: string) =>
 		pkg.files.some(
 			(pattern) =>
