@@ -80,7 +80,7 @@ npm version <patch|minor|major> --no-git-tag-version
 
 The version lifecycle synchronizes and stages `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`, `.codex-plugin/plugin.json`, and root `plugin.json`. Review those changes alongside `package.json` and `package-lock.json`, regenerate identity after all shipped-file edits, then commit through the normal review flow. `npm run sync-version` alone updates manifest contents without staging them. Create a release tag only after required CI passes and the release is authorized. Npm publication is a separate action; the packages remain private.
 
-The generated release identity uses `release-<version>-<hash>` and travels with compiled release/plugin and `npm pack --ignore-scripts` archives. `npm run pack:local` instead stages a unique local prerelease without changing the checkout version. Doctor checks packaged file integrity in both cases; keep host security wrappers intact.
+The generated release identity uses `release-<version>-<hash>` and travels with compiled release/plugin and staged compiled archives. `npm run pack:local` instead stages a unique local prerelease without changing the checkout version. Doctor checks packaged file integrity in both cases; keep host security wrappers intact.
 
 ## Security and conduct
 

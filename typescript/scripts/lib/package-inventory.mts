@@ -32,7 +32,7 @@ export function assertPackageInventory(
 	const required = [
 		...inventory.modules.map((item) => item.output).filter(selected),
 		...Object.values(pkg.bin),
-		"bootstrap/plugin-entry.mts",
+		"bootstrap/plugin-entry.mjs",
 		"hooks/hooks.json",
 		".mcp.json",
 		"mcp.json",
@@ -64,7 +64,7 @@ export function assertPackageInventory(
 			`Source/toolchain or converter leaked into base: ${name}`,
 		);
 		assert.ok(
-			!/\.(?:ts|mts|cts)$/.test(name) || name === "bootstrap/plugin-entry.mts",
+			!/\.(?:ts|mts|cts)$/.test(name),
 			`Unexpected TypeScript source in base: ${name}`,
 		);
 	}

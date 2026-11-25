@@ -17,7 +17,7 @@ After installing, [check that it works](#check-that-it-works).
 
 Install the matching Grainulator CLI from the trusted release archive or Homebrew channel before adding a source-only Git plugin. The plugin launcher uses that installed runtime; no compiler, package manager or download runs during plugin startup. `GRAINULATOR_CLI` can select an absolute installed CLI path when it is outside the host's PATH. The plugin and CLI must match version, bridge protocol and canonical source fingerprint. The bundled marketplace pins its Git source to the declared release tag. A manually selected moving source branch may be newer than the published CLI: select the matching release revision, or build and install a local archive from that same source. An unpublished version is not made available by `brew upgrade`.
 
-A compiled plugin archive includes its own runtime and does not need another CLI on PATH. From a source checkout, run `npm ci --ignore-scripts` and `npm run build` before direct CLI use or local packing. The installed package, plugin cache and source tree remain separate copies.
+A compiled plugin archive uses a JavaScript launcher and includes its own runtime and does not need another CLI on PATH. From a source checkout, run `npm ci --ignore-scripts` and `npm run build` before direct CLI use or local packing. The installed package, plugin cache and source tree remain separate copies.
 
 ## Claude Code
 

@@ -3,8 +3,9 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { inspectBuild, portableMcpBytes } from "../lib/build-info.js";
+import { inspectBuild, portableArtifactBytes } from "../lib/build-info.js";
 import type { NpmPack } from "./contracts.mjs";
+import { stageCompiledPackage } from "./lib/artifact-tree.mjs";
 import { command } from "./lib/local-checks.mjs";
 
 // Every manifest read and rewrite stays on one opened staging inode.
@@ -49,16 +50,11 @@ const output = path.resolve(
 	process.argv[2] || path.join(root, ".dogfood/builds"),
 );
 fs.mkdirSync(output, { recursive: true });
-const stage = fs.mkdtempSync(
+const temporary = fs.mkdtempSync(
 	path.join(os.tmpdir(), "grainulator-local-build-"),
 );
-const [inventory]: [NpmPack] = JSON.parse(
-	String(
-		command(["npm", "pack", "--dry-run", "--json", "--ignore-scripts"], {
-			cwd: root,
-		}),
-	),
-);
+const stage = path.join(temporary, "package");
+const { inventory } = stageCompiledPackage(root, stage);
 const sourceHash = crypto.createHash("sha256");
 const names = inventory.files
 	.map((f) => f.path)
@@ -66,14 +62,12 @@ const names = inventory.files
 	.sort();
 for (const name of names) {
 	const source = fs.readFileSync(path.join(root, name));
-	const bytes = [".mcp.json", "mcp.json"].includes(name)
-		? portableMcpBytes(source, path.join(root, name))
-		: source;
+	const bytes = portableArtifactBytes(name, source, path.join(root, name));
 	sourceHash.update(name).update("\0").update(bytes).update("\0");
 	const dest = path.join(stage, name);
 	fs.mkdirSync(path.dirname(dest), { recursive: true });
 	fs.copyFileSync(path.join(root, name), dest);
-	if ([".mcp.json", "mcp.json"].includes(name)) fs.writeFileSync(dest, bytes);
+	fs.writeFileSync(dest, bytes);
 }
 const source_sha256 = sourceHash.digest("hex");
 const id = `local-${source_sha256.slice(0, 16)}`;

@@ -10,7 +10,8 @@
 			"hooks/hooks.json",
 			"package.json",
 			"biome.json",
-			"bootstrap/**"
+			"bootstrap/*.mts",
+			"bootstrap/tsconfig.json"
 		]
 	},
 	"linter": {

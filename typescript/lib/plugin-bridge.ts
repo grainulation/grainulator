@@ -55,18 +55,17 @@ export function pluginBridge(root: string, args: string[]) {
 		fs.readFileSync(path.join(root, "build-info.json"), "utf8"),
 	) as { compatibility?: { protocol?: number; source_sha256?: string } };
 	let selected = installedIdentity.compatibility;
-	if (path.resolve(pluginRoot) !== path.resolve(root)) {
-		if (fs.existsSync(path.join(pluginRoot, "typescript/outputs.json")))
-			selected = sourceCompatibility(pluginRoot);
-		else {
-			if (inspectBuild(pluginRoot).verified !== true)
-				throw Error("Plugin artifact integrity failed.");
-			selected = (
-				JSON.parse(
-					fs.readFileSync(path.join(pluginRoot, "build-info.json"), "utf8"),
-				) as typeof installedIdentity
-			).compatibility;
-		}
+	if (fs.existsSync(path.join(pluginRoot, "typescript/outputs.json"))) {
+		// Ignored generated files can survive an update even when both roots are identical.
+		selected = sourceCompatibility(pluginRoot);
+	} else if (path.resolve(pluginRoot) !== path.resolve(root)) {
+		if (inspectBuild(pluginRoot).verified !== true)
+			throw Error("Plugin artifact integrity failed.");
+		selected = (
+			JSON.parse(
+				fs.readFileSync(path.join(pluginRoot, "build-info.json"), "utf8"),
+			) as typeof installedIdentity
+		).compatibility;
 	}
 	if (
 		!selected ||

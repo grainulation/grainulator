@@ -127,7 +127,7 @@
 		"docs/mascot.png",
 		"docs/TYPESCRIPT.md",
 		"docs/TDQS.md",
-		"bootstrap/plugin-entry.mts"
+		"bootstrap/plugin-entry.mjs"
 	],
 	"author": "grainulation contributors",
 	"bugs": {
@@ -155,7 +155,8 @@
 		"build:types": "node typescript/scripts/typescript-build.mts --write",
 		"check:types": "node typescript/scripts/typescript-build.mts --check",
 		"update:types": "node typescript/scripts/typescript-build.mts --update-inventory",
-		"check:source": "node typescript/scripts/typescript-build.mts --check-inventory"
+		"check:source": "node typescript/scripts/typescript-build.mts --check-inventory",
+		"pack:artifact": "node scripts/pack-artifact.mjs"
 	},
 	"engines": {
 		"node": ">=24"

@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 import { assertNoSymlinkPath } from "../lib/runtime-assets.js";
 // Candidate bytes always come from one committed snapshot, never dirty worktree files.
 import type { NpmPack } from "./contracts.mjs";
+import { stageCompiledPackage } from "./lib/artifact-tree.mjs";
 import { withFrozenSource } from "./lib/frozen-source.mjs";
 import { assertPackageInventory } from "./lib/package-inventory.mjs";
 
@@ -63,6 +64,8 @@ export function packageRelease({
 			const identity = JSON.parse(
 				String(fs.readFileSync(path.join(source, "build-info.json"))),
 			);
+			const compiledPackage = path.join(stage, "package");
+			stageCompiledPackage(source, compiledPackage);
 			const packed = (
 				JSON.parse(
 					String(
@@ -75,7 +78,7 @@ export function packageRelease({
 								"--pack-destination",
 								stage,
 							],
-							{ cwd: source },
+							{ cwd: compiledPackage },
 						),
 					),
 				) as [NpmPack]

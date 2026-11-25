@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { inspectBuild, portableMcpBytes } from "../lib/build-info.js";
+import { inspectBuild, portableArtifactBytes } from "../lib/build-info.js";
 import { sourceCompatibility } from "../lib/plugin-compatibility.js";
 import type { NpmPack } from "./contracts.mjs";
 import { command } from "./lib/local-checks.mjs";
@@ -25,9 +25,7 @@ const digest = crypto.createHash("sha256");
 const files: Record<string, string> = {};
 for (const name of names) {
 	const source = fs.readFileSync(path.join(root, name));
-	const bytes = [".mcp.json", "mcp.json"].includes(name)
-		? portableMcpBytes(source, path.join(root, name))
-		: source;
+	const bytes = portableArtifactBytes(name, source, path.join(root, name));
 	files[name] = crypto.createHash("sha256").update(bytes).digest("hex");
 	digest.update(name).update("\0").update(bytes).update("\0");
 }

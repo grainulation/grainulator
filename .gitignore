@@ -46,3 +46,6 @@ dist/
 *.mjs
 *.cjs
 /build-info.json
+
+# Durable local review/run evidence is never product source.
+/runs/

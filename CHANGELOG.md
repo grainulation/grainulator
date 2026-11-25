@@ -36,6 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Compile artifact plugin launchers to JavaScript and stage their MCP/hook definitions, including real manifest execution under node_modules. Reject stale same-root source fingerprints after checkout updates until rebuilt.
+
 - Read complete hook stdin asynchronously before making write-guard decisions, avoiding a reproduced Node 24 delayed-pipe race that could leave managed-file writes unblocked.
 - Describe initialization, local writes and replacement behavior with explicit tool hints, and align result contracts with successful and business-error responses.
 - Preserve historical audit access and project finding metadata from the same selected claim snapshot; bound diagnostic output and report truncation.

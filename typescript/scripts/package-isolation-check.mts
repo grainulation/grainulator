@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createSession, exportSession } from "../lib/research/session.js";
 import type { AuditReport } from "./contracts.mjs";
+import { stageCompiledPackage } from "./lib/artifact-tree.mjs";
 import { command, mcp, toolJSON } from "./lib/local-checks.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
@@ -25,6 +26,8 @@ try {
 		report.archive = path.resolve(process.env.GRAINULATOR_TEST_ARCHIVE);
 		report.archiveBytes = fs.statSync(report.archive).size;
 	} else {
+		const compiledStage = path.join(dir, "compiled-package");
+		stageCompiledPackage(root, compiledStage);
 		const packed = JSON.parse(
 			String(
 				command(
@@ -36,7 +39,7 @@ try {
 						"--pack-destination",
 						dir,
 					],
-					{ cwd: root },
+					{ cwd: compiledStage },
 				),
 			),
 		)[0];
@@ -655,6 +658,92 @@ try {
 		);
 	});
 
+	// Exercise the actual installed manifest entrypoints inside node_modules.
+	assert.equal(
+		fs.existsSync(path.join(installed, "bootstrap/plugin-entry.mts")),
+		false,
+		"Release carries compiled JS only",
+	);
+	for (const [configuration, rootVariable, dataVariable] of [
+		[".mcp.json", "CLAUDE_PLUGIN_ROOT", "CLAUDE_PLUGIN_DATA"],
+		["mcp.json", "PLUGIN_ROOT", "PLUGIN_DATA"],
+	] as const) {
+		const server = JSON.parse(
+			fs.readFileSync(path.join(installed, configuration), "utf8"),
+		).mcpServers.grainulator as { args: string[]; env: Record<string, string> };
+		const expand = (value: string) =>
+			value
+				.replaceAll("${" + rootVariable + "}", installed)
+				.replaceAll(
+					"${" + dataVariable + "}",
+					path.join(dir, "installed-plugin-data"),
+				);
+		assert.ok(server.args[0]?.endsWith("/bootstrap/plugin-entry.mjs"));
+		const artifactClient = mcp([process.execPath, ...server.args.map(expand)], {
+			cwd: sprint,
+			env: {
+				GRAINULATOR_WORKSPACE: sprint,
+				GRAINULATOR_CONFIG: path.join(dir, "artifact-workspace.json"),
+				...Object.fromEntries(
+					Object.entries(server.env).map(([key, value]) => [
+						key,
+						expand(value),
+					]),
+				),
+			},
+		});
+		try {
+			await artifactClient.request("initialize", {
+				protocolVersion: "2025-06-18",
+				capabilities: {},
+				clientInfo: { name: "installed-manifest", version: "1" },
+			});
+			assert.equal(
+				(await artifactClient.request("tools/list")).tools.length,
+				29,
+			);
+			toolJSON(
+				await artifactClient.request("tools/call", {
+					name: "status",
+					arguments: { dir: "." },
+				}),
+			);
+		} finally {
+			await artifactClient.close();
+		}
+	}
+	const installedHooks = JSON.parse(
+		fs.readFileSync(path.join(installed, "hooks/hooks.json"), "utf8"),
+	) as { hooks: Record<string, { hooks: { command: string }[] }[]> };
+	const guardCommand = installedHooks.hooks.PreToolUse?.[0]?.hooks[0]?.command;
+	assert.ok(guardCommand);
+	const guardEntry = /^node "([^"]+)" write-guard$/.exec(guardCommand)?.[1];
+	assert.ok(guardEntry);
+	assert.ok(guardEntry.endsWith("/bootstrap/plugin-entry.mjs"));
+	const installedGuard = guardEntry.replaceAll(
+		"${" + "CLAUDE_PLUGIN_ROOT}",
+		installed,
+	);
+	for (const [file, status] of [
+		["claims.json", 2],
+		["notes.md", 0],
+	] as const) {
+		const guarded = spawnSync(
+			process.execPath,
+			[installedGuard, "write-guard"],
+			{
+				cwd: sprint,
+				input: JSON.stringify({ tool_input: { file_path: file } }),
+				encoding: "utf8",
+				timeout: 10000,
+			},
+		);
+		assert.ifError(guarded.error);
+		assert.equal(guarded.status, status, guarded.stderr);
+	}
+	report.checks.push(
+		"actual installed Claude/native manifests and guard execute compiled JS inside node_modules",
+	);
 	// A marketplace checkout contains sources only; its actual launch metadata must work
 	// against a separately installed artifact, without invoking a package manager.
 	const sourcePlugin = path.join(dir, "source plugin with spaces");
@@ -677,6 +766,7 @@ try {
 		});
 		fs.cpSync(path.join(root, name), path.join(sourcePlugin, name), {
 			recursive: true,
+			filter: (source) => !/\.(?:js|mjs|cjs)$/.test(source),
 		});
 	}
 	for (const name of fs.readdirSync(path.join(root, "packages"))) {
@@ -777,6 +867,55 @@ try {
 		timeout: 10000,
 	});
 	assert.equal(tips.status, 0, tips.stderr);
+
+	const builtCheckout = path.join(dir, "built checkout");
+	fs.cpSync(installed, builtCheckout, { recursive: true });
+	for (const name of [
+		"typescript",
+		"bootstrap/plugin-entry.mts",
+		"bootstrap/tsconfig.json",
+		"tsconfig.json",
+		"biome.json",
+	]) {
+		fs.mkdirSync(path.dirname(path.join(builtCheckout, name)), {
+			recursive: true,
+		});
+		fs.cpSync(path.join(root, name), path.join(builtCheckout, name), {
+			recursive: true,
+			filter: (source) => !/\.(?:js|mjs|cjs)$/.test(source),
+		});
+	}
+	const checkoutLauncher = path.join(
+		builtCheckout,
+		"bootstrap/plugin-entry.mts",
+	);
+	const checkoutGuard = () =>
+		spawnSync(process.execPath, [checkoutLauncher, "write-guard"], {
+			cwd: sprint,
+			input: JSON.stringify({ tool_input: { file_path: "notes.md" } }),
+			encoding: "utf8",
+			timeout: 10000,
+		});
+	const currentCheckout = checkoutGuard();
+	assert.equal(currentCheckout.status, 0, currentCheckout.stderr);
+	fs.appendFileSync(
+		path.join(builtCheckout, "typescript/hooks/write-guard.cts"),
+		"\n// same-version changed source must require rebuilding\n",
+	);
+	const staleCheckout = checkoutGuard();
+	assert.equal(staleCheckout.status, 2);
+	assert.match(staleCheckout.stderr, /incompatible/);
+	fs.symlinkSync(
+		path.join(root, "node_modules"),
+		path.join(builtCheckout, "node_modules"),
+		"dir",
+	);
+	command(["npm", "run", "build"], { cwd: builtCheckout, timeout: 60000 });
+	const rebuiltCheckout = checkoutGuard();
+	assert.equal(rebuiltCheckout.status, 0, rebuiltCheckout.stderr);
+	report.checks.push(
+		"same-root ignored JS cannot bypass current source fingerprint; a rebuild restores valid hook startup",
+	);
 	const sourcePackage = path.join(sourcePlugin, "package.json");
 	const originalPackage = fs.readFileSync(sourcePackage);
 	fs.writeFileSync(

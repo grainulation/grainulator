@@ -172,12 +172,14 @@ test("cold TypeScript build needs no committed JavaScript and rejects stale or o
 	t.after(() => fs.rmSync(fixture, { recursive: true, force: true }));
 	for (const name of [
 		"typescript",
+		"bootstrap",
 		"package.json",
 		"tsconfig.json",
 		"biome.json",
 	])
 		fs.cpSync(path.join(root, name), path.join(fixture, name), {
 			recursive: true,
+			filter: (source) => !/\.(?:js|mjs|cjs)$/.test(source),
 		});
 	const inventory: { modules: { source: string; output: string }[] } =
 		JSON.parse(

@@ -3,7 +3,7 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { portableMcpBytes } from "./build-info.js";
+import { portableArtifactBytes } from "./build-info.js";
 export const PLUGIN_BRIDGE_PROTOCOL = 1;
 export function sourceCompatibility(root: string) {
 	const files: Record<string, string> = Object.create(null);
@@ -19,11 +19,7 @@ export function sourceCompatibility(root: string) {
 			const bytes = fs.readFileSync(fd);
 			files[name] = crypto
 				.createHash("sha256")
-				.update(
-					[".mcp.json", "mcp.json"].includes(name)
-						? portableMcpBytes(bytes, target)
-						: bytes,
-				)
+				.update(portableArtifactBytes(name, bytes, target))
 				.digest("hex");
 		} finally {
 			fs.closeSync(fd);
@@ -35,7 +31,7 @@ export function sourceCompatibility(root: string) {
 		})) {
 			const name = path.posix.join(directory, entry.name);
 			if (entry.isDirectory()) walk(name);
-			else add(name);
+			else if (!/\.(?:js|mjs|cjs)$/.test(name)) add(name);
 		}
 	};
 	for (const name of fs.readdirSync(path.join(root, "packages"))) {

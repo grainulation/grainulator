@@ -30,8 +30,41 @@ export function portableMcpBytes(bytes: Buffer | string, configPath?: string) {
 			server.command = server.args[3];
 			server.args = server.args.slice(4);
 		}
+		if (Array.isArray(server.args))
+			server.args = server.args.map((arg: unknown) =>
+				typeof arg === "string"
+					? arg.replaceAll(
+							"/bootstrap/plugin-entry.mts",
+							"/bootstrap/plugin-entry.mjs",
+						)
+					: arg,
+			);
 	}
 	return Buffer.from(`${JSON.stringify(config, null, 2)}\n`);
+}
+
+/** Deterministic source-to-artifact launch configuration; never rewrites live source. */
+export function portableArtifactBytes(
+	relative: string,
+	bytes: Buffer,
+	configPath?: string,
+): Buffer {
+	if ([".mcp.json", "mcp.json", "mcp_config.json"].includes(relative))
+		return portableMcpBytes(bytes, configPath);
+	if (relative !== "hooks/hooks.json") return bytes;
+	const document = JSON.parse(bytes.toString()) as {
+		hooks?: Record<string, { hooks?: { command?: unknown }[] }[]>;
+	};
+	for (const groups of Object.values(document.hooks ?? {}))
+		for (const group of groups)
+			for (const hook of group.hooks ?? []) {
+				if (typeof hook.command === "string")
+					hook.command = hook.command.replaceAll(
+						"/bootstrap/plugin-entry.mts",
+						"/bootstrap/plugin-entry.mjs",
+					);
+			}
+	return Buffer.from(`${JSON.stringify(document, null, 2)}\n`);
 }
 
 export function inspectBuild(root: string) {
@@ -78,7 +111,12 @@ export function inspectBuild(root: string) {
 			if (actual !== expected) {
 				const config: {
 					mcpServers?: Record<string, { command?: unknown }>;
-				} | null = [".mcp.json", "mcp.json"].includes(relative)
+				} | null = [
+					".mcp.json",
+					"mcp.json",
+					"mcp_config.json",
+					"hooks/hooks.json",
+				].includes(relative)
 					? JSON.parse(bytes.toString())
 					: null;
 				const wrapped =
@@ -92,7 +130,7 @@ export function inspectBuild(root: string) {
 					config &&
 					crypto
 						.createHash("sha256")
-						.update(portableMcpBytes(bytes, target))
+						.update(portableArtifactBytes(relative, bytes, target))
 						.digest("hex") === expected
 				) {
 					if (wrapped) host_adaptations.push(relative);

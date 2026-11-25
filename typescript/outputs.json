@@ -12,6 +12,11 @@
 			"module": "esm"
 		},
 		{
+			"source": "bootstrap/plugin-entry.mts",
+			"output": "bootstrap/plugin-entry.mjs",
+			"module": "esm"
+		},
+		{
 			"source": "typescript/evals/cli-adapter.mts",
 			"output": "evals/cli-adapter.mjs",
 			"module": "esm"
@@ -1062,6 +1067,11 @@
 			"module": "esm"
 		},
 		{
+			"source": "typescript/scripts/lib/artifact-tree.mts",
+			"output": "scripts/lib/artifact-tree.mjs",
+			"module": "esm"
+		},
+		{
 			"source": "typescript/scripts/lib/evaluation-usage.mts",
 			"output": "scripts/lib/evaluation-usage.mjs",
 			"module": "esm"
@@ -1114,6 +1124,11 @@
 		{
 			"source": "typescript/scripts/node-matrix-check.mts",
 			"output": "scripts/node-matrix-check.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/pack-artifact.mts",
+			"output": "scripts/pack-artifact.mjs",
 			"module": "esm"
 		},
 		{

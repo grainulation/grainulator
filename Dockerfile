@@ -6,7 +6,7 @@ COPY . .
 RUN npm ci --ignore-scripts \
     && npm run build \
     && node scripts/check-package.mjs \
-    && npm pack --ignore-scripts --pack-destination /tmp \
+    && node scripts/pack-artifact.mjs --out /tmp \
     && mkdir /package \
     && tar -xzf /tmp/grainulation-grainulator-*.tgz --strip-components=1 -C /package \
     && node /package/bin/grainulator.js doctor --json

@@ -46,6 +46,7 @@ const ignored = new Set([
 	"coverage",
 	".cache",
 	".irrigator",
+	"runs",
 ]);
 const runtimeExtension = /\.(?:js|mjs|cjs)$/;
 const sourceExtension = /\.(?:ts|mts|cts)$/;
@@ -108,6 +109,11 @@ function mappings(): ModuleMapping[] {
 		);
 		modules.push({ source, output, module: kind });
 	});
+	modules.push({
+		source: "bootstrap/plugin-entry.mts",
+		output: "bootstrap/plugin-entry.mjs",
+		module: "esm",
+	});
 	modules.sort((left, right) => left.output.localeCompare(right.output, "en"));
 	assert.ok(modules.length > 0, "No canonical TypeScript source modules found");
 	assert.equal(
@@ -135,7 +141,8 @@ function previousManifest(): OutputManifest {
 			!runtimeExtension.test(item.output) ||
 			path.isAbsolute(item.output) ||
 			item.output.split("/").includes("..") ||
-			!item.source.startsWith("typescript/")
+			(!item.source.startsWith("typescript/") &&
+				item.source !== "bootstrap/plugin-entry.mts")
 		)
 			throw new Error("Unsafe canonical TypeScript output mapping");
 		return { source: item.source, output: item.output, module: item.module };
@@ -210,6 +217,19 @@ try {
 			path.join(root, "tsconfig.json"),
 			"--outDir",
 			temporary,
+		],
+		{ cwd: root, stdio: "inherit" },
+	);
+	execFileSync(
+		process.execPath,
+		[
+			path.join(root, "node_modules/typescript/bin/tsc"),
+			"--project",
+			path.join(root, "bootstrap/tsconfig.json"),
+			"--noEmit",
+			"false",
+			"--outDir",
+			path.join(temporary, "bootstrap"),
 		],
 		{ cwd: root, stdio: "inherit" },
 	);
