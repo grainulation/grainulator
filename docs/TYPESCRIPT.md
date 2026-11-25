@@ -1,36 +1,31 @@
-# TypeScript source and generated runtime
+# TypeScript source and compiled artifacts
 
-All maintained first-party JavaScript-family modules have canonical TypeScript sources under `typescript/`. This includes the CLI and hooks, private workspaces, research/providers, evidence/compiler, memory, exports, orchestration, release and migration tooling, evaluations and tests. Rust, shell, JSON data and documentation remain in their native formats.
+Git tracks maintained TypeScript under `typescript/`, the small `bootstrap/` launcher, Rust, shell, configuration and data. Compiled `.js`, `.mjs`, `.cjs` and `build-info.json` are ignored build artifacts. They are included in CI/release packages, not committed to the code branch.
 
-## Editing and verification
+## Build from source
 
-Edit the canonical source instead of its generated runtime file. The source/output inventory is `typescript/outputs.json`:
-
-- `.ts` produces the corresponding `.js` path.
-- `.mts` produces the corresponding `.mjs` path.
-- `.cts` produces the corresponding `.cjs` path.
-
-The mirrored exports package boundary preserves CommonJS. CommonJS sources use typed imports and `export =`; NodeNext resolves the existing runtime import suffixes to their canonical TypeScript sources. Type-only declarations have no runtime artifact.
+Use Node 24 or 26:
 
 ```sh
 npm ci --ignore-scripts
+npm run check:source
 npm run typecheck
-npm run build:types
+npm run build
 npm run check:types
 npm run lint
 npm test
 ```
 
-The full graph uses strict checking, unchecked index checking, exact optional properties and verbatim module syntax with Node 24 declarations. Runtime validation remains responsible for external JSON, provider responses, tool inputs and stored evidence; static types do not establish source truth or evidence quality.
+The first build runs `typescript/scripts/typescript-build.mts` directly using Node's built-in support for erasable TypeScript. It uses only Node built-ins and needs no generated JavaScript bootstrap. The pinned development compiler emits the complete graph at the existing runtime paths, preserving installed imports and executable entry points. Local outputs stay ignored by Git.
 
-`build:types` compiles in an isolated temporary directory, checks the complete output inventory and formatting, then writes the generated runtime modules. Commit source, inventory and generated files together. `check:types` recompiles without changing them and rejects stale, missing, orphaned or handwritten first-party runtime files. Adding or retiring a module requires updating its source/output inventory through the build workflow.
+`typescript/outputs.json` is the reviewed source/output inventory: `.ts` maps to `.js`, `.mts` to `.mjs`, and `.cts` to `.cjs`. Normal builds reject stale inventory before writing outputs; after intentionally adding or retiring a module, review `npm run update:types` and commit the inventory with its source. Builds reject handwritten/orphaned JavaScript and finish compiling/formatting before publishing output. `check:types` compares output bytes with fresh compilation; `check:source` also rejects tracked JavaScript or build identity files.
 
-Lint runs on the maintained TypeScript and repository configuration. Generated JavaScript is checked through exact regeneration and runtime acceptance; type-erased output is not independently hand-formatted or lint-edited.
+Strict checking covers the full graph with unchecked index access, exact optional properties, verbatim module syntax and Node 24 declarations. The built-ins-only plugin bootstrap has a separate strict configuration. External inputs still need runtime validation; types do not establish evidence truth.
 
-Generated runtime files carry a source banner, with CLI shebangs kept first. GitHub treats those files as generated through `.gitattributes`; the maintained source is TypeScript.
+## Release and plugin installation
 
-## Installation compatibility
+The release pipeline extracts the selected Git commit into a private stage, installs that snapshot's exact locked build dependencies from an integrity-checked npm cache, compiles it, generates its identity and packages the result. Base and separate converter builds never use the caller's ignored or dirty JavaScript. Installed users receive compiled code without a compiler, dependency installation or lifecycle build. The final Docker image also contains the built package rather than the compiler or source tree.
 
-Installed CLI, plugins and MCP users execute generated JavaScript at the existing paths on Node 24 or 26. They need no TypeScript compiler, runtime loader or lifecycle build. Generated scripts and tests retain their original relative runtime paths, and normal product archives retain their existing CLI/MCP layout.
+`bootstrap/plugin-entry.mts` is a small Node-native launcher used by plugin manifests. In a compiled package it launches that package's verified runtime. A source-only marketplace checkout delegates to an already installed matching Grainulator CLI; it never builds, downloads or installs code. Version, bridge protocol and canonical-source compatibility must match before dispatch. CLI integrity is checked against its manifest; trusted release/Homebrew installation supplies publisher provenance. See [agent setup](AGENT-SETUP.md).
 
-After any final shipped-output change, regenerate `build-info.json` with `npm run build:identity` and verify installed-package, native/converter and security acceptance. The converter remains a separately verified archive, and the Rust/JavaScript runtime conformance gate remains required.
+Cold-build regressions start without any generated modules, preserve executable modes and tracked inputs, and verify deterministic regeneration. Package checks independently require the intended compiled inventory before trusting its identity. Isolated acceptance tests cover the actual Claude/native source-plugin commands and hook exit behavior against a separately installed archive. Full interactive host discovery remains a separate check.

@@ -26,6 +26,7 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
       - run: npm ci --ignore-scripts
+      - run: npm run build
       - run: npm test
       - run: npm run test:distribution
       - run: npm run check:surface
@@ -47,6 +48,8 @@ jobs:
         with:
           node-version: 24
       - run: npm ci --ignore-scripts
+      - run: npm run build
+      - run: npm run check:source
       - run: npm run typecheck
       - run: npm run check:types
       - run: npm run lint
@@ -62,6 +65,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
         with:
           toolchain: stable
+      - run: npm ci --ignore-scripts
+      - run: npm run build
       - run: node test/conformance.mjs
         working-directory: packages/runtime
 
@@ -105,3 +110,21 @@ jobs:
         with:
           enable-cache: false
       - run: uvx --from zizmor==1.32.0 zizmor --min-severity medium --offline --strict-collection --format=github .
+
+  container:
+    name: Source-only container artifact
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24.22.3
+      - name: Build from source-only Docker context
+        run: docker build --tag grainulator-ci .
+      - name: Exercise compiled container identity and default discovery
+        shell: bash
+        run: |
+          docker run --rm grainulator-ci doctor --json | node --input-type=module -e 'import fs from "node:fs";import assert from "node:assert/strict";const result=JSON.parse(fs.readFileSync(0,"utf8"));assert.equal(result.build.verified,true);console.log("Container build identity verified")'
+          printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"container-check","version":"1"}}}' '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' | docker run --rm -i grainulator-ci | node --input-type=module -e 'import fs from "node:fs";import assert from "node:assert/strict";const replies=fs.readFileSync(0,"utf8").trim().split("\n").map(line=>JSON.parse(line));const tools=replies.find(reply=>reply.id===2)?.result?.tools;assert.equal(tools?.length,15);assert.ok(tools.every(tool=>tool.outputSchema));console.log("Container compact15 discovery verified")'

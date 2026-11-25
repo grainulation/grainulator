@@ -10,7 +10,8 @@ grainulator/
 ├── .node-version        Node 24 local default
 ├── .github/             CI and repository workflows
 ├── agents/              Host agent instructions
-├── bin/                 Grainulator CLI entry point
+├── bootstrap/           Maintained Node-native plugin launcher
+├── bin/                 Ignored compiled CLI entry point
 ├── docs/                Architecture, migration and local test guides
 ├── evals/               Evaluation cases and fixtures
 ├── hooks/               Evidence hooks and write guard

@@ -126,20 +126,21 @@
 		"packages/runtime/EXAMPLE.md",
 		"docs/mascot.png",
 		"docs/TYPESCRIPT.md",
-		"docs/TDQS.md"
+		"docs/TDQS.md",
+		"bootstrap/plugin-entry.mts"
 	],
 	"author": "grainulation contributors",
 	"bugs": {
 		"url": "https://github.com/grainulation/grainulator/issues"
 	},
 	"scripts": {
-		"build": "node scripts/check-surface.mjs",
+		"build": "npm run build:types && npm run build:identity && npm run check:surface",
 		"test": "node scripts/test-workspace.mjs",
 		"test:e2e": "npm run test:install",
 		"test:all": "npm test && npm run typecheck && npm run check:types && npm run test:runtime && npm run test:install",
 		"build:identity": "node scripts/build-identity.mjs",
-		"sync-version": "node scripts/sync-version.js",
-		"version": "node scripts/sync-version.js && npx --yes @biomejs/biome format --write .claude-plugin/ .codex-plugin/ plugin.json && git add .claude-plugin/plugin.json .claude-plugin/marketplace.json .codex-plugin/plugin.json plugin.json",
+		"sync-version": "npm run build:types && node scripts/sync-version.js",
+		"version": "npm run build:types && node scripts/sync-version.js && npx --yes @biomejs/biome format --write .claude-plugin/ .codex-plugin/ plugin.json && git add .claude-plugin/plugin.json .claude-plugin/marketplace.json .codex-plugin/plugin.json plugin.json",
 		"test:plugin": "node --test test/*.test.js",
 		"test:core": "node --test test/dogfood/*.test.mjs",
 		"dogfood": "node bin/grainulator.js",
@@ -150,9 +151,11 @@
 		"test:install": "node scripts/package-isolation-check.mjs",
 		"test:distribution": "node --test migration/*.test.mjs scripts/release-artifacts.test.mjs scripts/package-native.test.mjs",
 		"check:surface": "node scripts/check-surface.mjs && node scripts/generate-reference.mjs --check",
-		"typecheck": "tsc --project tsconfig.json --noEmit",
-		"build:types": "node scripts/typescript-build.mjs --write",
-		"check:types": "node scripts/typescript-build.mjs --check"
+		"typecheck": "tsc --project tsconfig.json --noEmit && tsc --project bootstrap/tsconfig.json --noEmit",
+		"build:types": "node typescript/scripts/typescript-build.mts --write",
+		"check:types": "node typescript/scripts/typescript-build.mts --check",
+		"update:types": "node typescript/scripts/typescript-build.mts --update-inventory",
+		"check:source": "node typescript/scripts/typescript-build.mts --check-inventory"
 	},
 	"engines": {
 		"node": ">=24"

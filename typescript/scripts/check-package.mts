@@ -4,6 +4,7 @@ import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { inspectBuild } from "../lib/build-info.js";
 import type { NpmPack } from "./contracts.mjs";
+import { assertPackageInventory } from "./lib/package-inventory.mjs";
 
 const result = spawnSync(
 	"npm",
@@ -19,6 +20,11 @@ if (pack.size > 5 * 1024 * 1024)
 	throw new Error(`Package exceeds 5 MiB: ${pack.size}`);
 console.log(
 	`Package measured: ${pack.size} bytes, ${pack.files.length} files (dry run; no release).`,
+);
+
+assertPackageInventory(
+	fileURLToPath(new URL("../", import.meta.url)),
+	pack.files,
 );
 
 const build = inspectBuild(fileURLToPath(new URL("../", import.meta.url)));

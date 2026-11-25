@@ -103,8 +103,20 @@ const files = Object.fromEntries(
 );
 fs.writeFileSync(
 	path.join(stage, "build-info.json"),
-	JSON.stringify({ schema: 1, id, version, source_sha256, files }, null, 2) +
-		"\n",
+	JSON.stringify(
+		{
+			schema: 1,
+			id,
+			version,
+			source_sha256,
+			files,
+			compatibility: JSON.parse(
+				fs.readFileSync(path.join(root, "build-info.json"), "utf8"),
+			).compatibility,
+		},
+		null,
+		2,
+	) + "\n",
 );
 const verified = inspectBuild(stage);
 if (!verified.verified) throw Error(JSON.stringify(verified));

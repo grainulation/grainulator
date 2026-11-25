@@ -71,6 +71,7 @@ Requires **Node.js 24 or later**; Node 24 and 26 LTS are the tested release line
 git clone --branch v3.1.0 https://github.com/grainulation/grainulator.git
 cd grainulator
 npm ci --ignore-scripts
+npm run build
 node bin/grainulator.js doctor
 ```
 

@@ -7,7 +7,7 @@ description: Use Grainulator to carry a substantial research or engineering task
 
 Preserve the user's requested outcome. A request to build ends with working changes and verification, not a research brief alone.
 
-Locate this checkout's `bin/grainulator.js`. Use `node <checkout>/bin/grainulator.js doctor` to check local components. Prefer available Grainulator MCP tools; otherwise use the CLI. Host-specific slash commands are workflow names when the host cannot execute them.
+From a source-only checkout, run `npm ci --ignore-scripts` and `npm run build` before using the CLI. Compiled release/plugin archives are already built. Locate this checkout's `bin/grainulator.js`. Use `node <checkout>/bin/grainulator.js doctor` to check local components. Prefer available Grainulator MCP tools; otherwise use the CLI. Host-specific slash commands are workflow names when the host cannot execute them.
 
 Create a dedicated sprint directory with `grainulator init --dir <sprint> --question <question> --audience <audience> --constraints <constraints> --done <done criteria>`. Always pass that directory to subsequent tools. Do not repurpose an unrelated sprint or overwrite an existing ledger.
 

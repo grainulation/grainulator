@@ -12,6 +12,7 @@ import {
 	withStructuredResult,
 } from "../../lib/mcp-contracts.js";
 import { claimsDocument, readLedger } from "../../lib/research/evidence.js";
+import { assertPackageInventory } from "../../scripts/lib/package-inventory.mjs";
 
 test("checked research boundary rejects malformed external JSON and keeps model claims stated", () => {
 	for (const claims of [null, 1, [], {}, { claims: null }])
@@ -163,7 +164,7 @@ test("compact criteria validate conditional fields before invoking a backend", a
 	);
 });
 
-test("TypeScript freshness rejects runtime output orphaned by a deleted canonical source", (t) => {
+test("cold TypeScript build needs no committed JavaScript and rejects stale or orphaned output", (t) => {
 	const root = fileURLToPath(new URL("../../", import.meta.url));
 	const fixture = fs.mkdtempSync(
 		path.join(os.tmpdir(), "grainulator-typescript-orphan-"),
@@ -182,11 +183,12 @@ test("TypeScript freshness rejects runtime output orphaned by a deleted canonica
 		JSON.parse(
 			fs.readFileSync(path.join(root, "typescript/outputs.json"), "utf8"),
 		);
-	for (const item of inventory.modules) {
-		const target = path.join(fixture, item.output);
-		fs.mkdirSync(path.dirname(target), { recursive: true });
-		fs.copyFileSync(path.join(root, item.output), target);
-	}
+	for (const item of inventory.modules)
+		assert.equal(
+			fs.existsSync(path.join(fixture, item.output)),
+			false,
+			"Cold fixture must contain no JavaScript outputs",
+		);
 	// Runtime package boundaries must match the mirrored compiler metadata.
 	for (const name of fs.readdirSync(path.join(root, "packages"))) {
 		const metadata = path.join("packages", name, "package.json");
@@ -204,12 +206,40 @@ test("TypeScript freshness rejects runtime output orphaned by a deleted canonica
 	const run = (mode: "--check" | "--write") =>
 		spawnSync(
 			process.execPath,
-			[path.join(fixture, "scripts/typescript-build.mjs"), mode],
+			[path.join(fixture, "typescript/scripts/typescript-build.mts"), mode],
 			{ cwd: fixture, encoding: "utf8", timeout: 60000 },
 		);
-	const baseline = run("--check");
+	const committedInventory = fs.readFileSync(
+		path.join(fixture, "typescript/outputs.json"),
+	);
+	const baseline = run("--write");
 	assert.ifError(baseline.error);
 	assert.equal(baseline.status, 0, baseline.stdout + baseline.stderr);
+	assert.deepEqual(
+		fs.readFileSync(path.join(fixture, "typescript/outputs.json")),
+		committedInventory,
+		"Build never repairs tracked inventory silently",
+	);
+	assert.ok(
+		fs.statSync(path.join(fixture, "bin/grainulator.js")).mode & 0o111,
+		"Cold build preserves executable entry points",
+	);
+	const fresh = run("--check");
+	assert.equal(fresh.status, 0, fresh.stdout + fresh.stderr);
+	fs.writeFileSync(
+		path.join(fixture, "typescript/outputs.json"),
+		JSON.stringify({
+			schema: "grainulator.typescript.outputs/v1",
+			modules: [],
+		}),
+	);
+	const stale = run("--write");
+	assert.notEqual(stale.status, 0);
+	assert.match(stale.stderr, /inventory is stale/);
+	fs.writeFileSync(
+		path.join(fixture, "typescript/outputs.json"),
+		committedInventory,
+	);
 	const handwritten = path.join(fixture, "unmapped-firstparty.cjs");
 	fs.writeFileSync(handwritten, "module.exports = {};\n");
 	for (const mode of ["--check", "--write"] as const) {
@@ -239,4 +269,21 @@ test("TypeScript freshness rejects runtime output orphaned by a deleted canonica
 			"Failed generation must preserve the existing runtime",
 		);
 	}
+});
+
+test("artifact inventory rejects a missing compiled entry independently of identity hashing", () => {
+	const root = fileURLToPath(new URL("../../", import.meta.url));
+	const identity = JSON.parse(
+		fs.readFileSync(path.join(root, "build-info.json"), "utf8"),
+	) as { files: Record<string, string> };
+	const selected = Object.keys(identity.files).map((path) => ({ path }));
+	assertPackageInventory(root, selected);
+	assert.throws(
+		() =>
+			assertPackageInventory(
+				root,
+				selected.filter((file) => file.path !== "bin/grainulator.js"),
+			),
+		/missing bin\/grainulator\.js/,
+	);
 });

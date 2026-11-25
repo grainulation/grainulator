@@ -162,6 +162,18 @@ try {
 			);
 			if (result.status === "error") process.exitCode = 1;
 		}
+	} else if (command === "plugin-bridge") {
+		try {
+			const [entry, argv] = (
+				await import("../lib/plugin-bridge.js")
+			).pluginBridge(root, args);
+			await forward(entry, argv);
+		} catch (error) {
+			process.stderr.write(
+				`Grainulator plugin: ${error instanceof Error ? error.message : String(error)}\n`,
+			);
+			process.exitCode = args[args.indexOf("--mode") + 1] === "tips" ? 0 : 2;
+		}
 	} else if (command === "mcp") {
 		validateOptions(["--dir", "--memory-dir", "--toolset"]);
 		if (args.includes("--help") || args.includes("-h"))

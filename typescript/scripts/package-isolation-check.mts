@@ -220,6 +220,17 @@ try {
 			}
 		}
 	});
+	check("compiled archive preserves directly executable CLI mode", () => {
+		if (process.platform !== "win32") {
+			const direct = spawnSync(cli, ["--version"], {
+				cwd: consumer,
+				encoding: "utf8",
+				timeout: 10000,
+			});
+			assert.ifError(direct.error);
+			assert.equal(direct.status, 0, direct.stderr);
+		}
+	});
 	check("CLI help", () => assert.match(run(["--help"]), /Grainulator/));
 	check("doctor validates the required runtime and packaged components", () => {
 		const checks = JSON.parse(String(run(["doctor", "--json"]))).checks;
@@ -281,7 +292,7 @@ try {
 		check(`installed verifier through runner in encoded path: ${name}`, () => {
 			const workspace = path.join(dir, `verifier-${name.replaceAll(" ", "-")}`);
 			fs.mkdirSync(workspace);
-			const adapterCode = `console.log(${JSON.stringify(JSON.stringify({ answer }))})`;
+			const adapterCode = "console.log(process.argv[1])";
 			const result = spawnSync(
 				process.execPath,
 				[
@@ -292,7 +303,7 @@ try {
 					"--adapter",
 					process.execPath,
 					"--adapter-args",
-					JSON.stringify(["-e", adapterCode]),
+					JSON.stringify(["-e", adapterCode, JSON.stringify({ answer })]),
 					"--verify",
 					JSON.stringify([process.execPath, verifier]),
 					"--dir",
@@ -643,6 +654,172 @@ try {
 			"ok",
 		);
 	});
+
+	// A marketplace checkout contains sources only; its actual launch metadata must work
+	// against a separately installed artifact, without invoking a package manager.
+	const sourcePlugin = path.join(dir, "source plugin with spaces");
+	fs.mkdirSync(sourcePlugin);
+	for (const name of [
+		"typescript",
+		"bootstrap",
+		"package.json",
+		"tsconfig.json",
+		".mcp.json",
+		"mcp.json",
+		"mcp_config.json",
+		"plugin.json",
+		".claude-plugin/plugin.json",
+		".codex-plugin/plugin.json",
+		"hooks/hooks.json",
+	]) {
+		fs.mkdirSync(path.dirname(path.join(sourcePlugin, name)), {
+			recursive: true,
+		});
+		fs.cpSync(path.join(root, name), path.join(sourcePlugin, name), {
+			recursive: true,
+		});
+	}
+	for (const name of fs.readdirSync(path.join(root, "packages"))) {
+		const metadata = path.join("packages", name, "package.json");
+		if (!fs.existsSync(path.join(root, metadata))) continue;
+		fs.mkdirSync(path.dirname(path.join(sourcePlugin, metadata)), {
+			recursive: true,
+		});
+		fs.copyFileSync(
+			path.join(root, metadata),
+			path.join(sourcePlugin, metadata),
+		);
+	}
+	assert.equal(
+		fs.existsSync(path.join(sourcePlugin, "bin/grainulator.js")),
+		false,
+	);
+	assert.equal(fs.existsSync(path.join(sourcePlugin, "node_modules")), false);
+	const bridgeEnv = {
+		GRAINULATOR_CLI: cli,
+		GRAINULATOR_WORKSPACE: sprint,
+		GRAINULATOR_CONFIG: path.join(dir, "source-plugin-workspace.json"),
+	};
+	for (const [configuration, rootVariable, dataVariable] of [
+		[".mcp.json", "CLAUDE_PLUGIN_ROOT", "CLAUDE_PLUGIN_DATA"],
+		["mcp.json", "PLUGIN_ROOT", "PLUGIN_DATA"],
+	] as const) {
+		const server = JSON.parse(
+			fs.readFileSync(path.join(sourcePlugin, configuration), "utf8"),
+		).mcpServers.grainulator as { args: string[]; env: Record<string, string> };
+		const expand = (value: string) =>
+			value
+				.replaceAll("${" + rootVariable + "}", sourcePlugin)
+				.replaceAll(
+					"${" + dataVariable + "}",
+					path.join(dir, "source-plugin-data"),
+				);
+		const client = mcp([process.execPath, ...server.args.map(expand)], {
+			cwd: sprint,
+			env: {
+				...bridgeEnv,
+				...Object.fromEntries(
+					Object.entries(server.env).map(([key, value]) => [
+						key,
+						expand(value),
+					]),
+				),
+			},
+		});
+		try {
+			await client.request("initialize", {
+				protocolVersion: "2025-06-18",
+				capabilities: {},
+				clientInfo: { name: "source-plugin", version: "1" },
+			});
+			assert.equal((await client.request("tools/list")).tools.length, 29);
+			toolJSON(
+				await client.request("tools/call", {
+					name: "status",
+					arguments: { dir: "." },
+				}),
+			);
+		} finally {
+			await client.close();
+		}
+	}
+	report.checks.push(
+		"JS-free source plugin exact Claude/native manifest commands use the separately installed matching CLI",
+	);
+	const sourceLauncher = path.join(sourcePlugin, "bootstrap/plugin-entry.mts");
+	for (const [file, status] of [
+		["claims.json", 2],
+		["notes.md", 0],
+	] as const) {
+		const result = spawnSync(
+			process.execPath,
+			[sourceLauncher, "write-guard"],
+			{
+				cwd: sprint,
+				env: { ...process.env, ...bridgeEnv },
+				input: JSON.stringify({ tool_input: { file_path: file } }),
+				encoding: "utf8",
+				timeout: 10000,
+			},
+		);
+		assert.ifError(result.error);
+		assert.equal(result.status, status, result.stderr);
+	}
+	const tips = spawnSync(process.execPath, [sourceLauncher, "tips"], {
+		cwd: sprint,
+		env: {
+			...process.env,
+			...bridgeEnv,
+			CLAUDE_PLUGIN_OPTION_TIPS_LEVEL: "off",
+		},
+		input: "{}",
+		encoding: "utf8",
+		timeout: 10000,
+	});
+	assert.equal(tips.status, 0, tips.stderr);
+	const sourcePackage = path.join(sourcePlugin, "package.json");
+	const originalPackage = fs.readFileSync(sourcePackage);
+	fs.writeFileSync(
+		sourcePackage,
+		JSON.stringify({
+			...JSON.parse(originalPackage.toString()),
+			version: "0.0.0",
+		}),
+	);
+	const wrongVersion = spawnSync(
+		process.execPath,
+		[sourceLauncher, "write-guard"],
+		{
+			cwd: sprint,
+			env: { ...process.env, ...bridgeEnv },
+			input: "{}",
+			encoding: "utf8",
+			timeout: 10000,
+		},
+	);
+	assert.equal(wrongVersion.status, 2);
+	assert.match(wrongVersion.stderr, /versions differ/);
+	fs.writeFileSync(sourcePackage, originalPackage);
+	fs.appendFileSync(
+		path.join(sourcePlugin, "typescript/lib/plugin-bridge.ts"),
+		"\n// mismatching source fixture\n",
+	);
+	const wrongSource = spawnSync(
+		process.execPath,
+		[sourceLauncher, "write-guard"],
+		{
+			cwd: sprint,
+			env: { ...process.env, ...bridgeEnv },
+			input: "{}",
+			encoding: "utf8",
+			timeout: 10000,
+		},
+	);
+	assert.equal(wrongSource.status, 2);
+	assert.match(wrongSource.stderr, /incompatible/);
+	report.checks.push(
+		"source-plugin hooks preserve guard exit2/ordinary exit0/tips0; mismatched version or same-version source fails closed",
+	);
 	report.passed = true;
 } catch (error) {
 	report.error = (error as Error).message;

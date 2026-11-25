@@ -4,6 +4,7 @@ Use Node 24 or later with the source checkout. For installed archives follow [in
 
 ```sh
 npm ci --ignore-scripts
+npm run build
 node bin/grainulator.js doctor
 node bin/grainulator.js demo
 node bin/grainulator.js research --question "Can this session start without a browser?" \

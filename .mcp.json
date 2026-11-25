@@ -3,7 +3,10 @@
 		"grainulator": {
 			"type": "stdio",
 			"command": "node",
-			"args": ["${CLAUDE_PLUGIN_ROOT}/bin/grainulator.js", "mcp"],
+			"args": [
+				"${CLAUDE_PLUGIN_ROOT}/bootstrap/plugin-entry.mts",
+				"claude-mcp"
+			],
 			"env": {
 				"GRAINULATOR_MEMORY_DIR": "${CLAUDE_PLUGIN_DATA}/memory"
 			}

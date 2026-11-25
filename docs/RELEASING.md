@@ -15,7 +15,7 @@ to the separate [shared tap](https://github.com/grainulation/homebrew).
 
 ## Prepare candidates
 
-Commit the intended source first. The base packager reads committed Git bytes,
+Build the checkout with `npm ci --ignore-scripts` and `npm run build`, then commit the intended TypeScript/configuration source first; compiled output stays ignored. The base and converter packagers extract committed Git source, install that snapshot's exact lockfile with scripts disabled, and compile it before selecting artifact bytes. The npm download cache must contain the locked build dependencies (`npm ci --ignore-scripts` in the source checkout primes it). Neither packager borrows caller node_modules or generated output. The base packager reads the resulting frozen bytes,
 so uncommitted changes cannot silently enter an identified candidate:
 
     mkdir -p dist

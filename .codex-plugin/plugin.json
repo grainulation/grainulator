@@ -10,7 +10,11 @@
 	"mcpServers": {
 		"grainulator": {
 			"command": "node",
-			"env_vars": ["GRAINULATOR_WORKSPACE", "GRAINULATOR_CONFIG"]
+			"env_vars": [
+				"GRAINULATOR_WORKSPACE",
+				"GRAINULATOR_CONFIG",
+				"GRAINULATOR_CLI"
+			]
 		}
 	},
 	"interface": {

@@ -21,7 +21,7 @@ Check the [tap version table](https://github.com/grainulation/homebrew#available
 
 Use Node.js 24 or later. [GitHub releases](https://github.com/grainulation/grainulator/releases) distribute the portable CLI/plugin archive, separate native runtime archives and offline converter. The npm package and component workspaces remain private; do not use the npm registry to select this release. For Homebrew, check the [shared tap](https://github.com/grainulation/homebrew#available-formulae) for currently published formulas.
 
-Tagged releases and marketplace builds include `build-info.json`, an integrity manifest with an ID such as `release-3.0.0-<hash>`. Doctor checks its shipped-file checksums. A standard `npm pack --ignore-scripts` archive preserves that identity; `pack:local` below creates a distinct development build.
+Compiled release archives include `build-info.json`, an integrity manifest with an ID such as `release-3.0.0-<hash>`. Doctor checks its shipped-file checksums. A standard `npm pack --ignore-scripts` archive preserves that identity; `pack:local` below creates a distinct development build.
 
 Clone the release tag and install its source dependencies:
 
@@ -29,6 +29,7 @@ Clone the release tag and install its source dependencies:
 git clone --branch v3.1.0 https://github.com/grainulation/grainulator.git
 cd grainulator
 npm ci --ignore-scripts
+npm run build
 node bin/grainulator.js doctor
 ```
 

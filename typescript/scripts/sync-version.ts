@@ -37,9 +37,18 @@ for (const name of [
 const market = JSON.parse(readFileSync(marketPath, "utf8"));
 let changed = false;
 for (const p of market.plugins || []) {
-	if (p.name === "grainulator" && p.version !== version) {
-		p.version = version;
-		changed = true;
+	if (p.name === "grainulator") {
+		if (p.version !== version) {
+			p.version = version;
+			changed = true;
+		}
+		if (
+			p.source?.url === "https://github.com/grainulation/grainulator.git" &&
+			p.source.ref !== `v${version}`
+		) {
+			p.source.ref = `v${version}`;
+			changed = true;
+		}
 	}
 }
 if (changed) {

@@ -86,6 +86,7 @@ test("native Agent Plugin manifest and Codex overlay register portable component
 	assert.deepEqual(overlay.mcpServers.grainulator.env_vars, [
 		"GRAINULATOR_WORKSPACE",
 		"GRAINULATOR_CONFIG",
+		"GRAINULATOR_CLI",
 	]);
 	const {
 		mcpServers: { grainulator: server },

@@ -3,8 +3,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { inspectBuild, portableMcpBytes } from "../lib/build-info.js";
+import { sourceCompatibility } from "../lib/plugin-compatibility.js";
 import type { NpmPack } from "./contracts.mjs";
 import { command } from "./lib/local-checks.mjs";
+import { assertPackageInventory } from "./lib/package-inventory.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const [inventory]: [NpmPack] = JSON.parse(
@@ -14,6 +16,7 @@ const [inventory]: [NpmPack] = JSON.parse(
 		}),
 	),
 );
+assertPackageInventory(root, inventory.files);
 const names = inventory.files
 	.map((file) => file.path)
 	.filter((name) => name !== "build-info.json")
@@ -35,8 +38,18 @@ const { version } = JSON.parse(
 const id = `release-${version}-${source_sha256.slice(0, 16)}`;
 fs.writeFileSync(
 	path.join(root, "build-info.json"),
-	JSON.stringify({ schema: 1, id, version, source_sha256, files }, null, 2) +
-		"\n",
+	JSON.stringify(
+		{
+			schema: 1,
+			id,
+			version,
+			source_sha256,
+			files,
+			compatibility: sourceCompatibility(root),
+		},
+		null,
+		2,
+	) + "\n",
 );
 if (!inspectBuild(root).verified)
 	throw new Error("Generated identity does not match source");

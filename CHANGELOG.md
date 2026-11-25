@@ -11,8 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Retire built-in HTML reports, slide decks, static-site output, PDF generation and presentation templates. Briefs and analytics reports use Markdown; JSON and Markdown exports preserve evidence for external presentation tools. Existing user outputs are retained.
 - Keep Homebrew installation through the shared tap; formula tooling and channel acceptance now belong to that repository. Product CI still verifies native archives and immutable release manifests.
-- Convert all maintained first-party CLI, workspace, hook, research, release/migration, evaluation and test sources to strict TypeScript. Checked-in generated JavaScript preserves direct CLI and installed-package execution without a runtime compiler dependency. CI checks the full type graph, complete source/output inventory and generated-file freshness.
+- Convert all maintained first-party CLI, workspace, hook, research, release/migration, evaluation and test sources to strict TypeScript. Git tracks TypeScript sources; compiled JavaScript and build identity live only in ignored local builds and CI/release artifacts. The pipeline compiles frozen Git snapshots with their own locked build dependencies. CI checks cold bootstrap, executable modes, complete inventory, no tracked JS and output freshness.
 - Fix the compact MCP regression tests' filesystem races by reading bytes and metadata through one file descriptor, retaining content, timestamp and file-identity assertions.
+
+- Keep source-only plugin checkouts usable through a Node-native launcher and a matching verified installed CLI bridge; compiled archives carry their own runtime. Plugin startup never compiles, installs or downloads code.
 
 ### Premortem corrections
 

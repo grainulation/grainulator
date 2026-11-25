@@ -17,12 +17,26 @@ interface OutputManifest {
 	modules: ModuleMapping[];
 }
 
-const root = path.resolve(fileURLToPath(new URL("../", import.meta.url)));
+const root = path.resolve(
+	fileURLToPath(
+		new URL(
+			import.meta.url.endsWith(".mts") ? "../../" : "../",
+			import.meta.url,
+		),
+	),
+);
 const canonical = path.join(root, "typescript");
 const manifestPath = path.join(canonical, "outputs.json");
 const mode = process.argv[2];
-if ((mode !== "--write" && mode !== "--check") || process.argv.length !== 3) {
-	throw new Error("Usage: node scripts/typescript-build.mjs --write|--check");
+if (
+	!["--write", "--check", "--update-inventory", "--check-inventory"].includes(
+		mode ?? "",
+	) ||
+	process.argv.length !== 3
+) {
+	throw new Error(
+		"Usage: node typescript/scripts/typescript-build.mts --write|--check|--update-inventory|--check-inventory",
+	);
 }
 const ignored = new Set([
 	"node_modules",
@@ -153,12 +167,36 @@ walk(root, (file, entry) => {
 		`Handwritten or orphaned JavaScript module ${output} has no canonical TypeScript source`,
 	);
 });
-if (mode === "--check")
+if (mode !== "--update-inventory")
 	assert.deepEqual(
 		previous,
 		manifest,
-		"TypeScript output inventory is stale; run npm run build:types",
+		"TypeScript output inventory is stale; review sources and run npm run update:types",
 	);
+
+if (mode === "--update-inventory") {
+	fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, "\t")}\n`);
+	console.log(`Updated ${modules.length} TypeScript source/output mappings.`);
+	process.exit(0);
+}
+if (mode === "--check-inventory") {
+	const git = fs.existsSync(path.join(root, ".git"))
+		? execFileSync(
+				"git",
+				["ls-files", "-z", "--", "*.js", "*.mjs", "*.cjs", "build-info.json"],
+				{ cwd: root, encoding: "utf8" },
+			)
+		: "";
+	assert.equal(
+		git,
+		"",
+		"Compiled JavaScript and build-info.json must be artifacts, not tracked source",
+	);
+	console.log(
+		`Verified ${modules.length} source mappings and no tracked compiled artifacts.`,
+	);
+	process.exit(0);
+}
 
 const temporary = fs.mkdtempSync(
 	path.join(os.tmpdir(), "grainulator-typescript-"),
@@ -231,7 +269,10 @@ try {
 		const target = path.join(root, output);
 		if (mode === "--write") {
 			fs.mkdirSync(path.dirname(target), { recursive: true });
-			fs.writeFileSync(target, content);
+			fs.writeFileSync(target, content, {
+				mode: content.startsWith("#!") ? 0o755 : 0o644,
+			});
+			if (content.startsWith("#!")) fs.chmodSync(target, 0o755);
 		} else {
 			assert.equal(
 				fs.readFileSync(target, "utf8"),
@@ -240,8 +281,7 @@ try {
 			);
 		}
 	}
-	if (mode === "--write")
-		fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, "\t")}\n`);
+
 	console.log(
 		`${mode === "--write" ? "Generated" : "Verified"} ${modules.length} TypeScript runtime, tool and test modules.`,
 	);

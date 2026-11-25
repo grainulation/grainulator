@@ -6,7 +6,7 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "node \"${CLAUDE_PLUGIN_ROOT}/lib/tips-hook.cjs\""
+						"command": "node \"${CLAUDE_PLUGIN_ROOT}/bootstrap/plugin-entry.mts\" tips"
 					}
 				]
 			}
@@ -17,7 +17,7 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/write-guard.cjs\""
+						"command": "node \"${CLAUDE_PLUGIN_ROOT}/bootstrap/plugin-entry.mts\" write-guard"
 					}
 				]
 			}

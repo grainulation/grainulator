@@ -112,6 +112,16 @@
 			"module": "esm"
 		},
 		{
+			"source": "typescript/lib/plugin-bridge.ts",
+			"output": "lib/plugin-bridge.js",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/lib/plugin-compatibility.ts",
+			"output": "lib/plugin-compatibility.js",
+			"module": "esm"
+		},
+		{
 			"source": "typescript/lib/report-packet.ts",
 			"output": "lib/report-packet.js",
 			"module": "esm"
@@ -1057,6 +1067,11 @@
 			"module": "esm"
 		},
 		{
+			"source": "typescript/scripts/lib/frozen-source.mts",
+			"output": "scripts/lib/frozen-source.mjs",
+			"module": "esm"
+		},
+		{
 			"source": "typescript/scripts/lib/host-call.mts",
 			"output": "scripts/lib/host-call.mjs",
 			"module": "esm"
@@ -1064,6 +1079,11 @@
 		{
 			"source": "typescript/scripts/lib/local-checks.mts",
 			"output": "scripts/lib/local-checks.mjs",
+			"module": "esm"
+		},
+		{
+			"source": "typescript/scripts/lib/package-inventory.mts",
+			"output": "scripts/lib/package-inventory.mjs",
 			"module": "esm"
 		},
 		{

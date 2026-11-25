@@ -9,7 +9,8 @@
 			".mcp.json",
 			"hooks/hooks.json",
 			"package.json",
-			"biome.json"
+			"biome.json",
+			"bootstrap/**"
 		]
 	},
 	"linter": {
