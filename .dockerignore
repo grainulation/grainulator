@@ -36,6 +36,8 @@
 !packages/runtime/.codex-plugin/**
 !packages/runtime/skills/**
 !packages/runtime/schemas/**
+!packages/runtime/rs/Cargo.toml
+!packages/runtime/rs/Cargo.lock
 !packages/runtime/install.sh
 !scripts/check-package.mjs
 !scripts/record-handoff.mjs
