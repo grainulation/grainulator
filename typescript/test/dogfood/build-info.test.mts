@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
@@ -129,4 +130,85 @@ test("native MCP host wrappers verify only when the complete launch configuratio
 	} finally {
 		fs.rmSync(root, { recursive: true, force: true });
 	}
+});
+
+test("handoff reproduction preserves timestamp binding and permits repeated artifact generation", (t) => {
+	const dir = fs.mkdtempSync(
+		path.join(os.tmpdir(), "grainulator-handoff-regression-"),
+	);
+	t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+	const output = path.join(dir, "handoff.json");
+	for (let attempt = 0; attempt < 2; attempt++) {
+		const result = spawnSync(
+			process.execPath,
+			[
+				path.resolve(import.meta.dirname, "../../scripts/record-handoff.mjs"),
+				output,
+			],
+			{ encoding: "utf8", timeout: 15000 },
+		);
+		assert.equal(result.status, 0, result.stderr);
+		const artifact = JSON.parse(fs.readFileSync(output, "utf8")) as {
+			stages: {
+				decision: { allow: boolean };
+				inputHash: string;
+				compiledHash: string;
+			}[];
+		};
+		assert.deepEqual(
+			artifact.stages.map((stage) => stage.decision.allow),
+			[true, false, true],
+		);
+		assert.notEqual(
+			artifact.stages[1]!.inputHash,
+			artifact.stages[1]!.compiledHash,
+		);
+		assert.equal(
+			artifact.stages[2]!.inputHash,
+			artifact.stages[2]!.compiledHash,
+		);
+	}
+});
+
+test("local packing rewrites every staged manifest to the verified local version", (t) => {
+	const dir = fs.mkdtempSync(
+		path.join(os.tmpdir(), "grainulator-local-pack-regression-"),
+	);
+	t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+	const result = spawnSync(
+		process.execPath,
+		[path.resolve(import.meta.dirname, "../../scripts/pack-local.mjs"), dir],
+		{ encoding: "utf8", timeout: 60000, maxBuffer: 4 * 1024 * 1024 },
+	);
+	assert.equal(result.status, 0, result.stderr);
+	const report = JSON.parse(result.stdout) as {
+		stage: string;
+		version: string;
+		archive: string;
+	};
+	assert.ok(
+		fs
+			.realpathSync(report.stage)
+			.startsWith(
+				path.join(fs.realpathSync(os.tmpdir()), "grainulator-local-build-"),
+			),
+	);
+	t.after(() => fs.rmSync(report.stage, { recursive: true, force: true }));
+	assert.equal(inspectBuild(report.stage).verified, true);
+	assert.match(report.version, /-local\.[a-f0-9]{16}$/);
+	for (const name of [
+		"package.json",
+		"plugin.json",
+		".claude-plugin/plugin.json",
+		".codex-plugin/plugin.json",
+		...fs
+			.readdirSync(path.join(report.stage, "packages"))
+			.map((component) => `packages/${component}/package.json`),
+	]) {
+		const manifest = JSON.parse(
+			fs.readFileSync(path.join(report.stage, name), "utf8"),
+		) as { version: string };
+		assert.equal(manifest.version, report.version, name);
+	}
+	assert.ok(fs.statSync(report.archive).size > 0);
 });

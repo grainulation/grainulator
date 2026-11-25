@@ -13,7 +13,8 @@ const fixture = (name: string): [string, ...string[]] => [
 const fixed = (answer: string): [string, ...string[]] => [
 	process.execPath,
 	"-e",
-	`process.stdin.resume();process.stdin.on('end',()=>console.log(JSON.stringify({answer:${JSON.stringify(answer)}})))`,
+	"process.stdin.resume();process.stdin.on('end',()=>console.log(JSON.stringify({answer:process.argv[1]})))",
+	answer,
 ];
 function options(t: import("node:test").TestContext) {
 	const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-run-"));
@@ -41,6 +42,17 @@ test("model assertion alone remains unverified", async (t) => {
 		adapter: fixed("42"),
 	});
 	assert.equal(result.status, "unverified");
+});
+test("fixture adapter treats quotes, line breaks and code-like answers as argv data", async (t) => {
+	const answer =
+		'"; throw new Error("injected"); //\nline with \\ and \u2028 separator';
+	const result = await runTask({
+		...options(t),
+		verifier: undefined,
+		adapter: fixed(answer),
+	});
+	assert.equal(result.status, "unverified");
+	assert.equal(result.rounds[0]?.answer, answer);
 });
 test("repeated failure stops instead of looping forever", async (t) => {
 	const result = await runTask({ ...options(t), adapter: fixed("41") });
@@ -133,14 +145,20 @@ test("cancellation kills a descendant even when its parent exits first", {
 }, async (t) => {
 	const { cwd } = options(t),
 		ready = path.join(cwd, "ready");
-	const grandchild = `process.on('SIGTERM',()=>{});require('node:fs').writeFileSync(${JSON.stringify(ready)},String(process.pid));setInterval(()=>{},1000)`;
-	const parent = `require('node:child_process').spawn(process.execPath,['-e',${JSON.stringify(grandchild)}],{stdio:'ignore'});setInterval(()=>{},1000)`;
+	const grandchild =
+		"process.on('SIGTERM',()=>{});require('node:fs').writeFileSync(process.argv[1],String(process.pid));setInterval(()=>{},1000)";
+	const parent =
+		"require('node:child_process').spawn(process.execPath,['-e',process.argv[1],process.argv[2]],{stdio:'ignore'});setInterval(()=>{},1000)";
 	const controller = new AbortController();
-	const running = execute([process.execPath, "-e", parent], "", {
-		cwd,
-		signal: controller.signal,
-		timeoutMs: 5000,
-	});
+	const running = execute(
+		[process.execPath, "-e", parent, grandchild, ready],
+		"",
+		{
+			cwd,
+			signal: controller.signal,
+			timeoutMs: 5000,
+		},
+	);
 	t.after(() => controller.abort());
 	for (let i = 0; i < 100 && !fs.existsSync(ready); i++)
 		await new Promise((r) => setTimeout(r, 20));

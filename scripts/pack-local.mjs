@@ -6,6 +6,42 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { inspectBuild, portableMcpBytes } from "../lib/build-info.js";
 import { command } from "./lib/local-checks.mjs";
+// Every manifest read and rewrite stays on one opened staging inode.
+function updateManifestVersion(file, version) {
+	let fd;
+	try {
+		fd = fs.openSync(
+			file,
+			fs.constants.O_RDWR | fs.constants.O_NOFOLLOW | fs.constants.O_NONBLOCK,
+		);
+	} catch (error) {
+		if (error.code === "ENOENT") return;
+		throw error;
+	}
+	try {
+		const stat = fs.fstatSync(fd);
+		if (!stat.isFile() || stat.nlink !== 1)
+			throw new Error("Expected a regular staging manifest");
+		const manifest = JSON.parse(String(fs.readFileSync(fd, "utf8")));
+		manifest.version = version;
+		const bytes = Buffer.from(JSON.stringify(manifest, null, 2) + "\n");
+		let offset = 0;
+		while (offset < bytes.length) {
+			const count = fs.writeSync(
+				fd,
+				bytes,
+				offset,
+				bytes.length - offset,
+				offset,
+			);
+			if (count <= 0) throw new Error("Incomplete staging manifest write");
+			offset += count;
+		}
+		fs.ftruncateSync(fd, bytes.length);
+	} finally {
+		fs.closeSync(fd);
+	}
+}
 const root = fileURLToPath(new URL("../", import.meta.url));
 const output = path.resolve(
 	process.argv[2] || path.join(root, ".dogfood/builds"),
@@ -42,24 +78,17 @@ const id = `local-${source_sha256.slice(0, 16)}`;
 const packageFile = path.join(stage, "package.json");
 const pkg = JSON.parse(String(fs.readFileSync(packageFile, "utf8")));
 const version = `${pkg.version.split("-")[0]}-local.${source_sha256.slice(0, 16)}`;
-pkg.version = version;
-fs.writeFileSync(packageFile, JSON.stringify(pkg, null, 2) + "\n");
+updateManifestVersion(packageFile, version);
 for (const name of [
 	".claude-plugin/plugin.json",
 	".codex-plugin/plugin.json",
 	"plugin.json",
 	...fs
 		.readdirSync(path.join(stage, "packages"))
-		.filter((name) =>
-			fs.existsSync(path.join(stage, "packages", name, "package.json")),
-		)
 		.map((name) => `packages/${name}/package.json`),
 ]) {
 	const target = path.join(stage, name);
-	if (!fs.existsSync(target)) continue;
-	const manifest = JSON.parse(String(fs.readFileSync(target, "utf8")));
-	manifest.version = version;
-	fs.writeFileSync(target, JSON.stringify(manifest, null, 2) + "\n");
+	updateManifestVersion(target, version);
 }
 const files = Object.fromEntries(
 	names.map((name) => [

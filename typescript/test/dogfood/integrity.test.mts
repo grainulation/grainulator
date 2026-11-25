@@ -44,6 +44,24 @@ interface IntegrityLedger {
 		resolution?: { reason: string };
 	}[];
 }
+function snapshot(file: string) {
+	const descriptor = fs.openSync(
+		file,
+		fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW,
+	);
+	try {
+		const stat = fs.fstatSync(descriptor, { bigint: true });
+		assert.ok(stat.isFile());
+		return {
+			bytes: fs.readFileSync(descriptor),
+			dev: stat.dev,
+			ino: stat.ino,
+			mtimeNs: stat.mtimeNs,
+		};
+	} finally {
+		fs.closeSync(descriptor);
+	}
+}
 const read = (dir: string): IntegrityLedger =>
 	JSON.parse(fs.readFileSync(path.join(dir, "claims.json"), "utf8"));
 test("acknowledged concurrent mutations all survive", async (t) => {
@@ -78,12 +96,10 @@ test("acknowledged concurrent mutations all survive", async (t) => {
 test("reads leave original bytes and timestamps unchanged", (t) => {
 	const dir = sprint(t),
 		file = path.join(dir, "claims.json");
-	const bytes = fs.readFileSync(file, "utf8"),
-		before = fs.statSync(file).mtimeMs;
+	const before = snapshot(file);
 	loadClaims(dir);
 	loadClaims(dir);
-	assert.equal(fs.readFileSync(file, "utf8"), bytes);
-	assert.equal(fs.statSync(file).mtimeMs, before);
+	assert.deepEqual(snapshot(file), before);
 });
 test("resolution rationale survives reloading", (t) => {
 	const dir = sprint(t);
@@ -115,14 +131,35 @@ test("guard rejects missing status and stale input even with preserved timestamp
 	fs.writeFileSync(output, "{}");
 	assert.equal(guard(dir, input).allow, false);
 	addClaim(dir, claim("a"));
-	compile(file, output, dir, { skipSprintDetection: true });
-	assert.equal(guard(dir, input).allow, true);
-	const stat = fs.statSync(file),
-		doc = read(dir);
-	doc.claims[0]!.content = "Changed evidence";
-	fs.writeFileSync(file, JSON.stringify(doc));
-	fs.utimesSync(file, stat.atime, stat.mtime);
-	assert.equal(guard(dir, input).allow, false);
+	const descriptor = fs.openSync(
+		file,
+		fs.constants.O_RDWR | fs.constants.O_NOFOLLOW,
+	);
+	try {
+		// Whole-second timestamps can be restored exactly through futimes on every host.
+		const timestamp = new Date("2026-01-01T00:00:00Z");
+		fs.futimesSync(descriptor, timestamp, timestamp);
+		const before = fs.fstatSync(descriptor, { bigint: true });
+		assert.ok(before.isFile());
+		compile(file, output, dir, { skipSprintDetection: true });
+		assert.equal(guard(dir, input).allow, true);
+		const doc: IntegrityLedger = JSON.parse(
+			fs.readFileSync(descriptor, "utf8"),
+		);
+		doc.claims[0]!.content = "Changed evidence";
+		const changed = JSON.stringify(doc);
+		fs.ftruncateSync(descriptor, 0);
+		fs.writeSync(descriptor, changed, 0, "utf8");
+		fs.futimesSync(descriptor, timestamp, timestamp);
+		const after = snapshot(file);
+		assert.equal(after.bytes.toString("utf8"), changed);
+		assert.equal(after.dev, before.dev);
+		assert.equal(after.ino, before.ino);
+		assert.equal(after.mtimeNs, before.mtimeNs);
+		assert.equal(guard(dir, input).allow, false);
+	} finally {
+		fs.closeSync(descriptor);
+	}
 });
 test("memory imports preserve metadata and do not reuse existing IDs", (t) => {
 	const dir = sprint(t),

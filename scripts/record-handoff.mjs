@@ -68,12 +68,36 @@ try {
 		).allow,
 		true,
 	);
-	const stat = fs.statSync(claimsFile);
-	const changed = JSON.parse(String(fs.readFileSync(claimsFile, "utf8")));
-	changed.claims[0].content =
-		"The migration regression check failed after the latest change.";
-	fs.writeFileSync(claimsFile, JSON.stringify(changed, null, 2));
-	fs.utimesSync(claimsFile, stat.atime, stat.mtime);
+	// Hold one inode across the deliberate stale-timestamp fixture mutation.
+	const fd = fs.openSync(
+		claimsFile,
+		fs.constants.O_RDWR | fs.constants.O_NOFOLLOW | fs.constants.O_NONBLOCK,
+	);
+	try {
+		const stat = fs.fstatSync(fd);
+		if (!stat.isFile() || stat.nlink !== 1)
+			throw new Error("Expected an owned regular handoff fixture");
+		const changed = JSON.parse(String(fs.readFileSync(fd, "utf8")));
+		changed.claims[0].content =
+			"The migration regression check failed after the latest change.";
+		const bytes = Buffer.from(JSON.stringify(changed, null, 2));
+		let offset = 0;
+		while (offset < bytes.length) {
+			const count = fs.writeSync(
+				fd,
+				bytes,
+				offset,
+				bytes.length - offset,
+				offset,
+			);
+			if (count <= 0) throw new Error("Incomplete handoff fixture write");
+			offset += count;
+		}
+		fs.ftruncateSync(fd, bytes.length);
+		fs.futimesSync(fd, stat.atime, stat.mtime);
+	} finally {
+		fs.closeSync(fd);
+	}
 	assert.equal(
 		capture(
 			"changed",

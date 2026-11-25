@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "id": "release-3.1.0-321f65f1a31535d7",
+  "id": "release-3.1.0-f6225d96ce99665e",
   "version": "3.1.0",
-  "source_sha256": "321f65f1a31535d73d0228437efc9acdc5c2909059e16793acd4a1c8c2612079",
+  "source_sha256": "f6225d96ce99665ea4b42d6022c7d886da1444d3b58dfdf7a27210cb79556802",
   "files": {
     ".claude-plugin/marketplace.json": "ff0c06a87d8896855f90ff0310032904ade6f8c74146c86d00df308b904a06d6",
     ".claude-plugin/plugin.json": "1cd3a6f4306ba1cf2b1e7e0f017757a2f553aff01fc253e60a73cdaa57b7d15c",
@@ -295,7 +295,7 @@
     "packages/shared/tools/detect-sprints.js": "a0c1f5db47f1396f2c54b36cfb173bc71094fac5bf11eff6b27a57bac0d8c27b",
     "packages/shared/tools/generate-manifest.js": "6adad2adf0afc87d7164888ea9f1476ad22d36a90d168d27d4ad6fcd12c74705",
     "plugin.json": "75c3250904c23996ff341b44b9ba3af927c20cb6a9b93cfc37254974186647d3",
-    "scripts/record-handoff.mjs": "7f6836743c5f200c69ae7c3f635e10f449b7af6220c57bf91356b82879d93065",
+    "scripts/record-handoff.mjs": "a7ef05e4cde44159fea8131242c27b35a660ef9c4bde82c390b6a75e9a546c1d",
     "share/completions/grainulator.bash": "e3413da3c576df025bca8d4f584d1b85b250fdc4245fd398e87eac9563bfcc9b",
     "share/completions/grainulator.fish": "9042f2ed6289e6b2fcfbb6087fe8a970f1f9796e1abae564785760022a405dfc",
     "share/completions/grainulator.zsh": "7d392f84673408f9edeb5d89d55d43cc65e8e21da7247283e05930de7bbcb263",
