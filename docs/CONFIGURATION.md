@@ -13,3 +13,18 @@ Evidence reads the exact selected sprint's section. Orchestration can ascend to 
 The bundled schema is `packages/shared/schemas/project-config.schema.json`. Validation works offline. Native runtime validates its own section's execution semantics; evidence and runtime ledger schemas remain distinct. In-progress project migration markers block normal writes until verification or rollback is completed.
 
 MCP always confines section and migration checks to its registered workspace, including nested sprints. Direct CLI calls identify an enclosing canonical project or Git root for migration/publication protection; pass an explicit workspace for ancestor portfolio lookup. These checks never search historical state locations as fallbacks. Exports cannot overwrite configured ledger/compilation files, migration journals/backups, retained originals or host settings, including aliases.
+
+## Native plugin discovery profile
+
+`grainulator setup --dir /absolute/project --toolset compact` saves the existing
+15-tool evidence/local-memory/export profile alongside the native workspace
+binding in `~/.config/grainulator/workspace.json`. Restart the host to use it.
+`--toolset legacy` selects all 29 compatibility tools; omitting the flag retains
+the legacy default. This setting does not change direct CLI MCP registrations or
+Claude's separate registration. See [the profile reference](TOOLS.md#compact-profile-and-container-discovery)
+for capabilities and the tool-name mapping.
+
+`GRAINULATOR_TOOLSET=legacy|compact` overrides the saved profile for one native
+launch. An explicit `GRAINULATOR_WORKSPACE` bypasses saved workspace/profile
+settings, so set both variables to choose compact for that launch. Invalid
+profiles block native tool calls; they do not silently select a broader profile.

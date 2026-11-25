@@ -13,6 +13,7 @@
 			"env_vars": [
 				"GRAINULATOR_WORKSPACE",
 				"GRAINULATOR_CONFIG",
+				"GRAINULATOR_TOOLSET",
 				"GRAINULATOR_CLI"
 			]
 		}

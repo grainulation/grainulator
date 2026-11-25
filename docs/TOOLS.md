@@ -93,7 +93,7 @@ node bin/grainulator.js mcp --dir /absolute/workspace --toolset compact
 node bin/grainulator.js connect --dir /absolute/workspace --toolset compact
 ```
 
-`connect` prints a registration; it does not change host settings. Bundled plugins continue to select the default legacy toolset. The Docker image explicitly selects compact discovery by default; an explicit Docker command replaces that default, so include `--toolset compact` when supplying a different workspace. Test a separate compact registration in a fresh host session before migrating allowlists or workflows. CLI/plugin default discovery and the legacy names remain unchanged; the container's explicit compact selection is described in the [upgrade guide](UPGRADING.md).
+`connect` prints a registration; it does not change host settings. Native plugins use the legacy toolset unless explicitly configured with `grainulator setup --dir /absolute/workspace --toolset compact`; restart the host after changing that preference. `--toolset legacy` restores the compatibility profile. An explicit `GRAINULATOR_WORKSPACE` bypasses saved settings; set `GRAINULATOR_TOOLSET=compact` alongside it when desired. The Docker image explicitly selects compact discovery by default; an explicit Docker command replaces that default, so include `--toolset compact` when supplying a different workspace. Test a fresh host session before migrating allowlists or workflows. CLI default discovery and legacy names remain unchanged; the container's explicit compact selection is described in the [upgrade guide](UPGRADING.md).
 
 | Compact tool | Existing capability |
 | --- | --- |

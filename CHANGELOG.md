@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Native plugins can select the existing compact MCP profile with
+  `grainulator setup --dir /absolute/project --toolset compact` or
+  `GRAINULATOR_TOOLSET=compact`. The compatibility default remains legacy.
+  Invalid selections block tool calls, and compact discovery retains workspace
+  confinement and rejects unadvertised legacy names. The research agent allowlist
+  includes the supported compact tool names.
+- Compact tool guidance leads with document rendering and explains explicit
+  premise rebinding after rechecking an affected conclusion.
+
 ## [3.1.0] - 2026-11-24
 
 ### Product scope and core types

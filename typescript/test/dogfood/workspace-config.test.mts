@@ -5,9 +5,62 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { loadWorkspace, saveWorkspace } from "../../lib/workspace-config.js";
+import {
+	loadToolset,
+	loadWorkspace,
+	saveWorkspace,
+} from "../../lib/workspace-config.js";
 
 const cli = fileURLToPath(new URL("../../bin/grainulator.js", import.meta.url));
+test("native profile selection is explicit and invalid setup preserves the saved binding", (t) => {
+	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-toolset-"));
+	t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+	const env = { GRAINULATOR_CONFIG: path.join(dir, "workspace.json") };
+	assert.equal(loadToolset(env), "legacy");
+	saveWorkspace(dir, env, "compact");
+	assert.equal(loadToolset(env), "compact");
+	const before = fs.readFileSync(env.GRAINULATOR_CONFIG, "utf8");
+	const invalid = spawnSync(
+		process.execPath,
+		[cli, "setup", "--dir", dir, "--toolset", "typo"],
+		{ env: { ...process.env, ...env }, encoding: "utf8" },
+	);
+	assert.notEqual(invalid.status, 0);
+	assert.match(invalid.stderr, /toolset must be legacy or compact/);
+	assert.equal(fs.readFileSync(env.GRAINULATOR_CONFIG, "utf8"), before);
+	assert.equal(
+		loadToolset({ ...env, GRAINULATOR_WORKSPACE: dir }),
+		"legacy",
+		"explicit environment workspace does not inherit saved settings",
+	);
+	assert.equal(
+		loadToolset({
+			...env,
+			GRAINULATOR_WORKSPACE: dir,
+			GRAINULATOR_TOOLSET: "compact",
+		}),
+		"compact",
+	);
+	assert.equal(
+		loadToolset({ ...env, GRAINULATOR_TOOLSET: "legacy" }),
+		"legacy",
+	);
+	assert.throws(() => loadToolset({ ...env, GRAINULATOR_TOOLSET: "typo" }));
+	const saved = spawnSync(
+		process.execPath,
+		[cli, "setup", "--dir", dir, "--toolset", "compact", "--json"],
+		{ env: { ...process.env, ...env }, encoding: "utf8" },
+	);
+	assert.equal(saved.status, 0, saved.stderr);
+	assert.equal(JSON.parse(saved.stdout).toolset, "compact");
+	saveWorkspace(dir, env);
+	assert.equal(
+		loadToolset(env),
+		"legacy",
+		"unselected profiles retain the compatibility default",
+	);
+});
+
 test("setup persists an explicit default; environment overrides and invalid setup preserves previous settings", (t) => {
 	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-setup-"));
 	t.after(() => fs.rmSync(dir, { recursive: true, force: true }));

@@ -1,5 +1,9 @@
 #!/usr/bin/env node
-import { loadWorkspace, validateWorkspace } from "../lib/workspace-config.js";
+import {
+	loadToolset,
+	loadWorkspace,
+	validateWorkspace,
+} from "../lib/workspace-config.js";
 
 // Agent plugins (Codex, Antigravity) start MCP inside the plugin directory, not
 // the project. Use, in order: an explicit GRAINULATOR_WORKSPACE, the project
@@ -15,9 +19,16 @@ if (Number(process.versions.node.split(".")[0]) < 24) {
 	const { startServer } = await import("../lib/grainulator-mcp.js");
 	const advice =
 		"Configure an absolute GRAINULATOR_WORKSPACE or use grainulator setup --dir /absolute/project. No workspace files were accessed.";
+	let toolset: "legacy" | "compact" = "legacy";
+	let toolsetError: string | undefined;
+	try {
+		toolset = loadToolset();
+	} catch (error) {
+		toolsetError = `${errorMessage(error)} Use grainulator setup --dir /absolute/project --toolset legacy|compact, then restart the host. No workspace files were accessed.`;
+	}
 	if (process.env.GRAINULATOR_WORKSPACE) {
 		let selected = process.cwd();
-		let configurationError: string | undefined;
+		let configurationError: string | undefined = toolsetError;
 		try {
 			selected = validateWorkspace(process.env.GRAINULATOR_WORKSPACE);
 		} catch (error) {
@@ -28,6 +39,7 @@ if (Number(process.versions.node.split(".")[0]) < 24) {
 				`Grainulator configuration required: ${configurationError}\n`,
 			);
 		startServer({
+			toolset,
 			dir: configurationError ? process.cwd() : selected,
 			...(configurationError ? { configurationError } : {}),
 		});
@@ -40,8 +52,10 @@ if (Number(process.versions.node.split(".")[0]) < 24) {
 			error = `Your agent did not share a project folder. ${errorMessage(failure)} ${advice}`;
 		}
 		startServer({
+			toolset,
 			dir: process.cwd(),
 			roots: fallback ? { fallback } : error ? { error } : {},
+			...(toolsetError ? { configurationError: toolsetError } : {}),
 		});
 	}
 }

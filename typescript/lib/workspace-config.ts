@@ -18,8 +18,35 @@ export function validateWorkspace(selected: string) {
 	return fs.realpathSync(selected);
 }
 
-export function saveWorkspace(selected: string, env = process.env) {
+export function validateToolset(value: unknown): "legacy" | "compact" {
+	if (value === undefined || value === "legacy") return "legacy";
+	if (value === "compact") return "compact";
+	throw new Error("MCP toolset must be legacy or compact.");
+}
+
+// An explicit environment workspace remains independent of saved settings.
+export function loadToolset(env = process.env) {
+	if (env.GRAINULATOR_TOOLSET !== undefined)
+		return validateToolset(env.GRAINULATOR_TOOLSET);
+	if (env.GRAINULATOR_WORKSPACE) return "legacy";
+	const file = workspaceConfigPath(env);
+	if (!path.isAbsolute(file))
+		throw new Error("GRAINULATOR_CONFIG must be an absolute file path.");
+	if (!fs.existsSync(file)) return "legacy";
+	const config = JSON.parse(fs.readFileSync(file, "utf8"));
+	if (config.schema !== 1)
+		throw new Error("Unsupported native-host workspace configuration.");
+	return validateToolset(config.toolset);
+}
+
+export function saveWorkspace(
+	selected: string,
+	env = process.env,
+	toolset?: string,
+) {
 	const workspace = validateWorkspace(selected);
+	const profile =
+		toolset === undefined ? {} : { toolset: validateToolset(toolset) };
 	const file = workspaceConfigPath(env);
 	if (!path.isAbsolute(file))
 		throw new Error("GRAINULATOR_CONFIG must be an absolute file path.");
@@ -30,7 +57,7 @@ export function saveWorkspace(selected: string, env = process.env) {
 	try {
 		fs.writeFileSync(
 			descriptor,
-			`${JSON.stringify({ schema: 1, workspace }, null, 2)}\n`,
+			`${JSON.stringify({ schema: 1, workspace, ...profile }, null, 2)}\n`,
 		);
 		fs.closeSync(descriptor);
 		descriptor = undefined;
@@ -39,7 +66,7 @@ export function saveWorkspace(selected: string, env = process.env) {
 		if (descriptor !== undefined) fs.closeSync(descriptor);
 		if (fs.existsSync(temporary)) fs.unlinkSync(temporary);
 	}
-	return { workspace, config: file };
+	return { workspace, config: file, ...profile };
 }
 
 export function loadWorkspace(env = process.env) {

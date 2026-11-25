@@ -112,18 +112,20 @@ try {
 	else if (command === "report")
 		await (await import("../lib/report-packet.js")).reportCLI(args);
 	else if (command === "setup") {
-		validateOptions(["--dir"], ["--json"]);
+		validateOptions(["--dir", "--toolset"], ["--json"]);
 		if (args.includes("--help") || args.includes("-h"))
 			console.log(
-				"Usage:\n  grainulator setup --dir <absolute-project> [--json]\nSave the default native-host workspace binding. Host settings are not changed. Restart the host after changing this binding.",
+				"Usage:\n  grainulator setup --dir <absolute-project> [--toolset legacy|compact] [--json]\nSave the default native-host workspace binding and optional MCP profile. Omitted toolset retains the legacy default. Host settings are not changed. Restart the host after changing this binding.",
 			);
 		else {
 			const result = (await import("../lib/workspace-config.js")).saveWorkspace(
 				option("--dir", ""),
+				process.env,
+				option("--toolset"),
 			);
 			output(
 				result,
-				`Workspace: ${result.workspace}\nSaved: ${result.config}\nRestart the host to load this default workspace.`,
+				`Workspace: ${result.workspace}\nMCP toolset: ${result.toolset ?? "legacy"}\nSaved: ${result.config}\nRestart the host to load these defaults.`,
 			);
 		}
 	} else if (command === "init") {
