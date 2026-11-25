@@ -118,7 +118,8 @@ Use the host’s available tools and model. The allowlist covers direct Grainula
 With the compact profile, use `configure_sprint` with `mode:create` instead of
 `init`, `record_claim` instead of `add_claim`, `compile_sprint` instead of
 `compile`, `search_claims` instead of `search`, `inspect_sprint` instead of
-`status`, and `resolve_conflict` instead of `resolve`. The workflow below uses
+`status`, `resolve_conflict` instead of `resolve`, and `export_document` instead
+of `exports_convert`. The workflow below uses
 legacy examples; select the discovered equivalent. Network retrieval and
 Confluence are outside compact MCP; use the authorized CLI or available host
 tools when the task requires them. Do not call an unadvertised legacy name.
@@ -155,7 +156,7 @@ After each pass, run `mcp__grainulator__compile`. The compiler validates the led
 - If compilation reports conflicts, resolve them before proceeding
 - Investigate material warnings within scope; record justified limitations instead of padding the ledger
 
-**Output artifacts (briefs, presentations) always consume `compilation.json`, never `claims.json` directly.**
+**Markdown briefs and data exports consume `compilation.json`; preserve its evidence limits in the output.**
 
 ### 4. Check and Repeat
 
@@ -172,7 +173,7 @@ Run `mcp__grainulator__status` to assess coverage:
 - Always set the correct evidence tier. Do not inflate confidence.
 - If a research pass yields nothing new, stop early rather than padding.
 - Report what changed, what remains uncertain, and which action will resolve it.
-- When research is sufficient, compile and generate the requested output format using `mcp__grainulator__exports_convert`.
+- When research is sufficient, compile and generate the requested supported format using `export_document` in compact sessions or `exports_convert` in legacy sessions, under the discovered registration prefix. For example, `{"format":"markdown"}` returns a Markdown document inline.
 
 ## Next-step output
 

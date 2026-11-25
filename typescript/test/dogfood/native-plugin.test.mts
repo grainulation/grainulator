@@ -43,7 +43,7 @@ async function connect(
 			),
 			GRAINULATOR_WORKSPACE: workspace,
 			GRAINULATOR_CONFIG: config,
-			...(toolset === undefined ? {} : { GRAINULATOR_TOOLSET: toolset }),
+			GRAINULATOR_TOOLSET: toolset,
 		},
 	});
 	t.after(() => client.close());
@@ -246,24 +246,56 @@ test("native compact selection advertises and executes only its supported profil
 	assert.equal(fs.existsSync(path.join(dir, "outside")), false);
 });
 
-test("an invalid native profile blocks tool calls instead of silently broadening access", async (t) => {
+test("an invalid native profile stops discovery instead of silently broadening access", async (t) => {
 	const dir = fixture(t),
 		workspace = path.join(dir, "project");
 	fs.mkdirSync(workspace);
-	const { client, pluginData } = await connect(
+	for (const value of ["", "typo"]) {
+		await assert.rejects(
+			connect(t, dir, workspace, path.join(dir, "workspace.json"), value),
+			(error: Error) => {
+				assert.match(
+					error.message,
+					/GRAINULATOR_TOOLSET.*toolset must be legacy or compact/,
+				);
+				assert.match(error.message, /Correct or unset GRAINULATOR_TOOLSET/);
+				assert.doesNotMatch(error.message, /MCP v.*ready/);
+				return true;
+			},
+		);
+	}
+	assert.equal(fs.existsSync(path.join(workspace, "claims.json")), false);
+	assert.equal(fs.existsSync(path.join(dir, "plugin-data")), false);
+	const { client } = await connect(
 		t,
 		dir,
 		workspace,
 		path.join(dir, "workspace.json"),
-		"typo",
+		"compact",
 	);
-	await assert.rejects(
-		client.request("tools/call", {
-			name: "init",
-			arguments: { dir: workspace, question: "Must not write" },
-		}),
-		/toolset must be legacy or compact/,
+	assert.equal(
+		((await client.request("tools/list")) as { tools: unknown[] }).tools.length,
+		15,
+		"correcting the environment restores discovery on restart",
 	);
-	assert.equal(fs.existsSync(path.join(workspace, "claims.json")), false);
-	assert.equal(fs.existsSync(pluginData), false);
+});
+
+test("indeterminate saved profiles fail discovery with a source-specific recovery message", async (t) => {
+	for (const contents of [
+		"{",
+		"null",
+		'{"schema":2}',
+		'{"schema":1,"toolset":"typo"}',
+	]) {
+		const dir = fixture(t);
+		const config = path.join(dir, "workspace.json");
+		fs.writeFileSync(config, contents);
+		await assert.rejects(connect(t, dir, "", config), (error: Error) => {
+			assert.match(error.message, /Grainulator configuration required/);
+			assert.match(error.message, /setup --dir/);
+			assert.doesNotMatch(error.message, /MCP v.*ready/);
+			return true;
+		});
+		assert.equal(fs.existsSync(path.join(dir, "plugin-data")), false);
+	}
 });

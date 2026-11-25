@@ -24,19 +24,97 @@ export function validateToolset(value: unknown): "legacy" | "compact" {
 	throw new Error("MCP toolset must be legacy or compact.");
 }
 
-// An explicit environment workspace remains independent of saved settings.
-export function loadToolset(env = process.env) {
-	if (env.GRAINULATOR_TOOLSET !== undefined)
-		return validateToolset(env.GRAINULATOR_TOOLSET);
-	if (env.GRAINULATOR_WORKSPACE) return "legacy";
+function readSavedBinding(env: NodeJS.ProcessEnv) {
 	const file = workspaceConfigPath(env);
 	if (!path.isAbsolute(file))
 		throw new Error("GRAINULATOR_CONFIG must be an absolute file path.");
-	if (!fs.existsSync(file)) return "legacy";
-	const config = JSON.parse(fs.readFileSync(file, "utf8"));
-	if (config.schema !== 1)
+	let text: string;
+	try {
+		text = fs.readFileSync(file, "utf8");
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code === "ENOENT")
+			return { file, config: undefined };
+		throw error;
+	}
+	const value: unknown = JSON.parse(text);
+	if (
+		!value ||
+		typeof value !== "object" ||
+		Array.isArray(value) ||
+		!("schema" in value) ||
+		value.schema !== 1
+	)
 		throw new Error("Unsupported native-host workspace configuration.");
-	return validateToolset(config.toolset);
+	return { file, config: value as Record<string, unknown> };
+}
+
+function profileFrom(value: unknown, source: string) {
+	try {
+		return validateToolset(value);
+	} catch {
+		throw new Error(
+			`${source}: MCP toolset must be legacy or compact. ${
+				source === "GRAINULATOR_TOOLSET"
+					? "Correct or unset GRAINULATOR_TOOLSET, then restart the host."
+					: "Run grainulator setup --dir /absolute/project --toolset legacy|compact, then restart the host."
+			}`,
+		);
+	}
+}
+
+export interface NativeSettings {
+	toolset: "legacy" | "compact";
+	workspace?: string;
+	workspaceError?: string;
+}
+
+// Workspace and profile come from one atomic saved-file snapshot. A known
+// environment profile lets MCP roots recover even when the fallback is damaged.
+export function loadNativeSettings(env = process.env): NativeSettings {
+	const explicitProfile =
+		env.GRAINULATOR_TOOLSET === undefined
+			? undefined
+			: profileFrom(env.GRAINULATOR_TOOLSET, "GRAINULATOR_TOOLSET");
+	if (env.GRAINULATOR_WORKSPACE) {
+		const toolset = explicitProfile ?? "legacy";
+		try {
+			return {
+				toolset,
+				workspace: validateWorkspace(env.GRAINULATOR_WORKSPACE),
+			};
+		} catch (error) {
+			return {
+				toolset,
+				workspaceError: `GRAINULATOR_WORKSPACE: ${(error as Error).message} Correct or unset GRAINULATOR_WORKSPACE and restart the host.`,
+			};
+		}
+	}
+	let binding: ReturnType<typeof readSavedBinding>;
+	try {
+		binding = readSavedBinding(env);
+	} catch {
+		const message =
+			"Cannot read the saved native binding. Repair it with grainulator setup --dir /absolute/project --toolset legacy|compact. A roots-capable host may instead set GRAINULATOR_TOOLSET=legacy|compact and restart.";
+		if (explicitProfile === undefined) throw new Error(message);
+		return { toolset: explicitProfile, workspaceError: message };
+	}
+	const toolset =
+		explicitProfile ?? profileFrom(binding.config?.toolset, binding.file);
+	try {
+		if (!binding.config)
+			throw new Error(
+				"Run grainulator setup --dir /absolute/project once, then restart the host.",
+			);
+		if (typeof binding.config.workspace !== "string")
+			throw new Error("Saved workspace must be an absolute project directory.");
+		return { toolset, workspace: validateWorkspace(binding.config.workspace) };
+	} catch (error) {
+		return { toolset, workspaceError: (error as Error).message };
+	}
+}
+
+export function loadToolset(env = process.env) {
+	return loadNativeSettings(env).toolset;
 }
 
 export function saveWorkspace(

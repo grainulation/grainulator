@@ -7,14 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-11-25
+
 ### Added
 
 - Native plugins can select the existing compact MCP profile with
   `grainulator setup --dir /absolute/project --toolset compact` or
   `GRAINULATOR_TOOLSET=compact`. The compatibility default remains legacy.
-  Invalid selections block tool calls, and compact discovery retains workspace
+  Invalid selections stop native startup before discovery, and compact retains workspace
   confinement and rejects unadvertised legacy names. The research agent allowlist
   includes the supported compact tool names.
+- Read the native workspace and tool profile from one saved configuration
+  snapshot. Preserve shared-root recovery when a known profile has an unusable
+  fallback, and explain how to repair invalid saved or environment selections.
 - Compact tool guidance leads with document rendering and explains explicit
   premise rebinding after rechecking an affected conclusion.
 

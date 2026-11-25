@@ -1,6 +1,6 @@
 {
   "name": "@grainulation/grainulator-memory",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "Reusable knowledge for research sprints -- shared claim libraries, templates, and knowledge packs",
   "type": "module",
   "main": "lib/index.js",
@@ -15,7 +15,7 @@
     "format:check": "npx prettier@3.3 --check ."
   },
   "dependencies": {
-    "@grainulation/grainulator-shared": "3.1.0"
+    "@grainulation/grainulator-shared": "3.2.0"
   },
   "keywords": [
     "research",

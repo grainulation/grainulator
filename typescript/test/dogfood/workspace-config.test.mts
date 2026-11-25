@@ -6,12 +6,57 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import {
+	loadNativeSettings,
 	loadToolset,
 	loadWorkspace,
 	saveWorkspace,
 } from "../../lib/workspace-config.js";
 
 const cli = fileURLToPath(new URL("../../bin/grainulator.js", import.meta.url));
+test("native startup pins workspace and profile to one saved generation", (t) => {
+	const dir = fs.mkdtempSync(
+		path.join(os.tmpdir(), "grainulator-binding-snapshot-"),
+	);
+	t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+	const a = path.join(dir, "a"),
+		b = path.join(dir, "b");
+	fs.mkdirSync(a);
+	fs.mkdirSync(b);
+	const file = path.join(dir, "workspace.json");
+	fs.writeFileSync(
+		file,
+		JSON.stringify({ schema: 1, workspace: a, toolset: "legacy" }),
+	);
+	const read = fs.readFileSync;
+	let reads = 0;
+	const mock = t.mock.method(
+		fs,
+		"readFileSync",
+		(...args: Parameters<typeof fs.readFileSync>) => {
+			const result = Reflect.apply(read, fs, args) as ReturnType<
+				typeof fs.readFileSync
+			>;
+			if (args[0] === file) {
+				reads++;
+				fs.writeFileSync(
+					file,
+					JSON.stringify({ schema: 1, workspace: b, toolset: "compact" }),
+				);
+			}
+			return result;
+		},
+	);
+	const settings = loadNativeSettings({ GRAINULATOR_CONFIG: file });
+	mock.mock.restore();
+	assert.equal(reads, 1);
+	assert.equal(settings.workspace, fs.realpathSync(a));
+	assert.equal(settings.toolset, "legacy");
+	assert.equal(
+		loadNativeSettings({ GRAINULATOR_CONFIG: file }).workspace,
+		fs.realpathSync(b),
+	);
+});
+
 test("native profile selection is explicit and invalid setup preserves the saved binding", (t) => {
 	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "grainulator-toolset-"));
 	t.after(() => fs.rmSync(dir, { recursive: true, force: true }));

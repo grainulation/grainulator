@@ -26,5 +26,17 @@ for capabilities and the tool-name mapping.
 
 `GRAINULATOR_TOOLSET=legacy|compact` overrides the saved profile for one native
 launch. An explicit `GRAINULATOR_WORKSPACE` bypasses saved workspace/profile
-settings, so set both variables to choose compact for that launch. Invalid
-profiles block native tool calls; they do not silently select a broader profile.
+settings, so set both variables to choose compact for that launch. The saved
+workspace and profile are read from one file snapshot.
+
+Invalid profiles, including an empty `GRAINULATOR_TOOLSET`, stop native startup
+before discovery. Correct or unset an invalid environment value and restart;
+`setup` cannot override an environment variable. Repair an invalid saved binding
+with `grainulator setup --dir /absolute/project --toolset legacy|compact`.
+
+A known profile can still be discovered when its fallback workspace is missing
+or unusable. A roots-capable host can supply the project folder instead. If the
+saved JSON or schema is damaged and the profile cannot be determined, either
+repair the binding or explicitly select `GRAINULATOR_TOOLSET=legacy|compact`
+before restarting; then shared roots can recover the workspace. Without usable
+roots or a fallback, tool calls fail without accessing sprint data.

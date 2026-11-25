@@ -1,6 +1,6 @@
 {
   "name": "@grainulation/grainulator-evidence",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "Research-driven development framework \u2014 structured claims, compiled evidence, deterministic output",
   "license": "MIT",
   "author": "grainulation contributors",
@@ -53,7 +53,7 @@
     "node": ">=24"
   },
   "dependencies": {
-    "@grainulation/grainulator-shared": "3.1.0"
+    "@grainulation/grainulator-shared": "3.2.0"
   },
   "private": true
 }

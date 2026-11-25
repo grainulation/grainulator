@@ -14,10 +14,10 @@
 			"source": {
 				"source": "url",
 				"url": "https://github.com/grainulation/grainulator.git",
-				"ref": "v3.1.0"
+				"ref": "v3.2.0"
 			},
 			"description": "Evidence and verification for model-assisted work",
-			"version": "3.1.0",
+			"version": "3.2.0",
 			"author": {
 				"name": "Grainulation"
 			},
