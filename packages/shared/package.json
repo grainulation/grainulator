@@ -1,7 +1,7 @@
 {
   "name": "@grainulation/grainulator-shared",
-  "version": "3.0.1",
-  "description": "Shared sprint utilities, filesystem safety, and reusable report assets",
+  "version": "3.1.0",
+  "description": "Shared sprint utilities and filesystem safety",
   "license": "MIT",
   "author": "grainulation contributors",
   "repository": {
@@ -15,7 +15,6 @@
   "keywords": [
     "evidence",
     "grainulation",
-    "templates",
     "sprints",
     "structured-research",
     "developer-tools"
@@ -27,7 +26,6 @@
     "./package.json": "./package.json",
     "./detect-sprints": "./tools/detect-sprints.js",
     "./generate-manifest": "./tools/generate-manifest.js",
-    "./build-pdf": "./tools/build-pdf.js",
     "./mcp": {
       "import": "./lib/mcp.js",
       "require": "./lib/mcp.cjs"
@@ -62,7 +60,6 @@
     "bin/",
     "lib/",
     "tools/",
-    "templates/",
     "CHANGELOG.md",
     "LICENSE",
     "CODE_OF_CONDUCT.md",

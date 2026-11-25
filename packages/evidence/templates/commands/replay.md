@@ -38,11 +38,11 @@ You are reconstructing the historical evolution of this sprint by recompiling ev
    - Evidence tier jumps (topic going web -> tested)
    - Claims added then superseded (the sprint changed its mind)
 
-6. **Generate replay HTML**: Create `output/replay.html` — a self-contained timeline visualization using a dark scroll-snap template. Include:
+6. **Generate a replay narrative**: Create `output/replay.md` — a Markdown timeline with commit and evidence references. Include:
 
-   - Frame-by-frame scrubbing (each commit = one frame)
+   - Commit-by-commit changes with exact revision IDs
    - Highlighted pivotal moments
-   - Coverage evolution chart
+   - Coverage changes as a data table
    - Summary statistics per frame
 
 7. **Print a text summary** to the terminal with the key narrative moments.
@@ -55,7 +55,7 @@ Preserve the user’s edits. Commit only when the task explicitly calls for it; 
 
 - How many frames (commits) were found
 - The most interesting moments
-- Point them to `output/replay.html` for the full interactive timeline
+- Point them to `output/replay.md` for the full evidence timeline
 - Suggest: `/handoff` to package this narrative for a successor
 
 ## Cleanup

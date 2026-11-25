@@ -1,6 +1,6 @@
 {
 	"name": "@grainulation/grainulator",
-	"version": "3.0.1",
+	"version": "3.1.0",
 	"description": "Portable evidence and execution tools for model-assisted work",
 	"type": "module",
 	"license": "MIT",
@@ -29,7 +29,6 @@
 		"build-info.json",
 		".mcp.json",
 		"skills/",
-		"templates/",
 		"agents/",
 		"hooks/",
 		"lib/",
@@ -67,7 +66,6 @@
 		"packages/shared/bin",
 		"packages/shared/lib",
 		"packages/shared/tools",
-		"packages/shared/templates",
 		"packages/shared/CHANGELOG.md",
 		"packages/shared/LICENSE",
 		"packages/shared/CODE_OF_CONDUCT.md",
@@ -84,7 +82,6 @@
 		"packages/orchestration/package.json",
 		"packages/orchestration/bin",
 		"packages/orchestration/lib",
-		"packages/orchestration/templates",
 		"packages/orchestration/README.md",
 		"packages/orchestration/LICENSE",
 		"packages/orchestration/CODE_OF_CONDUCT.md",
@@ -94,7 +91,6 @@
 		"packages/analytics/package.json",
 		"packages/analytics/bin",
 		"packages/analytics/lib",
-		"packages/analytics/templates",
 		"packages/analytics/README.md",
 		"packages/analytics/LICENSE",
 		"packages/analytics/CODE_OF_CONDUCT.md",
@@ -128,20 +124,23 @@
 		"share/",
 		"docs/RELEASING.md",
 		"packages/runtime/EXAMPLE.md",
-		"docs/mascot.png"
+		"docs/mascot.png",
+		"docs/TYPESCRIPT.md",
+		"docs/TDQS.md",
+		"bootstrap/plugin-entry.mjs"
 	],
 	"author": "grainulation contributors",
 	"bugs": {
 		"url": "https://github.com/grainulation/grainulator/issues"
 	},
 	"scripts": {
-		"build": "node scripts/check-surface.mjs",
+		"build": "npm run build:types && npm run build:identity && npm run check:surface",
 		"test": "node scripts/test-workspace.mjs",
 		"test:e2e": "npm run test:install",
-		"test:all": "npm test && npm run test:runtime && npm run test:reports && npm run test:install",
+		"test:all": "npm test && npm run typecheck && npm run check:types && npm run test:runtime && npm run test:install",
 		"build:identity": "node scripts/build-identity.mjs",
-		"sync-version": "node scripts/sync-version.js",
-		"version": "node scripts/sync-version.js && npx --yes @biomejs/biome format --write .claude-plugin/ .codex-plugin/ plugin.json && git add .claude-plugin/plugin.json .claude-plugin/marketplace.json .codex-plugin/plugin.json plugin.json",
+		"sync-version": "npm run build:types && node scripts/sync-version.js",
+		"version": "npm run build:types && node scripts/sync-version.js && npx --yes @biomejs/biome format --write .claude-plugin/ .codex-plugin/ plugin.json && git add .claude-plugin/plugin.json .claude-plugin/marketplace.json .codex-plugin/plugin.json plugin.json",
 		"test:plugin": "node --test test/*.test.js",
 		"test:core": "node --test test/dogfood/*.test.mjs",
 		"dogfood": "node bin/grainulator.js",
@@ -150,9 +149,14 @@
 		"lint": "biome check .",
 		"test:runtime": "npm run test:conformance --workspace @grainulation/grainulator-runtime",
 		"test:install": "node scripts/package-isolation-check.mjs",
-		"test:distribution": "node --test migration/*.test.mjs scripts/homebrew*.test.mjs scripts/package-native.test.mjs",
+		"test:distribution": "node --test migration/*.test.mjs scripts/release-artifacts.test.mjs scripts/package-native.test.mjs",
 		"check:surface": "node scripts/check-surface.mjs && node scripts/generate-reference.mjs --check",
-		"test:reports": "node scripts/audit-render-check.mjs"
+		"typecheck": "tsc --project tsconfig.json --noEmit && tsc --project bootstrap/tsconfig.json --noEmit",
+		"build:types": "node typescript/scripts/typescript-build.mts --write",
+		"check:types": "node typescript/scripts/typescript-build.mts --check",
+		"update:types": "node typescript/scripts/typescript-build.mts --update-inventory",
+		"check:source": "node typescript/scripts/typescript-build.mts --check-inventory",
+		"pack:artifact": "node scripts/pack-artifact.mjs"
 	},
 	"engines": {
 		"node": ">=24"
@@ -166,6 +170,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.6.8",
-		"playwright": "1.65.1"
+		"typescript": "7.0.2",
+		"@types/node": "24.19.2"
 	}
 }

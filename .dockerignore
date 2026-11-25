@@ -21,6 +21,8 @@
 !skills/**
 !templates/**
 !docs/**
+!share/**
+!packages/shared/schemas/**
 !packages/*/package.json
 !packages/evidence/.mcp.json
 !packages/*/*.md
@@ -54,3 +56,24 @@
 **/output
 **/target
 **/.DS_Store
+
+# Source builds must not borrow local compiled output.
+!package-lock.json
+!tsconfig.json
+!biome.json
+!typescript/**
+!bootstrap/**
+**/*.js
+**/*.mjs
+**/*.cjs
+build-info.json
+
+# These exclusions remain last, including inside allowed source folders.
+**/.git
+**/node_modules
+**/.dogfood
+**/.grainulator
+**/.env
+**/.env.*
+**/*.log
+**/target

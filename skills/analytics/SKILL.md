@@ -16,7 +16,7 @@ The user wants quantitative analysis of the current sprint: claim type distribut
 
 $ARGUMENTS
 
-Optional: `--full` to generate an HTML retrospective report. `--calibrate` to run prediction scoring.
+Optional: `--full` to generate a Markdown retrospective report. `--calibrate` to run prediction scoring.
 
 ## Instructions
 
@@ -63,12 +63,12 @@ Optional: `--full` to generate an HTML retrospective report. `--calibrate` to ru
    ```
 
 5. **Suggest full retrospective**:
-   - Tell the user they can generate a full HTML retrospective report:
+   - Tell the user they can generate a full Markdown retrospective report:
      ```
      For a full retrospective report:
-       grainulator analytics report <dir> -o <dir>/output/analytics.html
+       grainulator analytics report <dir> -o <dir>/output/analytics.md
      ```
-   - If the user passed `--full`, run the report command directly and write the output to `<dir>/output/analytics.html` (use an absolute resolved directory).
+   - If the user passed `--full`, run the report command directly and write the output to `<dir>/output/analytics.md` (use an absolute resolved directory).
 
 6. **Recommend calibration if sprint is complete**:
    - If the sprint appears to be in a late phase (has recommendations, has a brief, or the user mentioned shipping), suggest:
@@ -95,7 +95,7 @@ Optional: `--full` to generate an HTML retrospective report. `--calibrate` to ru
    - Stale claims exist -> suggest `/challenge` or `/research` on the stalest
    - Weak evidence base -> suggest `/witness` or `/research`
    - Type concentration -> assess whether the task actually requires another perspective; do not add filler claims
-   - Sprint looks healthy -> suggest `/brief` or `/present`
+   - Sprint looks healthy -> suggest `/brief`
 
 ## Host access
 

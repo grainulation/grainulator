@@ -54,7 +54,7 @@ A evidence sprint moves through phases. Each phase has commands that produce cla
 | **Prototype** | Build something testable, validate findings | `/prototype`                     | `p###`                                 |
 | **Evaluate**  | Challenge assumptions, find blind spots     | `/challenge`, `/blind-spot`      | `x###`                                 |
 | **Feedback**  | Incorporate stakeholder input, recalibrate  | `/feedback`, `/calibrate`        | `f###`, `cal###`                       |
-| **Output**    | Compile the decision document               | `/brief`, `/present`, `/handoff` | (consumes claims, doesn't create them) |
+| **Output**    | Compile the decision document               | `/brief`, `/handoff` | (consumes claims, doesn't create them) |
 
 Phases are not strictly sequential. You can jump back to research after a prototype reveals gaps, or challenge a claim at any point. The claim IDs tell you where each finding came from.
 
@@ -90,7 +90,7 @@ It reads `claims.json` and runs a multi-pass validation pipeline:
 6. **Status resolution** — tracks challenged/superseded claims
 7. **Emit** — produces `compilation.json` with a health report
 
-The output is `compilation.json` — a validated, scored snapshot of your sprint. Every output artifact (`/brief`, `/present`, `/handoff`) reads from `compilation.json`, never directly from `claims.json`. This means you cannot generate a brief from broken or conflicting data.
+The output is `compilation.json` — a validated, scored snapshot of your sprint. Every output artifact (`/brief`, `/handoff`) reads from `compilation.json`, never directly from `claims.json`. This means you cannot generate a brief from broken or conflicting data.
 
 If the compiler says "blocked" — you have unresolved conflicts that must be addressed with `/resolve` before shipping output.
 
@@ -126,7 +126,7 @@ You ask a question
 evidence compile ---------------------> compilation.json (validated snapshot)
     |
     v
-/brief, /present, /handoff -------> output artifacts (backed by evidence)
+/brief, /handoff -------> output artifacts (backed by evidence)
 ```
 
 The key insight: claims are the intermediate representation. Just like a compiler turns source code into machine code through an IR, evidence turns messy research into defensible decisions through typed, evidence-graded assertions. The compiler is the CI pipeline that keeps you honest — you can't ship with failing assertions, same as you can't merge with failing tests.

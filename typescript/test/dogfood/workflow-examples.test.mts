@@ -1,0 +1,82 @@
+import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import type { TestContext } from "node:test";
+import { test } from "node:test";
+import { fileURLToPath } from "node:url";
+import { createHandler } from "../../lib/grainulator-mcp.js";
+
+const root = fileURLToPath(new URL("../../", import.meta.url));
+function fixture(t: TestContext) {
+	const dir = fs.mkdtempSync(
+		path.join(os.tmpdir(), "grainulator-workflow-example-"),
+	);
+	t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+	return dir;
+}
+
+test("brief skill JSON example generates its advertised Markdown artifact", async (t) => {
+	const dir = fixture(t);
+	const handler = createHandler({ dir, memoryDir: path.join(dir, "memory") });
+	const call = async (name: string, args: Record<string, unknown>) => {
+		const { result } = JSON.parse(
+			(await handler("tools/call", { name, arguments: args }, 1))!,
+		) as { result: { isError: boolean; content: [{ text: string }] } };
+		assert.equal(result.isError, false, JSON.stringify(result));
+		return JSON.parse(result.content[0].text) as { status: string };
+	};
+	await call("init", { question: "Documented export example" });
+	for (const name of ["brief"]) {
+		const source = fs.readFileSync(
+			path.join(root, "skills", name, "SKILL.md"),
+			"utf8",
+		);
+		const example = JSON.parse(
+			source.match(/```json\n([\s\S]*?)\n\s*```/)![1]!,
+		) as {
+			format: string;
+			output: string;
+		};
+		const result = await call("exports_convert", { ...example, dir });
+		assert.equal(result.status, "ok");
+		assert.match(
+			fs.readFileSync(path.join(dir, example.output), "utf8"),
+			/^# /m,
+		);
+		assert.equal(example.format, "markdown");
+		assert.match(example.output, /\.md$/);
+	}
+});
+
+test("orchestration workflow runs from a discovered nested configuration parent", (t) => {
+	const dir = fixture(t);
+	const configParent = path.join(dir, ".grainulator");
+	fs.mkdirSync(configParent);
+	fs.writeFileSync(
+		path.join(configParent, "grainulator.config.json"),
+		JSON.stringify({
+			schema_version: 1,
+			orchestration: { sprints: [], settings: { sync_interval: "manual" } },
+		}),
+	);
+	const source = fs.readFileSync(
+		path.join(root, "skills/orchestrate/SKILL.md"),
+		"utf8",
+	);
+	assert.match(source, /working directory.*<config-parent>/);
+	for (const args of [
+		["plan", "--format", "ascii"],
+		["next", "--json"],
+	]) {
+		const result = spawnSync(
+			process.execPath,
+			[path.join(root, "bin/grainulator.js"), "orchestrate", ...args],
+			{ cwd: configParent, encoding: "utf8", timeout: 15000 },
+		);
+		assert.equal(result.status, 0, result.stderr);
+		if (args[0] === "next") assert.deepEqual(JSON.parse(result.stdout), []);
+	}
+	assert.deepEqual(fs.readdirSync(dir), [".grainulator"]);
+});

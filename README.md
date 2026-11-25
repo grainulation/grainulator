@@ -68,9 +68,10 @@ Requires **Node.js 24 or later**; Node 24 and 26 LTS are the tested release line
 **Upgrading from an earlier version?** Follow the [migration checklist](docs/UPGRADING.md) to update the plugin and keep your existing research data.
 
 ```sh
-git clone --branch v3.0.1 https://github.com/grainulation/grainulator.git
+git clone --branch v3.1.0 https://github.com/grainulation/grainulator.git
 cd grainulator
 npm ci --ignore-scripts
+npm run build
 node bin/grainulator.js doctor
 ```
 
@@ -180,9 +181,11 @@ The compiler checks the structure and support recorded in the ledger; it does no
 npm test
 npm run test:install
 npm run lint
+npm run typecheck
+npm run check:types
 ```
 
-Browser and runtime prerequisites are in [CONTRIBUTING.md](CONTRIBUTING.md). The offline `node bin/grainulator.js demo` exercises the adapter/verifier protocol without a provider account.
+Development and runtime prerequisites are in [CONTRIBUTING.md](CONTRIBUTING.md). The offline `node bin/grainulator.js demo` exercises the adapter/verifier protocol without a provider account.
 
 </details>
 

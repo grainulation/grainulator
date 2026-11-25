@@ -1,11 +1,16 @@
 {
-  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
-  "mcpServers": {
-    "grainulator": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["${PLUGIN_ROOT}/bin/grainulator-plugin.js"],
-      "env": {"GRAINULATOR_MEMORY_DIR": "${PLUGIN_DATA}/memory"}
-    }
-  }
+	"$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+	"mcpServers": {
+		"grainulator": {
+			"type": "stdio",
+			"command": "node",
+			"args": [
+				"${PLUGIN_ROOT}/bootstrap/plugin-entry.mts",
+				"native-mcp"
+			],
+			"env": {
+				"GRAINULATOR_MEMORY_DIR": "${PLUGIN_DATA}/memory"
+			}
+		}
+	}
 }

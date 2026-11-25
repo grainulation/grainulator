@@ -1,6 +1,6 @@
 {
 	"name": "grainulator",
-	"version": "3.0.1",
+	"version": "3.1.0",
 	"description": "Evidence and verification for model-assisted work. Portable workflows, a unified MCP interface, and clear next actions.",
 	"author": {
 		"name": "Grainulation"
@@ -12,7 +12,8 @@
 			"command": "node",
 			"env_vars": [
 				"GRAINULATOR_WORKSPACE",
-				"GRAINULATOR_CONFIG"
+				"GRAINULATOR_CONFIG",
+				"GRAINULATOR_CLI"
 			]
 		}
 	},
@@ -22,10 +23,7 @@
 		"longDescription": "Track evidence, challenge assumptions, resolve conflicting claims, and carry the work between models and sessions.",
 		"developerName": "Grainulation",
 		"category": "Productivity",
-		"capabilities": [
-			"Read",
-			"Write"
-		],
+		"capabilities": ["Read", "Write"],
 		"websiteURL": "https://grainulator.dev",
 		"defaultPrompt": [
 			"Use Grainulator to investigate this question.",

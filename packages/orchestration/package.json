@@ -1,6 +1,6 @@
 {
   "name": "@grainulation/grainulator-orchestration",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "description": "Multi-sprint research orchestrator \u2014 coordinate parallel research across teams",
   "type": "module",
   "main": "lib/planner.js",
@@ -18,7 +18,6 @@
   "files": [
     "bin/",
     "lib/",
-    "templates/",
     "README.md",
     "LICENSE",
     "CODE_OF_CONDUCT.md",
@@ -53,7 +52,7 @@
     "node": ">=24"
   },
   "dependencies": {
-    "@grainulation/grainulator-shared": "3.0.1"
+    "@grainulation/grainulator-shared": "3.1.0"
   },
   "private": true
 }

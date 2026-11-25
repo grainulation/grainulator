@@ -7,7 +7,6 @@ You are generating a self-contained briefing optimized for a **successor** — s
 | Command    | Audience           | Optimized for                         |
 | ---------- | ------------------ | ------------------------------------- |
 | `/brief`   | Decision-makers    | "What should we do?"                  |
-| `/present` | External audiences | Persuasion                            |
 | `/status`  | Current researcher | Snapshot                              |
 | `/handoff` | Successor          | "What do I need to know to continue?" |
 
@@ -40,7 +39,7 @@ You are generating a self-contained briefing optimized for a **successor** — s
    - Unmitigated risks
    - Dismissed blind spots
 
-5. **Generate the handoff document**: Create `output/handoff.md` and `output/handoff.html`.
+5. **Generate the handoff document**: Create `output/handoff.md`.
 
 6. **Print a summary** to the terminal.
 
@@ -50,7 +49,7 @@ Preserve the user’s edits. Commit only when the task explicitly calls for it; 
 
 ## Tell the user
 
-- Point them to `output/handoff.md` and `output/handoff.html`
+- Point them to `output/handoff.md`
 - Highlight the most important open questions
 - Suggest: `/replay` for detailed timeline, `/blind-spot` for gap analysis
 

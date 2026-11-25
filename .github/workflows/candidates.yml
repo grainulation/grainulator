@@ -23,9 +23,10 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 24
+          node-version: 24.22.3
           package-manager-cache: false
       - run: npm ci --ignore-scripts
+      - run: npm run build
       - name: Conversion and distribution regressions
         run: npm run test:distribution
       - name: Package committed source
@@ -33,6 +34,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/release-inputs"
           node scripts/package-release.mjs --revision "$GITHUB_SHA" --out "$RUNNER_TEMP/release-inputs/base"
           node scripts/package-migration.mjs --revision "$GITHUB_SHA" --out "$RUNNER_TEMP/release-inputs/migration"
+          node scripts/migration-candidate-check.mjs --candidate-dir "$RUNNER_TEMP/release-inputs/migration"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: base-candidate
@@ -58,6 +60,8 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           package-manager-cache: false
+      - run: npm ci --ignore-scripts
+      - run: npm run build
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: base-candidate
@@ -65,13 +69,16 @@ jobs:
       - name: Offline install and exercise the identical base archive
         run: |
           candidate_archive=$(node --input-type=module -e 'import fs from "node:fs";import path from "node:path";const folder=path.join(process.env.RUNNER_TEMP,"base-input/base");console.log(path.join(folder,JSON.parse(fs.readFileSync(path.join(folder,"base-record.json"))).filename))')
-          GRAINULATOR_TEST_ARCHIVE="$candidate_archive" node scripts/package-isolation-check.mjs
+          candidate_record="$RUNNER_TEMP/base-input/base/base-record.json"
+          expected_build=$(node --input-type=module -e 'import fs from "node:fs";console.log(JSON.parse(fs.readFileSync(process.argv[1])).build_id)' "$candidate_record")
+          expected_version=$(node --input-type=module -e 'import fs from "node:fs";console.log(JSON.parse(fs.readFileSync(process.argv[1])).version)' "$candidate_record")
+          GRAINULATOR_TEST_ARCHIVE="$candidate_archive" GRAINULATOR_EXPECTED_BUILD_ID="$expected_build" GRAINULATOR_EXPECTED_VERSION="$expected_version" node scripts/package-isolation-check.mjs
 
   native:
     uses: ./.github/workflows/native-candidates.yml
 
   assemble:
-    name: Bind passing candidates and generate formula
+    name: Bind passing candidate archives
     needs: [base-acceptance, native]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -83,8 +90,10 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 24
+          node-version: 24.22.3
           package-manager-cache: false
+      - run: npm ci --ignore-scripts
+      - run: npm run build
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           path: ${{ runner.temp }}/candidate-inputs
@@ -94,44 +103,16 @@ jobs:
         run: |
           arguments=()
           while IFS= read -r record; do arguments+=(--asset-record "$record"); done < <(find "$RUNNER_TEMP/candidate-inputs" -type f -name asset-record.json)
-          node scripts/homebrew-release.mjs --base-record "$RUNNER_TEMP/candidate-inputs/base-candidate/base/base-record.json" --migration-record "$RUNNER_TEMP/candidate-inputs/base-candidate/migration/migration-record.json" "${arguments[@]}" --out "$RUNNER_TEMP/release"
+          node scripts/assemble-release.mjs --base-record "$RUNNER_TEMP/candidate-inputs/base-candidate/base/base-record.json" --migration-record "$RUNNER_TEMP/candidate-inputs/base-candidate/migration/migration-record.json" "${arguments[@]}" --out "$RUNNER_TEMP/release"
           node --input-type=module -e 'import fs from "node:fs";import crypto from "node:crypto";const pin=crypto.createHash("sha256").update(fs.readFileSync(process.env.RUNNER_TEMP+"/release/release-manifest.json")).digest("hex");fs.appendFileSync(process.env.GITHUB_OUTPUT,"manifest_sha256="+pin+"\n")'
       - name: Revalidate trusted manifest inventory before upload
         env:
           MANIFEST_SHA256: ${{ steps.manifest.outputs.manifest_sha256 }}
-        run: node scripts/homebrew-verify-release.mjs --directory "$RUNNER_TEMP/release" --manifest-sha256 "$MANIFEST_SHA256" --source-commit "$GITHUB_SHA"
-      - name: Generate literal formula from pinned candidates
-        env:
-          MANIFEST_SHA256: ${{ steps.manifest.outputs.manifest_sha256 }}
-        run: node scripts/homebrew-formula.mjs --manifest "$RUNNER_TEMP/release/release-manifest.json" --manifest-sha256 "$MANIFEST_SHA256" --artifacts "$RUNNER_TEMP/release" --out "$RUNNER_TEMP/grainulator.rb"
+        run: node scripts/verify-release.mjs --directory "$RUNNER_TEMP/release" --manifest-sha256 "$MANIFEST_SHA256" --source-commit "$GITHUB_SHA"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-candidate
-          path: |
-            ${{ runner.temp }}/release/
-            ${{ runner.temp }}/grainulator.rb
+          path: ${{ runner.temp }}/release/
           if-no-files-found: error
           retention-days: 30
           compression-level: 0
-
-  homebrew:
-    name: Actual candidate formula / macOS ARM64
-    needs: assemble
-    runs-on: macos-15
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 24
-          package-manager-cache: false
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          name: release-candidate
-          path: ${{ runner.temp }}/brew-input
-      - name: Run reviewed recipe in a private prefix
-        env:
-          MANIFEST_SHA256: ${{ needs.assemble.outputs.manifest_sha256 }}
-        run: node scripts/homebrew-check.mjs --formula "$RUNNER_TEMP/brew-input/grainulator.rb" --release-dir "$RUNNER_TEMP/brew-input/release" --manifest-sha256 "$MANIFEST_SHA256" --brew /opt/homebrew/bin/brew

@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2026-11-24
+
+### Product scope and core types
+
+- Retire built-in HTML reports, slide decks, static-site output, PDF generation and presentation templates. Briefs and analytics reports use Markdown; JSON and Markdown exports preserve evidence for external presentation tools. Existing user outputs are retained.
+- Keep Homebrew installation through the shared tap; formula tooling and channel acceptance now belong to that repository. Product CI still verifies native archives and immutable release manifests.
+- Convert all maintained first-party CLI, workspace, hook, research, release/migration, evaluation and test sources to strict TypeScript. Git tracks TypeScript sources; compiled JavaScript and build identity live only in ignored local builds and CI/release artifacts. The pipeline compiles frozen Git snapshots with their own locked build dependencies. CI checks cold bootstrap, executable modes, complete inventory, no tracked JS and output freshness.
+- Fix the compact MCP regression tests' filesystem races by reading bytes and metadata through one file descriptor, retaining content, timestamp and file-identity assertions.
+
+- Keep source-only plugin checkouts usable through a Node-native launcher and a matching verified installed CLI bridge; compiled archives carry their own runtime. Plugin startup never compiles, installs or downloads code.
+
+### Premortem corrections
+
+- Reject orphan generated JavaScript and malformed structured MCP results; enforce own-property schemas, structural JSON enums and compact conditional arguments before dispatch.
+- Commit MCP roots capabilities only after the first accepted initialization, preserve explicit invalid stdio params, and honor only negotiated valid roots-change notifications.
+- Preserve compiler conflict graphs, claim statuses and distinct evidence sources in Markdown; honor configured source paths and report full-document preview limits accurately.
+- Refuse failed or colliding CI artifact/summary outputs and return structured MCP filesystem errors.
+- Bind release identities to exact base/converter archive contents, exercise the archived converter before acceptance, and verify the peeled live tag before publication.
+- Correct retired command references and document the actual supported manual Homebrew update procedure.
+- Correct orchestration cycle rendering to use Set size, and keep decomposition previews free of an undefined filesystem-root reference.
+- Preserve prototype-named manifest topics and analytics keys without inherited-property collisions or prototype pollution, and reject malformed manifest source metadata before string operations.
+
+### Added
+
+- Add `mcp --toolset compact` discovery with 15 consistently named tools for evidence, local memory and exports, selected explicitly by the Docker image. Authored claims and document imports remain separate; CLI and bundled plugin registrations retain the legacy 29-tool default, and containers can select it explicitly.
+- Document nested input semantics, conditional modes, result shapes, side effects, sibling selection and valid call examples in both MCP profiles; verify real wire discovery and compact lifecycle calls against those contracts. These checks do not assert a new Glama score.
+- Negotiated MCP protocol support with matching output schemas and structured results on `2025-06-18`, while preserving text-only responses for older supported clients.
+- Installed-package checks for compact discovery, resource access, legacy-name refusal and protocol compatibility.
+
+### Fixed
+
+- Compile artifact plugin launchers to JavaScript and stage their MCP/hook definitions, including real manifest execution under node_modules. Reject stale same-root source fingerprints after checkout updates until rebuilt.
+
+- Read complete hook stdin asynchronously before making write-guard decisions, avoiding a reproduced Node 24 delayed-pipe race that could leave managed-file writes unblocked.
+- Describe initialization, local writes and replacement behavior with explicit tool hints, and align result contracts with successful and business-error responses.
+- Preserve historical audit access and project finding metadata from the same selected claim snapshot; bound diagnostic output and report truncation.
+- Reject malformed request IDs, metadata and tool arguments before negotiation or mutation, and align compact criteria constraints with dispatch validation.
+- Correct the removed-alias documentation and document compact scope, format discovery and migration requirements. These interface changes do not establish a new external quality score.
+
 ## [3.0.1] - 2026-11-18
 
 ### Fixed

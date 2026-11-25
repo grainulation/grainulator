@@ -27,10 +27,10 @@ Read CLAUDE.md for sprint context and claims.json for all existing claims.
    - Mark the losing claim as `superseded` with `resolved_by`
    - Add new evaluation claims (evidence: "tested") if needed
 
-4. **Generate comparison dashboard**: Create `evidence/<topic-or-sprint-slug>.html` — a dashboard-style HTML page showing:
+4. **Generate comparison evidence**: Create `evidence/<topic-or-sprint-slug>.md` — a Markdown comparison showing:
    - Side-by-side comparisons with real numbers
    - Conflict resolutions with evidence
-   - Data tables, charts (CSS-only), metrics
+   - Data tables, measured metrics and reproducible commands
 
 ## Claim updates
 
@@ -44,7 +44,7 @@ Evaluation claims use evidence tier `tested` or `production`:
   "content": "<measured result — always include numbers>",
   "source": {
     "origin": "evaluation",
-    "artifact": "evidence/<slug>.html",
+    "artifact": "evidence/<slug>.md",
     "connector": null
   },
   "evidence": "tested",
@@ -75,7 +75,7 @@ Preserve the user’s edits. Commit only when the task explicitly calls for it; 
 
 - Show the compilation status (ready or still blocked)
 - Summarize what was evaluated and key findings
-- Point them to the comparison dashboard HTML
+- Point them to the Markdown comparison evidence
 - If ready: suggest `/brief` to compile the decision document
 - If blocked: explain what conflicts remain and how to resolve them
 

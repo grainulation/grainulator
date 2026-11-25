@@ -40,3 +40,12 @@ dist/
 !packages/runtime/test/fixtures/**/.grainulator/runtime/
 !packages/runtime/test/fixtures/**/.grainulator/runtime/claims.json
 !packages/runtime/test/fixtures/**/.grainulator/runtime/run.json
+
+# Compiled local/CI/release artifacts. Canonical source is TypeScript.
+*.js
+*.mjs
+*.cjs
+/build-info.json
+
+# Durable local review/run evidence is never product source.
+/runs/

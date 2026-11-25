@@ -48,7 +48,7 @@ The plugin config starts only this server. Its `deepwiki` tool fetches public re
 
 Every tool accepts an optional `dir`, resolved relative to the startup workspace. A directory override cannot escape that workspace. File inputs and outputs are also contained; symlinks cannot redirect them outside it. A configured memory store is separate from sprint directories and is shared only where you explicitly configure the same location.
 
-The CLI and MCP use the same memory location: `--memory-dir`, then `GRAINULATOR_MEMORY_DIR`, then legacy `SILO_STORE`. The default is `~/.grainulator/memory`; if its index does not exist and an existing `~/.memory/index.json` does, the existing legacy store is reused. Nothing is automatically moved or merged. The plugin uses its explicitly configured data directory. Starting the server or listing tools does not initialize a sprint or create a memory store. Memory operations create the store when needed.
+The CLI and MCP use the same memory location: `--memory-dir`, then `GRAINULATOR_MEMORY_DIR`, then `~/.grainulator/memory`. Historical environment variables and store directories are not probed; use the separate converter for a reviewed migration. The plugin uses its explicitly configured data directory. Starting the server or listing tools does not initialize a sprint or create a memory store. Memory operations create the store when needed.
 
 Shared local memory writers serialize index initialization, collection updates, and removal through the same filesystem lock. A crashed writer leaves a lock for inspection instead of permitting automatic lock stealing. Memory search returns source provenance alongside findings, so reuse retains the evidence reference.
 
@@ -58,7 +58,7 @@ Shared local memory writers serialize index initialization, collection updates, 
 grainulator init --dir ./research --question "Should we migrate?"
 ```
 
-Or call `init` with `{"dir":"research","question":"Should we migrate?"}`. Initialization creates only `claims.json` and `compilation.json`. Optional `audience`, semicolon-separated `constraints`, and `done` capture scope. Existing sprints are preserved unless you explicitly pass `force: true` (`--force` in the CLI); a forced replacement keeps a uniquely named backup of the previous ledger. Host configuration, instructions, and Git hooks stay untouched.
+Or call `init` with `{"dir":"research","question":"Should we migrate?"}`. Initialization creates the configured ledger and compilation files (defaults: `claims.json` and `compilation.json`); `files_created` identifies their actual relative paths. Optional `audience`, semicolon-separated `constraints`, and `done` capture scope. Existing sprints are preserved unless you explicitly pass `force: true` (`--force` in the CLI); a forced replacement keeps a uniquely named backup of the previous ledger. Host configuration, instructions, and Git hooks stay untouched.
 
 Claims accept a typed `source` with `origin`, `artifact`, and `connector`; optional `witnessed_claim`, `challenged_claim`, `relationship`, and `source_role` (`primary_evidence` or `secondary_citation`) record corroboration, adversarial challenges, and provenance roles, and optional `doi`, `url`, `arxiv`, and `aliases` support offline canonical identifier normalization in grounded report packets (see [grounded reports](GROUNDED-REPORTS.md) for `grainulator report packet`, `check`, `verify-semantics`, `compare`, `attest`, and `verify-attestation`). Use `conflicts_with` for contradictory claim IDs. The CLI accepts `--source-origin`, `--source-artifact`, `--source-connector`, `--witnessed-claim`, `--challenged-claim`, `--relationship`, `--source-role`, and `--conflicts-with`. Malformed provenance, tags, and conflict lists are rejected before the ledger changes.
 
@@ -80,11 +80,56 @@ After recording evidence, call `compile`. It returns the current compilation sta
 
 ## Compatibility
 
-Existing `evidence/*`, `memory/*`, and `exports/*` tool calls and resource URIs remain accepted as hidden aliases. They do not appear in the unified server's tool or resource lists. Original component CLI entry points remain available to read old projects. This preserves existing data and integrations without making new callers learn the former product names.
-
-These aliases apply inside the `grainulator` server. They do not recreate old MCP server IDs, host-generated prefixes, or the removed automatic remote DeepWiki connection. Update custom registrations and allowlists to the tools your host exposes. See the [1.x upgrade checklist](UPGRADING.md).
+Version 3 uses the exact canonical names listed above. Historical component-prefixed calls and resource aliases are not accepted; update custom registrations and allowlists using the [upgrade guide](UPGRADING.md). The server does not recreate retired component servers or automatic remote connections.
 
 Changing source code does not update a plugin that is already running. To test these tools, point your agent at this checkout or a local archive, then restart its connection. You do not need to install or publish anything globally.
+
+## Compact profile and container discovery
+
+The default `legacy` toolset preserves all 29 current tool names. An explicit compact profile provides **15 tools** for evidence, local memory and exports within the same server:
+
+```sh
+node bin/grainulator.js mcp --dir /absolute/workspace --toolset compact
+node bin/grainulator.js connect --dir /absolute/workspace --toolset compact
+```
+
+`connect` prints a registration; it does not change host settings. Bundled plugins continue to select the default legacy toolset. The Docker image explicitly selects compact discovery by default; an explicit Docker command replaces that default, so include `--toolset compact` when supplying a different workspace. Test a separate compact registration in a fresh host session before migrating allowlists or workflows. CLI/plugin default discovery and the legacy names remain unchanged; the container's explicit compact selection is described in the [upgrade guide](UPGRADING.md).
+
+| Compact tool | Existing capability |
+| --- | --- |
+| `configure_sprint` | `init` in explicit create mode; `acceptance_set` in criteria mode |
+| `record_claim` | `add_claim` for authored evidence |
+| `import_claims` | Document import with its existing provenance and repeat-import rules |
+| `correct_claim` | Stated-tier successor and preserved predecessor history |
+| `resolve_conflict` | Existing pairwise conflict resolution |
+| `search_claims` | Claim search plus audit revision and observation freshness |
+| `compile_sprint` | Compilation writes and Auto/Manual next actions |
+| `inspect_sprint` | Fixed status, evidence, acceptance and duplicate report |
+| `link_premises` | Explicit necessary-premise version links |
+| `observe_source` | Confined source capture |
+| `update_finding` | Revision-guarded audit transitions |
+| `search_memory` | Ranked search, or collection/pack catalogs when query is omitted |
+| `import_memory` | Local pack or collection import |
+| `store_memory` | Local named collection storage |
+| `export_document` | Format catalog with only `dir`; with `format`, inline conversion, preview lines, or an explicitly named output file |
+
+Compact calls reject unadvertised legacy names; there is no hidden fallback route. The existing seven resources remain available, including memory and export catalogs. Direct authoring and imported document evidence remain distinct operations. `inspect_sprint` bounds every returned array with `limit` (default 20, maximum 100), including `truncated_paths`. `truncated_path_count` counts all shortened paths; subtract the returned list length to find the number of omitted path entries. Use `search_claims` for full records. Audit filters return matching records and updated counts.
+
+`configure_sprint` requires `mode:create` or `mode:criteria`. Creating requires a question; replacing existing data still requires explicit force and creates a backup. Omitting `done` creates no completion criterion and leaves an acceptance gap. Criteria mode requires a reason and question or done, rejects force/audience/constraints, and preserves history; `done` supersedes prior active completion criteria. Historical `search_claims` results retain the shared audit defaults and observation freshness, including when verdict/resolution filters select superseded records.
+
+`search_memory` catalog mode accepts only `dir`; search filters require `query`. Tool-only clients can call `export_document` with `{ "dir": "." }` to receive `formats` and `count`. Each format has `id`, `name`, `extension`, `mimeType`, and `description`. Rendering requires `format`; `source`, `lines`, and `output` are forbidden without it. Export `lines` and `output` cannot be combined. Unknown-format errors direct both profiles to `grainulator://exports/formats`. The export tool conservatively advertises mutation and replacement capability even though catalog and inline calls write no file.
+
+Compact deliberately excludes network retrieval, Confluence, graph building and sync-log tools. Those capabilities remain available through the legacy MCP toolset and the existing CLI (`grainulator memory --help` and `grainulator search --help`). The sync-log resource remains readable. This is a real scope difference, not an alternate listing of hidden tools. A full legacy profile's score cannot be represented as the compact profile's score, or vice versa. The registry/container profile exposes fifteen supported operations; that count does not establish a TDQS score or eliminate completeness requirements. See [tool-definition quality](TDQS.md) for the primary rubric, profile boundaries and verification process.
+
+## MCP protocol and result contracts
+
+Each connection negotiates `2024-11-05`, `2025-03-26`, or `2025-06-18` on its first valid `initialize` request. Required fields are a string `protocolVersion`, object `capabilities`, and object `clientInfo` with string `name` and `version`. Malformed requests return invalid params without committing a version. An explicitly requested unsupported version receives the highest supported version (`2025-06-18`), which the client may accept or reject. Repeated valid initialization returns the committed version and cannot change discovery or result formats. Before initialization, discovery and calls use text-only contracts. Connections do not share negotiation state.
+
+With `2025-06-18`, tools advertise output schemas and return the same JSON in `structuredContent` and the existing text content block. The server checks the declared field types before sending structured results. Legacy protocol connections retain text-only results and omit output schemas. Business failures preserve `isError:true` and structured error details on modern connections; unknown tools remain JSON-RPC errors. Optional output fields describe the underlying operation's varying result forms, rather than claiming that every backend emits every field.
+
+In both profiles, `correct_claim` returns predecessor and successor IDs as `previous` and `replacement`, plus `needs_reverification`. Export previews return `totalLines`, `showing`, and `hasMore` for the bounded inline rendering. Legacy Confluence pull returns `claimCount` for claims retrieved, including when no import destination was supplied or when deduplication skips existing claims; this is distinct from an imported count.
+
+Legacy `memory_graph` returns node, edge, source, topic and tag counts for build/stats; `related` and `topic` return `related` or `claims` with the returned record `count`. The clusters action returns at most 20 `clusters`, while `count` reports all clusters found before that cap.
 
 ## Complete records, calibration and document import
 

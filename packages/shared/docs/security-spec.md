@@ -1,5 +1,9 @@
 # Security Spec — Grainulation v1 Ecosystem
 
+> Historical browser UI specification. Grainulator no longer ships browser dashboards,
+> HTML presentation templates or PDF rendering. Current CLI/MCP evidence workflows
+> and external HTML ingestion retain their own output-safety checks.
+
 > Addresses blind spots r042/r059: no input sanitization spec for claim content rendered as HTML in UIs.
 
 ## Scope

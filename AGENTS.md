@@ -6,9 +6,11 @@ Use the active sprint directory identified by the current task or project instru
 
 Source imports and local-edit provenance live in `docs/source-imports.json`. Do not overwrite original checkouts. The only supported product is Grainulator. Private workspace packages and folders describe responsibilities; no component aliases or standalone discovery are retained.
 
+From a source-only checkout run `npm ci --ignore-scripts` and `npm run build` first. Never commit compiled JavaScript or `build-info.json`; release/CI artifacts carry them.
+
 Run `npm test` for component suites and dogfood regressions. Run `node test/conformance.mjs` from `packages/runtime` for Rust runtime conformance. Use `npm run test:install` for installed CLI/MCP and headless research acceptance. Public website code and deployment are maintained separately.
 
-The permission dashboard and component browser dashboards have been removed at the maintainer’s request. Do not restore their HTTP servers, browser apps, launch hooks, or runtime dependencies. Native hosts own permissions and remote access. The research playground, privacy pages, browser assets and website-asset vendoring are also retired. Do not restore local web servers or runtime browser dependencies. Dev-only browser checks may validate generated offline reports. Portable CLI research, generated evidence and analytics reports, and reusable report templates remain supported.
+The permission dashboard and component browser dashboards have been removed at the maintainer’s request. Do not restore their HTTP servers, browser apps, launch hooks, or runtime dependencies. Native hosts own permissions and remote access. The research playground, privacy pages, browser assets and website-asset vendoring are also retired. Do not restore local web servers or runtime browser dependencies. Presentation renderers, HTML templates, slide decks, static-site output and PDF generation are retired. Preserve portable CLI research, evidence validation and JSON/Markdown data exports. Analytics reports use Markdown; external tools own visual presentation.
 
 ## Verification and reporting
 

@@ -1,0 +1,24 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"strict": true,
+		"noUncheckedIndexedAccess": true,
+		"exactOptionalPropertyTypes": true,
+		"verbatimModuleSyntax": true,
+		"newLine": "lf",
+		"noEmitOnError": true,
+		"forceConsistentCasingInFileNames": true,
+		"types": ["node"],
+		"rootDir": "typescript",
+		"skipLibCheck": true,
+		"moduleDetection": "force",
+		"lib": ["ES2022", "DOM", "DOM.Iterable"]
+	},
+	"include": [
+		"typescript/**/*.ts",
+		"typescript/**/*.mts",
+		"typescript/**/*.cts"
+	]
+}
