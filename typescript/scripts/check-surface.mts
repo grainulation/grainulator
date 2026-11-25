@@ -85,6 +85,28 @@ for (const component of [
 	assert.equal(metadata.private, true);
 	assert.equal(metadata.bin, undefined);
 }
+// Native hooks compare enrollment receipts with their compiled Cargo version.
+// Catch drift here before spending four native runner jobs on a release candidate.
+const nativeManifest = fs.readFileSync(
+	path.join(root, "packages/runtime/rs/Cargo.toml"),
+	"utf8",
+);
+const nativeLock = fs.readFileSync(
+	path.join(root, "packages/runtime/rs/Cargo.lock"),
+	"utf8",
+);
+assert.equal(
+	/^version = "([^"]+)"$/m.exec(nativeManifest)?.[1],
+	pkg.version,
+	"native crate version must match the product",
+);
+assert.equal(
+	/\[\[package\]\]\nname = "grainulator-runtime-check"\nversion = "([^"]+)"/.exec(
+		nativeLock,
+	)?.[1],
+	pkg.version,
+	"locked native crate version must match the product",
+);
 assert.equal(fs.existsSync(path.join(root, "packages/legacy-cli")), false);
 for (const component of fs.readdirSync(path.join(root, "packages"))) {
 	for (const control of [
