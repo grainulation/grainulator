@@ -130,6 +130,95 @@ const claim = {
 	evidence: "documented",
 };
 
+test("rollback retries its own restored preimage and preserves divergent edits after interruption", async (t) => {
+	for (const existing of [false, true]) {
+		for (const divergent of [false, true]) {
+			await t.test(
+				[
+					existing ? "present" : "absent",
+					divergent ? "divergent edit" : "resume",
+				].join(" "),
+				(t) => {
+					const f = fixture();
+					try {
+						f.install();
+						initializeRuntime(f.workspace);
+						const config = path.join(f.root, "host");
+						fs.mkdirSync(config);
+						const files = enrollmentPaths(f.workspace, config);
+						const original = Buffer.from('{"theme":"original","hooks":{}}\n');
+						if (existing) fs.writeFileSync(files.settings, original);
+						enrollRuntime(f.workspace, {
+							host: "codex",
+							configDirectory: config,
+							expectedSettingsHash: existing ? sha256(original) : "absent",
+							home: f.home,
+						});
+						const receipt = readRegular(files.receipt);
+						const claimsFile = path.join(
+								f.workspace,
+								".grainulator/runtime/claims.json",
+							),
+							runFile = path.join(f.workspace, ".grainulator/runtime/run.json");
+						const claimsBefore = readRegular(claimsFile),
+							runBefore = readRegular(runFile);
+						const unlink = fs.unlinkSync;
+						const interruption = t.mock.method(
+							fs,
+							"unlinkSync",
+							(file: fs.PathLike) => {
+								if (String(file) === files.receipt)
+									throw new Error("interrupted after settings restoration");
+								return unlink(file);
+							},
+						);
+						assert.throws(
+							() =>
+								rollbackRuntimeEnrollment(f.workspace, {
+									expectedEnrollmentHash: sha256(receipt),
+									expectedSettingsHash: sha256(readRegular(files.settings)),
+								}),
+							/interrupted after settings/,
+						);
+						interruption.mock.restore();
+						if (existing)
+							assert.deepEqual(readRegular(files.settings), original);
+						else assert.equal(fs.existsSync(files.settings), false);
+						if (divergent)
+							fs.writeFileSync(
+								files.settings,
+								'{"theme":"unrelated later edit"}\n',
+							);
+						const current = fs.existsSync(files.settings)
+							? readRegular(files.settings)
+							: null;
+						const resume = () =>
+							rollbackRuntimeEnrollment(f.workspace, {
+								expectedEnrollmentHash: sha256(readRegular(files.receipt)),
+								expectedSettingsHash: current ? sha256(current) : "absent",
+							});
+						if (divergent) {
+							assert.throws(resume, /Host settings changed/);
+							assert.deepEqual(readRegular(files.settings), current);
+							assert.deepEqual(readRegular(files.receipt), receipt);
+						} else {
+							assert.equal(resume().state, "rolled-back");
+							assert.equal(fs.existsSync(files.receipt), false);
+							if (existing)
+								assert.deepEqual(readRegular(files.settings), original);
+							else assert.equal(fs.existsSync(files.settings), false);
+						}
+						assert.deepEqual(readRegular(claimsFile), claimsBefore);
+						assert.deepEqual(readRegular(runFile), runBefore);
+					} finally {
+						f.cleanup();
+					}
+				},
+			);
+		}
+	}
+});
+
 test("native install requires independent manifest pin and refuses self-consistent replacement", () => {
 	const f = fixture();
 	try {

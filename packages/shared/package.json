@@ -1,6 +1,6 @@
 {
   "name": "@grainulation/grainulator-shared",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "Shared sprint utilities and filesystem safety",
   "license": "MIT",
   "author": "grainulation contributors",

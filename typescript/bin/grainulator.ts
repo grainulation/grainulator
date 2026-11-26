@@ -112,19 +112,24 @@ try {
 	else if (command === "report")
 		await (await import("../lib/report-packet.js")).reportCLI(args);
 	else if (command === "setup") {
-		validateOptions(["--dir"], ["--json"]);
+		validateOptions(["--dir", "--toolset"], ["--json", "--repair"]);
 		if (args.includes("--help") || args.includes("-h"))
 			console.log(
-				"Usage:\n  grainulator setup --dir <absolute-project> [--json]\nSave the default native-host workspace binding. Host settings are not changed. Restart the host after changing this binding.",
+				"Usage:\n  grainulator setup --dir <absolute-project> [--toolset legacy|compact] [--repair] [--json]\nSave the native-host workspace binding and optional MCP profile. Omitted toolset selects legacy. Existing unrelated files are refused; --repair preserves a private preimage backup before explicit replacement. Check GRAINULATOR_CONFIG before repair. Host settings are not changed. Restart the host after changing this binding.",
 			);
 		else {
 			const result = (await import("../lib/workspace-config.js")).saveWorkspace(
 				option("--dir", ""),
+				process.env,
+				option("--toolset"),
+				{ repair: args.includes("--repair") },
 			);
 			output(
 				result,
-				`Workspace: ${result.workspace}\nSaved: ${result.config}\nRestart the host to load this default workspace.`,
+				`Workspace: ${result.workspace}\nMCP toolset: ${result.toolset ?? "legacy"}\nSaved: ${result.config}\nRestart the host to load these defaults.`,
 			);
+			if (result.backup && !args.includes("--json"))
+				console.log("Previous binding: " + result.backup);
 		}
 	} else if (command === "init") {
 		validateOptions(

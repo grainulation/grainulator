@@ -63,12 +63,14 @@ Homebrew provides Node 24 and the matching native assets. The offline demo needs
 
 ### From source
 
+Select one published tag from the [release list](https://github.com/grainulation/grainulator/releases) and set `GRAINULATOR_RELEASE_TAG` to it. Use the same release for the CLI and source plugin.
+
 Requires **Node.js 24 or later**; Node 24 and 26 LTS are the tested release lines. Node 24 is the development default.
 
 **Upgrading from an earlier version?** Follow the [migration checklist](docs/UPGRADING.md) to update the plugin and keep your existing research data.
 
 ```sh
-git clone --branch v3.1.0 https://github.com/grainulation/grainulator.git
+git clone --branch "${GRAINULATOR_RELEASE_TAG:?Set this to the published tag matching your CLI}" https://github.com/grainulation/grainulator.git
 cd grainulator
 npm ci --ignore-scripts
 npm run build

@@ -48,6 +48,13 @@ node /absolute/path/to/grainulator/bin/grainulator.js setup --dir "$PWD"
 
 Then restart Codex. This saves a default project in `~/.config/grainulator/workspace.json`. Run it again from another folder to switch projects or set `GRAINULATOR_WORKSPACE=/absolute/path/to/project` when launching Codex to override it for one session.
 
+For the focused evidence, local memory and export workflow, add
+`--toolset compact` to the setup command. This selects the supported 15-tool
+profile after restart. Omit the flag or select `--toolset legacy` for the
+29-tool compatibility profile. With an environment workspace override, set
+`GRAINULATOR_TOOLSET=compact` too. See [profile capabilities](TOOLS.md#compact-profile-and-container-discovery)
+before updating custom tool allowlists.
+
 ## Antigravity
 
 Run this in your terminal:

@@ -876,6 +876,8 @@ try {
 		"bootstrap/tsconfig.json",
 		"tsconfig.json",
 		"biome.json",
+		"packages/runtime/rs/Cargo.toml",
+		"packages/runtime/rs/Cargo.lock",
 	]) {
 		fs.mkdirSync(path.dirname(path.join(builtCheckout, name)), {
 			recursive: true,

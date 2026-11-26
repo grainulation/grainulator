@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -48,7 +48,12 @@ async function session({
 }: SessionOptions) {
 	const child = spawn(process.execPath, [plugin], {
 		cwd,
-		env: { ...process.env, GRAINULATOR_WORKSPACE: "", ...env },
+		env: {
+			...process.env,
+			GRAINULATOR_WORKSPACE: "",
+			GRAINULATOR_TOOLSET: undefined,
+			...env,
+		},
 		stdio: ["pipe", "pipe", "pipe"],
 	});
 	const replies = new Map<number | undefined, (message: RpcMessage) => void>();
@@ -101,13 +106,22 @@ async function session({
 	}
 	await call("ping", {});
 
+	const listing = (await call("tools/list", {})) as RpcMessage & {
+		result: { tools: { name: string }[] };
+	};
+	const compact = listing.result.tools.some(
+		(tool) => tool.name === "configure_sprint",
+	);
 	const init = (await call("tools/call", {
-		name: "init",
-		arguments: { question: "Which database?" },
+		name: compact ? "configure_sprint" : "init",
+		arguments: {
+			...(compact ? { mode: "create" } : {}),
+			question: "Which database?",
+		},
 	})) as RpcMessage & { result: ToolResult };
 	child.stdin.end();
 	await new Promise((resolve) => child.on("close", resolve));
-	return { init, asked, prelude };
+	return { init, asked, prelude, listing };
 }
 
 function setup(t: TestContext) {
@@ -175,6 +189,53 @@ test("agents without roots fall back to the saved default", async (t) => {
 	assert.equal(init.result.isError, false);
 	assert.deepEqual(asked, []);
 	assert.ok(created(s.saved));
+});
+
+test("compact roots recover damaged saved bindings when the environment selects a known profile", async (t) => {
+	for (const contents of [
+		"{",
+		"null",
+		'{"schema":2}',
+		'{"schema":1,"toolset":"typo"}',
+	]) {
+		const s = setup(t);
+		fs.writeFileSync(s.noConfig.GRAINULATOR_CONFIG, contents);
+		const result = await session({
+			cwd: s.cwd,
+			env: { ...s.noConfig, GRAINULATOR_TOOLSET: "compact" },
+			capabilities: { roots: {} },
+			roots: [{ uri: pathToFileURL(s.project).href }],
+		});
+		assert.equal(result.listing.result.tools.length, 15);
+		assert.equal(
+			result.init.result.isError,
+			false,
+			JSON.stringify(result.init),
+		);
+		assert.ok(created(s.project));
+		assert.equal(created(s.saved), false);
+	}
+});
+
+test("a valid saved compact profile remains usable with shared roots and an unusable fallback", async (t) => {
+	const s = setup(t);
+	fs.writeFileSync(
+		s.noConfig.GRAINULATOR_CONFIG,
+		JSON.stringify({
+			schema: 1,
+			workspace: path.join(s.dir, "missing"),
+			toolset: "compact",
+		}),
+	);
+	const result = await session({
+		cwd: s.cwd,
+		env: s.noConfig,
+		capabilities: { roots: {} },
+		roots: [{ uri: pathToFileURL(s.project).href }],
+	});
+	assert.equal(result.listing.result.tools.length, 15);
+	assert.equal(result.init.result.isError, false);
+	assert.ok(created(s.project));
 });
 
 test("unusable roots fall back to the saved default", async (t) => {
@@ -320,4 +381,119 @@ test("only negotiated valid roots notifications invalidate the cached workspace"
 	assert.deepEqual(asked, []);
 	assert.ok(created(s.saved));
 	assert.equal(created(s.project), false);
+});
+
+test("compact tools follow a negotiated roots change", async (t) => {
+	const s = setup(t);
+	const { asked, init, prelude } = await session({
+		cwd: s.cwd,
+		env: { ...s.withConfig(), GRAINULATOR_TOOLSET: "compact" },
+		capabilities: { roots: { listChanged: true } },
+		roots: (count) => [
+			{ uri: pathToFileURL(count === 1 ? s.project : s.explicit).href },
+		],
+		afterInitialize: [
+			{
+				method: "tools/call",
+				params: {
+					name: "configure_sprint",
+					arguments: { mode: "create", question: "First root" },
+				},
+			},
+			{
+				notification: true,
+				method: "notifications/roots/list_changed",
+				params: {},
+			},
+		],
+	});
+	const first = prelude[0];
+	assert.ok(first);
+	assert.equal((first.result as ToolResult).isError, false);
+	assert.equal(init.result.isError, false);
+	assert.equal(asked.length, 2);
+	assert.ok(created(s.project));
+	assert.ok(created(s.explicit));
+	assert.equal(created(s.saved), false);
+});
+
+test("an absolute sprint identity read detects a stale fallback before mutation", async (t) => {
+	const s = setup(t);
+	const cli = fileURLToPath(
+		new URL("../../bin/grainulator.js", import.meta.url),
+	);
+	for (const [dir, sentinel] of [
+		[s.saved, "Sentinel A"],
+		[s.project, "Sentinel B"],
+	] as const) {
+		for (const args of [
+			["init", "--dir", dir, "--question", sentinel],
+			[
+				"add",
+				"--dir",
+				dir,
+				"--id",
+				"sentinel",
+				"--type",
+				"factual",
+				"--topic",
+				"identity",
+				"--content",
+				sentinel,
+				"--evidence",
+				"stated",
+			],
+		]) {
+			const result = spawnSync(process.execPath, [cli, ...args], {
+				encoding: "utf8",
+			});
+			assert.equal(result.status, 0, result.stderr || result.stdout);
+		}
+	}
+	const saved = fs.readFileSync(path.join(s.saved, "claims.json"));
+	const intended = fs.readFileSync(path.join(s.project, "claims.json"));
+	const request = {
+		method: "tools/call",
+		params: {
+			name: "search_claims",
+			arguments: { dir: s.project, query: "Sentinel B" },
+		},
+	};
+	const fallback = await session({
+		cwd: s.cwd,
+		env: { ...s.withConfig(), GRAINULATOR_TOOLSET: "compact" },
+		capabilities: { roots: {} },
+		roots: "error",
+		afterInitialize: [request],
+	});
+	assert.equal(
+		(fallback.prelude[0]?.result as ToolResult | undefined)?.isError,
+		true,
+	);
+	assert.match(JSON.stringify(fallback.prelude), /outside workspace/);
+	assert.deepEqual(fs.readFileSync(path.join(s.saved, "claims.json")), saved);
+	assert.deepEqual(
+		fs.readFileSync(path.join(s.project, "claims.json")),
+		intended,
+	);
+	const pinned = await session({
+		cwd: s.cwd,
+		env: {
+			...s.noConfig,
+			GRAINULATOR_WORKSPACE: s.project,
+			GRAINULATOR_TOOLSET: "compact",
+		},
+		capabilities: {},
+		afterInitialize: [request],
+	});
+	assert.equal(
+		(pinned.prelude[0]?.result as ToolResult | undefined)?.isError,
+		false,
+	);
+	assert.match(JSON.stringify(pinned.prelude), /Sentinel B/);
+	assert.deepEqual(fs.readFileSync(path.join(s.saved, "claims.json")), saved);
+	assert.deepEqual(
+		fs.readFileSync(path.join(s.project, "claims.json")),
+		intended,
+	);
 });

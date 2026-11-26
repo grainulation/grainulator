@@ -301,7 +301,7 @@ export function compactTools(legacyTools: readonly LegacyTool[]) {
 		make(
 			"link_premises",
 			"premise_links",
-			"Bind a conclusion's necessary premises to current active versions. Writes ledger history and rejects unknown IDs/cycles; this is distinct from supporting-source links. Use correct_claim when a premise changes and re-verify affected conclusions.",
+			"Replace a conclusion's necessary-premise links using current active versions. Writes ledger history and rejects unknown IDs/cycles. Use claim provenance for supporting sources and correct_claim for content changes. After rechecking an affected conclusion, use this tool to explicitly rebind its premises; rebinding alone does not verify the conclusion.",
 		),
 		make(
 			"observe_source",
@@ -338,7 +338,7 @@ export function compactTools(legacyTools: readonly LegacyTool[]) {
 		make(
 			"export_document",
 			"exports_convert",
-			"Omit format and supply only dir to list formats (tool-only catalog fallback); otherwise format is required to render evidence inline, preview lines, or save with output. Inline/preview do not write; output can replace an allowed local artifact and cannot overwrite evidence or host configuration. lines and output are mutually exclusive. Discover formats also at grainulator://exports/formats; no remote publication.",
+			"Render sprint evidence inline, preview its first lines, or save a local document. Omit format and supply only dir to list available formats; use a returned format ID for rendering. lines and output are mutually exclusive. Inline/preview do not write; output can replace an allowed local artifact but cannot overwrite evidence or host configuration. Formats are also available at grainulator://exports/formats. No remote publication.",
 			{
 				...convert,
 				lines: {

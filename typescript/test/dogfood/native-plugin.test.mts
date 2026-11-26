@@ -21,6 +21,7 @@ async function connect(
 	dir: string,
 	workspace: string,
 	config = path.join(dir, "workspace.json"),
+	toolset?: string,
 ) {
 	const {
 		mcpServers: { grainulator: server },
@@ -42,6 +43,7 @@ async function connect(
 			),
 			GRAINULATOR_WORKSPACE: workspace,
 			GRAINULATOR_CONFIG: config,
+			GRAINULATOR_TOOLSET: toolset,
 		},
 	});
 	t.after(() => client.close());
@@ -86,6 +88,7 @@ test("native Agent Plugin manifest and Codex overlay register portable component
 	assert.deepEqual(overlay.mcpServers.grainulator.env_vars, [
 		"GRAINULATOR_WORKSPACE",
 		"GRAINULATOR_CONFIG",
+		"GRAINULATOR_TOOLSET",
 		"GRAINULATOR_CLI",
 	]);
 	const {
@@ -196,4 +199,103 @@ test("native launcher uses a saved workspace without launch environment binding"
 		}),
 		/outside workspace/,
 	);
+});
+
+test("native compact selection advertises and executes only its supported profile", async (t) => {
+	const dir = fixture(t),
+		workspace = path.join(dir, "project");
+	fs.mkdirSync(workspace);
+	const config = path.join(dir, "workspace.json");
+	saveWorkspace(workspace, { GRAINULATOR_CONFIG: config }, "compact");
+	const { client } = await connect(t, dir, "", config);
+	const listing = (await client.request("tools/list")) as {
+		tools: { name: string }[];
+	};
+	assert.equal(listing.tools.length, 15);
+	assert.ok(listing.tools.some((tool) => tool.name === "configure_sprint"));
+	assert.ok(!listing.tools.some((tool) => tool.name === "memory_confluence"));
+	await assert.rejects(
+		client.request("tools/call", {
+			name: "init",
+			arguments: { question: "Unadvertised name" },
+		}),
+	);
+	const result = toolJSON(
+		await client.request("tools/call", {
+			name: "configure_sprint",
+			arguments: {
+				mode: "create",
+				dir: path.join(workspace, "sprint"),
+				question: "Compact plugin binding",
+			},
+		}),
+	);
+	assert.equal((result as { status: string }).status, "ok");
+	assert.ok(fs.existsSync(path.join(workspace, "sprint/claims.json")));
+	await assert.rejects(
+		client.request("tools/call", {
+			name: "configure_sprint",
+			arguments: {
+				mode: "create",
+				dir: path.join(dir, "outside"),
+				question: "Forbidden sibling",
+			},
+		}),
+		/outside workspace/,
+	);
+	assert.equal(fs.existsSync(path.join(dir, "outside")), false);
+});
+
+test("an invalid native profile stops discovery instead of silently broadening access", async (t) => {
+	const dir = fixture(t),
+		workspace = path.join(dir, "project");
+	fs.mkdirSync(workspace);
+	for (const value of ["", "typo"]) {
+		await assert.rejects(
+			connect(t, dir, workspace, path.join(dir, "workspace.json"), value),
+			(error: Error) => {
+				assert.match(
+					error.message,
+					/GRAINULATOR_TOOLSET.*toolset must be legacy or compact/,
+				);
+				assert.match(error.message, /Correct or unset GRAINULATOR_TOOLSET/);
+				assert.doesNotMatch(error.message, /MCP v.*ready/);
+				return true;
+			},
+		);
+	}
+	assert.equal(fs.existsSync(path.join(workspace, "claims.json")), false);
+	assert.equal(fs.existsSync(path.join(dir, "plugin-data")), false);
+	const { client } = await connect(
+		t,
+		dir,
+		workspace,
+		path.join(dir, "workspace.json"),
+		"compact",
+	);
+	assert.equal(
+		((await client.request("tools/list")) as { tools: unknown[] }).tools.length,
+		15,
+		"correcting the environment restores discovery on restart",
+	);
+});
+
+test("indeterminate saved profiles fail discovery with a source-specific recovery message", async (t) => {
+	for (const contents of [
+		"{",
+		"null",
+		'{"schema":2}',
+		'{"schema":1,"toolset":"typo"}',
+	]) {
+		const dir = fixture(t);
+		const config = path.join(dir, "workspace.json");
+		fs.writeFileSync(config, contents);
+		await assert.rejects(connect(t, dir, "", config), (error: Error) => {
+			assert.match(error.message, /Grainulator configuration required/);
+			assert.match(error.message, /setup --dir/);
+			assert.doesNotMatch(error.message, /MCP v.*ready/);
+			return true;
+		});
+		assert.equal(fs.existsSync(path.join(dir, "plugin-data")), false);
+	}
 });

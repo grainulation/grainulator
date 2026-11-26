@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { loadWorkspace, validateWorkspace } from "../lib/workspace-config.js";
+import { loadNativeSettings } from "../lib/workspace-config.js";
 
 // Agent plugins (Codex, Antigravity) start MCP inside the plugin directory, not
 // the project. Use, in order: an explicit GRAINULATOR_WORKSPACE, the project
@@ -15,33 +15,31 @@ if (Number(process.versions.node.split(".")[0]) < 24) {
 	const { startServer } = await import("../lib/grainulator-mcp.js");
 	const advice =
 		"Configure an absolute GRAINULATOR_WORKSPACE or use grainulator setup --dir /absolute/project. No workspace files were accessed.";
-	if (process.env.GRAINULATOR_WORKSPACE) {
-		let selected = process.cwd();
-		let configurationError: string | undefined;
-		try {
-			selected = validateWorkspace(process.env.GRAINULATOR_WORKSPACE);
-		} catch (error) {
-			configurationError = `${errorMessage(error)} ${advice}`;
+	try {
+		const settings = loadNativeSettings();
+		if (process.env.GRAINULATOR_WORKSPACE) {
+			startServer({
+				toolset: settings.toolset,
+				dir: settings.workspace ?? process.cwd(),
+				...(settings.workspaceError
+					? { configurationError: settings.workspaceError }
+					: {}),
+			});
+		} else {
+			startServer({
+				toolset: settings.toolset,
+				dir: process.cwd(),
+				roots: settings.workspace
+					? { fallback: settings.workspace }
+					: {
+							error: `Your agent did not share a project folder. ${settings.workspaceError ?? ""} ${advice}`,
+						},
+			});
 		}
-		if (configurationError)
-			process.stderr.write(
-				`Grainulator configuration required: ${configurationError}\n`,
-			);
-		startServer({
-			dir: configurationError ? process.cwd() : selected,
-			...(configurationError ? { configurationError } : {}),
-		});
-	} else {
-		let fallback: string | undefined;
-		let error: string | undefined;
-		try {
-			fallback = loadWorkspace().workspace;
-		} catch (failure) {
-			error = `Your agent did not share a project folder. ${errorMessage(failure)} ${advice}`;
-		}
-		startServer({
-			dir: process.cwd(),
-			roots: fallback ? { fallback } : error ? { error } : {},
-		});
+	} catch (error) {
+		process.stderr.write(
+			`Grainulator configuration required: ${errorMessage(error)}\n`,
+		);
+		process.exitCode = 1;
 	}
 }

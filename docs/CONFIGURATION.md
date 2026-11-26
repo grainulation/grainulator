@@ -13,3 +13,35 @@ Evidence reads the exact selected sprint's section. Orchestration can ascend to 
 The bundled schema is `packages/shared/schemas/project-config.schema.json`. Validation works offline. Native runtime validates its own section's execution semantics; evidence and runtime ledger schemas remain distinct. In-progress project migration markers block normal writes until verification or rollback is completed.
 
 MCP always confines section and migration checks to its registered workspace, including nested sprints. Direct CLI calls identify an enclosing canonical project or Git root for migration/publication protection; pass an explicit workspace for ancestor portfolio lookup. These checks never search historical state locations as fallbacks. Exports cannot overwrite configured ledger/compilation files, migration journals/backups, retained originals or host settings, including aliases.
+
+## Native plugin discovery profile
+
+`grainulator setup --dir /absolute/project --toolset compact` saves the existing
+15-tool evidence/local-memory/export profile alongside the native workspace
+binding in `~/.config/grainulator/workspace.json`. Restart the host to use it.
+`--toolset legacy` selects all 29 compatibility tools; omitting the flag retains
+the legacy default. This setting does not change direct CLI MCP registrations or
+Claude's separate registration. See [the profile reference](TOOLS.md#compact-profile-and-container-discovery)
+for capabilities and the tool-name mapping.
+
+`GRAINULATOR_TOOLSET=legacy|compact` overrides the saved profile for one native
+launch. An explicit `GRAINULATOR_WORKSPACE` bypasses saved workspace/profile
+settings, so set both variables to choose compact for that launch. The saved
+workspace and profile are read from one file snapshot.
+
+Invalid profiles, including an empty `GRAINULATOR_TOOLSET`, stop native startup
+before discovery. Correct or unset an invalid environment value and restart;
+`setup` cannot override an environment variable. Repair an invalid saved binding
+with `grainulator setup --dir /absolute/project --toolset legacy|compact`.
+Setup refuses an unrecognized existing destination. Check `GRAINULATOR_CONFIG`
+first: if it selects project data or another application's settings, choose a
+separate native binding file. For an intentionally selected damaged binding,
+add `--repair`; setup retains its exact prior bytes in a private backup and
+prints the backup path before the next host restart. Keep that backup for recovery.
+
+A known profile can still be discovered when its fallback workspace is missing
+or unusable. A roots-capable host can supply the project folder instead. If the
+saved JSON or schema is damaged and the profile cannot be determined, either
+repair the binding or explicitly select `GRAINULATOR_TOOLSET=legacy|compact`
+before restarting; then shared roots can recover the workspace. Without usable
+roots or a fallback, tool calls fail without accessing sprint data.

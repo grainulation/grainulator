@@ -63,7 +63,7 @@ Recheck all attachments against the independently reviewed manifest digest:
     node scripts/verify-release.mjs \
       --directory dist/release \
       --manifest-sha256 REVIEWED_MANIFEST_SHA256 \
-      --version 3.1.0 \
+      --version REVIEWED_RELEASE_VERSION \
       --source-commit REVIEWED_SOURCE_COMMIT
 
 This verifies the base, four native archives, separate converter and exact
@@ -143,3 +143,5 @@ cache, and restarting a running host are different actions. Record build IDs
 for the loaded artifacts and test native discovery separately from direct
 MCP. Candidate logs and mock-provider checks do not establish model quality
 or real external provider behavior.
+
+Before activating a public marketplace update, resolve its advertised release tag from the public remote and verify its peeled commit equals the approved release source. Confirm the matching CLI assets and manifest are publicly available. Recheck a fresh tagged-source plugin with that CLI. Keep source-install and verification examples tied to the selected published release; do not reuse a green PR manifest after a different merge SHA.

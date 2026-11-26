@@ -1,6 +1,6 @@
 {
 	"name": "grainulator",
-	"version": "3.1.0",
+	"version": "3.2.0",
 	"description": "Evidence and verification for model-assisted work. Portable workflows, a unified MCP interface, and clear next actions.",
 	"author": {
 		"name": "Grainulation"
@@ -13,6 +13,7 @@
 			"env_vars": [
 				"GRAINULATOR_WORKSPACE",
 				"GRAINULATOR_CONFIG",
+				"GRAINULATOR_TOOLSET",
 				"GRAINULATOR_CLI"
 			]
 		}
