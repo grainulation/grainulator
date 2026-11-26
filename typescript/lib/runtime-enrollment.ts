@@ -894,14 +894,13 @@ export function rollbackRuntimeEnrollment(
 				if (
 					(settings ? sha256(settings) : "absent") !== expectedSettingsHash ||
 					(expectedSettingsHash !== receipt.settings_after_sha256 &&
-						!(
-							receipt.state === "prepared" &&
-							expectedSettingsHash === receipt.settings_before_sha256
-						))
+						expectedSettingsHash !== receipt.settings_before_sha256)
 				)
 					throw new Error(
 						"Host settings changed after enrollment; refusing rollback",
 					);
+				// A previous rollback may already have restored its exact, verified
+				// preimage before updating the receipt. Unrelated edits still fail.
 				const settingsWereChanged =
 					expectedSettingsHash === receipt.settings_after_sha256;
 				if (settingsWereChanged && originalSettings !== null) {
