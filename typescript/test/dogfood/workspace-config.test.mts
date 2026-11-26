@@ -250,6 +250,43 @@ test("setup refuses links and does not replace a file created or edited concurre
 	edit.mock.restore();
 	assert.equal(fs.readFileSync(file, "utf8"), "concurrent edit");
 });
+test("setup reads the opened binding and refuses pathname replacement", (t) => {
+	const root = fs.mkdtempSync(
+		path.join(os.tmpdir(), "grainulator-binding-open-"),
+	);
+	t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+	const file = path.join(root, "workspace.json");
+	const replacement = path.join(root, "replacement.json");
+	saveWorkspace(root, { GRAINULATOR_CONFIG: file }, "legacy");
+	const concurrent = JSON.stringify({
+		schema: 1,
+		workspace: root,
+		toolset: "compact",
+	});
+	fs.writeFileSync(replacement, concurrent);
+	const open = fs.openSync;
+	let replaced = false;
+	const mock = t.mock.method(
+		fs,
+		"openSync",
+		(...args: Parameters<typeof fs.openSync>) => {
+			const descriptor = Reflect.apply(open, fs, args) as number;
+			if (args[0] === file && !replaced) {
+				replaced = true;
+				fs.renameSync(replacement, file);
+			}
+			return descriptor;
+		},
+	);
+	assert.throws(
+		() => saveWorkspace(root, { GRAINULATOR_CONFIG: file }, "legacy"),
+		/changed since setup started/,
+	);
+	mock.mock.restore();
+	assert.equal(replaced, true);
+	assert.equal(fs.readFileSync(file, "utf8"), concurrent);
+});
+
 test("version is readable without a sprint or configuration", () => {
 	const expected = JSON.parse(
 		fs.readFileSync(new URL("../../package.json", import.meta.url)).toString(),

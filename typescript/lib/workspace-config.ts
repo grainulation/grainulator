@@ -118,23 +118,20 @@ export function loadToolset(env = process.env) {
 }
 
 function existingBinding(file: string) {
-	let before: fs.Stats;
+	let descriptor: number;
 	try {
-		before = fs.lstatSync(file);
+		descriptor = fs.openSync(
+			file,
+			fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW | fs.constants.O_NONBLOCK,
+		);
 	} catch (error) {
 		if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
+		if ((error as NodeJS.ErrnoException).code === "ELOOP")
+			throw new Error("Native binding must be a regular file, not a link.");
 		throw error;
 	}
-	if (!before.isFile() || before.isSymbolicLink())
-		throw new Error("Native binding must be a regular file, not a link.");
-	const descriptor = fs.openSync(
-		file,
-		fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW | fs.constants.O_NONBLOCK,
-	);
 	try {
 		const info = fs.fstatSync(descriptor);
-		if (before.dev !== info.dev || before.ino !== info.ino)
-			throw new Error("Native binding changed while opening it.");
 		if (!info.isFile() || info.size > 4 * 1024 * 1024)
 			throw new Error(
 				"Native binding must be a regular file of at most 4 MiB.",
