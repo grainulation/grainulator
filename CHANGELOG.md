@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.2.0] - 2026-11-25
 
+### Fixed
+
+- Native setup refuses unrecognized existing data and concurrent replacements.
+  Explicit `setup --repair` keeps a private, exact preimage backup.
+- Enrollment rollback can resume after it restores its own settings preimage;
+  unrelated edits and changed runtime evidence remain protected.
+- Upgrade instructions retain explicit tool profiles, verify absolute sprint
+  identity, and match source/catalog/CLI versions before promotion.
+
+
 ### Added
 
 - Native plugins can select the existing compact MCP profile with

@@ -141,9 +141,114 @@ test("setup persists an explicit default; environment overrides and invalid setu
 	);
 	fs.writeFileSync(env.GRAINULATOR_CONFIG, "not json");
 	assert.throws(() => loadWorkspace(env));
-	saveWorkspace(workspace, env);
+	assert.throws(
+		() => saveWorkspace(workspace, env),
+		/unrecognized native binding/,
+	);
+	const repaired = saveWorkspace(workspace, env, undefined, { repair: true });
+	assert.ok(repaired.backup);
+	assert.equal(fs.readFileSync(repaired.backup, "utf8"), "not json");
 	if (process.platform !== "win32")
 		assert.equal(fs.statSync(env.GRAINULATOR_CONFIG).mode & 0o777, 0o600);
+});
+
+test("setup refuses unrelated existing data and repairs only with an exact retained preimage", (t) => {
+	const root = fs.mkdtempSync(
+		path.join(os.tmpdir(), "grainulator-binding-ownership-"),
+	);
+	t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+	for (const [name, content] of [
+		[
+			"grainulator.config.json",
+			'{"schema_version":1,"evidence":{"compiler":{"claims":"valuable.json"}}}\n',
+		],
+		["claims.json", '{"schema_version":1,"claims":[{"id":"keep"}]}\n'],
+		["host-settings.json", '{"hooks":{"Stop":[]},"theme":"keep"}\n'],
+		["workspace.json", "damaged native binding\n"],
+	] as const) {
+		const file = path.join(root, name);
+		fs.writeFileSync(file, content);
+		const env = { ...process.env, GRAINULATOR_CONFIG: file };
+		const result = spawnSync(
+			process.execPath,
+			[cli, "setup", "--dir", root, "--toolset", "compact", "--json"],
+			{ env, encoding: "utf8" },
+		);
+		assert.notEqual(result.status, 0);
+		assert.match(result.stdout + result.stderr, /GRAINULATOR_CONFIG/);
+		assert.equal(fs.readFileSync(file, "utf8"), content);
+	}
+	const file = path.join(root, "workspace.json");
+	const repaired = spawnSync(
+		process.execPath,
+		[cli, "setup", "--dir", root, "--toolset", "compact", "--repair", "--json"],
+		{ env: { ...process.env, GRAINULATOR_CONFIG: file }, encoding: "utf8" },
+	);
+	assert.equal(repaired.status, 0, repaired.stderr);
+	const result = JSON.parse(repaired.stdout) as { backup: string };
+	assert.equal(
+		fs.readFileSync(result.backup, "utf8"),
+		"damaged native binding\n",
+	);
+	if (process.platform !== "win32")
+		assert.equal(fs.statSync(result.backup).mode & 0o777, 0o600);
+	assert.equal(
+		loadNativeSettings({ GRAINULATOR_CONFIG: file }).toolset,
+		"compact",
+	);
+	saveWorkspace(root, { GRAINULATOR_CONFIG: file }, "legacy");
+	assert.equal(
+		fs.readFileSync(result.backup, "utf8"),
+		"damaged native binding\n",
+	);
+});
+
+test("setup refuses links and does not replace a file created or edited concurrently", (t) => {
+	const root = fs.mkdtempSync(
+		path.join(os.tmpdir(), "grainulator-binding-race-"),
+	);
+	t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+	const target = path.join(root, "valuable.json"),
+		file = path.join(root, "workspace.json");
+	fs.writeFileSync(target, "unrelated data");
+	fs.symlinkSync(target, file);
+	assert.throws(
+		() => saveWorkspace(root, { GRAINULATOR_CONFIG: file }),
+		/regular file/,
+	);
+	assert.equal(fs.readFileSync(target, "utf8"), "unrelated data");
+	fs.unlinkSync(file);
+	const link = fs.linkSync;
+	const publish = t.mock.method(
+		fs,
+		"linkSync",
+		(source: fs.PathLike, destination: fs.PathLike) => {
+			fs.writeFileSync(file, "concurrent creation");
+			return link(source, destination);
+		},
+	);
+	assert.throws(() => saveWorkspace(root, { GRAINULATOR_CONFIG: file }), {
+		code: "EEXIST",
+	});
+	publish.mock.restore();
+	assert.equal(fs.readFileSync(file, "utf8"), "concurrent creation");
+	fs.unlinkSync(file);
+	saveWorkspace(root, { GRAINULATOR_CONFIG: file });
+	const close = fs.closeSync;
+	let edited = false;
+	const edit = t.mock.method(fs, "closeSync", (fd: number) => {
+		close(fd);
+		if (!edited) {
+			edited = true;
+			fs.writeFileSync(file, "concurrent edit");
+		}
+	});
+	assert.throws(
+		() => saveWorkspace(root, { GRAINULATOR_CONFIG: file }),
+		/changed since setup started/,
+	);
+	edit.mock.restore();
+	assert.equal(fs.readFileSync(file, "utf8"), "concurrent edit");
 });
 test("version is readable without a sprint or configuration", () => {
 	const expected = JSON.parse(

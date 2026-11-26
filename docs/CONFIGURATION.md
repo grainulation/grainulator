@@ -33,6 +33,11 @@ Invalid profiles, including an empty `GRAINULATOR_TOOLSET`, stop native startup
 before discovery. Correct or unset an invalid environment value and restart;
 `setup` cannot override an environment variable. Repair an invalid saved binding
 with `grainulator setup --dir /absolute/project --toolset legacy|compact`.
+Setup refuses an unrecognized existing destination. Check `GRAINULATOR_CONFIG`
+first: if it selects project data or another application's settings, choose a
+separate native binding file. For an intentionally selected damaged binding,
+add `--repair`; setup retains its exact prior bytes in a private backup and
+prints the backup path before the next host restart. Keep that backup for recovery.
 
 A known profile can still be discovered when its fallback workspace is missing
 or unusable. A roots-capable host can supply the project folder instead. If the

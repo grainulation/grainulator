@@ -47,22 +47,22 @@ Claude's plugin registers `grainulator` automatically. For a direct MCP installa
 For native Codex, save the workspace using the CLI from the new installed build, then restart Codex:
 
 ```sh
-node /path/to/grainulator/bin/grainulator.js setup --dir /absolute/path/to/project
+node /path/to/grainulator/bin/grainulator.js setup --dir /absolute/path/to/project --toolset compact
 ```
 
-This writes `~/.config/grainulator/workspace.json` and works for Codex Desktop without a terminal launch. It is a shared default for this user's native sessions; it does not edit host settings. The process environment can override it for one launch:
+This explicitly retains the compact 15-tool profile. Use `--toolset legacy` for the 29-tool compatibility profile; omitting the flag resets to legacy. This writes `~/.config/grainulator/workspace.json` and works for Codex Desktop without a terminal launch. It is a shared default for this user's native sessions; it does not edit host settings. The process environment can override it for one launch:
 
 ```sh
-GRAINULATOR_WORKSPACE=/absolute/path/to/project codex
+GRAINULATOR_WORKSPACE=/absolute/path/to/project GRAINULATOR_TOOLSET=compact codex
 ```
 
 The project must exist and contain the intended sprint directories. The plugin cache is not the project. See [workspace setup](INSTALLATION.md#bind-the-native-codex-plugin-to-a-workspace) for persistent desktop setup and connection alternatives.
 
 ## 4. Keep data and review old instructions
 
-Keep existing `claims.json`, `compilation.json`, session exports, and sprint directories in place. Do not initialize over an existing sprint to repair a connection. Test `status` against its explicit directory first.
+Keep existing `claims.json`, `compilation.json`, session exports, and sprint directories in place. Do not initialize over an existing sprint to repair a connection. First read a recognizable existing claim using its absolute sprint directory: compact uses `search_claims`, legacy uses `search`. A stale saved fallback can select another project when the host cannot supply roots. An absolute path outside the selected workspace must fail; correct the binding before any mutation.
 
-Check the memory store separately. The old Claude plugin selected `${CLAUDE_PLUGIN_DATA}/memory`; the new plugin selects `${CLAUDE_PLUGIN_DATA}/memory`. Changing the server registration does not copy that store. If `memory_list` appears empty, locate and back up the original store before selecting it through an authorized `GRAINULATOR_MEMORY_DIR` configuration or moving data. Historical `SILO_STORE` and `~/.memory` fallbacks are no longer probed. The current order is an explicit memory directory, `GRAINULATOR_MEMORY_DIR`, then `~/.grainulator/memory`; review historical data with the separate converter before activating a migrated store. Do not merge stores or overwrite their indexes without reviewing both.
+Check the memory store separately. The old Claude plugin selected `${CLAUDE_PLUGIN_DATA}/memory`; the new plugin selects `${CLAUDE_PLUGIN_DATA}/memory`. Changing the server registration does not copy that store. If compact `search_memory` catalog mode or legacy `memory_list` appears empty, locate and back up the original store before selecting it through an authorized `GRAINULATOR_MEMORY_DIR` configuration or moving data. Historical `SILO_STORE` and `~/.memory` fallbacks are no longer probed. The current order is an explicit memory directory, `GRAINULATOR_MEMORY_DIR`, then `~/.grainulator/memory`; review historical data with the separate converter before activating a migrated store. Do not merge stores or overwrite their indexes without reviewing both.
 
 Review applicable `CLAUDE.md`, `AGENTS.md`, and custom agent instructions for setup steps from 1.x. Remove instructions for features that are no longer installed. Keep your own rules, active research folders, permission settings, and unrelated connections. Your agent still controls permissions and remote access.
 
@@ -71,7 +71,7 @@ Existing source/data files can retain historical names for compatibility. Do not
 ## 5. Verify the new session
 
 - Confirm the intended installed/cache version and build identity, then start a fresh host session.
-- Check the host exposes `grainulator`, and make a real `status` call with the existing sprint's explicit `dir`. Check `memory_list` against the intended store.
+- Check the host exposes the intended profile: 15 compact or 29 legacy tool names. For compact, call `inspect_sprint` with the existing sprint's absolute `dir` and `search_memory` without a query for its catalog. For legacy, use `status` and `memory_list`. Confirm a recognizable existing claim before writing.
 - Invoke the bundled Grainulator workflow or agent if you use the full plugin. A successful direct MCP connection alone does not verify skills, agents, or hooks.
 
 If a check fails, keep the original data and previous archive available. Report the actual loaded path, host version, selected scope, and error without including credentials. [Full-plugin acceptance](PLUGIN-TESTING.md) describes the reproducible checks.
@@ -89,4 +89,6 @@ If historical remote inventory is ambiguous or has no page IDs, it stays blocked
 
 ## Compact MCP discovery profiles
 
-Current installations retain the legacy 29-tool inventory. To evaluate the 15-tool evidence/local-memory/export profile, add an explicit manual registration using `grainulator connect --dir /absolute/workspace --toolset compact`; restart that connection and verify its exact inventory and resource access. Bundled plugins retain their existing default. The Docker image now explicitly selects compact discovery; use `mcp --dir /workspace --toolset legacy` as the container command to retain all legacy capabilities. Review the mapping in [tools](TOOLS.md#compact-profile-and-container-discovery) before changing allowlists. Compact removes network integrations and graph building from its MCP surface; the legacy profile and CLI retain them. There are no hidden aliases between the profiles. Default promotion requires a separate breaking release and does not rewrite existing ledgers.
+Current installations retain the legacy 29-tool inventory. To evaluate the 15-tool evidence/local-memory/export profile, add an explicit manual registration using `grainulator connect --dir /absolute/workspace --toolset compact`; restart that connection and verify its exact inventory and resource access. Native plugins can select compact with `grainulator setup --dir /absolute/project --toolset compact`; restart the host. Legacy remains the default when no profile is selected. The Docker image now explicitly selects compact discovery; use `mcp --dir /workspace --toolset legacy` as the container command to retain all legacy capabilities. Review the mapping in [tools](TOOLS.md#compact-profile-and-container-discovery) before changing allowlists. Compact removes network integrations and graph building from its MCP surface; the legacy profile and CLI retain them. There are no hidden aliases between the profiles. Default promotion requires a separate breaking release and does not rewrite existing ledgers.
+
+When repairing a damaged native binding, first check that `GRAINULATOR_CONFIG` selects that binding rather than project data. Ordinary setup refuses unrecognized files; `setup --repair` explicitly preserves a private preimage backup before replacement. Retain the returned backup. Interrupted native enrollment rollback can be retried after inspecting the current receipt/settings hashes; it accepts its exact restored preimage, and refuses unrelated later edits.
